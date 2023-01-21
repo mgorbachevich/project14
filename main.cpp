@@ -1,0 +1,48 @@
+#include <QGuiApplication>
+#include <QFontDatabase>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include "baselistmodel.h"
+#include "weightmanager.h"
+#include "appmanager.h"
+#include "printmanager.h"
+
+//#define RECOMENDED
+
+int main(int argc, char *argv[])
+{
+    QGuiApplication application(argc, argv);
+    QQmlApplicationEngine engine;
+
+    QFontDatabase::addApplicationFont(":/Resources/Roboto-Regular.ttf");
+    QFontDatabase::addApplicationFont(":/Resources/Roboto-Bold.ttf");
+    QFontDatabase::addApplicationFont(":/Resources/Roboto-Italic.ttf");
+    QFontDatabase::addApplicationFont(":/Resources/LeagueGothic-Regular.otf");
+    //qDebug() <<  "@@@@@ main font families: " << QFontDatabase::families();
+
+    AppManager* appManager = new AppManager(&application, engine.rootContext());
+    WeightManager* weightManager = new WeightManager(&application);
+    PrintManager* printManager = new PrintManager(&application);
+
+    qmlRegisterUncreatableType<BaseListModel>("RegisteredTypes", 1, 0, "BaseListModel", "");
+    engine.rootContext()->setContextProperty("app", appManager);
+
+    QObject::connect(appManager, &AppManager::print, printManager, &PrintManager::onPrint);
+    QObject::connect(weightManager, &WeightManager::weightChanged, appManager, &AppManager::onWeightChanged);
+    QObject::connect(weightManager, &WeightManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
+    QObject::connect(printManager, &PrintManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
+
+#ifdef RECOMENDED
+    const QUrl url(u"qrc:/Project14/main.qml"_qs);
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &application, [url](QObject *obj, const QUrl &objUrl)
+    {
+        if (!obj && url == objUrl) QCoreApplication::exit(-1);
+    }, Qt::QueuedConnection);
+#else
+    const QUrl url("qrc:/main.qml");
+#endif
+
+    engine.load(url);
+    return application.exec();
+}
+
