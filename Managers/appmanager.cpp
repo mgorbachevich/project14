@@ -19,6 +19,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 {
     qDebug() << "@@@@@ AppManager::AppManager";
     mode = Mode::Start;
+    user = UserDBTable::defaultAdmin();
 
 #ifdef BACKGROUND_DATABASE
     DataBase* db = new DataBase();
@@ -212,26 +213,6 @@ void AppManager::onProductPanelClosed()
     updateWeightPanel();
 }
 
-void AppManager::onAuthorizationPanelClosed(const QString& login, const QString& password)
-{
-    qDebug() << "@@@@@ AppManager::onAuthorizationPanelClosed " << login << password;
-
-    if (!checkAuthorization(login, password))
-    {
-        emit showMessageBox("Авторизация", "Неверное имя пользователя или пароль!");
-        return;
-    }
-
-    qDebug() << "@@@@@ AppManager::onAuthorizationPanelClosed OK";
-    if(mode == Mode::Start)
-    {
-        mode = Mode::Scale;
-        updateShowcasePanel();
-        updateTablePanel();
-        updateSearchFilter();
-    }
-}
-
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
 {
     qDebug() << "@@@@@ AppManager::onSelectFromDBResult " << selector;
@@ -263,6 +244,10 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             showcasePanelModel->updateImages(fileNames);
             break;
         }
+
+        case DataBase::Selector::AuthorizationUserByName:
+            checkAuthorization(records[0]);
+            break;
 
         case DataBase::Selector::ImageByResourceCode:
         // Отображение картинки выбранного товара:
@@ -407,13 +392,35 @@ void AppManager::updateAuthorizationPanel()
     emit select(DataBase::Selector::UserNames, "");
  }
 
-bool AppManager::checkAuthorization(const QString& login, const QString& password)
+void AppManager::checkAuthorization(const DBRecord& newUser)
 {
-    qDebug() << "@@@@@ AppManager::checkAuthorization " << login << password;
-    // todo
-    return true;
+    qDebug() << "@@@@@ AppManager::checkAuthorization";
+    if (user[UserDBTable::Columns::Name] != newUser[UserDBTable::Columns::Name] ||
+        user[UserDBTable::Columns::Password] != newUser[UserDBTable::Columns::Password])
+    {
+        qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
+        emit showMessageBox("Авторизация", "Неверное имя пользователя или пароль!");
+        //return;
+    }
+
+    qDebug() << "@@@@@ AppManager::checkAuthorization OK";
+    if(mode == Mode::Start)
+    {
+        mode = Mode::Scale;
+        updateShowcasePanel();
+        updateTablePanel();
+        updateSearchFilter();
+    }
 }
 
+void AppManager::onAuthorizationPanelClosed(const QString& login, const QString& password)
+{
+    QString normalizedLogin = UserDBTable::fromAdminName(login);
+    qDebug() << "@@@@@ AppManager::onAuthorizationPanelClosed " << normalizedLogin << password;
+    user[UserDBTable::Columns::Name] = normalizedLogin;
+    user[UserDBTable::Columns::Password] = password;
+    emit select(DataBase::Selector::AuthorizationUserByName, normalizedLogin);
+}
 
 
 

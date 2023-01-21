@@ -232,6 +232,16 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
             break;
         }
 
+        case Selector::AuthorizationUserByName:
+        // Запрос пользователя по имени для авторизации:
+        {
+            DBTable* t = getTableByName(DBTABLENAME_USERS);
+            QString sql = "SELECT * FROM " + t->name;
+            sql += " WHERE " + t->columnName(UserDBTable::Columns::Name) + "='" + param + "'";
+            executeSelectSQL(t, sql, resultRecords);
+            break;
+        }
+
         case Selector::ImageByResourceCode:
         // Запрос картинки из ресурсов по коду ресурса:
         {

@@ -41,10 +41,11 @@ private:
     void updateTablePanel();
     void updateWeightPanel();
     void updateAuthorizationPanel();
-    bool checkAuthorization(const QString&, const QString&);
+    void checkAuthorization(const DBRecord&);
 
     Mode mode = Mode::Start;
     double weight = 0;
+    DBRecord user;
 
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;

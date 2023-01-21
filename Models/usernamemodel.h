@@ -11,10 +11,6 @@ class UserNameModel : public BaseListModel
 public:
     explicit UserNameModel(QObject *parent): BaseListModel(parent) {}
     void update(const DBRecordList&);
-    DBRecord& userByIndex(const int);
-
-private:
-    DBRecordList users;
 };
 
 #endif // USERNAMEMODEL_H

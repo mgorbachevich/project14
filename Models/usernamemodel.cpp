@@ -1,13 +1,19 @@
 #include "usernamemodel.h"
+#include "userdbtable.h"
 
-void UserNameModel::update(const DBRecordList& newUsers)
+void UserNameModel::update(const DBRecordList& users)
 {
-    qDebug() << "@@@@@ UserNameModel::update";
-    users.clear();
-    users.append(newUsers);
+    qDebug() << "@@@@@ UserNameModel::update " << users.count();
+    QStringList ss;
+    for (int i = 0; i < users.count(); i++)
+    {
+        const DBRecord& user = users[i];
+        const QString name = user[UserDBTable::Columns::Name].toString();
+        if (UserDBTable::isAdmin(user))
+            ss << UserDBTable::toAdminName(name);
+        else
+            ss << name;
+    }
+    setStringList(ss);
 }
 
-DBRecord &UserNameModel::userByIndex(const int index)
-{
-    return index < users.count() ? users[index] : *new DBRecord();
-}

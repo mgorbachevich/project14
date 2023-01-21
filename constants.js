@@ -10,4 +10,5 @@ const buttonRadius = 12;
 const normalFontSize = 16;
 const largeFontSize = 18;
 const smallFontSize = 12;
+const inputFieldWidth = 200;
 
