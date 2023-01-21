@@ -8,6 +8,7 @@
 //#define LOG_SELECT_RESULT
 #define BACKGROUND_DATABASE
 #define BACKGROUND_HTTP
+#define HTTP_TEST
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define WEIGHT_0 "00.000"

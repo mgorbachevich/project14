@@ -84,6 +84,7 @@ signals:
     void startDB();
     void select(const DataBase::Selector, const QString&);
     void selectByList(const DataBase::Selector, const DBRecordList&);
+    void authorizationSucceded();
 
 public slots:
     void onStart();
@@ -94,14 +95,14 @@ public slots:
     void onSearchFilterEdited(const QString&);
     void onSearchFilterClicked(const int);
     void onProductDescriptionClicked();
-    void onSearchOptionsClicked() { emit showSearchOptions(); }
+    void onSearchOptionsClicked();
     void onSearchResultClicked(const int);
     void onShowcaseClicked(const int);
     void onTableResultClicked(const int);
-    void onTableOptionsClicked() { emit showTableOptions(); }
+    void onTableOptionsClicked();
     void onTableBackClicked();
     void onProductPanelClosed();
-    void onAuthorizationPanelClosed(const QString&, const QString&);
+    void onCheckAuthorizationClick(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
 };
 

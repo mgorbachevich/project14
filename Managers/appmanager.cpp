@@ -21,6 +21,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     mode = Mode::Start;
     user = UserDBTable::defaultAdmin();
 
+    // Инициализация БД:
 #ifdef BACKGROUND_DATABASE
     DataBase* db = new DataBase();
     db->moveToThread(&dbThread);
@@ -37,6 +38,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     dbThread.start();
 #endif
 
+    // Инициализация HTTP:
 #ifdef BACKGROUND_HTTP
     HTTPClient* httpClient = new HTTPClient();
     httpClient->moveToThread(&httpThread);
@@ -49,13 +51,13 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     httpThread.start();
 #endif
 
+    // Модели:
     productPanelModel = new ProductPanelModel(this, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
     showcasePanelModel = new ShowcasePanelModel(this);
     tablePanelModel = new TablePanelModel(this);
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
-
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
@@ -63,6 +65,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
 
+    // Подождем немного и стартуем:
     QTimer::singleShot(200, this, &AppManager::onStart);
 }
 
@@ -154,6 +157,11 @@ void AppManager::onProductDescriptionClicked()
                 productPanelModel->product[ProductDBTable::Columns::MessageCode].toString());
 }
 
+void AppManager::onSearchOptionsClicked()
+{
+    emit showSearchOptions();
+}
+
 void AppManager::filteredSearch()
 {
     QString& v = searchFilterModel->filterValue;
@@ -220,11 +228,9 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     {
         case DataBase::Selector::ShowcaseProducts:
         // Обновление списка товаров экрана Showcase:
-        {
             showcasePanelModel->updateProducts(records);
             emit selectByList(DataBase::Selector::ShowcaseResources, records);
             break;
-        }
 
         case DataBase::Selector::ShowcaseResources:
         // Отображение картинок товаров экрана Showcase:
@@ -246,7 +252,11 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         }
 
         case DataBase::Selector::AuthorizationUserByName:
-            checkAuthorization(records[0]);
+        // Получен результат поиска пользователя по введеному имени при авторизации:
+            if(records.isEmpty())
+                emit showMessageBox("Авторизация", "Пользователь не найден!");
+            else
+                checkAuthorization(records[0]);
             break;
 
         case DataBase::Selector::ImageByResourceCode:
@@ -268,8 +278,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
 
         case DataBase::Selector::MessageByResourceCode:
         // Отображение сообщения (описания) выбранного товара:
-        {
-            if (records.count() > 0)
+            if (!records.isEmpty())
             {
                 const int messageValueColumn = ResourceDBTable::Columns::Value;
                 if (records[0].count() > messageValueColumn)
@@ -278,11 +287,9 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
                 }
             }
             break;
-        }
 
         case DataBase::Selector::UserNames:
         // Отображение имен пользователей при авторизации:
-        {
             if (records.isEmpty()) // В базе нет пользователей. Добавить администратора по умолчанию:
             {
                 DBRecordList users;
@@ -292,7 +299,6 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             else
                 userNameModel->update(records);
             break;
-        }
 
         case DataBase::Selector::ProductsByGroupCodeIncludeGroups:
         // Отображение товаров выбранной группы:
@@ -331,6 +337,11 @@ void AppManager::onTableResultClicked(const int index)
             showCurrentProduct();
         }
     }
+}
+
+void AppManager::onTableOptionsClicked()
+{
+    emit showTableOptions();
 }
 
 void AppManager::onSearchResultClicked(const int index)
@@ -399,24 +410,26 @@ void AppManager::checkAuthorization(const DBRecord& newUser)
         user[UserDBTable::Columns::Password] != newUser[UserDBTable::Columns::Password])
     {
         qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
-        emit showMessageBox("Авторизация", "Неверное имя пользователя или пароль!");
-        //return;
+        emit showMessageBox("Авторизация", "Неверные имя пользователя или пароль!");
+        return;
     }
 
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
     if(mode == Mode::Start)
     {
         mode = Mode::Scale;
+        // emit showMessageBox("Авторизация", "Успешно!");
+        emit authorizationSucceded();
         updateShowcasePanel();
         updateTablePanel();
         updateSearchFilter();
     }
 }
 
-void AppManager::onAuthorizationPanelClosed(const QString& login, const QString& password)
+void AppManager::onCheckAuthorizationClick(const QString& login, const QString& password)
 {
     QString normalizedLogin = UserDBTable::fromAdminName(login);
-    qDebug() << "@@@@@ AppManager::onAuthorizationPanelClosed " << normalizedLogin << password;
+    qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
     user[UserDBTable::Columns::Name] = normalizedLogin;
     user[UserDBTable::Columns::Password] = password;
     emit select(DataBase::Selector::AuthorizationUserByName, normalizedLogin);

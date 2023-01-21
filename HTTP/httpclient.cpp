@@ -3,15 +3,17 @@
 #include <QUrl>
 #include <QSslSocket>
 #include "httpclient.h"
+#include "constants.h"
 
 HTTPClient::HTTPClient(QObject *parent): QObject(parent)
 {
     // https://doc.qt.io/qt-6/android-openssl-support.html
     qDebug() << "@@@@@ HTTPClient::HTTPClient Device supports OpenSSL:" << QSslSocket::supportsSsl();
-
     connect(&manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply);
 
-    //sendGet("https://www.google.com"); // todo
+#ifdef HTTP_TEST
+    sendGet("https://www.google.com"); // todo
+#endif
 }
 
 void HTTPClient::sendGet(QString url)
@@ -24,6 +26,7 @@ void HTTPClient::sendGet(QString url)
 
 void HTTPClient::onReply(QNetworkReply *reply)
 {
+    // Получен ответ на запрос:
     if (reply == nullptr)
     {
         qDebug() << "@@@@@ HTTPClient::onReply ERROR null";

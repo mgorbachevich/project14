@@ -13,6 +13,16 @@ Popup
     modal: true
     dim: true
 
+    Connections // Slot for signal AppManager::authorizationSucceded:
+    {
+        target: app
+        function onAuthorizationSucceded()
+        {
+            console.debug("@@@@@ productPanel.onAuthorizationSucceded");
+            authorizationPanel.close()
+        }
+    }
+
     Column
     {
         anchors.centerIn: parent
@@ -85,8 +95,7 @@ Popup
             text: qsTr("ПРОДОЛЖИТЬ")
             onClicked:
             {
-                app.onAuthorizationPanelClosed(loginComboBox.displayText, passwordTextField.text) // AppManager's slot
-                authorizationPanel.close()
+                app.onCheckAuthorizationClick(loginComboBox.displayText, passwordTextField.text) // AppManager's slot
             }
         }
     }
