@@ -5,7 +5,9 @@
 #include <QThread>
 #include "constants.h"
 #include "database.h"
+#ifndef BACKGROUND_HTTP
 #include "httpclient.h"
+#endif
 
 class ProductPanelModel;
 class TablePanelModel;
@@ -41,7 +43,8 @@ private:
     void updateTablePanel();
     void updateWeightPanel();
     void updateAuthorizationPanel();
-    void checkAuthorization(const DBRecord&);
+    void startAuthorization();
+    void checkAuthorization(const DBRecordList&);
 
     Mode mode = Mode::Start;
     double weight = 0;
@@ -81,6 +84,7 @@ signals:
     void showTableOptions();
     void showSearchOptions();
     void showAuthorizationPanel();
+    void showAdminMenu(bool);
     void startDB();
     void select(const DataBase::Selector, const QString&);
     void selectByList(const DataBase::Selector, const DBRecordList&);
@@ -102,6 +106,8 @@ public slots:
     void onTableOptionsClicked();
     void onTableBackClicked();
     void onProductPanelClosed();
+    void onAdminSettingsClicked();
+    void onLockClicked();
     void onCheckAuthorizationClick(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
 };

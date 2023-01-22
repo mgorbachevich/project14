@@ -79,6 +79,7 @@ RESOURCES += \
     Icons/arrow_up_black_48.png \
     Icons/close_black_48.png \
     Icons/info_outline_black_48.png \
+    Icons/lock_black_48.png \
     Icons/menu_black_48.png \
     Icons/print_black_48.png \
     Icons/settings_black_48.png \
@@ -105,6 +106,8 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
+
+DISTFILES +=
 
 
 

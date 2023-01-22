@@ -14,6 +14,9 @@
 #include "searchfiltermodel.h"
 #include "tools.h"
 #include "resourcedbtable.h"
+#ifdef BACKGROUND_HTTP
+#include "httpclient.h"
+#endif
 
 AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 {
@@ -90,8 +93,7 @@ void AppManager::onStart()
 void AppManager::onDBStarted()
 {
     qDebug() << "@@@@@ AppManager::onDBStarted";
-    emit showAuthorizationPanel();
-    updateAuthorizationPanel();
+    startAuthorization();
 }
 
 QString AppManager::weightAsString()
@@ -221,6 +223,18 @@ void AppManager::onProductPanelClosed()
     updateWeightPanel();
 }
 
+void AppManager::onAdminSettingsClicked()
+{
+    qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
+    // todo
+}
+
+void AppManager::onLockClicked()
+{
+    qDebug() << "@@@@@ AppManager::onLockClicked";
+    startAuthorization();
+}
+
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
 {
     qDebug() << "@@@@@ AppManager::onSelectFromDBResult " << selector;
@@ -253,10 +267,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
 
         case DataBase::Selector::AuthorizationUserByName:
         // Получен результат поиска пользователя по введеному имени при авторизации:
-            if(records.isEmpty())
-                emit showMessageBox("Авторизация", "Пользователь не найден!");
-            else
-                checkAuthorization(records[0]);
+            checkAuthorization(records);
             break;
 
         case DataBase::Selector::ImageByResourceCode:
@@ -401,11 +412,26 @@ void AppManager::updateAuthorizationPanel()
 {
     qDebug() << "@@@@@ AppManager::updateAuthorizationPanel";
     emit select(DataBase::Selector::UserNames, "");
- }
+}
 
-void AppManager::checkAuthorization(const DBRecord& newUser)
+void AppManager::startAuthorization()
+{
+    mode = Mode::Start;
+    emit showAuthorizationPanel();
+    updateAuthorizationPanel();
+}
+
+void AppManager::checkAuthorization(const DBRecordList& users)
 {
     qDebug() << "@@@@@ AppManager::checkAuthorization";
+#ifdef CHECK_AUTHORIZATION
+    if (users.isEmpty())
+    {
+        qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
+        emit showMessageBox("Авторизация", "Неизвестный пользователь!");
+        return;
+    }
+    const DBRecord& newUser = users[0];
     if (user[UserDBTable::Columns::Name] != newUser[UserDBTable::Columns::Name] ||
         user[UserDBTable::Columns::Password] != newUser[UserDBTable::Columns::Password])
     {
@@ -413,6 +439,11 @@ void AppManager::checkAuthorization(const DBRecord& newUser)
         emit showMessageBox("Авторизация", "Неверные имя пользователя или пароль!");
         return;
     }
+    user.clear();
+    user.append(newUser);
+#else
+    user = UserDBTable::defaultAdmin();
+#endif
 
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
     if(mode == Mode::Start)
@@ -420,6 +451,7 @@ void AppManager::checkAuthorization(const DBRecord& newUser)
         mode = Mode::Scale;
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
+        emit showAdminMenu(UserDBTable::isAdmin(user));
         updateShowcasePanel();
         updateTablePanel();
         updateSearchFilter();

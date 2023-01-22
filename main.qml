@@ -18,10 +18,25 @@ ApplicationWindow
     title: qsTr("Project14")
     color: Material.background
     visible: true
+
+    property int pageIndicatorHeight: 16
+    property int adminMenuWidth: 0
+
     property int popupX: (mainWindow.width - mainWindow.width * 4 / 5) / 2
     property int popupY: mainWindow.height / 4 + Constants.margin
     property int popupWidth: mainWindow.width * 4 / 5
     property int popupHeight: mainWindow.height * 2 / 3
+
+    Connections // Slot for signal AppManager::showAdminMenu:
+    {
+        target: app
+        function onShowAdminMenu(show)
+        {
+            console.debug("@@@@@ mainWindow.onShowAdminMenu");
+            adminMenuWidth = show? Constants.buttonSize + Constants.margin * 2 : 0
+            adminMenuPanel.visible = show
+        }
+    }
 
     Connections // Slot for signal AppManager::showTableOptions:
     {
@@ -107,44 +122,106 @@ ApplicationWindow
 
     Column
     {
+        anchors.fill: parent
         spacing: 0
+        padding: 0
 
         Loader
         {
             id: mainWeightPanel
-            width: mainWindow.width
+            width: parent.width
             source: "Panels/weightPanel.qml"
         }
 
-        Rectangle
+        Row
         {
-            width: mainWindow.width
-            height: mainWindow.height - mainWeightPanel.height
+            width: parent.width
+            height: parent.height - mainWeightPanel.height
+            spacing: 0
+            padding: 0
 
-            SwipeView
+            Rectangle
             {
-                id: mainSwipeView
-                anchors.fill: parent
-                currentIndex: 0
+                id: adminMenuPanel
+                width: adminMenuWidth
+                height: parent.height
+                color: Material.accent
 
-                Loader { source: "Panels/showcasePanel.qml" }
-                Loader { source: "Panels/tablePanel.qml" }
-                Loader { source: "Panels/searchPanel.qml" }
+                Column
+                {
+                    anchors.fill: parent
+                    topPadding: Constants.margin
+                    spacing: Constants.margin
+
+                    Button
+                    {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: Constants.buttonSize
+                        height: Constants.buttonSize
+                        icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/settings_black_48" }
+                        leftInset: 0
+                        topInset: 0
+                        rightInset: 0
+                        bottomInset: 0
+                        Material.background: Material.primary
+                        onClicked: app.onAdminSettingsClicked() // AppManager's slot
+                    }
+
+                    Button
+                    {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: Constants.buttonSize
+                        height: Constants.buttonSize
+                        icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/lock_black_48" }
+                        leftInset: 0
+                        topInset: 0
+                        rightInset: 0
+                        bottomInset: 0
+                        Material.background: Material.primary
+                        onClicked: app.onLockClicked() // AppManager's slot
+                    }
+                }
+            }
+
+            Rectangle
+            {
+                width: Constants.mainWindowWidth - adminMenuWidth
+                height: parent.height
+
+                Rectangle
+                {
+                    width: parent.width
+                    height: parent.height - pageIndicatorHeight
+
+                    SwipeView
+                    {
+                        id: mainSwipeView
+                        anchors.fill: parent
+                        currentIndex: 0
+                        clip: true
+
+                        Loader { source: "Panels/showcasePanel.qml" }
+                        Loader { source: "Panels/tablePanel.qml" }
+                        Loader { source: "Panels/searchPanel.qml" }
+                    }
+                }
+
+                Rectangle
+                {
+                    width: parent.width
+                    height: pageIndicatorHeight
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottom: parent.bottom
+                    color: Material.background
+
+                    PageIndicator
+                    {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        count: mainSwipeView.count
+                        currentIndex: mainSwipeView.currentIndex
+                    }
+                }
             }
         }
-    }
-
-    Rectangle
-    {
-        height: 16
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-
-        PageIndicator
-        {
-            anchors.horizontalCenter: parent.horizontalCenter
-            count: mainSwipeView.count
-            currentIndex: mainSwipeView.currentIndex
-         }
     }
 }

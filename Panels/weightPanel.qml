@@ -12,12 +12,15 @@ Rectangle
     id:  weightPanel
     height: valueFontSize + titleFontSize + Constants.margin
     color: Material.background
+
     property int valueFontSize: 70
     property int titleFontSize: 11
-    property int iconSize: (valueFontSize + titleFontSize) / 3
-    property int weightWidth: (weightPanel.width - iconSize - Constants.margin) * 6 / (6 + 7 + 9)
-    property int priceWidth: (weightPanel.width - iconSize - Constants.margin) * 7 / (6 + 7 + 9)
-    property int amountWidth: weightPanel.width - iconSize - Constants.margin - weightWidth - priceWidth
+    property int flagSize: (valueFontSize + titleFontSize) / 3
+    property int flagWidth: flagSize + Constants.margin
+    property int displayWidth: weightPanel.width - flagWidth - Constants.margin
+    property int weightWidth: displayWidth * 6 / (6 + 7 + 9)
+    property int priceWidth: displayWidth * 7 / (6 + 7 + 9)
+    property int amountWidth: displayWidth - weightWidth - priceWidth
 
     Connections // Slot for signal AppManager::showWeight:
     {
@@ -55,39 +58,51 @@ Rectangle
         function onShowAmountColor(value) { weightPanelAmountValue.color = value }
     }
 
-   Row
+    Row
     {
-        width: parent.width
-        height: parent.height
-        padding: Constants.margin / 2
+        anchors.fill: parent
+        spacing: 0
+        padding: 0
 
-        Column
+        Rectangle
         {
-            width: iconSize
-            height: iconSize * 3
+            width: flagWidth
+            height: parent.height
+            color: Material.background
 
-            Image
+            Column
             {
-                id: productPanelWeightIcon
-                width: parent.width
-                height: parent.height / 3
-                source: "../Icons/weight_48"
-            }
+                anchors.fill: parent
+                topPadding: Constants.margin / 2
+                spacing: 0
+                padding: 0
 
-            Image
-            {
-                id: productPanel0Icon
-                width: parent.width
-                height: parent.height / 3
-                source: "../Icons/0_48"
-            }
+                Image
+                {
+                    id: productPanelWeightIcon
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: flagSize
+                    height: flagSize
+                    source: "../Icons/weight_48"
+                }
 
-            Image
-            {
-                id: productPanelTareIcon
-                width: parent.width
-                height: parent.height / 3
-                source: "../Icons/tare_48"
+                Image
+                {
+                    id: productPanel0Icon
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: flagSize
+                    height: flagSize
+                    source: "../Icons/0_48"
+                }
+
+                Image
+                {
+                    id: productPanelTareIcon
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: flagSize
+                    height: flagSize
+                    source: "../Icons/tare_48"
+                }
             }
         }
 
@@ -95,6 +110,8 @@ Rectangle
         {
             width: weightWidth
             height: parent.height
+            spacing: 0
+            padding: 0
 
             Label
             {
@@ -121,6 +138,8 @@ Rectangle
         {
             width: priceWidth
             height: parent.height
+            spacing: 0
+            padding: 0
 
             Label
             {
@@ -147,6 +166,8 @@ Rectangle
         {
             width: amountWidth
             height: parent.height
+            spacing: 0
+            padding: 0
 
             Label
             {
