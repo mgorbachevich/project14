@@ -158,7 +158,7 @@ ApplicationWindow
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: Constants.buttonSize
                         height: Constants.buttonSize
-                        icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/settings_black_48" }
+                        icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/build_black_48" }
                         leftInset: 0
                         topInset: 0
                         rightInset: 0

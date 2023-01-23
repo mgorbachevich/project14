@@ -77,6 +77,7 @@ RESOURCES += \
     Panels/searchOptionsPanel.qml \
     Icons/arrow_left_black_48.png \
     Icons/arrow_up_black_48.png \
+    Icons/build_black_48.png \
     Icons/close_black_48.png \
     Icons/info_outline_black_48.png \
     Icons/lock_black_48.png \

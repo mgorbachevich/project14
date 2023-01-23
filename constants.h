@@ -9,7 +9,7 @@
 #define BACKGROUND_DATABASE
 #define BACKGROUND_HTTP
 //#define HTTP_TEST
-//#define CHECK_AUTHORIZATION
+#define CHECK_AUTHORIZATION
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define WEIGHT_0 "00.000"
