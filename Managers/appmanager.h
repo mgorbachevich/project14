@@ -71,6 +71,7 @@ private:
 signals:
     void print();
     void showMessageBox(const QString&, const QString&);
+    void showConfirmationBox(const int, const QString&, const QString&);
     void showPrice(const QString&);
     void showAmount(const QString&);
     void showWeight(const QString&);
@@ -108,8 +109,9 @@ public slots:
     void onProductPanelClosed();
     void onAdminSettingsClicked();
     void onLockClicked();
-    void onCheckAuthorizationClick(const QString&, const QString&);
+    void onCheckAuthorizationClicked(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
+    void onConfirmationClicked(const int);
 };
 
 #endif // APPMANAGER_H

@@ -84,6 +84,7 @@ Rectangle
             topInset: 0
             rightInset: 0
             bottomInset: 0
+            Material.background: Material.primary
             onClicked: app.onTableOptionsClicked() // AppManager's slot
         }
 

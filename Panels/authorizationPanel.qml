@@ -91,12 +91,9 @@ Popup
         Button
         {
             anchors.horizontalCenter: parent.horizontalCenter
-            Material.background: Material.accent
-            text: qsTr("ПРОДОЛЖИТЬ")
-            onClicked:
-            {
-                app.onCheckAuthorizationClick(loginComboBox.displayText, passwordTextField.text) // AppManager's slot
-            }
+            Material.background: Material.primary
+            text: qsTr(" ПРОДОЛЖИТЬ ")
+            onClicked: app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text) // AppManager's slot
         }
     }
 }

@@ -227,12 +227,13 @@ void AppManager::onAdminSettingsClicked()
 {
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
     // todo
+    emit showMessageBox("Сообщение", "Настройки в разработке");
 }
 
 void AppManager::onLockClicked()
 {
     qDebug() << "@@@@@ AppManager::onLockClicked";
-    startAuthorization();
+    emit showConfirmationBox(ConfirmationSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
@@ -293,9 +294,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             {
                 const int messageValueColumn = ResourceDBTable::Columns::Value;
                 if (records[0].count() > messageValueColumn)
-                {
-                    emit showMessageBox("Описание товара", records[0][messageValueColumn].toString());
-                }
+                     emit showMessageBox("Описание товара", records[0][messageValueColumn].toString());
             }
             break;
 
@@ -329,6 +328,17 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         default:
             qDebug() << "@@@@@ AppManager::onSelectFromDBResult ERROR unknown selector";
             break;
+    }
+}
+
+void AppManager::onConfirmationClicked(const int selector)
+{
+    qDebug() << "@@@@@ AppManager::onConfirmationClicked " << selector;
+    switch (selector)
+    {
+    case ConfirmationSelector::Authorization:
+        startAuthorization();
+        break;
     }
 }
 
@@ -458,7 +468,7 @@ void AppManager::checkAuthorization(const DBRecordList& users)
     }
 }
 
-void AppManager::onCheckAuthorizationClick(const QString& login, const QString& password)
+void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
 {
     QString normalizedLogin = UserDBTable::fromAdminName(login);
     qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;

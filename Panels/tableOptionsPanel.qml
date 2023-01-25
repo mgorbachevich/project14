@@ -59,7 +59,6 @@ Popup
 
         Button
         {
-            id: messagePanelCloseButton
             Layout.column: 3
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth

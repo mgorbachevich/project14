@@ -88,6 +88,25 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showConfirmationBox:
+    {
+        target: app
+        function onShowConfirmationBox(confirmationSelector, titleText, messageText)
+        {
+            console.debug("@@@@@ mainWindow.onShowConfirmationBox ", confirmationSelector, " ", titleText, " ", messageText);
+            Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
+                                                                       {
+                                                                           x: popupX,
+                                                                           y: popupY,
+                                                                           width: popupWidth,
+                                                                           height: popupHeight,
+                                                                           titleText: titleText,
+                                                                           messageText: messageText,
+                                                                           cofirmationSelector: confirmationSelector
+                                                                       }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showAuthorizationPanel:
     {
         target: app

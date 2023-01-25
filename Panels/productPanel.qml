@@ -97,6 +97,7 @@ Popup
             topInset: 0
             rightInset: 0
             bottomInset: 0
+            Material.background: Material.primary
             onClicked: app.onProductDescriptionClicked() // AppManager's slot
         }
 
@@ -113,6 +114,7 @@ Popup
             topInset: 0
             rightInset: 0
             bottomInset: 0
+            Material.background: Material.primary
             onClicked:
             {
                 app.onProductPanelClosed() // AppManager's slot

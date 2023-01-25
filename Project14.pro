@@ -67,6 +67,7 @@ RESOURCES += \
     constants.js \
     main.qml \
     Panels/authorizationPanel.qml \
+    Panels/confirmationPanel.qml \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
     Panels/searchPanel.qml \
@@ -108,7 +109,6 @@ RESOURCES += \
 OTHER_FILES += \
     Android/AndroidManifest.xml \
 
-DISTFILES +=
 
 
 

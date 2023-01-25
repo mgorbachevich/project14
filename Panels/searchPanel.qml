@@ -48,6 +48,7 @@ Rectangle
             topInset: 0
             rightInset: 0
             bottomInset: 0
+            Material.background: Material.primary
             onClicked: app.onSearchOptionsClicked() // AppManager's slot
         }
 
