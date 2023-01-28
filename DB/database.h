@@ -73,7 +73,7 @@ public slots:
     void onStart();
     void onSelect(const DataBase::Selector, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
-    void onGetHTTPAnswer(const QString&);
+    void onNewData(const QString&);
 };
 
 #endif // DATABASE_H

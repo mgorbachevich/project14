@@ -1,17 +1,15 @@
+#include "httpclient.h"
+#ifdef HTTP_CLIENT
 #include <QDebug>
 #include <QNetworkReply>
 #include <QUrl>
 #include <QSslSocket>
-#include "httpclient.h"
-#include "constants.h"
 
 HTTPClient::HTTPClient(QObject *parent): QObject(parent)
 {
-    // https://doc.qt.io/qt-6/android-openssl-support.html
-    qDebug() << "@@@@@ HTTPClient::HTTPClient Device supports OpenSSL:" << QSslSocket::supportsSsl();
     connect(&manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply);
 
-#ifdef HTTP_TEST
+#ifdef HTTP_CLIENT_TEST
     sendGet("https://www.google.com"); // todo
 #endif
 }
@@ -39,6 +37,7 @@ void HTTPClient::onReply(QNetworkReply *reply)
     {
         QString answer = reply->readAll();
         qDebug() << "@@@@@ HTTPClient::onReply " << answer;
-        emit getHTTPAnswer(answer);
+        emit newData(answer);
     }
 }
+#endif // HTTP_CLIENT

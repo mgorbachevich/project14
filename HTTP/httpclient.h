@@ -1,5 +1,7 @@
 #ifndef HTTPCLIENT_H
 #define HTTPCLIENT_H
+#include "constants.h"
+#ifdef HTTP_CLIENT
 #include <QObject>
 #include <QNetworkAccessManager>
 
@@ -19,10 +21,11 @@ private:
     void sendGet(QString);
 
 signals:
-    void getHTTPAnswer(const QString&);
+    void newData(const QString&);
 
 public slots:
     void onReply(QNetworkReply*);
 };
 
+#endif // HTTP_CLIENT
 #endif // HTTPCLIENT_H

@@ -5,9 +5,6 @@
 #include <QThread>
 #include "constants.h"
 #include "database.h"
-#ifndef BACKGROUND_HTTP
-#include "httpclient.h"
-#endif
 
 class ProductPanelModel;
 class TablePanelModel;
@@ -49,27 +46,17 @@ private:
     Mode mode = Mode::Start;
     double weight = 0;
     DBRecord user;
-
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
     TablePanelModel* tablePanelModel;
     SearchPanelModel* searchPanelModel;
     SearchFilterModel* searchFilterModel;
     UserNameModel* userNameModel;
-
-#ifdef BACKGROUND_DATABASE
     QThread dbThread;
-#else
-    DataBase* db;
-#endif
-#ifdef BACKGROUND_HTTP
-    QThread httpThread;
-#else
-    HTTPClient* httpClient;
-#endif
 
 signals:
     void print();
+    void newData(const QString&);
     void showMessageBox(const QString&, const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);
     void showPrice(const QString&);
@@ -87,8 +74,8 @@ signals:
     void showAuthorizationPanel();
     void showAdminMenu(bool);
     void startDB();
-    void select(const DataBase::Selector, const QString&);
-    void selectByList(const DataBase::Selector, const DBRecordList&);
+    void selectFromDB(const DataBase::Selector, const QString&);
+    void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void authorizationSucceded();
 
 public slots:
@@ -96,6 +83,7 @@ public slots:
     void onDBStarted();
     void onPrint();
     void onShowMessageBox(const QString&, const QString&);
+    void onNewData(const QString&);
     void onWeightChanged(double);
     void onSearchFilterEdited(const QString&);
     void onSearchFilterClicked(const int);

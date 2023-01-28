@@ -6,9 +6,8 @@
 #define DB_EMULATION
 //#define LOG_BACKGROUND_THREADS
 //#define LOG_SELECT_RESULT
-#define BACKGROUND_DATABASE
-#define BACKGROUND_HTTP
-//#define HTTP_TEST
+//#define HTTP_CLIENT
+//#define HTTP_CLIENT_TEST
 //#define CHECK_AUTHORIZATION
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"

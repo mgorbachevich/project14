@@ -339,9 +339,9 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
     emit selectResult(selector, resultRecords);
 }
 
-void DataBase::onGetHTTPAnswer(const QString& json)
+void DataBase::onNewData(const QString& json)
 {
-    qDebug() << "@@@@@ DataBase::onGetHTTPAnswer " << json;
+    qDebug() << "@@@@@ DataBase::onNewData " << json;
 
     parser.run(this, json);
 }

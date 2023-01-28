@@ -6,6 +6,7 @@
 #include "weightmanager.h"
 #include "appmanager.h"
 #include "printmanager.h"
+#include "netmanager.h"
 
 //#define RECOMENDED
 
@@ -23,14 +24,17 @@ int main(int argc, char *argv[])
     AppManager* appManager = new AppManager(&application, engine.rootContext());
     WeightManager* weightManager = new WeightManager(&application);
     PrintManager* printManager = new PrintManager(&application);
+    NetManager* netManager = new NetManager(&application);
 
     qmlRegisterUncreatableType<BaseListModel>("RegisteredTypes", 1, 0, "BaseListModel", "");
     engine.rootContext()->setContextProperty("app", appManager);
 
     QObject::connect(appManager, &AppManager::print, printManager, &PrintManager::onPrint);
     QObject::connect(weightManager, &WeightManager::weightChanged, appManager, &AppManager::onWeightChanged);
+    QObject::connect(netManager, &NetManager::newData, appManager, &AppManager::onNewData);
     QObject::connect(weightManager, &WeightManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
     QObject::connect(printManager, &PrintManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
+    QObject::connect(netManager, &NetManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
 
 #ifdef RECOMENDED
     const QUrl url(u"qrc:/Project14/main.qml"_qs);

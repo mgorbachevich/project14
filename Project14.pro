@@ -24,6 +24,7 @@ SOURCES += \
     DB/userdbtable.cpp \
     HTTP/httpclient.cpp \
     Managers/appmanager.cpp \
+    Managers/netmanager.cpp \
     Models/searchfiltermodel.cpp \
     Models/usernamemodel.cpp \
     main.cpp \
@@ -47,6 +48,7 @@ HEADERS += \
     DB/userdbtable.h \
     HTTP/httpclient.h \
     Managers/appmanager.h \
+    Managers/netmanager.h \
     Models/searchfiltermodel.h \
     Models/usernamemodel.h \
     constants.h \
