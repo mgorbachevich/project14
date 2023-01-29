@@ -2,6 +2,8 @@
 #include <QImage>
 #include <QTimer>
 #include <QQmlContext>
+#include <QThread>
+#include <QSslSocket>
 #include "appmanager.h"
 #include "productdbtable.h"
 #include "productdbtable.h"
@@ -14,6 +16,13 @@
 #include "searchfiltermodel.h"
 #include "tools.h"
 #include "resourcedbtable.h"
+#include "constants.h"
+#ifdef HTTP_SERVER
+#include "httpserver.h"
+#endif
+#ifdef HTTP_CLIENT
+#include "httpclient.h"
+#endif
 
 AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 {
@@ -21,18 +30,37 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     mode = Mode::Start;
     user = UserDBTable::defaultAdmin();
 
+    // БД:
+    dbThread = new QThread(this);
     DataBase* db = new DataBase();
-    db->moveToThread(&dbBackThread);
-
-    connect(&dbBackThread, &QThread::finished, db, &QObject::deleteLater);
+    db->moveToThread(dbThread);
+    connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
     connect(this, &AppManager::startDB, db, &DataBase::onStart);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
-    connect(&net, &Net::newData, db, &DataBase::onNewData);
-    connect(&net, &Net::showMessageBox, this, &AppManager::showMessageBox);
+    dbThread->start();
+
+    // Поддержка SSL:
+    // https://doc.qt.io/qt-6/android-openssl-support.html
+    qDebug() << "@@@@@ AppManager::AppManager Device supports OpenSSL:" << QSslSocket::supportsSsl();
+
+#ifdef HTTP_CLIENT
+    httpClientThread = new QThread(this);
+    HTTPClient* httpClient = new HTTPClient();
+    httpClient->moveToThread(httpClientThread);
+    connect(httpClientThread, &QThread::finished, httpClient, &QObject::deleteLater);
+    connect(httpClient, &HTTPClient::newData, db, &DataBase::onNewData);
+    connect(httpClient, &HTTPClient::showMessageBox, this, &AppManager::showMessageBox);
+    httpClientThread->start();
+#endif
+
+#ifdef HTTP_SERVER
+    httpServer = new HTTPServer(this, HTTP_SERVER_PORT);
+    connect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
+#endif
 
     // Модели:
     productPanelModel = new ProductPanelModel(this, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
@@ -48,15 +76,22 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
 
-    dbBackThread.start();
     // Подождем немного и стартуем:
     QTimer::singleShot(200, this, &AppManager::onStart);
 }
 
 AppManager::~AppManager()
 {
-    dbBackThread.quit();
-    dbBackThread.wait();
+    if (dbThread != nullptr)
+    {
+        dbThread->quit();
+        dbThread->wait();
+    }
+    if (httpClientThread != nullptr)
+    {
+        httpClientThread->quit();
+        httpClientThread->wait();
+    }
 }
 
 QString AppManager::weightAsString()

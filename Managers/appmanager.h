@@ -2,11 +2,10 @@
 #define APPMANAGER_H
 
 #include <QObject>
-#include <QThread>
-#include "constants.h"
 #include "database.h"
-#include "net.h"
 
+class QThread;
+class HTTPServer;
 class ProductPanelModel;
 class TablePanelModel;
 class ShowcasePanelModel;
@@ -45,8 +44,9 @@ private:
     void checkAuthorization(const DBRecordList&);
 
     Mode mode = Mode::Start;
-    QThread dbBackThread;
-    Net net;
+    QThread* dbThread = nullptr;
+    QThread* httpClientThread = nullptr;
+    HTTPServer* httpServer = nullptr;
     double weight = 0;
     DBRecord user;
 

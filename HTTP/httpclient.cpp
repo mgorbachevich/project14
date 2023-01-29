@@ -1,14 +1,14 @@
-#include "httpclient.h"
-#ifdef HTTP_CLIENT
 #include <QDebug>
 #include <QNetworkReply>
 #include <QUrl>
 #include <QSslSocket>
+#include "httpclient.h"
 
 HTTPClient::HTTPClient(QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ HTTPClient::HTTPClient";
-    connect(&manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply);
+    manager = new QNetworkAccessManager(this);
+    connect(manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply);
 
 #ifdef HTTP_CLIENT_TEST
     sendGet("https://www.google.com"); // todo
@@ -20,7 +20,7 @@ void HTTPClient::sendGet(QString url)
     qDebug() << "@@@@@ HTTPClient::sendGet " << url;
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    manager.get(request);
+    manager->get(request);
 }
 
 void HTTPClient::onReply(QNetworkReply *reply)
@@ -41,4 +41,4 @@ void HTTPClient::onReply(QNetworkReply *reply)
         emit newData(answer);
     }
 }
-#endif // HTTP_CLIENT
+

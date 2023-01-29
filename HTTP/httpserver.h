@@ -2,21 +2,19 @@
 #define HTTPSERVER_H
 
 #include <QTcpServer>
-#include <QTcpSocket>
 
 class HTTPServer : public QTcpServer
 {
     Q_OBJECT
 
 public:
-    HTTPServer(QObject *parent, const int port = 80);
+    HTTPServer(QObject *parent, const int port);
 
 protected:
     void incomingConnection(qintptr);
 
-public slots:
-    void onReadyRead();
-    void onDisconnected();
+signals:
+    void showMessageBox(const QString&, const QString&);
 };
 
 #endif // HTTPSERVER_H

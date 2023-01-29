@@ -16,6 +16,7 @@
 #define PRICE_0 "0000.00"
 #define AMOUNT_0 "000000.00"
 #define DUMMY_IMAGE "../Images/image_dummy.png"
+#define HTTP_SERVER_PORT 80
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
