@@ -6,6 +6,7 @@
 #define DB_EMULATION
 //#define LOG_BACKGROUND_THREADS
 //#define LOG_SELECT_RESULT
+#define HTTP_SERVER
 //#define HTTP_CLIENT
 //#define HTTP_CLIENT_TEST
 //#define CHECK_AUTHORIZATION

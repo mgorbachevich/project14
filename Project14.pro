@@ -1,4 +1,4 @@
-QT += quick sql widgets core gui
+QT += quick sql widgets core gui network
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -23,6 +23,7 @@ SOURCES += \
     DB/productdbtable.cpp \
     DB/userdbtable.cpp \
     HTTP/httpclient.cpp \
+    HTTP/httpserver.cpp \
     HTTP/net.cpp \
     Managers/appmanager.cpp \
     Models/searchfiltermodel.cpp \
@@ -47,6 +48,7 @@ HEADERS += \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
     HTTP/httpclient.h \
+    HTTP/httpserver.h \
     HTTP/net.h \
     Managers/appmanager.h \
     Models/searchfiltermodel.h \

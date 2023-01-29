@@ -7,6 +7,7 @@
 
 HTTPClient::HTTPClient(QObject *parent): QObject(parent)
 {
+    qDebug() << "@@@@@ HTTPClient::HTTPClient";
     connect(&manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply);
 
 #ifdef HTTP_CLIENT_TEST

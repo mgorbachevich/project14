@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QThread>
 
+class HTTPServer;
+
 class Net : public QObject
 {
     Q_OBJECT
@@ -13,6 +15,7 @@ public:
 
 private:
     QThread backThread;
+    HTTPServer* server;
 
 signals:
     void showMessageBox(const QString&, const QString&);

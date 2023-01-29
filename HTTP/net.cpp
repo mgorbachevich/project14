@@ -2,6 +2,7 @@
 #include <QSslSocket>
 #include "net.h"
 #include "httpclient.h"
+#include "httpserver.h"
 
 Net::Net(QObject *parent) : QObject(parent)
 {
@@ -17,6 +18,12 @@ Net::Net(QObject *parent) : QObject(parent)
     connect(&backThread, &QThread::finished, httpClient, &QObject::deleteLater);
     connect(httpClient, &HTTPClient::newData, this, &Net::onNewData);
 #endif
+
+#ifdef HTTP_SERVER
+    server = new HTTPServer(this);
+#endif
+
+
 
     backThread.start();
 }
