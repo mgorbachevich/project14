@@ -23,8 +23,8 @@ SOURCES += \
     DB/productdbtable.cpp \
     DB/userdbtable.cpp \
     HTTP/httpclient.cpp \
+    HTTP/net.cpp \
     Managers/appmanager.cpp \
-    Managers/netmanager.cpp \
     Models/searchfiltermodel.cpp \
     Models/usernamemodel.cpp \
     main.cpp \
@@ -47,8 +47,8 @@ HEADERS += \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
     HTTP/httpclient.h \
+    HTTP/net.h \
     Managers/appmanager.h \
-    Managers/netmanager.h \
     Models/searchfiltermodel.h \
     Models/usernamemodel.h \
     constants.h \

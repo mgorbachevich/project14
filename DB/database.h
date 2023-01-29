@@ -66,6 +66,7 @@ private:
     JSONParser parser;
 
 signals:
+    void showMessageBox(const QString&, const QString&);
     void selectResult(const DataBase::Selector, const DBRecordList&);
     void dbStarted();
 

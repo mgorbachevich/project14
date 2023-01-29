@@ -21,17 +21,18 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     mode = Mode::Start;
     user = UserDBTable::defaultAdmin();
 
-    // Инициализация БД:
     DataBase* db = new DataBase();
-    db->moveToThread(&dbThread);
-    connect(&dbThread, &QThread::finished, db, &QObject::deleteLater);
+    db->moveToThread(&dbBackThread);
+
+    connect(&dbBackThread, &QThread::finished, db, &QObject::deleteLater);
     connect(this, &AppManager::startDB, db, &DataBase::onStart);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
-    connect(this, &AppManager::newData, db, &DataBase::onNewData);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
-    dbThread.start();
+    connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
+    connect(&net, &Net::newData, db, &DataBase::onNewData);
+    connect(&net, &Net::showMessageBox, this, &AppManager::showMessageBox);
 
     // Модели:
     productPanelModel = new ProductPanelModel(this, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
@@ -47,26 +48,15 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
 
+    dbBackThread.start();
     // Подождем немного и стартуем:
     QTimer::singleShot(200, this, &AppManager::onStart);
 }
 
 AppManager::~AppManager()
 {
-    dbThread.quit();
-    dbThread.wait();
-}
-
-void AppManager::onStart()
-{
-    qDebug() << "@@@@@ AppManager::onStart";
-    emit startDB();
-}
-
-void AppManager::onDBStarted()
-{
-    qDebug() << "@@@@@ AppManager::onDBStarted";
-    startAuthorization();
+    dbBackThread.quit();
+    dbBackThread.wait();
 }
 
 QString AppManager::weightAsString()
@@ -132,11 +122,6 @@ void AppManager::onProductDescriptionClicked()
                 productPanelModel->product[ProductDBTable::Columns::MessageCode].toString());
 }
 
-void AppManager::onSearchOptionsClicked()
-{
-    emit showSearchOptions();
-}
-
 void AppManager::filteredSearch()
 {
     QString& v = searchFilterModel->filterValue;
@@ -158,21 +143,10 @@ void AppManager::filteredSearch()
     }
 }
 
-void AppManager::onPrint()
-{
-    qDebug() << "@@@@@ AppManager::onPrint";
-    emit print();
-}
-
 void AppManager::onShowMessageBox(const QString& titleText, const QString& messageText)
 {
     qDebug() << "@@@@@ AppManager::onShowMessageBox " << titleText << messageText;
     emit showMessageBox(titleText, messageText);
-}
-
-void AppManager::onNewData(const QString &json)
-{
-    emit newData(json);
 }
 
 void AppManager::onSearchFilterEdited(const QString& value)
@@ -206,12 +180,6 @@ void AppManager::onAdminSettingsClicked()
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
     // todo
     emit showMessageBox("Сообщение", "Настройки в разработке");
-}
-
-void AppManager::onLockClicked()
-{
-    qDebug() << "@@@@@ AppManager::onLockClicked";
-    emit showConfirmationBox(ConfirmationSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
@@ -338,11 +306,6 @@ void AppManager::onTableResultClicked(const int index)
     }
 }
 
-void AppManager::onTableOptionsClicked()
-{
-    emit showTableOptions();
-}
-
 void AppManager::onSearchResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSearchResultClicked " << index;
@@ -361,12 +324,6 @@ void AppManager::updateSearchFilter()
 {
     qDebug() << "@@@@@ AppManager::updateSearchFilter";
     searchFilterModel->update();
-}
-
-void AppManager::updateShowcasePanel()
-{
-    qDebug() << "@@@@@ AppManager::updateShowcasePanel";
-    emit selectFromDB(DataBase::Selector::ShowcaseProducts, "");
 }
 
 void AppManager::updateTablePanel()
@@ -394,12 +351,6 @@ void AppManager::updateWeightPanel()
     QString a = amountAsString();
     emit showAmount(a);
     emit showAmountColor((a != AMOUNT_0) ? c1 : c0);
-}
-
-void AppManager::updateAuthorizationPanel()
-{
-    qDebug() << "@@@@@ AppManager::updateAuthorizationPanel";
-    emit selectFromDB(DataBase::Selector::UserNames, "");
 }
 
 void AppManager::startAuthorization()

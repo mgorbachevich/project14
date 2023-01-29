@@ -5,6 +5,7 @@
 #include <QThread>
 #include "constants.h"
 #include "database.h"
+#include "net.h"
 
 class ProductPanelModel;
 class TablePanelModel;
@@ -36,23 +37,25 @@ private:
     void showCurrentProduct();
     void filteredSearch();
     void updateSearchFilter();
-    void updateShowcasePanel();
+    void updateShowcasePanel() { emit selectFromDB(DataBase::Selector::ShowcaseProducts, ""); }
     void updateTablePanel();
     void updateWeightPanel();
-    void updateAuthorizationPanel();
+    void updateAuthorizationPanel() { emit selectFromDB(DataBase::Selector::UserNames, ""); }
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
 
     Mode mode = Mode::Start;
+    QThread dbBackThread;
+    Net net;
     double weight = 0;
     DBRecord user;
+
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
     TablePanelModel* tablePanelModel;
     SearchPanelModel* searchPanelModel;
     SearchFilterModel* searchFilterModel;
     UserNameModel* userNameModel;
-    QThread dbThread;
 
 signals:
     void print();
@@ -79,24 +82,23 @@ signals:
     void authorizationSucceded();
 
 public slots:
-    void onStart();
-    void onDBStarted();
-    void onPrint();
+    void onStart() { emit startDB(); }
+    void onDBStarted() { startAuthorization(); }
+    void onPrint() { emit print(); }
     void onShowMessageBox(const QString&, const QString&);
-    void onNewData(const QString&);
     void onWeightChanged(double);
     void onSearchFilterEdited(const QString&);
     void onSearchFilterClicked(const int);
     void onProductDescriptionClicked();
-    void onSearchOptionsClicked();
+    void onSearchOptionsClicked() { emit showSearchOptions(); }
     void onSearchResultClicked(const int);
     void onShowcaseClicked(const int);
     void onTableResultClicked(const int);
-    void onTableOptionsClicked();
+    void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableBackClicked();
     void onProductPanelClosed();
     void onAdminSettingsClicked();
-    void onLockClicked();
+    void onLockClicked() { emit showConfirmationBox(ConfirmationSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?"); }
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
     void onConfirmationClicked(const int);
