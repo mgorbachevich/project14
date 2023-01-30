@@ -3,23 +3,22 @@
 #include <QUrl>
 #include <QSslSocket>
 #include "httpclient.h"
+#include "constants.h"
 
 HTTPClient::HTTPClient(QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ HTTPClient::HTTPClient";
     manager = new QNetworkAccessManager(this);
     connect(manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply, Qt::DirectConnection);
-
-#ifdef HTTP_CLIENT_TEST
-    sendGet("https://www.google.com"); // todo
-#endif
 }
 
 void HTTPClient::sendGet(QString url)
 {
     qDebug() << "@@@@@ HTTPClient::sendGet " << url;
     QNetworkRequest request;
-    request.setUrl(QUrl(url));
+    // https://stackoverflow.com/questions/48107322/qt-http-post-way-protocol-is-unknown
+    request.setUrl(QUrl::fromUserInput(url));
+    //request.setUrl(QUrl(url));
     manager->get(request);
 }
 
@@ -30,15 +29,17 @@ void HTTPClient::onReply(QNetworkReply *reply)
     {
         qDebug() << "@@@@@ HTTPClient::onReply ERROR null";
     }
-    else  if (reply->error())
-    {
-        qDebug() << "@@@@@ HTTPClient::onReply ERROR " << reply->errorString();
-    }
     else
     {
         QString answer = reply->readAll();
         qDebug() << "@@@@@ HTTPClient::onReply " << answer;
-        emit newData(answer);
+#ifdef HTTP_CLIENT_TEST
+        emit showMessageBox("Client-Server test", answer);
+#endif
+        if (reply->error())
+            qDebug() << "@@@@@ HTTPClient::onReply ERROR " << reply->errorString();
+        else
+            emit newData(answer);
     }
 }
 

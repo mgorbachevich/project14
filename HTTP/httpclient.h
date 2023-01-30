@@ -25,6 +25,7 @@ signals:
 
 public slots:
     void onReply(QNetworkReply*);
+    void onSendGet(const QString& url) { sendGet(url); }
 };
 
 #endif // HTTPCLIENT_H

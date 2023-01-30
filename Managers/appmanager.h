@@ -81,6 +81,7 @@ signals:
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void authorizationSucceded();
+    void sendHTTPClientGet(const QString&);
 
 public slots:
     void onStart() { emit startDB(); }

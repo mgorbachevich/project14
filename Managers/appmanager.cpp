@@ -46,6 +46,11 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     // https://doc.qt.io/qt-6/android-openssl-support.html
     qDebug() << "@@@@@ AppManager::AppManager Device supports OpenSSL:" << QSslSocket::supportsSsl();
 
+#ifdef HTTP_SERVER
+    httpServer = new HTTPServer(this, HTTP_SERVER_PORT);
+    connect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
+#endif
+
 #ifdef HTTP_CLIENT
     httpClientThread = new QThread(this);
     HTTPClient* httpClient = new HTTPClient();
@@ -53,12 +58,8 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(httpClientThread, &QThread::finished, httpClient, &QObject::deleteLater);
     connect(httpClient, &HTTPClient::newData, db, &DataBase::onNewData);
     connect(httpClient, &HTTPClient::showMessageBox, this, &AppManager::showMessageBox);
+    connect(this, &AppManager::sendHTTPClientGet, httpClient, &HTTPClient::onSendGet);
     httpClientThread->start();
-#endif
-
-#ifdef HTTP_SERVER
-    httpServer = new HTTPServer(this, HTTP_SERVER_PORT);
-    connect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
 #endif
 
     // Модели:
@@ -76,7 +77,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("userNameModel", userNameModel);
 
     // Подождем немного и стартуем:
-    QTimer::singleShot(200, this, &AppManager::onStart);
+    QTimer::singleShot(500, this, &AppManager::onStart);
 }
 
 AppManager::~AppManager()
@@ -389,6 +390,7 @@ void AppManager::updateWeightPanel()
 
 void AppManager::startAuthorization()
 {
+    qDebug() << "@@@@@ AppManager::startAuthorization";
     mode = Mode::Start;
     emit showAuthorizationPanel();
     updateAuthorizationPanel();
@@ -429,6 +431,10 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         updateTablePanel();
         updateSearchFilter();
     }
+
+#ifdef HTTP_CLIENT_TEST
+    emit sendHTTPClientGet("127.0.0.1:8080");
+#endif
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)

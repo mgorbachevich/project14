@@ -7,8 +7,8 @@
 //#define LOG_BACKGROUND_THREADS
 //#define LOG_SELECT_RESULT
 #define HTTP_SERVER
-//#define HTTP_CLIENT
-//#define HTTP_CLIENT_TEST
+#define HTTP_CLIENT
+#define HTTP_CLIENT_TEST
 //#define CHECK_AUTHORIZATION
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
@@ -16,7 +16,7 @@
 #define PRICE_0 "0000.00"
 #define AMOUNT_0 "000000.00"
 #define DUMMY_IMAGE "../Images/image_dummy.png"
-#define HTTP_SERVER_PORT 80
+#define HTTP_SERVER_PORT 8080 // https://stackoverflow.com/questions/21220309/cant-launch-server-qwsserver-error-the-address-is-protected
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
