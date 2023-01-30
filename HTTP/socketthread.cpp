@@ -4,7 +4,7 @@
 
 SocketThread::SocketThread(qintptr descriptor, QObject *parent) : QThread(parent), socketDescriptor(descriptor)
 {
-    qDebug() << "@@@@@ SocketThread::SocketThread";
+    qDebug() << "@@@@@ SocketThread::SocketThread " << descriptor;
 }
 
 SocketThread::~SocketThread()
@@ -16,7 +16,6 @@ SocketThread::~SocketThread()
 void SocketThread::run()
 {
     qDebug() << "@@@@@ SocketThread::run";
-
     socket = new QTcpSocket();
     socket->setSocketDescriptor(socketDescriptor);
     connect(socket, &QTcpSocket::readyRead, this, &SocketThread::onReadyRead, Qt::DirectConnection);
@@ -27,10 +26,11 @@ void SocketThread::run()
 void SocketThread::onReadyRead()
 {
     qDebug() << "@@@@@ SocketThread::onReadyRead request: " << socket->readAll();
-    QString response = "Hello! Project14!"; // todo
     QString head = "HTTP/1.1 200 OK\r\n\r\n%1";
-    qDebug() << "@@@@@ SocketThread::onReadyRead response: " << head.arg(response).toLatin1();
-    socket->write(head.arg(response).toLatin1());
+    QString body = "Hello! Project14!"; // todo
+    QString response = head.arg(body);
+    qDebug() << "@@@@@ SocketThread::onReadyRead response: " << response;
+    socket->write(response.toLatin1());
     socket->disconnectFromHost();
 }
 

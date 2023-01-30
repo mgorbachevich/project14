@@ -204,7 +204,7 @@ ApplicationWindow
 
             Rectangle
             {
-                width: Constants.mainWindowWidth - adminMenuWidth
+                width: parent.width - adminMenuWidth
                 height: parent.height
 
                 Rectangle

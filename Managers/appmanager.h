@@ -2,6 +2,7 @@
 #define APPMANAGER_H
 
 #include <QObject>
+#include "constants.h"
 #include "database.h"
 
 class QThread;

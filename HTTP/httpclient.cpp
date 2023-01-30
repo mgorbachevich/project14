@@ -8,7 +8,7 @@ HTTPClient::HTTPClient(QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ HTTPClient::HTTPClient";
     manager = new QNetworkAccessManager(this);
-    connect(manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply);
+    connect(manager, &QNetworkAccessManager::finished, this, &HTTPClient::onReply, Qt::DirectConnection);
 
 #ifdef HTTP_CLIENT_TEST
     sendGet("https://www.google.com"); // todo

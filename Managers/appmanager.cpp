@@ -16,7 +16,6 @@
 #include "searchfiltermodel.h"
 #include "tools.h"
 #include "resourcedbtable.h"
-#include "constants.h"
 #ifdef HTTP_SERVER
 #include "httpserver.h"
 #endif
