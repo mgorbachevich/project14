@@ -11,7 +11,6 @@ public:
         Code = 0, // enum
         Name,
         Value,
-        Text,
         COLUMN_COUNT
     };
 
@@ -26,8 +25,7 @@ public:
 
         addColumn("Код",          "code",  "INT PRIMARY KEY");
         addColumn("Наименование", "name",  "TEXT");
-        addColumn("Значение",     "value", "INT");
-        addColumn("Текст",        "text",  "TEXT");
+        addColumn("Значение",     "value", "TEXT");
     }
     int columnCount() { return Columns::COLUMN_COUNT; }
 };

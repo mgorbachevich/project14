@@ -123,6 +123,22 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showSettingsPanel:
+    {
+        target: app
+        function onShowSettingsPanel()
+        {
+            console.debug("@@@@@ mainWindow.onShowSettingsPanel");
+            Qt.createComponent("Panels/settingsPanel.qml").createObject(mainWindow,
+                                                                       {
+                                                                           x: 0,
+                                                                           y: 0,
+                                                                           width: mainWindow.width,
+                                                                           height: mainWindow.height
+                                                                       }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showProductPanel:
     {
         target: app

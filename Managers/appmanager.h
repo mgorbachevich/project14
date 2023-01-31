@@ -10,8 +10,9 @@ class HTTPServer;
 class ProductPanelModel;
 class TablePanelModel;
 class ShowcasePanelModel;
-class SearchPanelModel;
 class SearchFilterModel;
+class SearchPanelModel;
+class SettingsPanelModel;
 class UserNameModel;
 class QQmlContext;
 
@@ -37,6 +38,7 @@ private:
     void showCurrentProduct();
     void filteredSearch();
     void updateSearchFilter();
+    void updateSettingsPanel();
     void updateShowcasePanel() { emit selectFromDB(DataBase::Selector::ShowcaseProducts, ""); }
     void updateTablePanel();
     void updateWeightPanel();
@@ -55,6 +57,7 @@ private:
     ShowcasePanelModel* showcasePanelModel;
     TablePanelModel* tablePanelModel;
     SearchPanelModel* searchPanelModel;
+    SettingsPanelModel* settingsPanelModel;
     SearchFilterModel* searchFilterModel;
     UserNameModel* userNameModel;
 
@@ -76,6 +79,7 @@ signals:
     void showTableOptions();
     void showSearchOptions();
     void showAuthorizationPanel();
+    void showSettingsPanel();
     void showAdminMenu(bool);
     void startDB();
     void selectFromDB(const DataBase::Selector, const QString&);

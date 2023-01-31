@@ -27,6 +27,7 @@ SOURCES += \
     HTTP/socketthread.cpp \
     Managers/appmanager.cpp \
     Models/searchfiltermodel.cpp \
+    Models/settingspanelmodel.cpp \
     Models/usernamemodel.cpp \
     main.cpp \
     tools.cpp \
@@ -52,6 +53,7 @@ HEADERS += \
     HTTP/socketthread.h \
     Managers/appmanager.h \
     Models/searchfiltermodel.h \
+    Models/settingspanelmodel.h \
     Models/usernamemodel.h \
     constants.h \
     tools.h \
@@ -75,6 +77,7 @@ RESOURCES += \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
     Panels/searchPanel.qml \
+    Panels/settingsPanel.qml \
     Panels/showcasePanel.qml \
     Panels/tablePanel.qml \
     Panels/weightPanel.qml \
@@ -112,6 +115,8 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
+
+
 
 
 

@@ -13,6 +13,7 @@
 #include "usernamemodel.h"
 #include "showcasepanelmodel.h"
 #include "searchpanelmodel.h"
+#include "settingspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "tools.h"
 #include "resourcedbtable.h"
@@ -66,12 +67,14 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     productPanelModel = new ProductPanelModel(this, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
     showcasePanelModel = new ShowcasePanelModel(this);
     tablePanelModel = new TablePanelModel(this);
+    settingsPanelModel = new SettingsPanelModel(this);
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
+    context->setContextProperty("settingsPanelModel", settingsPanelModel);
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
@@ -214,7 +217,7 @@ void AppManager::onAdminSettingsClicked()
 {
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
     // todo
-    emit showMessageBox("Сообщение", "Настройки в разработке");
+    emit showSettingsPanel();
 }
 
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
@@ -361,6 +364,12 @@ void AppManager::updateSearchFilter()
     searchFilterModel->update();
 }
 
+void AppManager::updateSettingsPanel()
+{
+    qDebug() << "@@@@@ AppManager::updateSettingsPanel";
+    settingsPanelModel->update();
+}
+
 void AppManager::updateTablePanel()
 {
     qDebug() << "@@@@@ AppManager::updateTablePanel";
@@ -427,6 +436,7 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
         emit showAdminMenu(UserDBTable::isAdmin(user));
+        updateSettingsPanel();
         updateShowcasePanel();
         updateTablePanel();
         updateSearchFilter();
