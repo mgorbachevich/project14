@@ -26,6 +26,7 @@ SOURCES += \
     HTTP/httpserver.cpp \
     HTTP/socketthread.cpp \
     Managers/appmanager.cpp \
+    Models/editlistmodel.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
     Models/usernamemodel.cpp \
@@ -52,6 +53,7 @@ HEADERS += \
     HTTP/httpserver.h \
     HTTP/socketthread.h \
     Managers/appmanager.h \
+    Models/editlistmodel.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
     Models/usernamemodel.h \
