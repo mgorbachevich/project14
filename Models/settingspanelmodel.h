@@ -1,14 +1,14 @@
 #ifndef SETTINGSPANELMODEL_H
 #define SETTINGSPANELMODEL_H
 
-#include "baselistmodel.h"
+#include "editlistmodel.h"
 
-class SettingsPanelModel : public BaseListModel
+class SettingsPanelModel : public EditListModel
 {
     Q_OBJECT
 
 public:
-    SettingsPanelModel(QObject *parent): BaseListModel(parent) {}
+    SettingsPanelModel(QObject *parent): EditListModel(parent) {}
     void update();
 };
 

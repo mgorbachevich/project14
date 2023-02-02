@@ -3,7 +3,7 @@
 void SettingsPanelModel::update()
 {
     qDebug() << "@@@@@ SettingsPanelModel::update";
-    QStringList ss;
-    ss << "Код" << "Штрихкод";
-    setStringList(ss);
+    addItem("Name1", "Value1");
+    //addItem("Name2", "Value2");
+    //addItem("Name3", "Value3");
 }

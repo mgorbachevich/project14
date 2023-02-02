@@ -66,6 +66,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+
                 ScrollBar.vertical: ScrollBar
                 {
                     width: Constants.margin

@@ -88,6 +88,47 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+
+                ScrollBar.vertical: ScrollBar
+                {
+                    width: Constants.margin
+                    background: Rectangle { color: "transparent" }
+                    policy: ScrollBar.AlwaysOn
+                }
+
+                model: settingsPanelModel
+                delegate: Row
+                {
+                    anchors.fill: parent
+                    anchors.leftMargin: Constants.margin
+                    anchors.rightMargin: Constants.margin
+                    spacing: Constants.margin
+
+                    Text
+                    {
+                        width: parent.width / 2 - Constants.margin * 2
+                        anchors.verticalCenter: parent.verticalCenter
+                        font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                        text: model.name // Roles::NameRole
+                    }
+                    TextField
+                    {
+                        width: parent.width / 2
+                        anchors.verticalCenter: parent.verticalCenter
+                        font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Regular' }
+                        placeholderText: "?????"
+                        inputMethodHints: Qt.ImhDigitsOnly // Keyboard
+                        text: model.value // Roles::ValueRole
+                    }
+                }
+            }
+            /*
+            ListView
+            {
+                id: settingsPanelList
+                anchors.fill: parent
+                orientation: Qt.Vertical
+                clip: true
                 ScrollBar.vertical: ScrollBar
                 {
                     width: Constants.margin
@@ -103,6 +144,7 @@ Popup
                     text: model.value // Roles::ValueRole
                 }
             }
+            */
         }
     }
 }
