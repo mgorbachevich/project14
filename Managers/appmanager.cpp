@@ -326,6 +326,11 @@ void AppManager::onConfirmationClicked(const int selector)
     }
 }
 
+void AppManager::onSettingsClicked(const int index)
+{
+    qDebug() << "@@@@@ AppManager::onSettingsClicked " << index;
+}
+
 void AppManager::onTableResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onTableResultClicked " << index;

@@ -108,6 +108,7 @@ public slots:
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
     void onConfirmationClicked(const int);
+    void onSettingsClicked(const int);
 };
 
 #endif // APPMANAGER_H

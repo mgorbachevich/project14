@@ -99,26 +99,33 @@ Popup
                 model: settingsPanelModel
                 delegate: Row
                 {
-                    anchors.fill: parent
-                    anchors.leftMargin: Constants.margin
-                    anchors.rightMargin: Constants.margin
+                    padding: Constants.margin
                     spacing: Constants.margin
 
                     Text
                     {
-                        width: parent.width / 2 - Constants.margin * 2
-                        anchors.verticalCenter: parent.verticalCenter
+                        width: settingsPanelList.width / 2 - Constants.margin * 4
                         font { pointSize: Constants.normalFontSize; family: "Roboto" }
-                        text: model.name // Roles::NameRole
+                        text: model.first // Roles::FirstRole
+
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onSettingsClicked(index) // AppManager's slot
+                        }
                     }
-                    TextField
+
+                    Text
                     {
-                        width: parent.width / 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Regular' }
-                        placeholderText: "?????"
-                        inputMethodHints: Qt.ImhDigitsOnly // Keyboard
-                        text: model.value // Roles::ValueRole
+                        width: settingsPanelList.width / 2
+                        font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                        text: model.second // Roles::SecondRole
+
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onSettingsClicked(index) // AppManager's slot
+                        }
                     }
                 }
             }

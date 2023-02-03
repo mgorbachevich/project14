@@ -11,7 +11,7 @@ class EditListModel: public QAbstractListModel
     Q_OBJECT
 
 public:
-    enum Roles { NameRole = Qt::UserRole + 1, ValueRole = Qt::UserRole + 2 };
+    enum Roles { FirstRole = Qt::UserRole + 1, SecondRole = Qt::UserRole + 2 };
 
     explicit EditListModel(QObject *parent = nullptr): QAbstractListModel(parent) {}
     QVariant data(const QModelIndex &index, int role) const override;
@@ -20,6 +20,7 @@ public:
 
 protected:
     void addItem(const QString& name, const QString& value) { StringPair v(name, value); items << v; }
+    void clear() { items.clear(); }
 
     QList<StringPair> items;
     QHash<int, QByteArray> roles;

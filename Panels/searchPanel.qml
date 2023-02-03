@@ -83,11 +83,7 @@ Rectangle
                     MouseArea
                     {
                         anchors.fill: parent
-                        onClicked:
-                        {
-                            console.debug("@@@@@ searchPanel.searchPanelResultList.onClicked");
-                            app.onSearchResultClicked(index) // AppManager's slot
-                        }
+                        onClicked: app.onSearchResultClicked(index) // AppManager's slot
                     }
                  }
              }

@@ -22,11 +22,7 @@ Popup
     Connections // Slot for signal AppManager::showProductImage:
     {
         target: app
-        function onShowProductImage(value)
-        {
-            console.debug("@@@@@ productPanel.onShowProductImage " , value);
-            productPanelImage.source = value
-        }
+        function onShowProductImage(value) { productPanelImage.source = value }
     }
 
     GridLayout

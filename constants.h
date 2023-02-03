@@ -8,7 +8,7 @@
 //#define LOG_SELECT_RESULT
 #define HTTP_SERVER
 #define HTTP_CLIENT
-#define HTTP_CLIENT_TEST
+//#define HTTP_CLIENT_TEST
 //#define CHECK_AUTHORIZATION
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"

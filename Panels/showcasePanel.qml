@@ -37,11 +37,7 @@ Rectangle
             MouseArea
             {
                 anchors.fill: parent
-                onClicked:
-                {
-                    console.debug("@@@@@ showcasePanel.showcasePanelGrid.onClicked");
-                    app.onShowcaseClicked(index) // AppManager's slot
-                }
+                onClicked: app.onShowcaseClicked(index) // AppManager's slot
             }
         }
     }

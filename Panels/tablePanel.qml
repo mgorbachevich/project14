@@ -12,11 +12,7 @@ Rectangle
     Connections // Slot for signal AppManager::showTablePanelTitle:
     {
         target: app
-        function onShowTablePanelTitle(value)
-        {
-            console.debug("@@@@@ tablePanel.onShowTablePanelTitle " , value);
-            tablePanelTitle.text = value
-        }
+        function onShowTablePanelTitle(value) { tablePanelTitle.text = value }
     }
 
     Connections // Slot for signal AppManager::showGroupHierarchyRoot:
@@ -26,7 +22,7 @@ Rectangle
         {
             console.debug("@@@@@ tablePanel.onShowGroupHierarchyRoot " , value);
             tablePanelBackButton.icon.source = value ? "../Icons/empty_48" : "../Icons/arrow_up_black_48"
-         }
+        }
     }
 
     GridLayout
@@ -103,6 +99,7 @@ Rectangle
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+
                 ScrollBar.vertical: ScrollBar
                 {
                     width: Constants.margin
@@ -116,14 +113,11 @@ Rectangle
                     font { pointSize: Constants.normalFontSize; family: "Roboto" }
                     padding: Constants.margin
                     text: model.value // Roles::ValueRole
+
                     MouseArea
                     {
                         anchors.fill: parent
-                        onClicked:
-                        {
-                            console.debug("@@@@@ tablePanel.tablePanelResultList.onClicked");
-                            app.onTableResultClicked(index) // AppManager's slot
-                        }
+                        onClicked: app.onTableResultClicked(index) // AppManager's slot
                     }
                 }
             }

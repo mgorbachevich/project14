@@ -16,11 +16,7 @@ Popup
     Connections // Slot for signal AppManager::authorizationSucceded:
     {
         target: app
-        function onAuthorizationSucceded()
-        {
-            console.debug("@@@@@ productPanel.onAuthorizationSucceded");
-            authorizationPanel.close()
-        }
+        function onAuthorizationSucceded() { authorizationPanel.close() }
     }
 
     Column

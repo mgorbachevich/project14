@@ -2,22 +2,21 @@
 
 QVariant EditListModel::data(const QModelIndex &index, int role) const
 {
-    const int i = index.row();
-    if (i >= 0 && i < items.count())
-    {
-        if (role == NameRole)
-            return items[i].first;
-        if (role == ValueRole)
-            return items[i].second;
-    }
+    if (index.row() < 0 || index.row() > items.count())
+        return QVariant();
+    const StringPair & p = items[index.row()];
+    if (role == FirstRole)
+        return p.first;
+    if (role == SecondRole)
+        return p.second;
     return QVariant();
 }
 
 QHash<int, QByteArray> EditListModel::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractListModel::roleNames();
-    roles[NameRole] = "name";
-    roles[ValueRole] = "value";
+    roles[FirstRole] = "first";
+    roles[SecondRole] = "second";
     return roles;
 }
 
