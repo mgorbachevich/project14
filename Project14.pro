@@ -26,7 +26,7 @@ SOURCES += \
     HTTP/httpserver.cpp \
     HTTP/socketthread.cpp \
     Managers/appmanager.cpp \
-    Models/editlistmodel.cpp \
+    Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
     Models/usernamemodel.cpp \
@@ -53,7 +53,7 @@ HEADERS += \
     HTTP/httpserver.h \
     HTTP/socketthread.h \
     Managers/appmanager.h \
-    Models/editlistmodel.h \
+    Models/baselistmodel2.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
     Models/usernamemodel.h \
@@ -112,8 +112,12 @@ RESOURCES += \
     Resources/Roboto-Bold.ttf \
     Resources/Roboto-Italic.ttf \
     Resources/LeagueGothic-Regular.otf \
-    Text/json0.txt \
-    Text/json1.txt \
+    Text/json_settings.txt \
+    Text/json_products.txt \
+    Text/json_users.txt \
+    Text/json_showcase.txt \
+    Text/json_pictures.txt \
+    Text/json_messages.txt \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \

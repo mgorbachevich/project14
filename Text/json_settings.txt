@@ -1,0 +1,15 @@
+{
+    "result":"0",
+    "description":"ok",
+    "data":
+    {
+        "settings":
+        [
+            {
+                "code":"1",
+                "name":"Порт",
+                "value":"8080"
+            }
+        ]
+    }
+}

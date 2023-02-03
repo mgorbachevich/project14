@@ -181,6 +181,12 @@ void AppManager::filteredSearch()
     }
 }
 
+void AppManager::updateSettingsPanel()
+{
+    qDebug() << "@@@@@ AppManager::updateSettingsPanel";
+    settingsPanelModel->update(settings);
+}
+
 void AppManager::onShowMessageBox(const QString& titleText, const QString& messageText)
 {
     qDebug() << "@@@@@ AppManager::onShowMessageBox " << titleText << messageText;
@@ -225,13 +231,20 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     qDebug() << "@@@@@ AppManager::onSelectFromDBResult " << selector;
     switch(selector)
     {
-        case DataBase::Selector::ShowcaseProducts:
-        // Обновление списка товаров экрана Showcase:
-            showcasePanelModel->updateProducts(records);
-            emit selectFromDBByList(DataBase::Selector::ShowcaseResources, records);
-            break;
+    case DataBase::Selector::Settings:
+    // Обновление настроек:
+        settings.clear();
+        settings.append(records);
+        updateSettingsPanel();
+        break;
 
-        case DataBase::Selector::ShowcaseResources:
+    case DataBase::Selector::ShowcaseProducts:
+    // Обновление списка товаров экрана Showcase:
+        showcasePanelModel->updateProducts(records);
+        emit selectFromDBByList(DataBase::Selector::ShowcaseResources, records);
+        break;
+
+       case DataBase::Selector::ShowcaseResources:
         // Отображение картинок товаров экрана Showcase:
         {
             QStringList fileNames;
@@ -363,18 +376,6 @@ void AppManager::onShowcaseClicked(const int index)
     showCurrentProduct();
 }
 
-void AppManager::updateSearchFilter()
-{
-    qDebug() << "@@@@@ AppManager::updateSearchFilter";
-    searchFilterModel->update();
-}
-
-void AppManager::updateSettingsPanel()
-{
-    qDebug() << "@@@@@ AppManager::updateSettingsPanel";
-    settingsPanelModel->update();
-}
-
 void AppManager::updateTablePanel()
 {
     qDebug() << "@@@@@ AppManager::updateTablePanel";
@@ -407,7 +408,7 @@ void AppManager::startAuthorization()
     qDebug() << "@@@@@ AppManager::startAuthorization";
     mode = Mode::Start;
     emit showAuthorizationPanel();
-    updateAuthorizationPanel();
+    emit selectFromDB(DataBase::Selector::UserNames, "");
 }
 
 void AppManager::checkAuthorization(const DBRecordList& users)
@@ -441,15 +442,21 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
         emit showAdminMenu(UserDBTable::isAdmin(user));
+        emit selectFromDB(DataBase::Selector::ShowcaseProducts, "");
+        searchFilterModel->update();
         updateSettingsPanel();
-        updateShowcasePanel();
         updateTablePanel();
-        updateSearchFilter();
     }
 
 #ifdef HTTP_CLIENT_TEST
     emit sendHTTPClientGet("127.0.0.1:8080");
 #endif
+}
+
+void AppManager::onDBStarted()
+{
+    emit selectFromDB(DataBase::Selector::Settings, "");
+    startAuthorization();
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)

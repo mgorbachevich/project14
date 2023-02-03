@@ -1,10 +1,13 @@
 #include "settingspanelmodel.h"
+#include "settingdbtable.h"
 
-void SettingsPanelModel::update()
+void SettingsPanelModel::update(const DBRecordList& records)
 {
     qDebug() << "@@@@@ SettingsPanelModel::update";
     clear();
-    addItem("Name1", "Value1");
-    addItem("Name2", "Value2");
-    addItem("Name3", "Value3");
+    for (int i = 0; i < records.count(); i++)
+    {
+        DBRecord ri = records[i];
+        addItem(ri[SettingDBTable::Columns::Name].toString(), ri[SettingDBTable::Columns::Value].toString());
+    }
 }

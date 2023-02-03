@@ -79,8 +79,12 @@ void DataBase::onStart()
             started &= createTable(tables[i]);
 
         // todo:
-        parser.run(this, Tools::readTextFile(":/Text/json0.txt"));
-        parser.run(this, Tools::readTextFile(":/Text/json1.txt"));
+        parser.run(this, Tools::readTextFile(":/Text/json_settings.txt"));
+        parser.run(this, Tools::readTextFile(":/Text/json_products.txt"));
+        parser.run(this, Tools::readTextFile(":/Text/json_users.txt"));
+        parser.run(this, Tools::readTextFile(":/Text/json_showcase.txt"));
+        parser.run(this, Tools::readTextFile(":/Text/json_pictures.txt"));
+        parser.run(this, Tools::readTextFile(":/Text/json_messages.txt"));
 
         emit dbStarted();
     }
@@ -210,105 +214,109 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     DBRecordList resultRecords;
     switch(selector)
     {
-        case Selector::UserNames:
-        // Запрос списка пользователей для авторизации:
-            selectAll(getTableByName(DBTABLENAME_USERS), resultRecords);
-            break;
+    case Selector::Settings:
+    // Запрос списка настроек:
+        selectAll(getTableByName(DBTABLENAME_SETTINGS), resultRecords);
+        break;
 
-        case Selector::ShowcaseProducts:
-        // Запрос списка товаров для отображения на экране Showcase:
-        {
-            DBTable* productTable = getTableByName(DBTABLENAME_PRODUCTS);
-            DBTable* showcaseTable = getTableByName(DBTABLENAME_SHOWCASE);
-            DBRecordList showcaseRecords;
-            selectAll(showcaseTable, showcaseRecords);
-            for (int i = 0; i < showcaseRecords.count(); i++)
-            {
-                DBRecord r;
-                QString showcaseProductCode = showcaseRecords[i][ShowcaseDBTable::Columns::Code].toString();
-                if (selectById(productTable, showcaseProductCode, r) && ProductDBTable::isSuitableForShowcase(r))
-                    resultRecords.append(r);
-            }
-            break;
-        }
+    case Selector::UserNames:
+    // Запрос списка пользователей для авторизации:
+        selectAll(getTableByName(DBTABLENAME_USERS), resultRecords);
+        break;
 
-        case Selector::AuthorizationUserByName:
-        // Запрос пользователя по имени для авторизации:
-        {
-            DBTable* t = getTableByName(DBTABLENAME_USERS);
-            QString sql = "SELECT * FROM " + t->name;
-            sql += " WHERE " + t->columnName(UserDBTable::Columns::Name) + "='" + param + "'";
-            executeSelectSQL(t, sql, resultRecords);
-            break;
-        }
-
-        case Selector::ImageByResourceCode:
-        // Запрос картинки из ресурсов по коду ресурса:
+    case Selector::ShowcaseProducts:
+    // Запрос списка товаров для отображения на экране Showcase:
+    {
+        DBTable* productTable = getTableByName(DBTABLENAME_PRODUCTS);
+        DBTable* showcaseTable = getTableByName(DBTABLENAME_SHOWCASE);
+        DBRecordList showcaseRecords;
+        selectAll(showcaseTable, showcaseRecords);
+        for (int i = 0; i < showcaseRecords.count(); i++)
         {
             DBRecord r;
-            selectById(getTableByName(DBTABLENAME_PICTURES), param, r);
-            resultRecords.append(r);
-            break;
+            QString showcaseProductCode = showcaseRecords[i][ShowcaseDBTable::Columns::Code].toString();
+            if (selectById(productTable, showcaseProductCode, r) && ProductDBTable::isSuitableForShowcase(r))
+                resultRecords.append(r);
         }
+        break;
+    }
 
-        case Selector::MessageByResourceCode:
-        // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
-        // todo
-        {
-            DBRecord r;
-            selectById(getTableByName(DBTABLENAME_MESSAGES), param, r);
-            resultRecords.append(r);
-            break;
-        }
+    case Selector::AuthorizationUserByName:
+    // Запрос пользователя по имени для авторизации:
+    {
+        DBTable* t = getTableByName(DBTABLENAME_USERS);
+        QString sql = "SELECT * FROM " + t->name;
+        sql += " WHERE " + t->columnName(UserDBTable::Columns::Name) + "='" + param + "'";
+        executeSelectSQL(t, sql, resultRecords);
+        break;
+    }
 
-        case Selector::ProductsByGroupCode:
-        case Selector::ProductsByGroupCodeIncludeGroups:
-        // Запрос списка товаров по коду группы (исвключая / включая группы):
-        {
-            DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
-            QString sql = "SELECT * FROM " + t->name;
-            sql += " WHERE " + t->columnName(ProductDBTable::Columns::GroupCode) + "='" + param + "'";
-            if (selector == Selector::ProductsByGroupCode)
-               sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
-            sql += " ORDER BY ";
-            sql += t->columnName(ProductDBTable::Columns::Type) + " DESC, ";
-            sql += t->columnName(ProductDBTable::Columns::Name) + " ASC";
-            executeSelectSQL(t, sql, resultRecords);
-            break;
-        }
+    case Selector::ImageByResourceCode:
+    // Запрос картинки из ресурсов по коду ресурса:
+    {
+        DBRecord r;
+        selectById(getTableByName(DBTABLENAME_PICTURES), param, r);
+        resultRecords.append(r);
+        break;
+    }
 
-        case Selector::ProductsByFilteredCode:
-        case Selector::ProductsByFilteredCodeIncludeGroups:
-        // Запрос списка товаров по фрагменту кода (исвключая / включая группы):
-        {
-            DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
-            QString sql = "SELECT * FROM " + t->name;
-            sql += " WHERE " + t->columnName(ProductDBTable::Columns::Code) + " LIKE '%" + param + "%'";
-            if (selector == Selector::ProductsByFilteredCode)
-               sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
-            sql += " ORDER BY ";
-            sql += t->columnName(ProductDBTable::Columns::Code) + " ASC";
-            executeSelectSQL(t, sql, resultRecords);
-            break;
-        }
+    case Selector::MessageByResourceCode:
+    // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
+    // todo
+    {
+        DBRecord r;
+        selectById(getTableByName(DBTABLENAME_MESSAGES), param, r);
+        resultRecords.append(r);
+        break;
+    }
 
-        case Selector::ProductsByFilteredBarcode:
-        case Selector::ProductsByFilteredBarcodeIncludeGroups:
-        // Запрос списка товаров по фрагменту штрих-кода (исвключая / включая группы):
-        {
-            DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
-            QString sql = "SELECT * FROM " + t->name;
-            sql += " WHERE " + t->columnName(ProductDBTable::Columns::Barcode) + " LIKE '%" + param + "%'";
-            if (selector == Selector::ProductsByFilteredBarcode)
-                sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
-            sql += " ORDER BY ";
-            sql += t->columnName(ProductDBTable::Columns::Barcode) + " ASC";
-            executeSelectSQL(t, sql, resultRecords);
-            break;
-        }
+    case Selector::ProductsByGroupCode:
+    case Selector::ProductsByGroupCodeIncludeGroups:
+    // Запрос списка товаров по коду группы (исвключая / включая группы):
+    {
+        DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
+        QString sql = "SELECT * FROM " + t->name;
+        sql += " WHERE " + t->columnName(ProductDBTable::Columns::GroupCode) + "='" + param + "'";
+        if (selector == Selector::ProductsByGroupCode)
+           sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
+        sql += " ORDER BY ";
+        sql += t->columnName(ProductDBTable::Columns::Type) + " DESC, ";
+        sql += t->columnName(ProductDBTable::Columns::Name) + " ASC";
+        executeSelectSQL(t, sql, resultRecords);
+        break;
+    }
 
-        default:
-            break;
+    case Selector::ProductsByFilteredCode:
+    case Selector::ProductsByFilteredCodeIncludeGroups:
+    // Запрос списка товаров по фрагменту кода (исвключая / включая группы):
+    {
+        DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
+        QString sql = "SELECT * FROM " + t->name;
+        sql += " WHERE " + t->columnName(ProductDBTable::Columns::Code) + " LIKE '%" + param + "%'";
+        if (selector == Selector::ProductsByFilteredCode)
+           sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
+        sql += " ORDER BY ";
+        sql += t->columnName(ProductDBTable::Columns::Code) + " ASC";
+        executeSelectSQL(t, sql, resultRecords);
+        break;
+    }
+
+    case Selector::ProductsByFilteredBarcode:
+    case Selector::ProductsByFilteredBarcodeIncludeGroups:
+    // Запрос списка товаров по фрагменту штрих-кода (исвключая / включая группы):
+    {
+        DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
+        QString sql = "SELECT * FROM " + t->name;
+        sql += " WHERE " + t->columnName(ProductDBTable::Columns::Barcode) + " LIKE '%" + param + "%'";
+        if (selector == Selector::ProductsByFilteredBarcode)
+            sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
+        sql += " ORDER BY ";
+        sql += t->columnName(ProductDBTable::Columns::Barcode) + " ASC";
+        executeSelectSQL(t, sql, resultRecords);
+        break;
+    }
+
+    default: break;
     }
     emit selectResult(selector, resultRecords);
 }
@@ -320,21 +328,20 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
     DBRecordList resultRecords;
     switch(selector)
     {
-        case Selector::ShowcaseResources:
-        // Запрос списка картинок из ресурсов для списка товаров:
+    case Selector::ShowcaseResources:
+    // Запрос списка картинок из ресурсов для списка товаров:
+    {
+        for (int i = 0; i < param.count(); i++)
         {
-            for (int i = 0; i < param.count(); i++)
-            {
-                QString imageCode = param[i][ProductDBTable::Columns::PictureCode].toString();
-                DBRecord r;
-                selectById(getTableByName(DBTABLENAME_PICTURES), imageCode, r);
-                resultRecords.append(r);
-            }
-            break;
+            QString imageCode = param[i][ProductDBTable::Columns::PictureCode].toString();
+            DBRecord r;
+            selectById(getTableByName(DBTABLENAME_PICTURES), imageCode, r);
+            resultRecords.append(r);
         }
+        break;
+    }
 
-        default:
-            break;
+    default: break;
     }
     emit selectResult(selector, resultRecords);
 }

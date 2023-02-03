@@ -41,6 +41,7 @@ public:
         ProductsByFilteredBarcodeIncludeGroups,
         UserNames,
         AuthorizationUserByName,
+        Settings
     };
 
     explicit DataBase(QObject *parent = nullptr);

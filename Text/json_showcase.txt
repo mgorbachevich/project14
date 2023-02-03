@@ -1,0 +1,16 @@
+{
+    "result":"0",
+    "description":"ok",
+    "data":
+    {
+        "showcase":
+        [
+            { "code":"1" },
+            { "code":"2" },
+            { "code":"3" },
+            { "code":"41" },
+            { "code":"15" },
+            { "code":"6" }
+        ]
+    }
+}

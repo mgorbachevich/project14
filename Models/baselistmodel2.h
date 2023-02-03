@@ -1,19 +1,19 @@
-#ifndef EDITLISTMODEL_H
-#define EDITLISTMODEL_H
+#ifndef BASELISTMODEL2_H
+#define BASELISTMODEL2_H
 
 #include <QPair>
 #include <QAbstractListModel>
 
 #define StringPair QPair<QString, QString>
 
-class EditListModel: public QAbstractListModel
+class BaseListModel2: public QAbstractListModel
 {
     Q_OBJECT
 
 public:
     enum Roles { FirstRole = Qt::UserRole + 1, SecondRole = Qt::UserRole + 2 };
 
-    explicit EditListModel(QObject *parent = nullptr): QAbstractListModel(parent) {}
+    explicit BaseListModel2(QObject *parent = nullptr): QAbstractListModel(parent) {}
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &) const override { return items.count(); }
     QHash<int, QByteArray> roleNames() const override;
@@ -26,4 +26,4 @@ protected:
     QHash<int, QByteArray> roles;
 };
 
-#endif // EDITLISTMODEL_H
+#endif // BASELISTMODEL2_H

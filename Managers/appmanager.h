@@ -37,12 +37,9 @@ private:
     QString amountAsString();
     void showCurrentProduct();
     void filteredSearch();
-    void updateSearchFilter();
     void updateSettingsPanel();
-    void updateShowcasePanel() { emit selectFromDB(DataBase::Selector::ShowcaseProducts, ""); }
     void updateTablePanel();
     void updateWeightPanel();
-    void updateAuthorizationPanel() { emit selectFromDB(DataBase::Selector::UserNames, ""); }
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
 
@@ -52,6 +49,7 @@ private:
     HTTPServer* httpServer = nullptr;
     double weight = 0;
     DBRecord user;
+    DBRecordList settings;
 
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
@@ -89,7 +87,7 @@ signals:
 
 public slots:
     void onStart() { emit startDB(); }
-    void onDBStarted() { startAuthorization(); }
+    void onDBStarted();
     void onPrint() { emit print(); }
     void onShowMessageBox(const QString&, const QString&);
     void onWeightChanged(double);

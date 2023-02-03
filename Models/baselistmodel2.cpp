@@ -1,6 +1,6 @@
-#include "editlistmodel.h"
+#include "baselistmodel2.h"
 
-QVariant EditListModel::data(const QModelIndex &index, int role) const
+QVariant BaseListModel2::data(const QModelIndex &index, int role) const
 {
     if (index.row() < 0 || index.row() > items.count())
         return QVariant();
@@ -12,12 +12,10 @@ QVariant EditListModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-QHash<int, QByteArray> EditListModel::roleNames() const
+QHash<int, QByteArray> BaseListModel2::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractListModel::roleNames();
     roles[FirstRole] = "first";
     roles[SecondRole] = "second";
     return roles;
 }
-
-

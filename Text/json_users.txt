@@ -1,0 +1,28 @@
+{
+    "result":"0",
+    "description":"ok",
+    "data":
+    {
+        "users":
+        [
+            {
+                "code":"1",
+                "name":"Дима",
+                "role":"1",
+                "password":"1"
+            },
+            {
+                "code":"2",
+                "name":"Саша",
+                "role":"0",
+                "password":"2"
+            },
+            {
+                "code":"3",
+                "name":"Леша",
+                "role":"1",
+                "password":"3"
+            }
+        ]
+    }
+}
