@@ -21,7 +21,7 @@
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
 
-enum ConfirmationSelector
+enum DialogSelector
 {
     None = 0,
     Authorization,

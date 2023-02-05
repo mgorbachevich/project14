@@ -5,7 +5,8 @@
 #include <QThread>
 #include <QSslSocket>
 #include "appmanager.h"
-#include "productdbtable.h"
+#include "settingdbtable.h"
+#include "resourcedbtable.h"
 #include "productdbtable.h"
 #include "userdbtable.h"
 #include "productpanelmodel.h"
@@ -16,7 +17,6 @@
 #include "settingspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "tools.h"
-#include "resourcedbtable.h"
 #ifdef HTTP_SERVER
 #include "httpserver.h"
 #endif
@@ -38,8 +38,10 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(this, &AppManager::startDB, db, &DataBase::onStart);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
+    connect(this, &AppManager::updateInDB, db, &DataBase::onUpdate);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
+    connect(db, &DataBase::updateResult, this, &AppManager::onUpdateInDBResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     dbThread->start();
 
@@ -181,12 +183,6 @@ void AppManager::filteredSearch()
     }
 }
 
-void AppManager::updateSettingsPanel()
-{
-    qDebug() << "@@@@@ AppManager::updateSettingsPanel";
-    settingsPanelModel->update(settings);
-}
-
 void AppManager::onShowMessageBox(const QString& titleText, const QString& messageText)
 {
     qDebug() << "@@@@@ AppManager::onShowMessageBox " << titleText << messageText;
@@ -219,6 +215,17 @@ void AppManager::onProductPanelClosed()
     updateWeightPanel();
 }
 
+void AppManager::onSettingInputClosed(const int index, const QString &value)
+{
+    qDebug() << "@@@@@ AppManager::onSettingInputClosed " << index << value;
+    DBRecord r = settingsPanelModel->getSettingsItem(index);
+    if (value != r[SettingDBTable::Columns::Value].toString())
+    {
+        r[SettingDBTable::Columns::Value].setValue(value);
+        emit updateInDB(DataBase::Selector::SettingsItem, r);
+    }
+}
+
 void AppManager::onAdminSettingsClicked()
 {
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
@@ -233,9 +240,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     {
     case DataBase::Selector::Settings:
     // Обновление настроек:
-        settings.clear();
-        settings.append(records);
-        updateSettingsPanel();
+        settingsPanelModel->update(records);
         break;
 
     case DataBase::Selector::ShowcaseProducts:
@@ -328,20 +333,32 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     }
 }
 
+void AppManager::onUpdateInDBResult(const DataBase::Selector selector, const bool result)
+{
+    qDebug() << "@@@@@ AppManager::onUpdateInDBResult " << selector << result;
+    if (!result)
+    {
+        emit showMessageBox("ВНИМАНИЕ!", "Ошибка при сохранении данных!");
+        return;
+    }
+    switch(selector)
+    {
+    case DataBase::Selector::SettingsItem:
+        emit selectFromDB(DataBase::Selector::Settings, "");
+        break;
+    default:break;
+    }
+}
+
 void AppManager::onConfirmationClicked(const int selector)
 {
     qDebug() << "@@@@@ AppManager::onConfirmationClicked " << selector;
     switch (selector)
     {
-    case ConfirmationSelector::Authorization:
+    case DialogSelector::Authorization:
         startAuthorization();
         break;
     }
-}
-
-void AppManager::onSettingsClicked(const int index)
-{
-    qDebug() << "@@@@@ AppManager::onSettingsClicked " << index;
 }
 
 void AppManager::onTableResultClicked(const int index)
@@ -360,6 +377,15 @@ void AppManager::onTableResultClicked(const int index)
             showCurrentProduct();
         }
     }
+}
+
+void AppManager::onSettingsItemClicked(const int index)
+{
+    qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
+    DBRecord r = settingsPanelModel->getSettingsItem(index);
+    if (!r.empty())
+        emit showSettingInputBox(index, r[SettingDBTable::Columns::Name].toString(),
+            r[SettingDBTable::Columns::Value].toString());
 }
 
 void AppManager::onSearchResultClicked(const int index)
@@ -444,7 +470,6 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         emit showAdminMenu(UserDBTable::isAdmin(user));
         emit selectFromDB(DataBase::Selector::ShowcaseProducts, "");
         searchFilterModel->update();
-        updateSettingsPanel();
         updateTablePanel();
     }
 
@@ -455,8 +480,8 @@ void AppManager::checkAuthorization(const DBRecordList& users)
 
 void AppManager::onDBStarted()
 {
-    emit selectFromDB(DataBase::Selector::Settings, "");
     startAuthorization();
+    emit selectFromDB(DataBase::Selector::Settings, "");
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)

@@ -37,7 +37,6 @@ private:
     QString amountAsString();
     void showCurrentProduct();
     void filteredSearch();
-    void updateSettingsPanel();
     void updateTablePanel();
     void updateWeightPanel();
     void startAuthorization();
@@ -49,7 +48,6 @@ private:
     HTTPServer* httpServer = nullptr;
     double weight = 0;
     DBRecord user;
-    DBRecordList settings;
 
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
@@ -62,6 +60,12 @@ private:
 signals:
     void print();
     void newData(const QString&);
+    void startDB();
+    void selectFromDB(const DataBase::Selector, const QString&);
+    void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
+    void updateInDB(const DataBase::Selector, const DBRecord&);
+    void authorizationSucceded();
+    void sendHTTPClientGet(const QString&);
     void showMessageBox(const QString&, const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);
     void showPrice(const QString&);
@@ -79,11 +83,7 @@ signals:
     void showAuthorizationPanel();
     void showSettingsPanel();
     void showAdminMenu(bool);
-    void startDB();
-    void selectFromDB(const DataBase::Selector, const QString&);
-    void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
-    void authorizationSucceded();
-    void sendHTTPClientGet(const QString&);
+    void showSettingInputBox(const int, const QString&, const QString&);
 
 public slots:
     void onStart() { emit startDB(); }
@@ -99,14 +99,16 @@ public slots:
     void onShowcaseClicked(const int);
     void onTableResultClicked(const int);
     void onTableOptionsClicked() { emit showTableOptions(); }
+    void onSettingsItemClicked(const int);
     void onTableBackClicked();
     void onProductPanelClosed();
+    void onSettingInputClosed(const int, const QString&);
     void onAdminSettingsClicked();
-    void onLockClicked() { emit showConfirmationBox(ConfirmationSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?"); }
+    void onLockClicked() { emit showConfirmationBox(DialogSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?"); }
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
+    void onUpdateInDBResult(const DataBase::Selector, const bool);
     void onConfirmationClicked(const int);
-    void onSettingsClicked(const int);
 };
 
 #endif // APPMANAGER_H

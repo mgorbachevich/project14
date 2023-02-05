@@ -41,6 +41,7 @@ public:
         ProductsByFilteredBarcodeIncludeGroups,
         UserNames,
         AuthorizationUserByName,
+        SettingsItem,
         Settings
     };
 
@@ -61,6 +62,7 @@ private:
     void emulation();
     bool removeRecord(DBTable*, const DBRecord&);
     bool insertRecord(DBTable*, const DBRecord&);
+    bool updateRecord(DBTable*, const DBRecord&);
 
     bool started = false;
     QSqlDatabase db;
@@ -69,12 +71,14 @@ private:
 signals:
     void showMessageBox(const QString&, const QString&);
     void selectResult(const DataBase::Selector, const DBRecordList&);
+    void updateResult(const DataBase::Selector, const bool);
     void dbStarted();
 
 public slots:
     void onStart();
     void onSelect(const DataBase::Selector, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
+    void onUpdate(const DataBase::Selector, const DBRecord&);
     void onNewData(const QString&);
 };
 

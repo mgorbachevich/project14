@@ -38,6 +38,24 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showSettingInputBox:
+    {
+        target: app
+        function onShowSettingInputBox(index, name, value)
+        {
+            console.debug("@@@@@ settingPanel.showSettingInputBox ", index, " ", name, " ", value);
+            Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
+                                                                       {
+                                                                           x: popupX,
+                                                                           y: popupY,
+                                                                           width: popupWidth,
+                                                                           height: popupHeight,
+                                                                           titleText: name,
+                                                                           inputText: value,
+                                                                           settingIndex: index
+                                                                       }).open()
+        }
+    }
     Connections // Slot for signal AppManager::showTableOptions:
     {
         target: app
@@ -91,7 +109,7 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showConfirmationBox:
     {
         target: app
-        function onShowConfirmationBox(confirmationSelector, titleText, messageText)
+        function onShowConfirmationBox(selector, titleText, messageText)
         {
             console.debug("@@@@@ mainWindow.onShowConfirmationBox ", confirmationSelector, " ", titleText, " ", messageText);
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
@@ -102,7 +120,7 @@ ApplicationWindow
                                                                            height: popupHeight,
                                                                            titleText: titleText,
                                                                            messageText: messageText,
-                                                                           cofirmationSelector: confirmationSelector
+                                                                           dialogSelector: selector
                                                                        }).open()
         }
     }

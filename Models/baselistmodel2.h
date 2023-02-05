@@ -20,7 +20,6 @@ public:
 
 protected:
     void addItem(const QString& name, const QString& value) { StringPair v(name, value); items << v; }
-    void clear() { items.clear(); }
 
     QList<StringPair> items;
     QHash<int, QByteArray> roles;

@@ -141,6 +141,22 @@ bool DataBase::insertRecord(DBTable* table, const DBRecord& record)
     return executeSQL(sql);
 }
 
+bool DataBase::updateRecord(DBTable *table, const DBRecord& record)
+{
+    if (!started) return false;
+    qDebug() << "@@@@@ DataBase::updateRecord in " << table->name;
+
+    QString sql =  "UPDATE " + table->name + " SET ";
+    for (int i = 1; i < table->columnCount(); i++)
+    {
+        sql += table->columnName(i) + " = ";
+        sql +=  "'" + record[i].toString() + "'";
+        sql += (i == table->columnCount() - 1) ? " " : ", ";
+    }
+    sql +=  " WHERE " + table->columnName(0) + " = '" + record[0].toString() + "'";
+    return executeSQL(sql);
+}
+
 bool DataBase::executeSQL(const QString& sql)
 {
     if (!started) return false;
@@ -346,10 +362,25 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
     emit selectResult(selector, resultRecords);
 }
 
+void DataBase::onUpdate(const DataBase::Selector selector, const DBRecord& record)
+{
+    qDebug() << "@@@@@ DataBase::onUpdate " << selector;
+    bool result = false;
+    switch(selector)
+    {
+    case DataBase::Selector::SettingsItem:
+    {
+        result = updateRecord(getTableByName(DBTABLENAME_SETTINGS), record);
+        break;
+    }
+    default: break;
+    }
+    emit updateResult(selector, result);
+}
+
 void DataBase::onNewData(const QString& json)
 {
     qDebug() << "@@@@@ DataBase::onNewData " << json;
-
     parser.run(this, json);
 }
 

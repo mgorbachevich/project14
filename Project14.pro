@@ -72,6 +72,7 @@ HEADERS += \
     Managers/weightmanager.h \
 
 RESOURCES += \
+    Panels/inputSettingPanel.qml \
     constants.js \
     main.qml \
     Panels/authorizationPanel.qml \
@@ -79,12 +80,16 @@ RESOURCES += \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
     Panels/searchPanel.qml \
+    Panels/searchOptionsPanel.qml \
     Panels/settingsPanel.qml \
     Panels/showcasePanel.qml \
     Panels/tablePanel.qml \
-    Panels/weightPanel.qml \
     Panels/tableOptionsPanel.qml \
-    Panels/searchOptionsPanel.qml \
+    Panels/weightPanel.qml \
+    Resources/Roboto-Regular.ttf \
+    Resources/Roboto-Bold.ttf \
+    Resources/Roboto-Italic.ttf \
+    Resources/LeagueGothic-Regular.otf \
     Icons/arrow_left_black_48.png \
     Icons/arrow_up_black_48.png \
     Icons/build_black_48.png \
@@ -108,10 +113,6 @@ RESOURCES += \
     Images/image_fruit7.png \
     Images/image_fruit8.png \
     Images/image_fruit9.png \
-    Resources/Roboto-Regular.ttf \
-    Resources/Roboto-Bold.ttf \
-    Resources/Roboto-Italic.ttf \
-    Resources/LeagueGothic-Regular.otf \
     Text/json_settings.txt \
     Text/json_products.txt \
     Text/json_users.txt \
@@ -121,6 +122,7 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
+
 
 
 

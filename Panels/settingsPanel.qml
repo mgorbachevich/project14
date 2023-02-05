@@ -5,7 +5,7 @@ import "../constants.js" as Constants
 
 Popup
 {
-    id: settingsPanel
+    id: settingPanel
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -47,7 +47,7 @@ Popup
 
             TextArea
             {
-                id: settingsPanelTitle
+                id: settingPanelTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
@@ -70,7 +70,7 @@ Popup
             rightInset: 0
             bottomInset: 0
             Material.background: Material.primary
-            onClicked: settingsPanel.close()
+            onClicked: settingPanel.close()
         }
 
         Rectangle
@@ -84,7 +84,7 @@ Popup
 
             ListView
             {
-                id: settingsPanelList
+                id: settingPanelList
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
@@ -104,27 +104,27 @@ Popup
 
                     Text
                     {
-                        width: settingsPanelList.width / 2 - Constants.margin * 4
+                        width: settingPanelList.width / 2 - Constants.margin * 4
                         font { pointSize: Constants.normalFontSize; family: "Roboto" }
                         text: model.first // Roles::FirstRole
 
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onSettingsClicked(index) // AppManager's slot
+                            onClicked: app.onSettingsItemClicked(index) // AppManager's slot
                         }
                     }
 
                     Text
                     {
-                        width: settingsPanelList.width / 2
+                        width: settingPanelList.width / 2
                         font { pointSize: Constants.normalFontSize; family: "Roboto" }
                         text: model.second // Roles::SecondRole
 
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onSettingsClicked(index) // AppManager's slot
+                            onClicked: app.onSettingsItemClicked(index) // AppManager's slot
                         }
                     }
                 }
@@ -132,7 +132,7 @@ Popup
             /*
             ListView
             {
-                id: settingsPanelList
+                id: settingPanelList
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
@@ -143,7 +143,7 @@ Popup
                     policy: ScrollBar.AlwaysOn
                 }
 
-                model: settingsPanelModel
+                model: settingPanelModel
                 delegate: Text
                 {
                     leftPadding: Constants.margin
