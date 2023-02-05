@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "constants.js" as Constants
@@ -6,6 +7,7 @@ import RegisteredTypes 1.0
 
 ApplicationWindow
 {
+    // https://doc.qt.io/qt-5/qtquickcontrols2-material.html
     Material.theme: Material.Light
     Material.background: Material.color(Material.Grey, Material.Shade200)
     Material.foreground: Material.color(Material.BlueGrey, Material.Shade900)
@@ -21,7 +23,6 @@ ApplicationWindow
 
     property int pageIndicatorHeight: 16
     property int adminMenuWidth: 0
-
     property int popupX: (mainWindow.width - mainWindow.width * 4 / 5) / 2
     property int popupY: mainWindow.height / 4 + Constants.margin
     property int popupWidth: mainWindow.width * 4 / 5
@@ -111,7 +112,7 @@ ApplicationWindow
         target: app
         function onShowConfirmationBox(selector, titleText, messageText)
         {
-            console.debug("@@@@@ mainWindow.onShowConfirmationBox ", confirmationSelector, " ", titleText, " ", messageText);
+            console.debug("@@@@@ mainWindow.onShowConfirmationBox ", selector, " ", titleText, " ", messageText);
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
                                                                        {
                                                                            x: popupX,

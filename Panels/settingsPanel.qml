@@ -1,7 +1,9 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
+import RegisteredTypes 1.0
 
 Popup
 {
@@ -45,14 +47,13 @@ Popup
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
 
-            TextArea
+            Text
             {
                 id: settingPanelTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
-                wrapMode: TextArea.WordWrap
-                background: Rectangle  { color: "transparent"  }
+                wrapMode: Text.WordWrap
                 text: qsTr("Настройки")
             }
         }
@@ -80,7 +81,7 @@ Popup
             Layout.columnSpan: 3
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            color: "transparent"
+            color: Material.color(Material.Grey, Material.Shade50)
 
             ListView
             {

@@ -8,7 +8,7 @@ const maxIconSize = 48;
 const buttonSize = 48;
 const buttonRadius = 12;
 const normalFontSize = 16;
-const largeFontSize = 18;
+const largeFontSize = 20;
 const smallFontSize = 12;
 const inputFieldWidth = 200;
 

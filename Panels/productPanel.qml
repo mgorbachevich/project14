@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
@@ -6,10 +7,12 @@ import RegisteredTypes 1.0
 
 Popup
 {
+    // https://doc.qt.io/qt-5/qtquickcontrols2-material.html
     Material.theme: Material.Dark
     Material.background: Material.color(Material.BlueGrey, Material.Shade900)
     Material.foreground: Material.color(Material.Grey, Material.Shade50)
-    Material.accent: Material.color(Material.Orange, Material.Shade500)
+    Material.accent: Material.Orange
+    Material.primary: Material.color(Material.Indigo, Material.Shade100)
 
     id: productPanel
     padding : 0

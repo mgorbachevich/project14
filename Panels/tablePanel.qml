@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
@@ -55,15 +56,15 @@ Rectangle
             onClicked: app.onTableBackClicked() // AppManager's slot
         }
 
-        TextArea
+        Text
         {
             id: tablePanelTitle
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
             font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Italic' }
-            wrapMode: TextArea.WordWrap
-            background: Rectangle { color: "transparent" }
+            wrapMode: Text.WordWrap
+            //background: Rectangle { color: "transparent" }
             text: "/"
         }
 

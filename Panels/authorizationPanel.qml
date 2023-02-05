@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
@@ -23,14 +24,14 @@ Popup
     {
         anchors.centerIn: parent
 
-        Label
+        Text
         {
             anchors.horizontalCenter: parent.horizontalCenter
             font { pointSize: Constants.largeFontSize; family:'Roboto'; styleName:'Bold' }
             text: qsTr("Авторизация")
         }
 
-        Label
+        Text
         {
             font { pointSize: Constants.smallFontSize; family:'Roboto'; styleName:'Regular' }
             color: Material.color(Material.Grey, Material.Shade400)
@@ -67,7 +68,7 @@ Popup
             }
         }
 
-        Label
+        Text
         {
             anchors.topMargin: Constants.margin
             font { pointSize: Constants.smallFontSize; family:'Roboto'; styleName:'Regular' }

@@ -1,13 +1,18 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
+import RegisteredTypes 1.0
 
 Rectangle
 {
+    // https://doc.qt.io/qt-5/qtquickcontrols2-material.html
     Material.theme: Material.Dark
     Material.background: Material.color(Material.BlueGrey, Material.Shade900)
     Material.foreground: Material.color(Material.Grey, Material.Shade50)
+    Material.accent: Material.Orange
+    Material.primary: Material.color(Material.Indigo, Material.Shade100)
 
     id:  weightPanel
     height: valueFontSize + titleFontSize + Constants.margin
@@ -113,7 +118,7 @@ Rectangle
             spacing: 0
             padding: 0
 
-            Label
+            Text
             {
                 id: weightPanelWeightTitle
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -123,7 +128,7 @@ Rectangle
                 text: qsTr("МАССА, кг")
             }
 
-            Label
+            Text
             {
                 id: weightPanelWeightValue
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -141,7 +146,7 @@ Rectangle
             spacing: 0
             padding: 0
 
-            Label
+            Text
             {
                 id: weightPanelPriceTitle
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -151,7 +156,7 @@ Rectangle
                 text: qsTr("ЦЕНА, руб")
             }
 
-            Label
+            Text
             {
                 id: weightPanelPriceValue
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -169,7 +174,7 @@ Rectangle
             spacing: 0
             padding: 0
 
-            Label
+            Text
             {
                 id: weightPanelAmountTitle
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -179,7 +184,7 @@ Rectangle
                 text: qsTr("СТОИМОСТЬ, руб")
             }
 
-            Label
+            Text
             {
                 id: weightPanelAmountValue
                 anchors.horizontalCenter: parent.horizontalCenter

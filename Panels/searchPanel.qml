@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
@@ -23,7 +24,7 @@ Rectangle
         columns: 3
         rows: 3
 
-        Label
+        Text
         {
             id: searchPanelTitle
             Layout.column: 0
@@ -97,7 +98,7 @@ Rectangle
             Layout.columnSpan: 2
             Layout.preferredWidth: filterWidth
             Layout.bottomMargin: Constants.margin
-            font { pointSize: Constants.largeFontSize; family: "Roboto"; styleName:'Bold' }
+            font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Regular' }
             placeholderText: "?????"
             inputMethodHints: Qt.ImhDigitsOnly // Keyboard
             onTextEdited: app.onSearchFilterEdited(text) // AppManager's slot

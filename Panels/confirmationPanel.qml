@@ -1,7 +1,9 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
+import RegisteredTypes 1.0
 
 Popup
 {
@@ -34,14 +36,13 @@ Popup
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
 
-            TextArea
+            Text
             {
                 id: cofirmationPanelTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
-                wrapMode: TextArea.WordWrap
-                background: Rectangle  { color: "transparent"  }
+                wrapMode: Text.WordWrap
                 text: titleText
             }
         }
@@ -56,13 +57,12 @@ Popup
             color: "transparent"
             //color: Material.color(Material.Grey, Material.Shade50)
 
-            TextArea
+            Text
             {
                 id: cofirmationPanelText
                 anchors.horizontalCenter: parent.horizontalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Regular' }
-                wrapMode: TextArea.WordWrap
-                background: Rectangle  { color: "transparent"  }
+                wrapMode: Text.WordWrap
                 text: messageText
             }
         }

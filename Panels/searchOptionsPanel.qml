@@ -1,7 +1,9 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "../constants.js" as Constants
+import RegisteredTypes 1.0
 
 Popup
 {
@@ -21,19 +23,14 @@ Popup
         columns: 4
         rows: 2
 
-        Button
+        Rectangle
         {
             Layout.column: 0
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
-            icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/empty_48" }
-            leftInset: 0
-            topInset: 0
-            rightInset: 0
-            bottomInset: 0
-            Material.background: "transparent"
+            color: "transparent"
         }
 
         Rectangle
@@ -45,14 +42,13 @@ Popup
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
 
-            TextArea
+            Text
             {
                 id: messagePanelTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
-                wrapMode: TextArea.WordWrap
-                background: Rectangle  { color: "transparent"  }
+                wrapMode: Text.WordWrap
                 text: qsTr("Настройки поиска")
             }
         }
@@ -81,7 +77,7 @@ Popup
             leftPadding: Constants.margin
             rightPadding: Constants.margin
 
-            Label
+            Text
             {
                 height: Constants.margin * 3
                 leftPadding: Constants.margin
@@ -111,7 +107,7 @@ Popup
             leftPadding: Constants.margin
             rightPadding: Constants.margin
 
-            Label
+            Text
             {
                 height: Constants.margin * 3
                 leftPadding: Constants.margin
