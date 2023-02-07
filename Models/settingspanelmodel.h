@@ -11,7 +11,8 @@ class SettingsPanelModel : public BaseListModel2
 public:
     SettingsPanelModel(QObject *parent): BaseListModel2(parent) {}
     void update(const DBRecordList&);
-    DBRecord getSettingsItem(const int);
+    DBRecord* getItemByIndex(const int);
+    DBRecord* getItemByCode(const int);
 
     DBRecordList settings;
 };

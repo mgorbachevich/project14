@@ -134,7 +134,7 @@ Rectangle
                 model: searchFilterModel
                 delegate: Text
                 {
-                    width: parent.width
+                    //width: parent.width
                     padding: Constants.margin
                     font { pointSize: Constants.normalFontSize; family: "Roboto" }
                     text: model.value // Roles::ValueRole

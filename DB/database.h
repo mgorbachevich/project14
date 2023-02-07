@@ -29,20 +29,21 @@ public:
     enum Selector
     {
         None = 0,
-        ShowcaseProducts,
-        ShowcaseResources,
-        ImageByResourceCode,
-        MessageByResourceCode,
-        ProductsByGroupCode,
-        ProductsByGroupCodeIncludeGroups,
-        ProductsByFilteredCode,
-        ProductsByFilteredCodeIncludeGroups,
-        ProductsByFilteredBarcode,
-        ProductsByFilteredBarcodeIncludeGroups,
-        UserNames,
-        AuthorizationUserByName,
-        SettingsItem,
-        Settings
+        GetShowcaseProducts,
+        GetShowcaseResources,
+        GetImageByResourceCode,
+        GetMessageByResourceCode,
+        GetProductsByGroupCode,
+        GetProductsByGroupCodeIncludeGroups,
+        GetProductsByFilteredCode,
+        GetProductsByFilteredCodeIncludeGroups,
+        GetProductsByFilteredBarcode,
+        GetProductsByFilteredBarcodeIncludeGroups,
+        GetUserNames,
+        GetAuthorizationUserByName,
+        GetSettingsItemByCode,
+        GetSettings,
+        ReplaceSettingsItem,
     };
 
     explicit DataBase(QObject *parent = nullptr);

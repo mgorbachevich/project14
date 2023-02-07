@@ -4,11 +4,15 @@
 
 // https://www.youtube.com/watch?v=ab1GoP_W5vw
 // https://www.youtube.com/watch?v=lwvtv9r8uaM
-HTTPServer::HTTPServer(QObject *parent, const int port): QTcpServer(parent)
+HTTPServer::HTTPServer(QObject *parent, const int tcpPort): QTcpServer(parent)
 {
-    qDebug() << "@@@@@ HTTPServer::HTTPServer";
+    qDebug() << "@@@@@ HTTPServer::HTTPServer " << tcpPort;
+    port = tcpPort;
     if (!listen(QHostAddress::Any, port))
+    {
         qDebug() << "@@@@@ HTTPServer::HTTPServer ERROR " << errorString();
+        port = 0;
+    }
 }
 
 void HTTPServer::incomingConnection(qintptr socketDescriptor)

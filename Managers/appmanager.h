@@ -4,6 +4,7 @@
 #include <QObject>
 #include "constants.h"
 #include "database.h"
+#include "settingdbtable.h"
 
 class QThread;
 class HTTPServer;
@@ -41,8 +42,15 @@ private:
     void updateWeightPanel();
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
+    QString getSettingsValueByCode(const SettingDBTable::SettingCode code);
+    void onSettingsChanged(const DBRecordList&);
+    void startHTTPServer();
+    void stopHTTPServer();
+    void startHTTPClient(DataBase*);
+    void stopHTTPClient();
 
     Mode mode = Mode::Start;
+    DataBase* db = nullptr;
     QThread* dbThread = nullptr;
     QThread* httpClientThread = nullptr;
     HTTPServer* httpServer = nullptr;
@@ -86,7 +94,6 @@ signals:
     void showSettingInputBox(const int, const QString&, const QString&);
 
 public slots:
-    void onStart() { emit startDB(); }
     void onDBStarted();
     void onPrint() { emit print(); }
     void onShowMessageBox(const QString&, const QString&);

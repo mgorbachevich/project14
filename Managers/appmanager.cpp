@@ -5,7 +5,6 @@
 #include <QThread>
 #include <QSslSocket>
 #include "appmanager.h"
-#include "settingdbtable.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
 #include "userdbtable.h"
@@ -32,7 +31,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 
     // БД:
     dbThread = new QThread(this);
-    DataBase* db = new DataBase();
+    db = new DataBase();
     db->moveToThread(dbThread);
     connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
     connect(this, &AppManager::startDB, db, &DataBase::onStart);
@@ -44,26 +43,13 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(db, &DataBase::updateResult, this, &AppManager::onUpdateInDBResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     dbThread->start();
+    emit startDB();
 
     // Поддержка SSL:
     // https://doc.qt.io/qt-6/android-openssl-support.html
     qDebug() << "@@@@@ AppManager::AppManager Device supports OpenSSL:" << QSslSocket::supportsSsl();
 
-#ifdef HTTP_SERVER
-    httpServer = new HTTPServer(this, HTTP_SERVER_PORT);
-    connect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
-#endif
-
-#ifdef HTTP_CLIENT
-    httpClientThread = new QThread(this);
-    HTTPClient* httpClient = new HTTPClient();
-    httpClient->moveToThread(httpClientThread);
-    connect(httpClientThread, &QThread::finished, httpClient, &QObject::deleteLater);
-    connect(httpClient, &HTTPClient::newData, db, &DataBase::onNewData);
-    connect(httpClient, &HTTPClient::showMessageBox, this, &AppManager::showMessageBox);
-    connect(this, &AppManager::sendHTTPClientGet, httpClient, &HTTPClient::onSendGet);
-    httpClientThread->start();
-#endif
+    startHTTPClient(db);
 
     // Модели:
     productPanelModel = new ProductPanelModel(this, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
@@ -80,9 +66,6 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
-
-    // Подождем немного и стартуем:
-    QTimer::singleShot(500, this, &AppManager::onStart);
 }
 
 AppManager::~AppManager()
@@ -92,11 +75,62 @@ AppManager::~AppManager()
         dbThread->quit();
         dbThread->wait();
     }
+    stopHTTPClient();
+    stopHTTPServer();
+}
+
+void AppManager::startHTTPClient(DataBase* db)
+{
+#ifdef HTTP_CLIENT
+    if (httpClientThread == nullptr)
+    {
+        httpClientThread = new QThread();
+        HTTPClient* httpClient = new HTTPClient();
+        httpClient->moveToThread(httpClientThread);
+        connect(httpClientThread, &QThread::finished, httpClient, &QObject::deleteLater);
+        connect(httpClient, &HTTPClient::newData, db, &DataBase::onNewData);
+        connect(httpClient, &HTTPClient::showMessageBox, this, &AppManager::showMessageBox);
+        connect(this, &AppManager::sendHTTPClientGet, httpClient, &HTTPClient::onSendGet);
+        httpClientThread->start();
+    }
+#endif
+}
+
+void AppManager::stopHTTPClient()
+{
     if (httpClientThread != nullptr)
     {
+        emit showMessageBox("", "HTTP Client stoped");
         httpClientThread->quit();
         httpClientThread->wait();
+        delete httpClientThread;
+        httpClientThread = nullptr;
     }
+}
+
+void AppManager::stopHTTPServer()
+{
+    if (httpServer != nullptr)
+    {
+        //qDebug() << "@@@@@ AppManager::stopHTTPServer";
+        disconnect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
+        delete httpServer;
+        httpServer = nullptr;
+    }
+}
+
+void AppManager::startHTTPServer()
+{
+#ifdef HTTP_SERVER
+    if (httpServer == nullptr)
+    {
+        const int newPort = Tools::stringToInt(getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
+        //emit showMessageBox("", "HTTP Server started");
+        qDebug() << "@@@@@ AppManager::AppManager TCP port:" << newPort;
+        httpServer = new HTTPServer(nullptr, newPort);
+        connect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
+    }
+#endif
 }
 
 QString AppManager::weightAsString()
@@ -150,7 +184,7 @@ void AppManager::showCurrentProduct()
     qDebug() << "@@@@@ AppManager::showCurrentProduct " << productPanelModel->product[ProductDBTable::Columns::Code].toString();
     productPanelModel->update();
     emit showProductPanel();
-    emit selectFromDB(DataBase::Selector::ImageByResourceCode,
+    emit selectFromDB(DataBase::Selector::GetImageByResourceCode,
                 productPanelModel->product[ProductDBTable::Columns::PictureCode].toString());
     updateWeightPanel();
 }
@@ -158,7 +192,7 @@ void AppManager::showCurrentProduct()
 void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
-    emit selectFromDB(DataBase::Selector::MessageByResourceCode,
+    emit selectFromDB(DataBase::Selector::GetMessageByResourceCode,
                 productPanelModel->product[ProductDBTable::Columns::MessageCode].toString());
 }
 
@@ -171,10 +205,10 @@ void AppManager::filteredSearch()
         switch(searchFilterModel->index)
         {
             case SearchFilterModel::FilterIndex::Code:
-                emit selectFromDB(DataBase::Selector::ProductsByFilteredCode, v);
+                emit selectFromDB(DataBase::Selector::GetProductsByFilteredCode, v);
                 break;
             case SearchFilterModel::FilterIndex::Barcode:
-                emit selectFromDB(DataBase::Selector::ProductsByFilteredBarcode, v);
+                emit selectFromDB(DataBase::Selector::GetProductsByFilteredBarcode, v);
                 break;
              default:
                 qDebug() << "@@@@@ AppManager::filteredSearch ERROR";
@@ -218,11 +252,11 @@ void AppManager::onProductPanelClosed()
 void AppManager::onSettingInputClosed(const int index, const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onSettingInputClosed " << index << value;
-    DBRecord r = settingsPanelModel->getSettingsItem(index);
-    if (value != r[SettingDBTable::Columns::Value].toString())
+    DBRecord* r = settingsPanelModel->getItemByIndex(index);
+    if (r != nullptr && value != (r->at(SettingDBTable::Columns::Value)).toString())
     {
-        r[SettingDBTable::Columns::Value].setValue(value);
-        emit updateInDB(DataBase::Selector::SettingsItem, r);
+        r->replace(SettingDBTable::Columns::Value, value);
+        emit updateInDB(DataBase::Selector::ReplaceSettingsItem, *r);
     }
 }
 
@@ -238,18 +272,18 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     qDebug() << "@@@@@ AppManager::onSelectFromDBResult " << selector;
     switch(selector)
     {
-    case DataBase::Selector::Settings:
+    case DataBase::Selector::GetSettings:
     // Обновление настроек:
-        settingsPanelModel->update(records);
+        onSettingsChanged(records);
         break;
 
-    case DataBase::Selector::ShowcaseProducts:
+    case DataBase::Selector::GetShowcaseProducts:
     // Обновление списка товаров экрана Showcase:
         showcasePanelModel->updateProducts(records);
-        emit selectFromDBByList(DataBase::Selector::ShowcaseResources, records);
+        emit selectFromDBByList(DataBase::Selector::GetShowcaseResources, records);
         break;
 
-       case DataBase::Selector::ShowcaseResources:
+       case DataBase::Selector::GetShowcaseResources:
         // Отображение картинок товаров экрана Showcase:
         {
             QStringList fileNames;
@@ -268,12 +302,12 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             break;
         }
 
-        case DataBase::Selector::AuthorizationUserByName:
+        case DataBase::Selector::GetAuthorizationUserByName:
         // Получен результат поиска пользователя по введеному имени при авторизации:
             checkAuthorization(records);
             break;
 
-        case DataBase::Selector::ImageByResourceCode:
+        case DataBase::Selector::GetImageByResourceCode:
         // Отображение картинки выбранного товара:
         {
             QString fileName = DUMMY_IMAGE;
@@ -290,7 +324,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             break;
         }
 
-        case DataBase::Selector::MessageByResourceCode:
+        case DataBase::Selector::GetMessageByResourceCode:
         // Отображение сообщения (описания) выбранного товара:
             if (!records.isEmpty())
             {
@@ -300,7 +334,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             }
             break;
 
-        case DataBase::Selector::UserNames:
+        case DataBase::Selector::GetUserNames:
         // Отображение имен пользователей при авторизации:
             if (records.isEmpty()) // В базе нет пользователей. Добавить администратора по умолчанию:
             {
@@ -312,17 +346,17 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
                 userNameModel->update(records);
             break;
 
-        case DataBase::Selector::ProductsByGroupCodeIncludeGroups:
+        case DataBase::Selector::GetProductsByGroupCodeIncludeGroups:
         // Отображение товаров выбранной группы:
             tablePanelModel->update(records);
             break;
 
-        case DataBase::Selector::ProductsByFilteredCode:
+        case DataBase::Selector::GetProductsByFilteredCode:
         // Отображение товаров с заданным фрагментом кода:
             searchPanelModel->update(records, SearchFilterModel::FilterIndex::Code);
             break;
 
-        case DataBase::Selector::ProductsByFilteredBarcode:
+        case DataBase::Selector::GetProductsByFilteredBarcode:
         // Отображение товаров с заданным фрагментом штрих-кода:
             searchPanelModel->update(records, SearchFilterModel::FilterIndex::Barcode);
             break;
@@ -343,8 +377,8 @@ void AppManager::onUpdateInDBResult(const DataBase::Selector selector, const boo
     }
     switch(selector)
     {
-    case DataBase::Selector::SettingsItem:
-        emit selectFromDB(DataBase::Selector::Settings, "");
+    case DataBase::Selector::ReplaceSettingsItem:
+        emit selectFromDB(DataBase::Selector::GetSettings, "");
         break;
     default:break;
     }
@@ -382,10 +416,11 @@ void AppManager::onTableResultClicked(const int index)
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
-    DBRecord r = settingsPanelModel->getSettingsItem(index);
-    if (!r.empty())
-        emit showSettingInputBox(index, r[SettingDBTable::Columns::Name].toString(),
-            r[SettingDBTable::Columns::Value].toString());
+    DBRecord* r = settingsPanelModel->getItemByIndex(index);
+    if (r != nullptr && !r->empty())
+        emit showSettingInputBox(index,
+                                 (r->at(SettingDBTable::Columns::Name)).toString(),
+                                 (r->at(SettingDBTable::Columns::Value)).toString());
 }
 
 void AppManager::onSearchResultClicked(const int index)
@@ -408,7 +443,7 @@ void AppManager::updateTablePanel()
     emit showTablePanelTitle(tablePanelModel->title());
     const QString currentGroupCode = tablePanelModel->lastGroupCode();
     emit showGroupHierarchyRoot(currentGroupCode.isEmpty() || currentGroupCode == "0");
-    emit selectFromDB(DataBase::Selector::ProductsByGroupCodeIncludeGroups, currentGroupCode);
+    emit selectFromDB(DataBase::Selector::GetProductsByGroupCodeIncludeGroups, currentGroupCode);
 }
 
 void AppManager::updateWeightPanel()
@@ -434,7 +469,7 @@ void AppManager::startAuthorization()
     qDebug() << "@@@@@ AppManager::startAuthorization";
     mode = Mode::Start;
     emit showAuthorizationPanel();
-    emit selectFromDB(DataBase::Selector::UserNames, "");
+    emit selectFromDB(DataBase::Selector::GetUserNames, "");
 }
 
 void AppManager::checkAuthorization(const DBRecordList& users)
@@ -468,20 +503,39 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
         emit showAdminMenu(UserDBTable::isAdmin(user));
-        emit selectFromDB(DataBase::Selector::ShowcaseProducts, "");
+        emit selectFromDB(DataBase::Selector::GetShowcaseProducts, "");
         searchFilterModel->update();
         updateTablePanel();
     }
 
 #ifdef HTTP_CLIENT_TEST
-    emit sendHTTPClientGet("127.0.0.1:8080");
+    emit sendHTTPClientGet("127.0.0.1:" + getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
 #endif
+}
+
+QString AppManager::getSettingsValueByCode(const SettingDBTable::SettingCode code)
+{
+    DBRecord* r = settingsPanelModel->getItemByCode(code);
+    return r != nullptr ? (r->at(SettingDBTable::Columns::Value)).toString() : "";
+}
+
+void AppManager::onSettingsChanged(const DBRecordList& records)
+{
+    qDebug() << "@@@@@ AppManager::onSettingsChanged";
+    settingsPanelModel->update(records);
+
+    const int newPort = Tools::stringToInt(getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
+    if (httpServer != nullptr && httpServer->port != newPort) // Restart server
+    {
+       stopHTTPServer();
+       startHTTPServer();
+    }
 }
 
 void AppManager::onDBStarted()
 {
     startAuthorization();
-    emit selectFromDB(DataBase::Selector::Settings, "");
+    emit selectFromDB(DataBase::Selector::GetSettings, "");
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
@@ -490,7 +544,7 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
     user[UserDBTable::Columns::Name] = normalizedLogin;
     user[UserDBTable::Columns::Password] = password;
-    emit selectFromDB(DataBase::Selector::AuthorizationUserByName, normalizedLogin);
+    emit selectFromDB(DataBase::Selector::GetAuthorizationUserByName, normalizedLogin);
 }
 
 

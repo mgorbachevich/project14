@@ -10,6 +10,8 @@ class HTTPServer : public QTcpServer
 public:
     HTTPServer(QObject *parent, const int port);
 
+    int port = 0;
+
 protected:
     void incomingConnection(qintptr);
 
