@@ -48,6 +48,8 @@ private:
     void stopHTTPServer();
     void startHTTPClient(DataBase*);
     void stopHTTPClient();
+    DBRecord* getSettingsItemByIndex(const int);
+    DBRecord* getSettingsItemByCode(const int);
 
     Mode mode = Mode::Start;
     DataBase* db = nullptr;
@@ -56,6 +58,8 @@ private:
     HTTPServer* httpServer = nullptr;
     double weight = 0;
     DBRecord user;
+    DBRecord product;
+    DBRecordList settings;
 
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;

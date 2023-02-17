@@ -11,13 +11,8 @@ class ProductPanelModel : public BaseListModel
     Q_OBJECT
 
 public:
-    explicit ProductPanelModel(QObject*, ProductDBTable*);
-    void update();
-
-    DBRecord product;
-
-private:
-    ProductDBTable* productTable;
+    explicit ProductPanelModel(QObject *parent): BaseListModel(parent) {}
+    void update(const DBRecord&, ProductDBTable*);
 };
 
 #endif // PRODUCTPANELMODEL_H

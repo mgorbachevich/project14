@@ -1,17 +1,12 @@
 #include "productpanelmodel.h"
 #include "productdbtable.h"
 
-ProductPanelModel::ProductPanelModel(QObject *parent, ProductDBTable* productTable): BaseListModel(parent)
+void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productTable)
 {
-    this->productTable = productTable;
-}
-
-void ProductPanelModel::update()
-{
-    qDebug() << "@@@@@ ProductPanelModel::update " << product[ProductDBTable::Columns::Code].toString();
+    qDebug() << "@@@@@ ProductPanelModel::update " << product.at(ProductDBTable::Columns::Code).toString();
     QStringList ss;
     QString s;
-    s += "<b>" + product[ProductDBTable::Columns::Name].toString() +"</b>";
+    s += "<b>" + product.at(ProductDBTable::Columns::Name).toString() +"</b>";
     ss << s;
     ss << "";
     for (int i = 0; i < product.count() && i < productTable->columnCount(); i++)
@@ -24,7 +19,7 @@ void ProductPanelModel::update()
             {
                 QString s;
                 s += productTable->columnTitle(i)+ ":  ";
-                s += product[i].toString();
+                s += product.at(i).toString();
                 ss << s;
                 break;
             }

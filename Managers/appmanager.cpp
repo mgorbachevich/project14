@@ -52,7 +52,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     startHTTPClient(db);
 
     // Модели:
-    productPanelModel = new ProductPanelModel(this, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
+    productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
     tablePanelModel = new TablePanelModel(this);
     settingsPanelModel = new SettingsPanelModel(this);
@@ -162,8 +162,7 @@ QString AppManager::amountAsString()
 
 double AppManager::price()
 {
-    DBRecord& p = productPanelModel->product;
-    return p.count() <= ProductDBTable::Price? 0: p[ProductDBTable::Price].toDouble();
+    return product.count() <= ProductDBTable::Price? 0: product[ProductDBTable::Price].toDouble();
 }
 
 void AppManager::onWeightChanged(double value)
@@ -181,11 +180,11 @@ void AppManager::onWeightChanged(double value)
 
 void AppManager::showCurrentProduct()
 {
-    qDebug() << "@@@@@ AppManager::showCurrentProduct " << productPanelModel->product[ProductDBTable::Columns::Code].toString();
-    productPanelModel->update();
+    qDebug() << "@@@@@ AppManager::showCurrentProduct " << product[ProductDBTable::Columns::Code].toString();
+    productPanelModel->update(product, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
     emit showProductPanel();
     emit selectFromDB(DataBase::Selector::GetImageByResourceCode,
-                productPanelModel->product[ProductDBTable::Columns::PictureCode].toString());
+                      product[ProductDBTable::Columns::PictureCode].toString());
     updateWeightPanel();
 }
 
@@ -193,7 +192,7 @@ void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
     emit selectFromDB(DataBase::Selector::GetMessageByResourceCode,
-                productPanelModel->product[ProductDBTable::Columns::MessageCode].toString());
+                      product[ProductDBTable::Columns::MessageCode].toString());
 }
 
 void AppManager::filteredSearch()
@@ -245,14 +244,14 @@ void AppManager::onTableBackClicked()
 
 void AppManager::onProductPanelClosed()
 {
-    productPanelModel->product.clear();
+    product.clear();
     updateWeightPanel();
 }
 
 void AppManager::onSettingInputClosed(const int index, const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onSettingInputClosed " << index << value;
-    DBRecord* r = settingsPanelModel->getItemByIndex(index);
+    DBRecord* r = getSettingsItemByIndex(index);
     if (r != nullptr && value != (r->at(SettingDBTable::Columns::Value)).toString())
     {
         r->replace(SettingDBTable::Columns::Value, value);
@@ -407,16 +406,33 @@ void AppManager::onTableResultClicked(const int index)
         }
         else
         {
-            productPanelModel->product = clickedProduct;
+            product = clickedProduct;
             showCurrentProduct();
         }
     }
 }
 
+DBRecord* AppManager::getSettingsItemByIndex(const int index)
+{
+    return (index >= 0 && index < settings.count()) ? &settings[index] : nullptr;
+}
+
+DBRecord* AppManager::getSettingsItemByCode(const int code)
+{
+    bool ok = false;
+    for (int i = 0; i < settings.count(); i++)
+    {
+        DBRecord& ri = settings[i];
+        if (ri[SettingDBTable::Columns::Code].toInt(&ok) == code && ok)
+            return &ri;
+    }
+    return nullptr;
+}
+
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
-    DBRecord* r = settingsPanelModel->getItemByIndex(index);
+    DBRecord* r = getSettingsItemByIndex(index);
     if (r != nullptr && !r->empty())
         emit showSettingInputBox(index,
                                  (r->at(SettingDBTable::Columns::Name)).toString(),
@@ -426,14 +442,14 @@ void AppManager::onSettingsItemClicked(const int index)
 void AppManager::onSearchResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSearchResultClicked " << index;
-    productPanelModel->product = searchPanelModel->productByIndex(index);
+    product = searchPanelModel->productByIndex(index);
     showCurrentProduct();
 }
 
 void AppManager::onShowcaseClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onShowcaseClicked " << index;
-    productPanelModel->product = showcasePanelModel->productByIndex(index);
+    product = showcasePanelModel->productByIndex(index);
     showCurrentProduct();
 }
 
@@ -515,15 +531,16 @@ void AppManager::checkAuthorization(const DBRecordList& users)
 
 QString AppManager::getSettingsValueByCode(const SettingDBTable::SettingCode code)
 {
-    DBRecord* r = settingsPanelModel->getItemByCode(code);
+    DBRecord* r = getSettingsItemByCode(code);
     return r != nullptr ? (r->at(SettingDBTable::Columns::Value)).toString() : "";
 }
 
 void AppManager::onSettingsChanged(const DBRecordList& records)
 {
     qDebug() << "@@@@@ AppManager::onSettingsChanged";
-    settingsPanelModel->update(records);
-
+    settings.clear();
+    settings.append(records);
+    settingsPanelModel->update(&settings);
     const int newPort = Tools::stringToInt(getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
     if (httpServer != nullptr && httpServer->port != newPort) // Restart server
     {
