@@ -19,7 +19,8 @@ public:
     DBRecord createRecord();
     void addColumn(const QString& title, const QString& name, const QString& type);
     virtual int columnCount() { return 0; }
-    virtual bool checkRecordForInsert(const DBRecord&);
+    virtual const DBRecord* checkRecord(const DBRecord&);
+    virtual const DBRecordList checkAll(const DBRecordList&);
 
     QString name;
 

@@ -40,25 +40,39 @@ void JSONParser::parseTableColumn(DBTable* table, DBRecord& r, const QJsonObject
 void JSONParser::run(DataBase* db, const QString& json)
 {
     qDebug() << "@@@@@ JSONParser::run " << json;
+    QJsonValue data = prepare(json);
+    for (int i = 0; i < db->tables.size(); i++)
+    {
+        DBTable* t = db->tables[i];
+        QJsonValue jv = data.toObject()[t->name];
+        if (jv.isArray()) db->onTableParsed(t, parseTable(t, jv.toArray()));
+    }
+}
+
+DBRecordList JSONParser::run(DBTable *table, const QString &json)
+{
+    qDebug() << "@@@@@ JSONParser::run " << json;
+    QJsonValue jv = prepare(json).toObject()[table->name];
+    if (jv.isArray()) return parseTable(table, jv.toArray());
+    return *new DBRecordList();
+}
+
+QJsonValue JSONParser::prepare(const QString &json)
+{
+    qDebug() << "@@@@@ JSONParser::prepare " << json;
 
     const QJsonObject jo = Tools::stringToJson(json);
     QJsonValue result = jo["result"];
     if (!result.isString() || Tools::stringToInt(result.toString()) != 0)
     {
-        qDebug() << "@@@@@ JSONParser::run result " << result.toString("") << jo["description"].toString("");
-        return;
+        qDebug() << "@@@@@ JSONParser::prepare result " << result.toString("") << jo["description"].toString("");
+        return *new QJsonValue;
     }
     QJsonValue data = jo["data"];
     if (!data.isObject())
     {
-        qDebug() << "@@@@@ JSONParser::run ERROR (data is not object)";
-        return;
+        qDebug() << "@@@@@ JSONParser::prepare ERROR (data is not object)";
+        return *new QJsonValue;
     }
-    for (int i = 0; i < db->tables.size(); i++)
-    {
-        DBTable* t = db->tables[i];
-        QJsonValue jv = data.toObject()[t->name];
-        if (jv.isArray())
-            db->onTableParsed(t, parseTable(t, jv.toArray()));
-    }
- }
+    return data;
+}

@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include "dbtable.h"
-#include "jsonparser.h"
 
 #define DB_HOSTNAME "ShtrihScaleDataBase"
 #define DB_FILENAME "ShtrihScale.db"
@@ -60,6 +59,7 @@ private:
     bool createTable(DBTable*);
     bool selectById(DBTable*, const QString&, DBRecord&);
     void selectAll(DBTable*, DBRecordList&);
+    void selectAndCheckAll(DBTable*, DBRecordList&);
     void emulation();
     bool removeRecord(DBTable*, const DBRecord&);
     bool insertRecord(DBTable*, const DBRecord&);
@@ -67,7 +67,6 @@ private:
 
     bool started = false;
     QSqlDatabase db;
-    JSONParser parser;
 
 signals:
     void showMessageBox(const QString&, const QString&);

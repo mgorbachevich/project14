@@ -48,15 +48,13 @@ public:
         */
     };
 
-    SettingDBTable(const QString& name, QObject *parent): DBTable(name, parent)
-    {
-        qDebug() << "@@@@@ SettingDBTable::SettingDBTable";
-
-        addColumn("Код",          "code",  "INT PRIMARY KEY");
-        addColumn("Наименование", "name",  "TEXT");
-        addColumn("Значение",     "value", "TEXT");
-    }
+    SettingDBTable(const QString&, QObject*);
     int columnCount() { return Columns::COLUMN_COUNT; }
+    const DBRecordList checkAll(const DBRecordList&);
+
+private:
+    void checkDefault(const SettingCode, const QList<int>&, const DBRecordList&, DBRecordList&);
+
 };
 
 #endif // SETTINGDBTABLE_H

@@ -15,6 +15,7 @@
 #include "transactiondbtable.h"
 #include "resourcedbtable.h"
 #include "userdbtable.h"
+#include "jsonparser.h"
 
 DataBase::DataBase(QObject *parent): QObject(parent)
 {
@@ -79,6 +80,7 @@ void DataBase::onStart()
             started &= createTable(tables[i]);
 
         // todo:
+        JSONParser parser;
         parser.run(this, Tools::readTextFile(":/Text/json_settings.txt"));
         parser.run(this, Tools::readTextFile(":/Text/json_products.txt"));
         parser.run(this, Tools::readTextFile(":/Text/json_users.txt"));
@@ -120,7 +122,7 @@ bool DataBase::insertRecord(DBTable* table, const DBRecord& record)
     if (!started) return false;
     qDebug() << "@@@@@ DataBase::insertRecord into " << table->name;
 
-    if (!table->checkRecordForInsert(record))
+    if (table->checkRecord(record) == nullptr)
     {
         qDebug() << "@@@@@ DataBase::insertRecord ERROR (check record)";
         return false;
@@ -223,6 +225,14 @@ void DataBase::selectAll(DBTable* table, DBRecordList& records)
     executeSelectSQL(table, sql, records);
 }
 
+void DataBase::selectAndCheckAll(DBTable *table, DBRecordList& resultRecords)
+{
+    DBRecordList records;
+    selectAll(table, records);
+    resultRecords.clear();
+    resultRecords.append(table->checkAll(records));
+}
+
 void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
 {
     qDebug() << "@@@@@ DataBase::onSelect " << selector;
@@ -232,12 +242,12 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     {
     case Selector::GetSettings:
     // Запрос списка настроек:
-        selectAll(getTableByName(DBTABLENAME_SETTINGS), resultRecords);
+        selectAndCheckAll(getTableByName(DBTABLENAME_SETTINGS), resultRecords);
         break;
 
     case Selector::GetUserNames:
     // Запрос списка пользователей для авторизации:
-        selectAll(getTableByName(DBTABLENAME_USERS), resultRecords);
+        selectAndCheckAll(getTableByName(DBTABLENAME_USERS), resultRecords);
         break;
 
     case Selector::GetShowcaseProducts:
@@ -246,7 +256,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         DBTable* productTable = getTableByName(DBTABLENAME_PRODUCTS);
         DBTable* showcaseTable = getTableByName(DBTABLENAME_SHOWCASE);
         DBRecordList showcaseRecords;
-        selectAll(showcaseTable, showcaseRecords);
+        selectAndCheckAll(showcaseTable, showcaseRecords);
         for (int i = 0; i < showcaseRecords.count(); i++)
         {
             DBRecord r;
@@ -381,6 +391,7 @@ void DataBase::onUpdate(const DataBase::Selector selector, const DBRecord& recor
 void DataBase::onNewData(const QString& json)
 {
     qDebug() << "@@@@@ DataBase::onNewData " << json;
+    JSONParser parser;
     parser.run(this, json);
 }
 

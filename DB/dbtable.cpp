@@ -15,8 +15,20 @@ void DBTable::addColumn(const QString& title, const QString& name, const QString
     columns.append(*new DBTableColumn(title, name, type));
 }
 
-bool DBTable::checkRecordForInsert(const DBRecord& record)
+const DBRecord* DBTable::checkRecord(const DBRecord& record)
 {
-    return record.count() >= columnCount();
+    return record.count() >= columnCount() ? &record : nullptr;
 }
+
+const DBRecordList DBTable::checkAll(const DBRecordList &records)
+{
+    DBRecordList resultRecords;
+    for (int i = 0; i < records.count(); i++)
+    {
+        const DBRecord* r = checkRecord(records.at(i));
+        if (r != nullptr) resultRecords.append(*r);
+    }
+    return resultRecords;
+}
+
 

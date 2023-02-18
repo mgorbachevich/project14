@@ -541,6 +541,7 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
     settings.clear();
     settings.append(records);
     settingsPanelModel->update(&settings);
+
     const int newPort = Tools::stringToInt(getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
     if (httpServer != nullptr && httpServer->port != newPort) // Restart server
     {

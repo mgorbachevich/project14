@@ -21,6 +21,7 @@ SOURCES += \
     DB/dbtable.cpp \
     DB/jsonparser.cpp \
     DB/productdbtable.cpp \
+    DB/settingdbtable.cpp \
     DB/userdbtable.cpp \
     HTTP/httpclient.cpp \
     HTTP/httpserver.cpp \
@@ -113,6 +114,7 @@ RESOURCES += \
     Images/image_fruit7.png \
     Images/image_fruit8.png \
     Images/image_fruit9.png \
+    Text/json_default_settings.txt \
     Text/json_settings.txt \
     Text/json_products.txt \
     Text/json_users.txt \
