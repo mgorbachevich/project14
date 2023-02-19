@@ -28,6 +28,12 @@ Popup
         function onShowProductImage(value) { productPanelImage.source = value }
     }
 
+    Connections // Slot for signal AppManager::resetProduct:
+    {
+        target: app
+        function onResetProduct() { productPanel.close() }
+    }
+
     GridLayout
     {
         id: productPanelLayout
@@ -115,11 +121,7 @@ Popup
             rightInset: 0
             bottomInset: 0
             Material.background: Material.primary
-            onClicked:
-            {
-                app.onProductPanelClosed() // AppManager's slot
-                productPanel.close()
-            }
+            onClicked: app.onProductPanelCloseClicked() // AppManager's slot
         }
 
         Button

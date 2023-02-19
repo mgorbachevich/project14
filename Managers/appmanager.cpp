@@ -124,7 +124,7 @@ void AppManager::startHTTPServer()
 #ifdef HTTP_SERVER
     if (httpServer == nullptr)
     {
-        const int newPort = Tools::stringToInt(getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
+        const int newPort = getIntSettingsValueByCode(SettingDBTable::SettingCode_TCPPort);
         //emit showMessageBox("", "HTTP Server started");
         qDebug() << "@@@@@ AppManager::AppManager TCP port:" << newPort;
         httpServer = new HTTPServer(nullptr, newPort);
@@ -147,7 +147,7 @@ QString AppManager::priceAsString()
 #ifdef WEIGHT_0_ALLWAYS
     return PRICE_0;
 #else
-    return (price() == 0) ? PRICE_0 : Tools::moneyToText(price());
+    return (price() == 0) ? PRICE_0 : Tools::moneyToText(price(), getIntSettingsValueByCode(SettingDBTable::SettingCode_PointPosition));
 #endif
 }
 
@@ -156,7 +156,7 @@ QString AppManager::amountAsString()
 #ifdef WEIGHT_0_ALLWAYS
     return AMOUNT_0;
 #else
-    return (price() == 0) ?  AMOUNT_0 : Tools::moneyToText(weight * price());
+    return (price() == 0) ?  AMOUNT_0 : Tools::moneyToText(weight * price(), getIntSettingsValueByCode(SettingDBTable::SettingCode_PointPosition));
 #endif
 }
 
@@ -186,6 +186,12 @@ void AppManager::showCurrentProduct()
     emit selectFromDB(DataBase::Selector::GetImageByResourceCode,
                       product[ProductDBTable::Columns::PictureCode].toString());
     updateWeightPanel();
+
+    if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
+    {
+        int resetTime = getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductResetTime);
+        if (resetTime > 0) QTimer::singleShot(resetTime * 1000, this, &AppManager::resetProduct);
+    }
 }
 
 void AppManager::onProductDescriptionClicked()
@@ -240,12 +246,6 @@ void AppManager::onTableBackClicked()
 {
     qDebug() << "@@@@@ AppManager::onTableBackClicked";
     if (tablePanelModel->groupUp()) updateTablePanel();
-}
-
-void AppManager::onProductPanelClosed()
-{
-    product.clear();
-    updateWeightPanel();
 }
 
 void AppManager::onSettingInputClosed(const int index, const QString &value)
@@ -377,9 +377,9 @@ void AppManager::onUpdateInDBResult(const DataBase::Selector selector, const boo
     switch(selector)
     {
     case DataBase::Selector::ReplaceSettingsItem:
-        emit selectFromDB(DataBase::Selector::GetSettings, "");
+        emit selectFromDB(DataBase::GetSettings, "");
         break;
-    default:break;
+    default: break;
     }
 }
 
@@ -459,7 +459,7 @@ void AppManager::updateTablePanel()
     emit showTablePanelTitle(tablePanelModel->title());
     const QString currentGroupCode = tablePanelModel->lastGroupCode();
     emit showGroupHierarchyRoot(currentGroupCode.isEmpty() || currentGroupCode == "0");
-    emit selectFromDB(DataBase::Selector::GetProductsByGroupCodeIncludeGroups, currentGroupCode);
+    emit selectFromDB(DataBase::GetProductsByGroupCodeIncludeGroups, currentGroupCode);
 }
 
 void AppManager::updateWeightPanel()
@@ -485,7 +485,7 @@ void AppManager::startAuthorization()
     qDebug() << "@@@@@ AppManager::startAuthorization";
     mode = Mode::Start;
     emit showAuthorizationPanel();
-    emit selectFromDB(DataBase::Selector::GetUserNames, "");
+    emit selectFromDB(DataBase::GetUserNames, "");
 }
 
 void AppManager::checkAuthorization(const DBRecordList& users)
@@ -519,20 +519,25 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
         emit showAdminMenu(UserDBTable::isAdmin(user));
-        emit selectFromDB(DataBase::Selector::GetShowcaseProducts, "");
+        emit selectFromDB(DataBase::GetShowcaseProducts, "");
         searchFilterModel->update();
         updateTablePanel();
     }
 
 #ifdef HTTP_CLIENT_TEST
-    emit sendHTTPClientGet("127.0.0.1:" + getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
+    emit sendHTTPClientGet("127.0.0.1:" + getStringSettingsValueByCode(SettingDBTable::SettingCode_TCPPort));
 #endif
 }
 
-QString AppManager::getSettingsValueByCode(const SettingDBTable::SettingCode code)
+QString AppManager::getStringSettingsValueByCode(const SettingDBTable::SettingCode code)
 {
     DBRecord* r = getSettingsItemByCode(code);
     return r != nullptr ? (r->at(SettingDBTable::Columns::Value)).toString() : "";
+}
+
+int AppManager::getIntSettingsValueByCode(const SettingDBTable::SettingCode code)
+{
+    return Tools::stringToInt(getStringSettingsValueByCode(code));
 }
 
 void AppManager::onSettingsChanged(const DBRecordList& records)
@@ -542,7 +547,7 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
     settings.append(records);
     settingsPanelModel->update(&settings);
 
-    const int newPort = Tools::stringToInt(getSettingsValueByCode(SettingDBTable::SettingCode::SettingCode_TCPPort));
+    const int newPort = getIntSettingsValueByCode(SettingDBTable::SettingCode_TCPPort);
     if (httpServer != nullptr && httpServer->port != newPort) // Restart server
     {
        stopHTTPServer();
@@ -553,7 +558,19 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
 void AppManager::onDBStarted()
 {
     startAuthorization();
-    emit selectFromDB(DataBase::Selector::GetSettings, "");
+    emit selectFromDB(DataBase::GetSettings, "");
+}
+
+void AppManager::onPrinted()
+{
+    if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
+        emit resetProduct();
+}
+
+void AppManager::onResetProduct()
+{
+    product.clear();
+    updateWeightPanel();
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
@@ -562,7 +579,7 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
     user[UserDBTable::Columns::Name] = normalizedLogin;
     user[UserDBTable::Columns::Password] = password;
-    emit selectFromDB(DataBase::Selector::GetAuthorizationUserByName, normalizedLogin);
+    emit selectFromDB(DataBase::GetAuthorizationUserByName, normalizedLogin);
 }
 
 

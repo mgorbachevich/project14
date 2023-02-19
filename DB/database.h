@@ -55,15 +55,16 @@ public:
 private:
     bool open();
     bool executeSQL(const QString&);
-    void executeSelectSQL(DBTable*, const QString&, DBRecordList&);
+    bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
     bool createTable(DBTable*);
     bool selectById(DBTable*, const QString&, DBRecord&);
     void selectAll(DBTable*, DBRecordList&);
     void selectAndCheckAll(DBTable*, DBRecordList&);
     void emulation();
     bool removeRecord(DBTable*, const DBRecord&);
-    bool insertRecord(DBTable*, const DBRecord&);
-    bool updateRecord(DBTable*, const DBRecord&);
+    //bool updateRecord(DBTable*, const DBRecord&);
+    //bool insertRecord(DBTable*, const DBRecord&);
+    bool updateOrInsertRecord(DBTable*, const DBRecord&);
 
     bool started = false;
     QSqlDatabase db;

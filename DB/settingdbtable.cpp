@@ -15,7 +15,6 @@ const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
 {
     qDebug() << "@@@@@ SettingDBTable::checkAll";
     DBRecordList resultRecords;
-    QList<int> foundCodes;
 
     // Проверка допустимых значений:
     for (int i = 0; i < records.count(); i++)
@@ -29,42 +28,53 @@ const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
         if (!ok) value = 0;
         switch (code)
         {
-        case SettingCode::SettingCode_ScalesNumber:
+        case SettingCode_ScalesNumber:
             if (value < 1 || value > 999999) continue;
             break;
-        case SettingCode::SettingCode_ScalesName:
-        case SettingCode::SettingCode_ShopName:
-        case SettingCode::SettingCode_TCPPort:
+        case SettingCode_PointPosition:
+            if (value < 0 || value > 3) continue;
             break;
-        default:
-            continue;
+        case SettingCode_ProductReset:
+            if (value < ProductReset_None || value > ProductReset_Time) continue;
+            break;
+        case SettingCode_ProductResetTime:
+            if (value < 0) continue;
+            break;
+        case SettingCode_ScalesName:
+        case SettingCode_ShopName:
+        case SettingCode_TCPPort:
+            break; // Без проверки
+        default: continue;
         }
-        foundCodes.append(code);
         resultRecords.append(ri);
     }
 
     // Добавление недостающих значений по умолчанию из файла json_default_settings.txt:
     JSONParser parser;
     DBRecordList defaultRecords = parser.run(this, Tools::readTextFile(":/Text/json_default_settings.txt"));
-    checkDefault(SettingCode::SettingCode_ScalesNumber, foundCodes, defaultRecords, resultRecords);
-    checkDefault(SettingCode::SettingCode_TCPPort, foundCodes, defaultRecords, resultRecords);
+    checkDefault(SettingCode_ScalesNumber, defaultRecords, resultRecords);
+    checkDefault(SettingCode_TCPPort, defaultRecords, resultRecords);
+    checkDefault(SettingCode_PointPosition, defaultRecords, resultRecords);
+    checkDefault(SettingCode_ProductReset, defaultRecords, resultRecords);
+    checkDefault(SettingCode_ProductResetTime, defaultRecords, resultRecords);
 
     return resultRecords;
 }
 
-void SettingDBTable::checkDefault(const SettingCode code, const QList<int>& foundCodes, const DBRecordList& defaultRecords, DBRecordList& resultRecords)
+void SettingDBTable::checkDefault(const SettingCode code, const DBRecordList& defaultRecords, DBRecordList& resultRecords)
 {
-    if (!foundCodes.contains(code))
+    for (int i = 0; i < resultRecords.count(); i++)
     {
-        for (int i = 0; i < defaultRecords.count(); i++)
+        if (resultRecords.at(i).at(Columns::Code).toInt() == code) return; // уже есть такая запись
+    }
+    for (int i = 0; i < defaultRecords.count(); i++)
+    {
+        DBRecord ri = defaultRecords.at(i);
+        if (ri.at(Columns::Code).toInt() == code)
         {
-            DBRecord ri = defaultRecords.at(i);
-            if (ri.at(Columns::Code).toInt() == code)
-            {
-                qDebug() << "@@@@@ SettingDBTable::checkDefault add default record " << code;
-                resultRecords.append(ri);
-                return;
-            }
+            qDebug() << "@@@@@ SettingDBTable::checkDefault add default record " << code;
+            resultRecords.append(ri);
+            return;
         }
     }
 }

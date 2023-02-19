@@ -116,7 +116,7 @@ bool DataBase::removeRecord(DBTable* table, const DBRecord& record)
     //QString sql = QString("DELETE FROM %1 WHERE %2=%3").arg(table.name, table.columnName(0), record.field(0).toString());
     return executeSQL(sql);
 }
-
+/*
 bool DataBase::insertRecord(DBTable* table, const DBRecord& record)
 {
     if (!started) return false;
@@ -158,6 +158,48 @@ bool DataBase::updateRecord(DBTable *table, const DBRecord& record)
     sql +=  " WHERE " + table->columnName(0) + " = '" + record[0].toString() + "'";
     return executeSQL(sql);
 }
+*/
+
+bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record)
+{
+    if (!started) return false;
+    qDebug() << "@@@@@ DataBase::updateOrInsertRecord in " << table->name;
+    if (table->checkRecord(record) == nullptr)
+    {
+        qDebug() << "@@@@@ DataBase::updateOrInsertRecord ERROR (check record)";
+        return false;
+    }
+
+    QString sql;
+    DBRecord r;
+    if (selectById(table, record.at(0).toString(), r))
+    {
+        sql = "UPDATE " + table->name + " SET ";
+        for (int i = 1; i < table->columnCount(); i++)
+        {
+            sql += table->columnName(i) + " = ";
+            sql +=  "'" + record[i].toString() + "'";
+            sql += (i == table->columnCount() - 1) ? " " : ", ";
+        }
+        sql +=  " WHERE " + table->columnName(0) + " = '" + record[0].toString() + "'";
+    }
+    else
+    {
+        sql = "INSERT INTO " + table->name + " (";
+        for (int i = 0; i < table->columnCount(); i++)
+        {
+            sql += table->columnName(i);
+            sql += (i == table->columnCount() - 1) ? ")" : ", ";
+        }
+        sql +=  " VALUES (";
+        for (int i = 0; i < table->columnCount(); i++)
+        {
+            sql += (i < record.count()) ? "'" + record[i].toString() + "'" : "''";
+            sql += (i == table->columnCount() - 1) ? ")" : ", ";
+        }
+    }
+    return executeSQL(sql);
+}
 
 bool DataBase::executeSQL(const QString& sql)
 {
@@ -173,9 +215,9 @@ bool DataBase::executeSQL(const QString& sql)
     return true;
 }
 
-void DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList& records)
+bool DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList& records)
 {
-    if (!started) return;
+    if (!started) return false;
     qDebug() << "@@@@@ DataBase::executeSelectSQL " << sql;
 
     records.clear();
@@ -183,7 +225,7 @@ void DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList
     if (!q.exec(sql))
     {
         qDebug() << "@@@@@ DataBase::executeSelectSQL ERROR: " << q.lastError().text();
-        return;
+        return false;
     }
     while (q.next())
     {
@@ -203,20 +245,17 @@ void DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList
         qDebug() << "@@@@@ fields:" << s;
     }
 #endif
+    return records.count() > 0;
 }
 
 bool DataBase::selectById(DBTable* table, const QString& id, DBRecord& record)
 {
     record.clear();
     QString sql = "SELECT * FROM " + table->name + " WHERE " + table->columnName(0) + "='" + id + "'";
-    DBRecordList rs;
-    executeSelectSQL(table, sql, rs);
-    if(rs.count() > 0)
-    {
-        record = rs[0];
-        return true;
-    }
-    return false;
+    DBRecordList records;
+    if(!executeSelectSQL(table, sql, records)) return false;
+    record = records.at(0);
+    return true;
 }
 
 void DataBase::selectAll(DBTable* table, DBRecordList& records)
@@ -227,6 +266,8 @@ void DataBase::selectAll(DBTable* table, DBRecordList& records)
 
 void DataBase::selectAndCheckAll(DBTable *table, DBRecordList& resultRecords)
 {
+    qDebug() << "@@@@@ DataBase::selectAndCheckAll ";
+
     DBRecordList records;
     selectAll(table, records);
     resultRecords.clear();
@@ -380,7 +421,7 @@ void DataBase::onUpdate(const DataBase::Selector selector, const DBRecord& recor
     {
     case DataBase::Selector::ReplaceSettingsItem:
     {
-        result = updateRecord(getTableByName(DBTABLENAME_SETTINGS), record);
+        result = updateOrInsertRecord(getTableByName(DBTABLENAME_SETTINGS), record);
         break;
     }
     default: break;
@@ -398,9 +439,7 @@ void DataBase::onNewData(const QString& json)
 void DataBase::onTableParsed(DBTable* table, const DBRecordList& records)
 {
     qDebug() << "@@@@@ DataBase::onTableParsed " << records.count();
-
-    for (int j = 0; j < records.count(); j++)
-        insertRecord(table, records[j]);
+    for (int j = 0; j < records.count(); j++) updateOrInsertRecord(table, records[j]);
 }
 
 

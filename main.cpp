@@ -27,10 +27,12 @@ int main(int argc, char *argv[])
     qmlRegisterUncreatableType<BaseListModel>("RegisteredTypes", 1, 0, "BaseListModel", "");
     engine.rootContext()->setContextProperty("app", appManager);
 
+    QObject::connect(appManager, &AppManager::resetProduct, appManager, &AppManager::onResetProduct);
     QObject::connect(appManager, &AppManager::print, printManager, &PrintManager::onPrint);
     QObject::connect(weightManager, &WeightManager::weightChanged, appManager, &AppManager::onWeightChanged);
     QObject::connect(weightManager, &WeightManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
     QObject::connect(printManager, &PrintManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
+    QObject::connect(printManager, &PrintManager::printed, appManager, &AppManager::onPrinted);
 
 #ifdef RECOMENDED
     const QUrl url(u"qrc:/Project14/main.qml"_qs);

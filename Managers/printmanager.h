@@ -12,6 +12,7 @@ public:
 
 signals:
     void showMessageBox(const QString&, const QString&);
+    void printed();
 
 public slots:
     void onPrint();

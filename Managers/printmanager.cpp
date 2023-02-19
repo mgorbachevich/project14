@@ -10,4 +10,5 @@ void PrintManager::onPrint()
 {
     qDebug() << "@@@@@ PrintManager::onPrint";
     emit showMessageBox("Сообщение", "Напечатано!");
+    emit printed();
 }

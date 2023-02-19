@@ -107,6 +107,7 @@ Popup
                     {
                         width: settingPanelList.width / 2 - Constants.margin * 4
                         font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                        wrapMode: Text.WordWrap
                         text: model.first // Roles::FirstRole
 
                         MouseArea
@@ -120,6 +121,7 @@ Popup
                     {
                         width: settingPanelList.width / 2
                         font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                        wrapMode: Text.WordWrap
                         text: model.second // Roles::SecondRole
 
                         MouseArea

@@ -42,7 +42,6 @@ private:
     void updateWeightPanel();
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
-    QString getSettingsValueByCode(const SettingDBTable::SettingCode code);
     void onSettingsChanged(const DBRecordList&);
     void startHTTPServer();
     void stopHTTPServer();
@@ -50,6 +49,8 @@ private:
     void stopHTTPClient();
     DBRecord* getSettingsItemByIndex(const int);
     DBRecord* getSettingsItemByCode(const int);
+    QString getStringSettingsValueByCode(const SettingDBTable::SettingCode code);
+    int getIntSettingsValueByCode(const SettingDBTable::SettingCode code);
 
     Mode mode = Mode::Start;
     DataBase* db = nullptr;
@@ -71,6 +72,7 @@ private:
 
 signals:
     void print();
+    void resetProduct();
     void newData(const QString&);
     void startDB();
     void selectFromDB(const DataBase::Selector, const QString&);
@@ -100,6 +102,8 @@ signals:
 public slots:
     void onDBStarted();
     void onPrint() { emit print(); }
+    void onPrinted();
+    void onResetProduct();
     void onShowMessageBox(const QString&, const QString&);
     void onWeightChanged(double);
     void onSearchFilterEdited(const QString&);
@@ -112,7 +116,7 @@ public slots:
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onSettingsItemClicked(const int);
     void onTableBackClicked();
-    void onProductPanelClosed();
+    void onProductPanelCloseClicked() { emit resetProduct(); }
     void onSettingInputClosed(const int, const QString&);
     void onAdminSettingsClicked();
     void onLockClicked() { emit showConfirmationBox(DialogSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?"); }

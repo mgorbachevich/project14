@@ -21,15 +21,16 @@ public:
         SettingCode_ScalesName = 2,
         SettingCode_ShopName = 202,
         SettingCode_TCPPort = 1003,
+        SettingCode_PointPosition = 12,
+        SettingCode_ProductReset = 7,
+        SettingCode_ProductResetTime = 8,
         /*
         SettingCode_Power = 17,
         SettingCode_Blocking = 3,
         SettingCode_Cursor = 10,
         SettingCode_Language = 1001,
         SettingCode_Currency = 1002,
-        SettingCode_PointPosition = 12,
-        SettingCode_ProductReset = 7,
-        SettingCode_ProductResetTime = 8,
+        SettingCode_PointPositionQuantity = 43,
         SettingCode_SearchType = 1004,
         SettingCode_SearchCodeSymbols = 44,
         SettingCode_SearchBarcodeSymbols = 45,
@@ -48,12 +49,19 @@ public:
         */
     };
 
+    enum ProductReset
+    {
+        ProductReset_None = 0, // нет
+        ProductReset_Print = 1, // после печати
+        ProductReset_Time = 2, // через заданное время бездействия (секунды)
+    };
+
     SettingDBTable(const QString&, QObject*);
     int columnCount() { return Columns::COLUMN_COUNT; }
     const DBRecordList checkAll(const DBRecordList&);
 
 private:
-    void checkDefault(const SettingCode, const QList<int>&, const DBRecordList&, DBRecordList&);
+    void checkDefault(const SettingCode, const DBRecordList&, DBRecordList&);
 
 };
 

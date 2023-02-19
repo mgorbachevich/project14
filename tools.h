@@ -8,7 +8,7 @@ class Tools
 {
 public:
     static QString weightToText(const double& value) {  return QString("%1").arg(value, 0, 'f', 3); }
-    static QString moneyToText(const double& value) {  return QString("%1").arg(value, 0, 'f', 2); }
+    static QString moneyToText(const double&, const int);
     static double moneyFromText(const QString& value) {  return  QString(value).toDouble();; }
     static QString getDataFilePath(const QString& fileName) { return getDataStorageDir().filePath(fileName); }
     static QDir getDataStorageDir();
