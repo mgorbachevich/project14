@@ -8,7 +8,7 @@ void UserNameModel::update(const DBRecordList& users)
     for (int i = 0; i < users.count(); i++)
     {
         const DBRecord& user = users[i];
-        const QString name = user[UserDBTable::Columns::Name].toString();
+        const QString name = user[UserDBTable::Name].toString();
         if (UserDBTable::isAdmin(user))
             ss << UserDBTable::toAdminName(name);
         else

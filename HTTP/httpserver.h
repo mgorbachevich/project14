@@ -17,6 +17,7 @@ protected:
 
 signals:
     void showMessageBox(const QString&, const QString&);
+    void log(const int, const QString&);
 };
 
 #endif // HTTPSERVER_H

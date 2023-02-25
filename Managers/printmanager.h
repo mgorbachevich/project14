@@ -13,6 +13,7 @@ public:
 signals:
     void showMessageBox(const QString&, const QString&);
     void printed();
+    void log(const int, const QString&);
 
 public slots:
     void onPrint();

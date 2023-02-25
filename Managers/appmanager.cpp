@@ -9,6 +9,7 @@
 #include "productdbtable.h"
 #include "transactiondbtable.h"
 #include "userdbtable.h"
+#include "logdbtable.h"
 #include "productpanelmodel.h"
 #include "tablepanelmodel.h"
 #include "usernamemodel.h"
@@ -37,13 +38,15 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
     connect(this, &AppManager::startDB, db, &DataBase::onStart);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
+    connect(this, &AppManager::saveLog, db, &DataBase::onSaveLog);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
-    connect(this, &AppManager::updateInDB, db, &DataBase::onUpdate);
+    connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
-    connect(db, &DataBase::updateResult, this, &AppManager::onUpdateInDBResult);
+    connect(db, &DataBase::updateResult, this, &AppManager::onUpdateDBResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
+    connect(db, &DataBase::log, this, &AppManager::onLog);
     dbThread->start();
     emit startDB();
 
@@ -92,6 +95,7 @@ void AppManager::startHTTPClient(DataBase* db)
         connect(httpClientThread, &QThread::finished, httpClient, &QObject::deleteLater);
         connect(httpClient, &HTTPClient::newData, db, &DataBase::onNewData);
         connect(httpClient, &HTTPClient::showMessageBox, this, &AppManager::showMessageBox);
+        connect(httpClient, &HTTPClient::log, this, &AppManager::onLog);
         connect(this, &AppManager::sendHTTPClientGet, httpClient, &HTTPClient::onSendGet);
         httpClientThread->start();
     }
@@ -131,6 +135,7 @@ void AppManager::startHTTPServer()
         qDebug() << "@@@@@ AppManager::AppManager TCP port:" << newPort;
         httpServer = new HTTPServer(nullptr, newPort);
         connect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
+        connect(httpServer, &HTTPServer::log, this, &AppManager::onLog);
     }
 #endif
 }
@@ -182,11 +187,11 @@ void AppManager::onWeightChanged(double value)
 
 void AppManager::showCurrentProduct()
 {
-    qDebug() << "@@@@@ AppManager::showCurrentProduct " << product[ProductDBTable::Columns::Code].toString();
+    qDebug() << "@@@@@ AppManager::showCurrentProduct " << product[ProductDBTable::Code].toString();
     productPanelModel->update(product, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
     emit showProductPanel();
     emit selectFromDB(DataBase::Selector::GetImageByResourceCode,
-                      product[ProductDBTable::Columns::PictureCode].toString());
+                      product[ProductDBTable::PictureCode].toString());
     updateWeightPanel();
 
     if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
@@ -200,7 +205,7 @@ void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
     emit selectFromDB(DataBase::Selector::GetMessageByResourceCode,
-                      product[ProductDBTable::Columns::MessageCode].toString());
+                      product[ProductDBTable::MessageCode].toString());
 }
 
 void AppManager::filteredSearch()
@@ -219,6 +224,7 @@ void AppManager::filteredSearch()
                 break;
              default:
                 qDebug() << "@@@@@ AppManager::filteredSearch ERROR";
+                log(LogDBTable::LogType_Warning, "Неизвестный фильтр поиска");
                 break;
         }
     }
@@ -254,10 +260,10 @@ void AppManager::onSettingInputClosed(const int index, const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onSettingInputClosed " << index << value;
     DBRecord* r = getSettingsItemByIndex(index);
-    if (r != nullptr && value != (r->at(SettingDBTable::Columns::Value)).toString())
+    if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
     {
-        r->replace(SettingDBTable::Columns::Value, value);
-        emit updateInDB(DataBase::Selector::ReplaceSettingsItem, *r);
+        r->replace(SettingDBTable::Value, value);
+        emit updateDBRecord(DataBase::Selector::ReplaceSettingsItem, *r);
     }
 }
 
@@ -288,7 +294,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         // Отображение картинок товаров экрана Showcase:
         {
             QStringList fileNames;
-            const int column = ResourceDBTable::Columns::Value;
+            const int column = ResourceDBTable::Value;
             for (int i = 0; i < records.count(); i++)
             {
                 QString fileName = DUMMY_IMAGE;
@@ -314,7 +320,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             QString fileName = DUMMY_IMAGE;
             if (records.count() > 0)
             {
-                const int column = ResourceDBTable::Columns::Value;
+                const int column = ResourceDBTable::Value;
                 if (records[0].count() > column)
                 {
                     fileName = records[0][column].toString();
@@ -329,7 +335,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         // Отображение сообщения (описания) выбранного товара:
             if (!records.isEmpty())
             {
-                const int messageValueColumn = ResourceDBTable::Columns::Value;
+                const int messageValueColumn = ResourceDBTable::Value;
                 if (records[0].count() > messageValueColumn)
                      emit showMessageBox("Описание товара", records[0][messageValueColumn].toString());
             }
@@ -364,13 +370,14 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
 
         default:
             qDebug() << "@@@@@ AppManager::onSelectFromDBResult ERROR unknown selector";
+            log(LogDBTable::LogType_Warning, "Неизвестный ответ БД");
             break;
     }
 }
 
-void AppManager::onUpdateInDBResult(const DataBase::Selector selector, const bool result)
+void AppManager::onUpdateDBResult(const DataBase::Selector selector, const bool result)
 {
-    qDebug() << "@@@@@ AppManager::onUpdateInDBResult " << selector << result;
+    qDebug() << "@@@@@ AppManager::onUpdateDBResult " << selector << result;
     if (!result)
     {
         emit showMessageBox("ВНИМАНИЕ!", "Ошибка при сохранении данных!");
@@ -425,7 +432,7 @@ DBRecord* AppManager::getSettingsItemByCode(const int code)
     for (int i = 0; i < settings.count(); i++)
     {
         DBRecord& ri = settings[i];
-        if (ri[SettingDBTable::Columns::Code].toInt(&ok) == code && ok)
+        if (ri[SettingDBTable::Code].toInt(&ok) == code && ok)
             return &ri;
     }
     return nullptr;
@@ -437,8 +444,8 @@ void AppManager::onSettingsItemClicked(const int index)
     DBRecord* r = getSettingsItemByIndex(index);
     if (r != nullptr && !r->empty())
         emit showSettingInputBox(index,
-                                 (r->at(SettingDBTable::Columns::Name)).toString(),
-                                 (r->at(SettingDBTable::Columns::Value)).toString());
+                                 (r->at(SettingDBTable::Name)).toString(),
+                                 (r->at(SettingDBTable::Value)).toString());
 }
 
 void AppManager::onSearchResultClicked(const int index)
@@ -498,14 +505,16 @@ void AppManager::checkAuthorization(const DBRecordList& users)
     {
         qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
         emit showMessageBox("Авторизация", "Неизвестный пользователь!");
+        log(LogDBTable::LogType_Info, "Авторизация. Неизвестный пользователь");
         return;
     }
     const DBRecord& newUser = users[0];
-    if (user[UserDBTable::Columns::Name] != newUser[UserDBTable::Columns::Name] ||
-        user[UserDBTable::Columns::Password] != newUser[UserDBTable::Columns::Password])
+    if (user[UserDBTable::Name] != newUser[UserDBTable::Name] ||
+        user[UserDBTable::Password] != newUser[UserDBTable::Password])
     {
         qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
         emit showMessageBox("Авторизация", "Неверные имя пользователя или пароль!");
+        log(LogDBTable::LogType_Info, "Авторизация. Неверные имя пользователя или пароль");
         return;
     }
     user.clear();
@@ -515,6 +524,7 @@ void AppManager::checkAuthorization(const DBRecordList& users)
 #endif
 
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
+    log(LogDBTable::LogType_Info, "Авторизация. Пользователь " + user[UserDBTable::Name].toString());
     if(mode == Mode::Start)
     {
         mode = Mode::Scale;
@@ -534,12 +544,40 @@ void AppManager::checkAuthorization(const DBRecordList& users)
 QString AppManager::getStringSettingsValueByCode(const SettingDBTable::SettingCode code)
 {
     DBRecord* r = getSettingsItemByCode(code);
-    return r != nullptr ? (r->at(SettingDBTable::Columns::Value)).toString() : "";
+    return r != nullptr ? (r->at(SettingDBTable::Value)).toString() : "";
 }
 
 int AppManager::getIntSettingsValueByCode(const SettingDBTable::SettingCode code)
 {
     return Tools::stringToInt(getStringSettingsValueByCode(code));
+}
+
+void AppManager::saveTransaction()
+{
+#ifdef SAVE_TRANSACTION_ON_PRINT
+    DBRecord r = ((TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS))->createRecord();
+    r[TransactionDBTable::DateTime] = QDateTime::currentMSecsSinceEpoch();
+    r[TransactionDBTable::User] = user[UserDBTable::Code];
+    r[TransactionDBTable::ItemCode] = Tools::stringToInt(product[ProductDBTable::Code]);
+    r[TransactionDBTable::LabelNumber] = 0; // todo
+    r[TransactionDBTable::Weight] = weightAsString(); // todo
+    r[TransactionDBTable::Price] = priceAsString(); // todo
+    r[TransactionDBTable::Cost] = amountAsString(); // todo
+    r[TransactionDBTable::Price2] = 0; // todo
+    r[TransactionDBTable::Cost2] = 0; // todo
+    emit printed(r);
+#endif
+}
+
+void AppManager::log(const int type, const QString &comment)
+{
+#ifdef SAVE_LOG_IN_DB
+    DBRecord r = ((LogDBTable*)db->getTableByName(DBTABLENAME_LOG))->createRecord();
+    r[LogDBTable::DateTime] = QDateTime::currentMSecsSinceEpoch();
+    r[LogDBTable::Type] = type;
+    r[LogDBTable::Comment] = comment;
+    emit saveLog(r);
+#endif
 }
 
 void AppManager::onSettingsChanged(const DBRecordList& records)
@@ -563,31 +601,9 @@ void AppManager::onDBStarted()
     emit selectFromDB(DataBase::GetSettings, "");
 }
 
-DBRecord AppManager::createTransaction()
-{
-    TransactionDBTable* tt = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
-    DBRecord t = tt->createRecord();
-    //t[TransactionDBTable::Columns::Code] = 0; // Формируется в БД
-    t[TransactionDBTable::Columns::DateTime] = QDateTime::currentDateTimeUtc(); // todo
-    t[TransactionDBTable::Columns::User] = user[UserDBTable::Columns::Code];
-    t[TransactionDBTable::Columns::ItemCode] = Tools::stringToInt(product[ProductDBTable::Code]);
-    t[TransactionDBTable::Columns::LabelNumber] = 0; // todo
-    t[TransactionDBTable::Columns::Weight] = weightAsString(); // todo
-    t[TransactionDBTable::Columns::Price] = priceAsString(); // todo
-    t[TransactionDBTable::Columns::Cost] = amountAsString(); // todo
-    t[TransactionDBTable::Columns::Price2] = 0; // todo
-    t[TransactionDBTable::Columns::Cost2] = 0; // todo
-    return t;
-}
-
 void AppManager::onPrinted()
 {
-#ifdef SAVE_TRANSACTION_ON_PRINT
-    // Создать транзакцию и сoхранить в БД:
-    DBRecord t = createTransaction();
-    emit printed(t);
-#endif
-
+    saveTransaction();
     if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
         emit resetProduct();
 }
@@ -602,8 +618,8 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
 {
     QString normalizedLogin = UserDBTable::fromAdminName(login);
     qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
-    user[UserDBTable::Columns::Name] = normalizedLogin;
-    user[UserDBTable::Columns::Password] = password;
+    user[UserDBTable::Name] = normalizedLogin;
+    user[UserDBTable::Password] = password;
     emit selectFromDB(DataBase::GetAuthorizationUserByName, normalizedLogin);
 }
 

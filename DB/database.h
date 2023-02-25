@@ -19,6 +19,7 @@
 #define DBTABLENAME_MOVIES "movies"
 #define DBTABLENAME_SOUNDS "sounds"
 #define DBTABLENAME_USERS "users"
+#define DBTABLENAME_LOG "log"
 
 class DataBase : public QObject
 {
@@ -62,17 +63,18 @@ private:
     void selectAndCheckAll(DBTable*, DBRecordList&);
     void emulation();
     bool removeRecord(DBTable*, const DBRecord&);
+    bool updateOrInsertRecord(DBTable*, const DBRecord&, const bool forceInsert = false);
+    bool insertRecord(DBTable *t, const DBRecord& r) { return updateOrInsertRecord(t, r, true); }
     //bool updateRecord(DBTable*, const DBRecord&);
     //bool insertRecord(DBTable*, const DBRecord&);
-    bool updateOrInsertRecord(DBTable*, const DBRecord&);
-    int getMax(DBTable*, const QString&);
-    bool saveTransaction(const DBRecord&);
+    //int getMax(DBTable*, const QString&);
 
     bool started = false;
     QSqlDatabase db;
 
 signals:
     void showMessageBox(const QString&, const QString&);
+    void log(const int, const QString&);
     void selectResult(const DataBase::Selector, const DBRecordList&);
     void updateResult(const DataBase::Selector, const bool);
     void dbStarted();
@@ -81,9 +83,10 @@ public slots:
     void onStart();
     void onSelect(const DataBase::Selector, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
-    void onUpdate(const DataBase::Selector, const DBRecord&);
+    void onUpdateRecord(const DataBase::Selector, const DBRecord&);
     void onNewData(const QString&);
     void onPrinted(const DBRecord&);
+    void onSaveLog(const DBRecord&);
 };
 
 #endif // DATABASE_H

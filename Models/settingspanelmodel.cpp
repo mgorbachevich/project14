@@ -12,7 +12,7 @@ void SettingsPanelModel::update(DBRecordList* newSettings)
         for (int i = 0; i < settings->count(); i++)
         {
             const DBRecord& ri = settings->at(i);
-            addItem(ri[SettingDBTable::Columns::Name].toString(), ri[SettingDBTable::Columns::Value].toString());
+            addItem(ri[SettingDBTable::Name].toString(), ri[SettingDBTable::Value].toString());
         }
     }
     endResetModel();

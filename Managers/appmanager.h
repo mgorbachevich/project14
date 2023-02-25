@@ -51,7 +51,8 @@ private:
     DBRecord* getSettingsItemByCode(const int);
     QString getStringSettingsValueByCode(const SettingDBTable::SettingCode code);
     int getIntSettingsValueByCode(const SettingDBTable::SettingCode code);
-    DBRecord createTransaction();
+    void saveTransaction();
+    void log(const int, const QString&);
 
     Mode mode = Mode::Start;
     DataBase* db = nullptr;
@@ -72,6 +73,7 @@ private:
     UserNameModel* userNameModel;
 
 signals:
+    void saveLog(const DBRecord&);
     void print();
     void printed(const DBRecord&);
     void resetProduct();
@@ -79,7 +81,7 @@ signals:
     void startDB();
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
-    void updateInDB(const DataBase::Selector, const DBRecord&);
+    void updateDBRecord(const DataBase::Selector, const DBRecord&);
     void authorizationSucceded();
     void sendHTTPClientGet(const QString&);
     void showMessageBox(const QString&, const QString&);
@@ -105,6 +107,7 @@ public slots:
     void onDBStarted();
     void onPrint() { emit print(); }
     void onPrinted();
+    void onLog(const int type, const QString &comment) { log(type, comment); }
     void onResetProduct();
     void onShowMessageBox(const QString&, const QString&);
     void onWeightChanged(double);
@@ -124,7 +127,7 @@ public slots:
     void onLockClicked() { emit showConfirmationBox(DialogSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?"); }
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
-    void onUpdateInDBResult(const DataBase::Selector, const bool);
+    void onUpdateDBResult(const DataBase::Selector, const bool);
     void onConfirmationClicked(const int);
 };
 

@@ -45,6 +45,7 @@ SOURCES += \
 HEADERS += \
     DB/jsonparser.h \
     DB/labelformatdbtable.h \
+    DB/logdbtable.h \
     DB/resourcedbtable.h \
     DB/settingdbtable.h \
     DB/showcasedbtable.h \

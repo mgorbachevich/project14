@@ -14,16 +14,16 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilte
         switch(filterIndex)
         {
             case SearchFilterModel::FilterIndex::Code:
-                //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Columns::Code).toString() + " ";
-                s += ri[ProductDBTable::Columns::Code].toString() + " ";
+                //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Code).toString() + " ";
+                s += ri[ProductDBTable::Code].toString() + " ";
                 break;
             case SearchFilterModel::FilterIndex::Barcode:
-                //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Columns::Barcode).toString() + " ";
-                s += ri[ProductDBTable::Columns::Barcode].toString() + " ";
+                //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Barcode).toString() + " ";
+                s += ri[ProductDBTable::Barcode].toString() + " ";
                 break;
         }
-        //s += "<font color='" + valueColor + "'>" + ri.field(ProductDBTable::Columns::Name).toString();
-        s += ri[ProductDBTable::Columns::Name].toString();
+        //s += "<font color='" + valueColor + "'>" + ri.field(ProductDBTable::Name).toString();
+        s += ri[ProductDBTable::Name].toString();
         ss << s;
     }
     setStringList(ss);

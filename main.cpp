@@ -31,8 +31,10 @@ int main(int argc, char *argv[])
     QObject::connect(appManager, &AppManager::print, printManager, &PrintManager::onPrint);
     QObject::connect(weightManager, &WeightManager::weightChanged, appManager, &AppManager::onWeightChanged);
     QObject::connect(weightManager, &WeightManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
+    QObject::connect(weightManager, &WeightManager::log, appManager, &AppManager::onLog);
     QObject::connect(printManager, &PrintManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
     QObject::connect(printManager, &PrintManager::printed, appManager, &AppManager::onPrinted);
+    QObject::connect(printManager, &PrintManager::log, appManager, &AppManager::onLog);
 
 #ifdef RECOMENDED
     const QUrl url(u"qrc:/Project14/main.qml"_qs);

@@ -14,11 +14,11 @@ class JSONParser
 {
 public:
     JSONParser() {}
-    void run(DataBase*, const QString&);
+    bool run(DataBase*, const QString&);
     DBRecordList run(DBTable*, const QString&);
 
 private:
-    QJsonValue prepare(const QString &);
+    QJsonValue prepare(const QString &, bool*);
     DBRecordList parseTable(DBTable*, const QJsonArray&);
     void parseTableColumn(DBTable*, DBRecord&, const QJsonObject&, const int);
 };

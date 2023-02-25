@@ -14,9 +14,9 @@ void TablePanelModel::update(const DBRecordList& newProducts)
         QString s;
         if(isGroup)
             s += "<i>";
-        //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Columns::Code).toString() + " ";
-        //s += "<font color='" + valueColor + "'>" + ri.field(ProductDBTable::Columns::Name).toString();
-        s += ri[ProductDBTable::Columns::Name].toString();
+        //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Code).toString() + " ";
+        //s += "<font color='" + valueColor + "'>" + ri.field(ProductDBTable::Name).toString();
+        s += ri[ProductDBTable::Name].toString();
         if(isGroup)
             s += "</i>";
         ss << s;
@@ -45,14 +45,14 @@ bool TablePanelModel::groupDown(DBRecord& group)
 QString TablePanelModel::lastGroupCode()
 {
     qDebug() << "@@@@@ TablePanelModel::lastGroupCode";
-    return groupHierarchy.empty() ? "0" : groupHierarchy.last()[ProductDBTable::Columns::Code].toString();
+    return groupHierarchy.empty() ? "0" : groupHierarchy.last()[ProductDBTable::Code].toString();
 }
 
 QString TablePanelModel::title()
 {
     QString s = "/";
     for (int i = 0; i < groupHierarchy.count(); i++)
-         s += " " + groupHierarchy[i][ProductDBTable::Columns::Name].toString() + " /";
+         s += " " + groupHierarchy[i][ProductDBTable::Name].toString() + " /";
     qDebug() << "@@@@@ TablePanelModel::title " << s;
     return s;
 }

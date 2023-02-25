@@ -22,6 +22,7 @@ private:
 signals:
     void showMessageBox(const QString&, const QString&);
     void newData(const QString&);
+    void log(const int, const QString&);
 
 public slots:
     void onReply(QNetworkReply*);

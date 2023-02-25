@@ -15,6 +15,7 @@
 #include "transactiondbtable.h"
 #include "resourcedbtable.h"
 #include "userdbtable.h"
+#include "logdbtable.h"
 #include "jsonparser.h"
 
 DataBase::DataBase(QObject *parent): QObject(parent)
@@ -32,6 +33,7 @@ DataBase::DataBase(QObject *parent): QObject(parent)
     tables.append(new ResourceDBTable(DBTABLENAME_PICTURES, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MOVIES, this));
     tables.append(new ResourceDBTable(DBTABLENAME_SOUNDS, this));
+    tables.append(new LogDBTable(DBTABLENAME_LOG, this));
 }
 
 DataBase::~DataBase()
@@ -45,19 +47,22 @@ DBTable *DataBase::getTableByName(const QString &name)
     for (int i = 0; i < tables.size(); i++)
         if (tables[i]->name == name)
             return tables[i];
+    qDebug() << "@@@@@ DataBase::getTableByName ERROR";
+    emit log(LogDBTable::LogType_Error, "БД. Не найдена таблица " + name);
     return nullptr;
 }
 
 bool DataBase::open()
 {
-    QString s = Tools::getDataFilePath(DB_FILENAME);
-    qDebug() <<  "@@@@@ DataBase::open " << s;
+    QString dbFileName = Tools::getDataFilePath(DB_FILENAME);
+    qDebug() <<  "@@@@@ DataBase::open " << dbFileName;
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setHostName(DB_HOSTNAME);
-    db.setDatabaseName(s);
+    db.setDatabaseName(dbFileName);
     if(!db.open())
     {
         qDebug() << "@@@@@ DataBase::open ERROR";
+        emit log(LogDBTable::LogType_Error, "БД. Не открыт файл " + dbFileName);
         return false;
     }
     return true;
@@ -90,7 +95,11 @@ void DataBase::onStart()
 
         emit dbStarted();
     }
-    if (!started) qDebug() << "@@@@@ DataBase::onStart ERROR";
+    if (!started)
+    {
+        qDebug() << "@@@@@ DataBase::onStart ERROR";
+        emit log(LogDBTable::LogType_Error, "БД не запущена");
+    }
 }
 
 bool DataBase::createTable(DBTable* table)
@@ -159,19 +168,20 @@ bool DataBase::updateRecord(DBTable *table, const DBRecord& record)
 }
 */
 
-bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record)
+bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record, const bool forceInsert)
 {
     if (!started) return false;
     qDebug() << "@@@@@ DataBase::updateOrInsertRecord in " << table->name;
     if (table->checkRecord(record) == nullptr)
     {
         qDebug() << "@@@@@ DataBase::updateOrInsertRecord ERROR (check record)";
+        emit log(LogDBTable::LogType_Error, "БД. Не сохранена запись в таблице " + table->name);
         return false;
     }
 
     QString sql;
     DBRecord r;
-    if (selectById(table, record.at(0).toString(), r))
+    if (!forceInsert && selectById(table, record.at(0).toString(), r))
     {
         sql = "UPDATE " + table->name + " SET ";
         for (int i = 1; i < table->columnCount(); i++)
@@ -200,6 +210,7 @@ bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record)
     return executeSQL(sql);
 }
 
+/*
 int DataBase::getMax(DBTable *table, const QString& field)
 {
     QString sql = QString("SELECT * FROM %1 WHERE %2 = (SELECT MAX(%3) FROM %4) ORDER BY %5 DESC").
@@ -215,6 +226,7 @@ int DataBase::getMax(DBTable *table, const QString& field)
         return 0;
     return q.value(0).toInt();
 }
+*/
 
 bool DataBase::executeSQL(const QString& sql)
 {
@@ -225,8 +237,9 @@ bool DataBase::executeSQL(const QString& sql)
     if (!q.exec(sql))
     {
         qDebug() << "DataBase::executeSQL @@@@@ ERROR: " << q.lastError().text();
+        emit log(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql);
         return false;
-     }
+    }
     return true;
 }
 
@@ -240,6 +253,7 @@ bool DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList
     if (!q.exec(sql))
     {
         qDebug() << "@@@@@ DataBase::executeSelectSQL ERROR: " << q.lastError().text();
+        emit log(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql);
         return false;
     }
     while (q.next())
@@ -268,7 +282,8 @@ bool DataBase::selectById(DBTable* table, const QString& id, DBRecord& record)
     record.clear();
     QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").arg(table->name, table->columnName(0), id);
     DBRecordList records;
-    if(!executeSelectSQL(table, sql, records)) return false;
+    if(!executeSelectSQL(table, sql, records))
+        return false;
     record = records.at(0);
     return true;
 }
@@ -316,7 +331,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         for (int i = 0; i < showcaseRecords.count(); i++)
         {
             DBRecord r;
-            QString showcaseProductCode = showcaseRecords[i][ShowcaseDBTable::Columns::Code].toString();
+            QString showcaseProductCode = showcaseRecords[i][ShowcaseDBTable::Code].toString();
             if (selectById(productTable, showcaseProductCode, r) && ProductDBTable::isSuitableForShowcase(r))
                 resultRecords.append(r);
         }
@@ -328,7 +343,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     {
         DBTable* t = getTableByName(DBTABLENAME_USERS);
         QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").
-                arg(t->name, t->columnName(UserDBTable::Columns::Name), param);
+                arg(t->name, t->columnName(UserDBTable::Name), param);
         executeSelectSQL(t, sql, resultRecords);
         break;
     }
@@ -358,12 +373,12 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     {
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
-        sql += " WHERE " + t->columnName(ProductDBTable::Columns::GroupCode) + "='" + param + "'";
+        sql += " WHERE " + t->columnName(ProductDBTable::GroupCode) + "='" + param + "'";
         if (selector == Selector::GetProductsByGroupCode)
-           sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
+           sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
         sql += " ORDER BY ";
-        sql += t->columnName(ProductDBTable::Columns::Type) + " DESC, ";
-        sql += t->columnName(ProductDBTable::Columns::Name) + " ASC";
+        sql += t->columnName(ProductDBTable::Type) + " DESC, ";
+        sql += t->columnName(ProductDBTable::Name) + " ASC";
         executeSelectSQL(t, sql, resultRecords);
         break;
     }
@@ -374,11 +389,11 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     {
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
-        sql += " WHERE " + t->columnName(ProductDBTable::Columns::Code) + " LIKE '%" + param + "%'";
+        sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '%" + param + "%'";
         if (selector == Selector::GetProductsByFilteredCode)
-           sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
+           sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
         sql += " ORDER BY ";
-        sql += t->columnName(ProductDBTable::Columns::Code) + " ASC";
+        sql += t->columnName(ProductDBTable::Code) + " ASC";
         executeSelectSQL(t, sql, resultRecords);
         break;
     }
@@ -389,11 +404,11 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     {
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
-        sql += " WHERE " + t->columnName(ProductDBTable::Columns::Barcode) + " LIKE '%" + param + "%'";
+        sql += " WHERE " + t->columnName(ProductDBTable::Barcode) + " LIKE '%" + param + "%'";
         if (selector == Selector::GetProductsByFilteredBarcode)
-            sql += " AND " + t->columnName(ProductDBTable::Columns::Type) + "!='" + QString::number(ProductDBTable::ProductType::ProductType_Group) + "'";
+            sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
         sql += " ORDER BY ";
-        sql += t->columnName(ProductDBTable::Columns::Barcode) + " ASC";
+        sql += t->columnName(ProductDBTable::Barcode) + " ASC";
         executeSelectSQL(t, sql, resultRecords);
         break;
     }
@@ -415,7 +430,7 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
     {
         for (int i = 0; i < param.count(); i++)
         {
-            QString imageCode = param[i][ProductDBTable::Columns::PictureCode].toString();
+            QString imageCode = param[i][ProductDBTable::PictureCode].toString();
             DBRecord r;
             selectById(getTableByName(DBTABLENAME_PICTURES), imageCode, r);
             resultRecords.append(r);
@@ -428,9 +443,9 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
     emit selectResult(selector, resultRecords);
 }
 
-void DataBase::onUpdate(const DataBase::Selector selector, const DBRecord& record)
+void DataBase::onUpdateRecord(const DataBase::Selector selector, const DBRecord& record)
 {
-    qDebug() << "@@@@@ DataBase::onUpdate " << selector;
+    qDebug() << "@@@@@ DataBase::onUpdateRecord " << selector;
     bool result = false;
     switch(selector)
     {
@@ -448,13 +463,23 @@ void DataBase::onNewData(const QString& json)
 {
     qDebug() << "@@@@@ DataBase::onNewData " << json;
     JSONParser parser;
-    parser.run(this, json);
+    if(!parser.run(this, json))
+        emit log(LogDBTable::LogType_Warning, "БД. Не обработаны данные " + json);
 }
 
 void DataBase::onPrinted(const DBRecord& transaction)
 {
     qDebug() << "@@@@@ DataBase::onPrinted";
-    saveTransaction(transaction);
+    // Транзакция:
+    insertRecord(getTableByName(DBTABLENAME_TRANSACTIONS), transaction);
+    emit log(LogDBTable::LogType_Transaction, transaction.at(TransactionDBTable::DateTime).toString());
+}
+
+void DataBase::onSaveLog(const DBRecord& record)
+{
+    qDebug() << "@@@@@ DataBase::onSaveLog";
+    // Лог:
+    insertRecord(getTableByName(DBTABLENAME_LOG), record);
 }
 
 void DataBase::onTableParsed(DBTable* table, const DBRecordList& records)
@@ -463,24 +488,5 @@ void DataBase::onTableParsed(DBTable* table, const DBRecordList& records)
     for (int j = 0; j < records.count(); j++) updateOrInsertRecord(table, records[j]);
 }
 
-bool DataBase::saveTransaction(const DBRecord &transaction)
-{
-    qDebug() << "@@@@@ DataBase::saveTransaction";
-    DBTable* table = getTableByName(DBTABLENAME_TRANSACTIONS);
-    if (table == nullptr)
-    {
-        qDebug() << "@@@@@ DataBase::saveTransaction ERROR";
-        return false;
-    }
-    DBRecord t;
-    t.append(transaction);
-    const int codeColumn = TransactionDBTable::Columns::Code;
-    int code = Tools::stringToInt(transaction.at(codeColumn));
-    if (code == 0)
-        code = getMax(table, table->columnName(codeColumn)) + 1;
-    t[codeColumn] = code;
-    updateOrInsertRecord(table, t);
-    return true;
-}
 
 

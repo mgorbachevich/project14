@@ -8,8 +8,7 @@ class TransactionDBTable: public DBTable
 public:
     enum Columns
     {
-        Code = 0,
-        DateTime,
+        DateTime = 0, // the number of milliseconds since 1970-01-01T00:00:00 Universal Coordinated Time.
         User,
         ItemCode,
         LabelNumber,
@@ -25,8 +24,7 @@ public:
     {
         qDebug() << "@@@@@ TransactionDBTable::TransactionDBTable";
 
-        addColumn("Код",              "code",         "INT PRIMARY KEY");
-        addColumn("Дата, время",      "date_time",    "DATETIME");
+        addColumn("Дата, время",      "date_time",    "BIGINT PRIMARY KEY");
         addColumn("Код пользователя", "user",         "INT");
         addColumn("Код товара",       "item_code",    "INT");
         addColumn("Номер этикетки",   "label_number", "INT");

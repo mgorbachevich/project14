@@ -20,6 +20,7 @@ private:
 signals:
     void showMessageBox(const QString&, const QString&);
     void weightChanged(const double&);
+    void log(const int, const QString&);
 };
 
 #endif // WEIGHTMANAGER_H

@@ -4,6 +4,7 @@
 #include <QSslSocket>
 #include "httpclient.h"
 #include "constants.h"
+#include "logdbtable.h"
 
 HTTPClient::HTTPClient(QObject *parent): QObject(parent)
 {
@@ -37,7 +38,10 @@ void HTTPClient::onReply(QNetworkReply *reply)
         emit showMessageBox("Client-Server test", answer);
 #endif
         if (reply->error())
+        {
             qDebug() << "@@@@@ HTTPClient::onReply ERROR " << reply->errorString();
+            emit log(LogDBTable::LogType_Error, "HTTPClient " + reply->errorString());
+        }
         else
             emit newData(answer);
     }

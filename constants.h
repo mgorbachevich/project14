@@ -11,6 +11,7 @@
 //#define HTTP_CLIENT_TEST
 //#define CHECK_AUTHORIZATION
 #define SAVE_TRANSACTION_ON_PRINT
+#define SAVE_LOG_IN_DB
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define WEIGHT_0 "00.000"

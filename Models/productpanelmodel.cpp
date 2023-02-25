@@ -3,19 +3,19 @@
 
 void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productTable)
 {
-    qDebug() << "@@@@@ ProductPanelModel::update " << product.at(ProductDBTable::Columns::Code).toString();
+    qDebug() << "@@@@@ ProductPanelModel::update " << product.at(ProductDBTable::Code).toString();
     QStringList ss;
     QString s;
-    s += "<b>" + product.at(ProductDBTable::Columns::Name).toString() +"</b>";
+    s += "<b>" + product.at(ProductDBTable::Name).toString() +"</b>";
     ss << s;
     ss << "";
     for (int i = 0; i < product.count() && i < productTable->columnCount(); i++)
     {
         switch(i)
         {
-            case ProductDBTable::Columns::Code:
-            case ProductDBTable::Columns::Barcode:
-            case ProductDBTable::Columns::Price:
+            case ProductDBTable::Code:
+            case ProductDBTable::Barcode:
+            case ProductDBTable::Price:
             {
                 QString s;
                 s += productTable->columnTitle(i)+ ":  ";

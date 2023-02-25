@@ -1,6 +1,7 @@
 #include <QDebug>
 #include "httpserver.h"
 #include "socketthread.h"
+#include "logdbtable.h"
 
 // https://www.youtube.com/watch?v=ab1GoP_W5vw
 // https://www.youtube.com/watch?v=lwvtv9r8uaM
@@ -11,6 +12,7 @@ HTTPServer::HTTPServer(QObject *parent, const int tcpPort): QTcpServer(parent)
     if (!listen(QHostAddress::Any, port))
     {
         qDebug() << "@@@@@ HTTPServer::HTTPServer ERROR " << errorString();
+        emit log(LogDBTable::LogType_Error, "HTTPServer " + errorString());
         port = 0;
     }
 }
