@@ -51,6 +51,7 @@ private:
     DBRecord* getSettingsItemByCode(const int);
     QString getStringSettingsValueByCode(const SettingDBTable::SettingCode code);
     int getIntSettingsValueByCode(const SettingDBTable::SettingCode code);
+    DBRecord createTransaction();
 
     Mode mode = Mode::Start;
     DataBase* db = nullptr;
@@ -72,6 +73,7 @@ private:
 
 signals:
     void print();
+    void printed(const DBRecord&);
     void resetProduct();
     void newData(const QString&);
     void startDB();

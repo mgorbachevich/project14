@@ -65,6 +65,8 @@ private:
     //bool updateRecord(DBTable*, const DBRecord&);
     //bool insertRecord(DBTable*, const DBRecord&);
     bool updateOrInsertRecord(DBTable*, const DBRecord&);
+    int getMax(DBTable*, const QString&);
+    bool saveTransaction(const DBRecord&);
 
     bool started = false;
     QSqlDatabase db;
@@ -81,6 +83,7 @@ public slots:
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
     void onUpdate(const DataBase::Selector, const DBRecord&);
     void onNewData(const QString&);
+    void onPrinted(const DBRecord&);
 };
 
 #endif // DATABASE_H

@@ -7,6 +7,7 @@
 #include "appmanager.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
+#include "transactiondbtable.h"
 #include "userdbtable.h"
 #include "productpanelmodel.h"
 #include "tablepanelmodel.h"
@@ -35,6 +36,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     db->moveToThread(dbThread);
     connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
     connect(this, &AppManager::startDB, db, &DataBase::onStart);
+    connect(this, &AppManager::printed, db, &DataBase::onPrinted);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateInDB, db, &DataBase::onUpdate);
@@ -561,8 +563,31 @@ void AppManager::onDBStarted()
     emit selectFromDB(DataBase::GetSettings, "");
 }
 
+DBRecord AppManager::createTransaction()
+{
+    TransactionDBTable* tt = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
+    DBRecord t = tt->createRecord();
+    //t[TransactionDBTable::Columns::Code] = 0; // Формируется в БД
+    t[TransactionDBTable::Columns::DateTime] = QDateTime::currentDateTimeUtc(); // todo
+    t[TransactionDBTable::Columns::User] = user[UserDBTable::Columns::Code];
+    t[TransactionDBTable::Columns::ItemCode] = Tools::stringToInt(product[ProductDBTable::Code]);
+    t[TransactionDBTable::Columns::LabelNumber] = 0; // todo
+    t[TransactionDBTable::Columns::Weight] = weightAsString(); // todo
+    t[TransactionDBTable::Columns::Price] = priceAsString(); // todo
+    t[TransactionDBTable::Columns::Cost] = amountAsString(); // todo
+    t[TransactionDBTable::Columns::Price2] = 0; // todo
+    t[TransactionDBTable::Columns::Cost2] = 0; // todo
+    return t;
+}
+
 void AppManager::onPrinted()
 {
+#ifdef SAVE_TRANSACTION_ON_PRINT
+    // Создать транзакцию и сoхранить в БД:
+    DBRecord t = createTransaction();
+    emit printed(t);
+#endif
+
     if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
         emit resetProduct();
 }

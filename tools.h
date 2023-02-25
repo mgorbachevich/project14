@@ -17,6 +17,7 @@ public:
     static QString jsonToString(const QJsonObject&);
     static QJsonObject stringToJson(const QString&);
     static int stringToInt(const QString&, const int defaultValue = 0);
+    static int stringToInt(const QVariant&, const int defaultValue = 0);
     static double stringToDouble(const QString&, const double defaultValue = 0);
 };
 

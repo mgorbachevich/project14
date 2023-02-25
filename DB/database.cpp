@@ -111,9 +111,8 @@ bool DataBase::removeRecord(DBTable* table, const DBRecord& record)
 {
     if (!started) return false;
     qDebug() << "@@@@@ DataBase::removeRecord from " << table->name;
-
-    QString sql = "DELETE FROM " + table->name + " WHERE " + table->columnName(0) + "=" + record[0].toString();
-    //QString sql = QString("DELETE FROM %1 WHERE %2=%3").arg(table.name, table.columnName(0), record.field(0).toString());
+    QString sql = QString("DELETE FROM %1 WHERE %2 = '%3'").
+            arg(table->name, table->columnName(0), record[0].toString());
     return executeSQL(sql);
 }
 /*
@@ -201,6 +200,22 @@ bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record)
     return executeSQL(sql);
 }
 
+int DataBase::getMax(DBTable *table, const QString& field)
+{
+    QString sql = QString("SELECT * FROM %1 WHERE %2 = (SELECT MAX(%3) FROM %4) ORDER BY %5 DESC").
+            arg(table->name, field, field, table->name, field);
+    qDebug() << "@@@@@ DataBase::getMax " << sql;
+    QSqlQuery q;
+    if (!q.exec(sql))
+    {
+        qDebug() << "@@@@@ DataBase::getMax ERROR: " << q.lastError().text();
+        return 0;
+    }
+    if (!q.first())
+        return 0;
+    return q.value(0).toInt();
+}
+
 bool DataBase::executeSQL(const QString& sql)
 {
     if (!started) return false;
@@ -251,7 +266,7 @@ bool DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList
 bool DataBase::selectById(DBTable* table, const QString& id, DBRecord& record)
 {
     record.clear();
-    QString sql = "SELECT * FROM " + table->name + " WHERE " + table->columnName(0) + "='" + id + "'";
+    QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").arg(table->name, table->columnName(0), id);
     DBRecordList records;
     if(!executeSelectSQL(table, sql, records)) return false;
     record = records.at(0);
@@ -260,7 +275,7 @@ bool DataBase::selectById(DBTable* table, const QString& id, DBRecord& record)
 
 void DataBase::selectAll(DBTable* table, DBRecordList& records)
 {
-    QString sql = "SELECT * FROM " + table->name;
+    QString sql = QString("SELECT * FROM %1").arg(table->name);
     executeSelectSQL(table, sql, records);
 }
 
@@ -312,8 +327,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     // Запрос пользователя по имени для авторизации:
     {
         DBTable* t = getTableByName(DBTABLENAME_USERS);
-        QString sql = "SELECT * FROM " + t->name;
-        sql += " WHERE " + t->columnName(UserDBTable::Columns::Name) + "='" + param + "'";
+        QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").
+                arg(t->name, t->columnName(UserDBTable::Columns::Name), param);
         executeSelectSQL(t, sql, resultRecords);
         break;
     }
@@ -436,10 +451,36 @@ void DataBase::onNewData(const QString& json)
     parser.run(this, json);
 }
 
+void DataBase::onPrinted(const DBRecord& transaction)
+{
+    qDebug() << "@@@@@ DataBase::onPrinted";
+    saveTransaction(transaction);
+}
+
 void DataBase::onTableParsed(DBTable* table, const DBRecordList& records)
 {
     qDebug() << "@@@@@ DataBase::onTableParsed " << records.count();
     for (int j = 0; j < records.count(); j++) updateOrInsertRecord(table, records[j]);
+}
+
+bool DataBase::saveTransaction(const DBRecord &transaction)
+{
+    qDebug() << "@@@@@ DataBase::saveTransaction";
+    DBTable* table = getTableByName(DBTABLENAME_TRANSACTIONS);
+    if (table == nullptr)
+    {
+        qDebug() << "@@@@@ DataBase::saveTransaction ERROR";
+        return false;
+    }
+    DBRecord t;
+    t.append(transaction);
+    const int codeColumn = TransactionDBTable::Columns::Code;
+    int code = Tools::stringToInt(transaction.at(codeColumn));
+    if (code == 0)
+        code = getMax(table, table->columnName(codeColumn)) + 1;
+    t[codeColumn] = code;
+    updateOrInsertRecord(table, t);
+    return true;
 }
 
 
