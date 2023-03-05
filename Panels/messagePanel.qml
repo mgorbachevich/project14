@@ -17,6 +17,8 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
 
+    Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+
     GridLayout
     {
         anchors.fill: parent
@@ -26,6 +28,9 @@ Popup
         columns: 3
         rows: 2
 
+        focus: true
+        Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+
         Rectangle
         {
             Layout.column: 0
@@ -34,6 +39,9 @@ Popup
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
+
+            focus: true
+            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
         }
 
         Rectangle
@@ -44,6 +52,9 @@ Popup
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
 
+            focus: true
+            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+
             Text
             {
                 id: messagePanelTitle
@@ -52,6 +63,9 @@ Popup
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
                 wrapMode: Text.WordWrap
                 text: titleText
+
+                focus: true
+                Keys.onPressed:  (event) => app.onKeyPressed(event.key)
             }
         }
 
@@ -69,6 +83,9 @@ Popup
             bottomInset: 0
             Material.background: Material.primary
             onClicked: messagePanel.close()
+
+            focus: true
+            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
         }
 
         Rectangle
@@ -81,6 +98,9 @@ Popup
             color: "transparent"
             //color: Material.color(Material.Grey, Material.Shade50)
 
+            focus: true
+            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+
             Text
             {
                 id: messagePanelText
@@ -88,6 +108,9 @@ Popup
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Regular' }
                 wrapMode: Text.WordWrap
                 text: messageText
+
+                focus: true
+                Keys.onPressed:  (event) => app.onKeyPressed(event.key)
             }
         }
     }

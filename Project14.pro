@@ -27,6 +27,7 @@ SOURCES += \
     HTTP/httpserver.cpp \
     HTTP/socketthread.cpp \
     Managers/appmanager.cpp \
+    Managers/settings.cpp \
     Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
@@ -48,6 +49,7 @@ HEADERS += \
     DB/logdbtable.h \
     DB/resourcedbtable.h \
     DB/settingdbtable.h \
+    DB/settinggroupdbtable.h \
     DB/showcasedbtable.h \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
@@ -55,6 +57,7 @@ HEADERS += \
     HTTP/httpserver.h \
     HTTP/socketthread.h \
     Managers/appmanager.h \
+    Managers/settings.h \
     Models/baselistmodel2.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
@@ -115,6 +118,7 @@ RESOURCES += \
     Images/image_fruit7.png \
     Images/image_fruit8.png \
     Images/image_fruit9.png \
+    Text/json_default_setting_groups.txt \
     Text/json_default_settings.txt \
     Text/json_settings.txt \
     Text/json_products.txt \

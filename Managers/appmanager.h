@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "database.h"
 #include "settingdbtable.h"
+#include "settings.h"
 
 class QThread;
 class HTTPServer;
@@ -48,10 +49,6 @@ private:
     void stopHTTPServer();
     void startHTTPClient(DataBase*);
     void stopHTTPClient();
-    DBRecord* getSettingsItemByIndex(const int);
-    DBRecord* getSettingsItemByCode(const int);
-    QString getStringSettingsValueByCode(const SettingDBTable::SettingCode code);
-    int getIntSettingsValueByCode(const SettingDBTable::SettingCode code);
     void saveTransaction();
     void log(const int, const QString&);
 
@@ -63,7 +60,7 @@ private:
     double weight = 0;
     DBRecord user;
     DBRecord product;
-    DBRecordList settings;
+    Settings settings;
 
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
@@ -130,6 +127,7 @@ public slots:
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
     void onUpdateDBResult(const DataBase::Selector, const bool);
     void onConfirmationClicked(const int);
+    void onKeyPressed(const int);
 };
 
 #endif // APPMANAGER_H

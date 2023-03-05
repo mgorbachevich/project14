@@ -5,6 +5,7 @@
 #include <QThread>
 #include <QSslSocket>
 #include "appmanager.h"
+#include "settinggroupdbtable.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
 #include "transactiondbtable.h"
@@ -18,6 +19,7 @@
 #include "settingspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "tools.h"
+#include "jsonparser.h"
 #ifdef HTTP_SERVER
 #include "httpserver.h"
 #endif
@@ -49,11 +51,6 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(db, &DataBase::log, this, &AppManager::onLog);
     dbThread->start();
     emit startDB();
-
-#if defined(HTTP_CLIENT) || defined(HTTP_SERVER)    // Поддержка SSL:
-    // https://doc.qt.io/qt-6/android-openssl-support.html
-    qDebug() << "@@@@@ AppManager::AppManager Device supports OpenSSL:" << QSslSocket::supportsSsl();
-#endif
 
     startHTTPClient(db);
 
@@ -87,6 +84,11 @@ AppManager::~AppManager()
 
 void AppManager::startHTTPClient(DataBase* db)
 {
+#if defined(HTTP_CLIENT) || defined(HTTP_SERVER)    // Поддержка SSL:
+    // https://doc.qt.io/qt-6/android-openssl-support.html
+    qDebug() << "@@@@@ AppManager::AppManager Device supports OpenSSL:" << QSslSocket::supportsSsl();
+#endif
+
 #ifdef HTTP_CLIENT
     if (httpClientThread == nullptr)
     {
@@ -138,7 +140,7 @@ void AppManager::startHTTPServer()
     if (httpServer == nullptr)
     {
         qDebug() << "@@@@@ AppManager::startHTTPServer";
-        const int newPort = getIntSettingsValueByCode(SettingDBTable::SettingCode_TCPPort);
+        const int newPort = settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort);
         //emit showMessageBox("", "HTTP Server started");
         qDebug() << "@@@@@ AppManager::AppManager TCP port:" << newPort;
         httpServer = new HTTPServer(nullptr, newPort);
@@ -162,7 +164,7 @@ QString AppManager::priceAsString()
 #ifdef WEIGHT_0_ALLWAYS
     return PRICE_0;
 #else
-    return (price() == 0) ? PRICE_0 : Tools::moneyToText(price(), getIntSettingsValueByCode(SettingDBTable::SettingCode_PointPosition));
+    return (price() == 0) ? PRICE_0 : Tools::moneyToText(price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 #endif
 }
 
@@ -171,7 +173,7 @@ QString AppManager::amountAsString()
 #ifdef WEIGHT_0_ALLWAYS
     return AMOUNT_0;
 #else
-    return (price() == 0) ?  AMOUNT_0 : Tools::moneyToText(weight * price(), getIntSettingsValueByCode(SettingDBTable::SettingCode_PointPosition));
+    return (price() == 0) ?  AMOUNT_0 : Tools::moneyToText(weight * price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 #endif
 }
 
@@ -207,9 +209,9 @@ void AppManager::showCurrentProduct()
                       product[ProductDBTable::PictureCode].toString());
     updateWeightPanel();
 
-    if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
+    if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
     {
-        int resetTime = getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductResetTime);
+        int resetTime = settings.getItemIntValue(SettingDBTable::SettingCode_ProductResetTime);
         if (resetTime > 0) QTimer::singleShot(resetTime * 1000, this, &AppManager::resetProduct);
     }
 }
@@ -272,7 +274,7 @@ void AppManager::onTableBackClicked()
 void AppManager::onSettingInputClosed(const int index, const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onSettingInputClosed " << index << value;
-    DBRecord* r = getSettingsItemByIndex(index);
+    DBRecord* r = settings.getItemByIndex(index);
     if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
     {
         r->replace(SettingDBTable::Value, value);
@@ -416,6 +418,12 @@ void AppManager::onConfirmationClicked(const int selector)
     }
 }
 
+void AppManager::onKeyPressed(const int key)
+{
+    qDebug() << "@@@@@ AppManager::onKeyPressed " << key;
+    emit showMessageBox("Key", QString("%1 -> 0x").arg(key) + QString::number(key, 16));
+}
+
 void AppManager::onTableResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onTableResultClicked " << index;
@@ -434,27 +442,10 @@ void AppManager::onTableResultClicked(const int index)
     }
 }
 
-DBRecord* AppManager::getSettingsItemByIndex(const int index)
-{
-    return (index >= 0 && index < settings.count()) ? &settings[index] : nullptr;
-}
-
-DBRecord* AppManager::getSettingsItemByCode(const int code)
-{
-    bool ok = false;
-    for (int i = 0; i < settings.count(); i++)
-    {
-        DBRecord& ri = settings[i];
-        if (ri[SettingDBTable::Code].toInt(&ok) == code && ok)
-            return &ri;
-    }
-    return nullptr;
-}
-
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
-    DBRecord* r = getSettingsItemByIndex(index);
+    DBRecord* r =  settings.getItemByIndex(index);
     if (r != nullptr && !r->empty())
         emit showSettingInputBox(index,
                                  (r->at(SettingDBTable::Name)).toString(),
@@ -550,19 +541,8 @@ void AppManager::checkAuthorization(const DBRecordList& users)
     }
 
 #ifdef HTTP_CLIENT_TEST
-    emit sendHTTPClientGet("127.0.0.1:" + getStringSettingsValueByCode(SettingDBTable::SettingCode_TCPPort));
+    emit sendHTTPClientGet("127.0.0.1:" + settings.getItemStringValue(SettingDBTable::SettingCode_TCPPort));
 #endif
-}
-
-QString AppManager::getStringSettingsValueByCode(const SettingDBTable::SettingCode code)
-{
-    DBRecord* r = getSettingsItemByCode(code);
-    return r != nullptr ? (r->at(SettingDBTable::Value)).toString() : "";
-}
-
-int AppManager::getIntSettingsValueByCode(const SettingDBTable::SettingCode code)
-{
-    return Tools::stringToInt(getStringSettingsValueByCode(code));
 }
 
 void AppManager::saveTransaction()
@@ -596,12 +576,12 @@ void AppManager::log(const int type, const QString &comment)
 void AppManager::onSettingsChanged(const DBRecordList& records)
 {
     qDebug() << "@@@@@ AppManager::onSettingsChanged";
-    settings.clear();
-    settings.append(records);
-    settingsPanelModel->update(&settings);
+    settings.items.clear();
+    settings.items.append(records);
+    settingsPanelModel->update(&settings.items);
 
 #ifdef HTTP_SERVER
-    const int newPort = getIntSettingsValueByCode(SettingDBTable::SettingCode_TCPPort);
+    const int newPort = settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort);
     if (httpServer == nullptr || httpServer->port != newPort) // Start or restart server
     {
        stopHTTPServer();
@@ -613,6 +593,12 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
 void AppManager::onDBStarted()
 {
     qDebug() << "@@@@@ AppManager::onDBStarted";
+    if (settings.groups.empty())
+    {
+        JSONParser parser;
+        settings.groups = parser.run((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS),
+                                   Tools::readTextFile(":/Text/json_default_setting_groups.txt"));
+    }
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
 }
@@ -621,7 +607,7 @@ void AppManager::onPrinted()
 {
     qDebug() << "@@@@@ AppManager::onPrinted";
     saveTransaction();
-    if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
+    if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
         emit resetProduct();
 }
 

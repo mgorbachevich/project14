@@ -12,6 +12,7 @@
 #include "productdbtable.h"
 #include "labelformatdbtable.h"
 #include "settingdbtable.h"
+#include "settinggroupdbtable.h"
 #include "transactiondbtable.h"
 #include "resourcedbtable.h"
 #include "userdbtable.h"
@@ -26,6 +27,7 @@ DataBase::DataBase(QObject *parent): QObject(parent)
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
     tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
     tables.append(new SettingDBTable(DBTABLENAME_SETTINGS, this));
+    tables.append(new SettingGroupDBTable(DBTABLENAME_SETTINGGROUPS, this));
     tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, this));
     tables.append(new UserDBTable(DBTABLENAME_USERS, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGES, this));
