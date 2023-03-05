@@ -50,9 +50,10 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     dbThread->start();
     emit startDB();
 
-    // Поддержка SSL:
+#if defined(HTTP_CLIENT) || defined(HTTP_SERVER)    // Поддержка SSL:
     // https://doc.qt.io/qt-6/android-openssl-support.html
     qDebug() << "@@@@@ AppManager::AppManager Device supports OpenSSL:" << QSslSocket::supportsSsl();
+#endif
 
     startHTTPClient(db);
 
@@ -89,6 +90,7 @@ void AppManager::startHTTPClient(DataBase* db)
 #ifdef HTTP_CLIENT
     if (httpClientThread == nullptr)
     {
+        qDebug() << "@@@@@ AppManager::startHTTPClient";
         httpClientThread = new QThread();
         HTTPClient* httpClient = new HTTPClient();
         httpClient->moveToThread(httpClientThread);
@@ -104,25 +106,30 @@ void AppManager::startHTTPClient(DataBase* db)
 
 void AppManager::stopHTTPClient()
 {
+#ifdef HTTP_CLIENT
     if (httpClientThread != nullptr)
     {
+        qDebug() << "@@@@@ AppManager::stopHTTPClient";
         emit showMessageBox("", "HTTP Client stoped");
         httpClientThread->quit();
         httpClientThread->wait();
         delete httpClientThread;
         httpClientThread = nullptr;
     }
+#endif
 }
 
 void AppManager::stopHTTPServer()
 {
+#ifdef HTTP_SERVER
     if (httpServer != nullptr)
     {
-        //qDebug() << "@@@@@ AppManager::stopHTTPServer";
+        qDebug() << "@@@@@ AppManager::stopHTTPServer";
         disconnect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
         delete httpServer;
         httpServer = nullptr;
     }
+#endif
 }
 
 void AppManager::startHTTPServer()
@@ -130,6 +137,7 @@ void AppManager::startHTTPServer()
 #ifdef HTTP_SERVER
     if (httpServer == nullptr)
     {
+        qDebug() << "@@@@@ AppManager::startHTTPServer";
         const int newPort = getIntSettingsValueByCode(SettingDBTable::SettingCode_TCPPort);
         //emit showMessageBox("", "HTTP Server started");
         qDebug() << "@@@@@ AppManager::AppManager TCP port:" << newPort;
@@ -165,6 +173,11 @@ QString AppManager::amountAsString()
 #else
     return (price() == 0) ?  AMOUNT_0 : Tools::moneyToText(weight * price(), getIntSettingsValueByCode(SettingDBTable::SettingCode_PointPosition));
 #endif
+}
+
+QString AppManager::versionAsString()
+{
+    return QString("Версия приложения %1. Версия БД %2").arg(APP_VERSION, DB_VERSION);
 }
 
 double AppManager::price()
@@ -493,7 +506,7 @@ void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
     mode = Mode::Start;
-    emit showAuthorizationPanel();
+    emit showAuthorizationPanel(versionAsString());
     emit selectFromDB(DataBase::GetUserNames, "");
 }
 
@@ -587,22 +600,26 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
     settings.append(records);
     settingsPanelModel->update(&settings);
 
+#ifdef HTTP_SERVER
     const int newPort = getIntSettingsValueByCode(SettingDBTable::SettingCode_TCPPort);
-    if (httpServer != nullptr && httpServer->port != newPort) // Restart server
+    if (httpServer == nullptr || httpServer->port != newPort) // Start or restart server
     {
        stopHTTPServer();
        startHTTPServer();
     }
+#endif
 }
 
 void AppManager::onDBStarted()
 {
+    qDebug() << "@@@@@ AppManager::onDBStarted";
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
 }
 
 void AppManager::onPrinted()
 {
+    qDebug() << "@@@@@ AppManager::onPrinted";
     saveTransaction();
     if (getIntSettingsValueByCode(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
         emit resetProduct();
@@ -610,6 +627,7 @@ void AppManager::onPrinted()
 
 void AppManager::onResetProduct()
 {
+    qDebug() << "@@@@@ AppManager::onResetProduct";
     product.clear();
     updateWeightPanel();
 }

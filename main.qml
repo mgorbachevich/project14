@@ -15,8 +15,6 @@ ApplicationWindow
     Material.primary: Material.color(Material.Indigo, Material.Shade100)
 
     id: mainWindow
-    width: Constants.mainWindowWidth
-    height:  Constants.mainWindowHeight
     title: qsTr("Project14")
     color: Material.background
     visible: true
@@ -129,15 +127,23 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showAuthorizationPanel:
     {
         target: app
-        function onShowAuthorizationPanel()
+        function onShowAuthorizationPanel(value)
         {
             console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
+            if (Qt.platform.os === "android")
+                mainWindow.visibility = Window.FullScreen
+            else
+            {
+                mainWindow.width = Constants.mainWindowWidth
+                mainWindow.height = Constants.mainWindowHeight
+            }
             Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
                                                                        {
                                                                            x: 0,
                                                                            y: 0,
                                                                            width: mainWindow.width,
-                                                                           height: mainWindow.height
+                                                                           height: mainWindow.height,
+                                                                           versionValue: value
                                                                        }).open()
         }
     }

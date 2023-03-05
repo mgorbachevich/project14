@@ -8,11 +8,13 @@
 //#define LOG_SELECT_RESULT
 #define HTTP_SERVER
 #define HTTP_CLIENT
-//#define HTTP_CLIENT_TEST
-//#define CHECK_AUTHORIZATION
+#define HTTP_CLIENT_TEST
+#define CHECK_AUTHORIZATION
 #define SAVE_TRANSACTION_ON_PRINT
 #define SAVE_LOG_IN_DB
 
+#define APP_VERSION "1.0"
+#define DB_VERSION "1.0"
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define WEIGHT_0 "00.000"
 #define PRICE_0 "0000.00"

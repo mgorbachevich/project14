@@ -36,6 +36,7 @@ private:
     QString priceAsString();
     QString weightAsString();
     QString amountAsString();
+    QString versionAsString();
     void showCurrentProduct();
     void filteredSearch();
     void updateTablePanel();
@@ -98,7 +99,7 @@ signals:
     void showGroupHierarchyRoot(const bool);
     void showTableOptions();
     void showSearchOptions();
-    void showAuthorizationPanel();
+    void showAuthorizationPanel(const QString&);
     void showSettingsPanel();
     void showAdminMenu(bool);
     void showSettingInputBox(const int, const QString&, const QString&);

@@ -13,11 +13,23 @@ Popup
     focus: true
     modal: true
     dim: true
+    property string versionValue: "Version"
 
     Connections // Slot for signal AppManager::authorizationSucceded:
     {
         target: app
         function onAuthorizationSucceded() { authorizationPanel.close() }
+    }
+
+    Text
+    {
+        id: versionText
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.Top
+        topPadding: Constants.margin
+        font { pointSize: Constants.tinyFontSize; family:'Roboto'; styleName:'Regular' }
+        color: Material.color(Material.Grey, Material.Shade400)
+        text: versionValue
     }
 
     Column
@@ -70,7 +82,6 @@ Popup
 
         Text
         {
-            anchors.topMargin: Constants.margin
             font { pointSize: Constants.smallFontSize; family:'Roboto'; styleName:'Regular' }
             color: Material.color(Material.Grey, Material.Shade400)
             text: qsTr("Пароль")
