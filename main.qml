@@ -26,6 +26,39 @@ ApplicationWindow
     property int popupWidth: mainWindow.width * 4 / 5
     property int popupHeight: mainWindow.height * 2 / 3
 
+    Connections // Slot for signal AppManager::start:
+    {
+        target: app
+        function onStart()
+        {
+            console.debug("@@@@@ mainWindow.onStart");
+            if (Qt.platform.os === "android")
+                mainWindow.visibility = Window.FullScreen
+            else
+            {
+                mainWindow.width = Constants.mainWindowWidth
+                mainWindow.height = Constants.mainWindowHeight
+            }
+        }
+    }
+
+    Connections // Slot for signal AppManager::showAuthorizationPanel:
+    {
+        target: app
+        function onShowAuthorizationPanel(value)
+        {
+            console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
+            Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
+                                                                       {
+                                                                           x: 0,
+                                                                           y: 0,
+                                                                           width: mainWindow.width,
+                                                                           height: mainWindow.height,
+                                                                           versionValue: value
+                                                                       }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showAdminMenu:
     {
         target: app
@@ -120,30 +153,6 @@ ApplicationWindow
                                                                            titleText: titleText,
                                                                            messageText: messageText,
                                                                            dialogSelector: selector
-                                                                       }).open()
-        }
-    }
-
-    Connections // Slot for signal AppManager::showAuthorizationPanel:
-    {
-        target: app
-        function onShowAuthorizationPanel(value)
-        {
-            console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
-            if (Qt.platform.os === "android")
-                mainWindow.visibility = Window.FullScreen
-            else
-            {
-                mainWindow.width = Constants.mainWindowWidth
-                mainWindow.height = Constants.mainWindowHeight
-            }
-            Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: 0,
-                                                                           y: 0,
-                                                                           width: mainWindow.width,
-                                                                           height: mainWindow.height,
-                                                                           versionValue: value
                                                                        }).open()
         }
     }

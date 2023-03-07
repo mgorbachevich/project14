@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "tools.h"
+#include "jsonparser.h"
 
 DBRecord* Settings::getItemByCode(const int code)
 {
@@ -34,6 +35,13 @@ QList<int> Settings::parseGroupItemCodes(DBRecord* group)
             codes.append(Tools::stringToInt(sl[i]));
     }
     return codes;
+}
+
+void Settings::loadGroups(SettingGroupDBTable* table)
+{
+    JSONParser parser;
+    groups.clear();
+    groups.append(parser.run(table, Tools::readTextFile(DEFAULT_SETTING_GROUPS_FILE)));
 }
 
 DBRecord *Settings::getByIndex(DBRecordList& records, const int index)

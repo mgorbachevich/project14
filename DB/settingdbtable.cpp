@@ -49,9 +49,9 @@ const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
         resultRecords.append(ri);
     }
 
-    // Добавление недостающих значений по умолчанию из файла json_default_settings.txt:
+    // Добавление недостающих значений по умолчанию:
     JSONParser parser;
-    DBRecordList defaultRecords = parser.run(this, Tools::readTextFile(":/Text/json_default_settings.txt"));
+    DBRecordList defaultRecords = parser.run(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
     checkDefault(SettingCode_ScalesNumber, defaultRecords, resultRecords);
     checkDefault(SettingCode_TCPPort, defaultRecords, resultRecords);
     checkDefault(SettingCode_PointPosition, defaultRecords, resultRecords);

@@ -38,7 +38,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     db = new DataBase();
     db->moveToThread(dbThread);
     connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
-    connect(this, &AppManager::startDB, db, &DataBase::onStart);
+    connect(this, &AppManager::start, db, &DataBase::onStart);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
     connect(this, &AppManager::saveLog, db, &DataBase::onSaveLog);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
@@ -50,7 +50,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     connect(db, &DataBase::log, this, &AppManager::onLog);
     dbThread->start();
-    emit startDB();
+    QTimer::singleShot(10, this, &AppManager::start); //emit start();
 
     startHTTPClient(db);
 
@@ -312,11 +312,11 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             const int column = ResourceDBTable::Value;
             for (int i = 0; i < records.count(); i++)
             {
-                QString fileName = DUMMY_IMAGE;
+                QString fileName = DUMMY_IMAGE_FILE;
                 if (records[i].count() > column)
                 {
                     fileName = records[i][column].toString();
-                    // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE; // todo
+                    // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
                 }
                 fileNames << fileName;
             }
@@ -332,14 +332,14 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         case DataBase::Selector::GetImageByResourceCode:
         // Отображение картинки выбранного товара:
         {
-            QString fileName = DUMMY_IMAGE;
+            QString fileName = DUMMY_IMAGE_FILE;
             if (records.count() > 0)
             {
                 const int column = ResourceDBTable::Value;
                 if (records[0].count() > column)
                 {
                     fileName = records[0][column].toString();
-                    // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE; // todo
+                    // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
                 }
             }
             emit showProductImage(fileName);
@@ -418,10 +418,12 @@ void AppManager::onConfirmationClicked(const int selector)
     }
 }
 
-void AppManager::onKeyPressed(const int key)
+void AppManager::onKeyPressed(const int key, const qint32 scanCode)
 {
-    qDebug() << "@@@@@ AppManager::onKeyPressed " << key;
-    emit showMessageBox("Key", QString("%1 -> 0x").arg(key) + QString::number(key, 16));
+    qDebug() << "@@@@@ AppManager::onKeyPressed " << key << scanCode;
+    QString s = QString::number(key, 10) + ", 0x" + QString::number(key, 16);
+    s +="\nScanCode: " + QString::number(scanCode, 10) + ", 0x" + QString::number(scanCode, 16);
+    emit showMessageBox("Key", s);
 }
 
 void AppManager::onTableResultClicked(const int index)
@@ -593,12 +595,7 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
 void AppManager::onDBStarted()
 {
     qDebug() << "@@@@@ AppManager::onDBStarted";
-    if (settings.groups.empty())
-    {
-        JSONParser parser;
-        settings.groups = parser.run((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS),
-                                   Tools::readTextFile(":/Text/json_default_setting_groups.txt"));
-    }
+    settings.loadGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
 }

@@ -17,7 +17,7 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
 
-    Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+    //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
 
     GridLayout
     {
@@ -29,7 +29,11 @@ Popup
         rows: 2
 
         focus: true
-        Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+        Keys.onPressed: (event) =>
+        {
+            app.onKeyPressed(event.key, event.nativeScanCode)
+            console.debug("@@@@@ messagePanel.GridLayout.Keys.onPressed ", JSON.stringify(event))
+        }
 
         Rectangle
         {
@@ -40,8 +44,8 @@ Popup
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
 
-            focus: true
-            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+            //focus: true
+            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
         }
 
         Rectangle
@@ -52,8 +56,8 @@ Popup
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
 
-            focus: true
-            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+            //focus: true
+            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
 
             Text
             {
@@ -64,8 +68,8 @@ Popup
                 wrapMode: Text.WordWrap
                 text: titleText
 
-                focus: true
-                Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+                //focus: true
+                //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
             }
         }
 
@@ -84,8 +88,8 @@ Popup
             Material.background: Material.primary
             onClicked: messagePanel.close()
 
-            focus: true
-            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+            //focus: true
+            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
         }
 
         Rectangle
@@ -98,8 +102,8 @@ Popup
             color: "transparent"
             //color: Material.color(Material.Grey, Material.Shade50)
 
-            focus: true
-            Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+            //focus: true
+            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
 
             Text
             {
@@ -109,8 +113,8 @@ Popup
                 wrapMode: Text.WordWrap
                 text: messageText
 
-                focus: true
-                Keys.onPressed:  (event) => app.onKeyPressed(event.key)
+                //focus: true
+                //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
             }
         }
     }

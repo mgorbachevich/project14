@@ -4,7 +4,6 @@
 #include <QObject>
 #include "constants.h"
 #include "database.h"
-#include "settingdbtable.h"
 #include "settings.h"
 
 class QThread;
@@ -71,12 +70,12 @@ private:
     UserNameModel* userNameModel;
 
 signals:
+    void start();
     void saveLog(const DBRecord&);
     void print();
     void printed(const DBRecord&);
     void resetProduct();
     void newData(const QString&);
-    void startDB();
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
@@ -127,7 +126,7 @@ public slots:
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
     void onUpdateDBResult(const DataBase::Selector, const bool);
     void onConfirmationClicked(const int);
-    void onKeyPressed(const int);
+    void onKeyPressed(const int, const qint32);
 };
 
 #endif // APPMANAGER_H
