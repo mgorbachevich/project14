@@ -16,7 +16,8 @@ public:
     QString getItemStringValue(const SettingDBTable::SettingCode code);
     int getItemIntValue(const SettingDBTable::SettingCode code);
     QList<int> parseGroupItemCodes(DBRecord*);
-    void loadGroups(SettingGroupDBTable*);
+    void createGroups(SettingGroupDBTable*);
+    DBRecordList* updateItems(const DBRecordList&);
 
     DBRecordList items;
     DBRecordList groups;

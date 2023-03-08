@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Popup
 {
     id: settingPanel
+    objectName: "settingPanel"
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -23,6 +24,10 @@ Popup
         rowSpacing: Constants.margin
         columns: 3
         rows: 2
+        /*
+        focus: true
+        Keys.onPressed: (event) => {}
+        */
 
         Button
         {

@@ -15,6 +15,7 @@ ApplicationWindow
     Material.primary: Material.color(Material.Indigo, Material.Shade100)
 
     id: mainWindow
+    objectName: "mainWindow"
     title: qsTr("Project14")
     color: Material.background
     visible: true
@@ -194,6 +195,31 @@ ApplicationWindow
         anchors.fill: parent
         spacing: 0
         padding: 0
+
+        focus: true
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ mainWindow Keys.onPressed ", JSON.stringify(event))
+            switch (event.key)
+            {
+                case Qt.Key_T: // >T<
+                    app.onTare()
+                    break
+                case Qt.Key_Z: // >0<
+                    app.onZero()
+                    break
+                case Qt.Key_Enter:
+                case Qt.Key_Escape: // Круглая стрелка
+                case Qt.Key_C:
+                case Qt.Key_Q: // Поиск
+                case Qt.Key_F7: // Резерв
+                case Qt.Key_F8: // Печать
+                case Qt.Key_F9: // Ключ
+                case Qt.Key_F10: // Крыша
+                    app.onShowMessageBox("ВНИМАНИЕ!", "?");
+                    break
+            }
+        }
 
         Loader
         {

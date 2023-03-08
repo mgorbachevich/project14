@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Popup
 {
     id: messagePanel
+    objectName: "messagePanel"
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -17,8 +18,6 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
 
-    //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
-
     GridLayout
     {
         anchors.fill: parent
@@ -27,13 +26,10 @@ Popup
         rowSpacing: Constants.margin
         columns: 3
         rows: 2
-
+        /*
         focus: true
-        Keys.onPressed: (event) =>
-        {
-            app.onKeyPressed(event.key, event.nativeScanCode)
-            console.debug("@@@@@ messagePanel.GridLayout.Keys.onPressed ", JSON.stringify(event))
-        }
+        Keys.onPressed: (event) => {}
+        */
 
         Rectangle
         {
@@ -43,9 +39,6 @@ Popup
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
-
-            //focus: true
-            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
         }
 
         Rectangle
@@ -56,9 +49,6 @@ Popup
             Layout.preferredHeight: Constants.buttonSize
             color: "transparent"
 
-            //focus: true
-            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
-
             Text
             {
                 id: messagePanelTitle
@@ -67,9 +57,6 @@ Popup
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
                 wrapMode: Text.WordWrap
                 text: titleText
-
-                //focus: true
-                //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
             }
         }
 
@@ -87,9 +74,6 @@ Popup
             bottomInset: 0
             Material.background: Material.primary
             onClicked: messagePanel.close()
-
-            //focus: true
-            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
         }
 
         Rectangle
@@ -102,9 +86,6 @@ Popup
             color: "transparent"
             //color: Material.color(Material.Grey, Material.Shade50)
 
-            //focus: true
-            //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
-
             Text
             {
                 id: messagePanelText
@@ -112,9 +93,6 @@ Popup
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Regular' }
                 wrapMode: Text.WordWrap
                 text: messageText
-
-                //focus: true
-                //Keys.onPressed: (event) => app.onKeyPressed(event.key, event.nativeScanCode)
             }
         }
     }

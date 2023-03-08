@@ -51,7 +51,7 @@ const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
 
     // Добавление недостающих значений по умолчанию:
     JSONParser parser;
-    DBRecordList defaultRecords = parser.run(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
+    DBRecordList defaultRecords = parser.parseTable(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
     checkDefault(SettingCode_ScalesNumber, defaultRecords, resultRecords);
     checkDefault(SettingCode_TCPPort, defaultRecords, resultRecords);
     checkDefault(SettingCode_PointPosition, defaultRecords, resultRecords);

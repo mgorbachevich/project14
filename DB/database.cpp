@@ -88,12 +88,12 @@ void DataBase::onStart()
 
         // todo:
         JSONParser parser;
-        parser.run(this, Tools::readTextFile(":/Text/json_settings.txt"));
-        parser.run(this, Tools::readTextFile(":/Text/json_products.txt"));
-        parser.run(this, Tools::readTextFile(":/Text/json_users.txt"));
-        parser.run(this, Tools::readTextFile(":/Text/json_showcase.txt"));
-        parser.run(this, Tools::readTextFile(":/Text/json_pictures.txt"));
-        parser.run(this, Tools::readTextFile(":/Text/json_messages.txt"));
+        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_settings.txt"));
+        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_products.txt"));
+        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_users.txt"));
+        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_showcase.txt"));
+        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_pictures.txt"));
+        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_messages.txt"));
 
         emit dbStarted();
     }
@@ -266,7 +266,7 @@ bool DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList
         records.append(r);
     }
     qDebug() << "@@@@@ DataBase::executeSelectSQL records: " << records.count();
-#ifdef LOG_SELECT_RESULT
+#ifdef DEBUG_LOG_SELECT_RESULT
     for (int i = 0; i < records.count(); i++)
     {
         DBRecord ri = records.[i];
@@ -465,7 +465,7 @@ void DataBase::onNewData(const QString& json)
 {
     qDebug() << "@@@@@ DataBase::onNewData " << json;
     JSONParser parser;
-    if(!parser.run(this, json))
+    if(!parser.parseAllTables(this, json))
         emit log(LogDBTable::LogType_Warning, "БД. Не обработаны данные " + json);
 }
 

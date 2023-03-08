@@ -15,6 +15,7 @@ Rectangle
     Material.primary: Material.color(Material.Indigo, Material.Shade100)
 
     id:  weightPanel
+    objectName: "weightPanel"
     height: valueFontSize + titleFontSize + Constants.margin
     color: Material.background
 

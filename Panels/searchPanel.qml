@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Rectangle
 {
     id:  searchPanel
+    objectName: "searchPanel"
     color: Material.background
     property int filterWidth: width * 0.25
 

@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Popup
 {
     id: confirmationPanel
+    objectName: "confirmationPanel"
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -26,6 +27,10 @@ Popup
         rowSpacing: Constants.margin
         columns: 2
         rows: 3
+        /*
+        focus: true
+        Keys.onPressed: (event) => {}
+        */
 
         Rectangle
         {

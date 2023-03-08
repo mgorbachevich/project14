@@ -37,11 +37,28 @@ QList<int> Settings::parseGroupItemCodes(DBRecord* group)
     return codes;
 }
 
-void Settings::loadGroups(SettingGroupDBTable* table)
+void Settings::createGroups(SettingGroupDBTable* table)
 {
     JSONParser parser;
     groups.clear();
-    groups.append(parser.run(table, Tools::readTextFile(DEFAULT_SETTING_GROUPS_FILE)));
+    groups.append(parser.parseTable(table, Tools::readTextFile(DEFAULT_SETTING_GROUPS_FILE)));
+#ifdef DEBUG_LOG_SETTING_GROUPS
+    for (int i = 0; i < groups.count(); i++)
+    {
+        QString s = "@@@@@ Settings::createGroups " + groups[i].at(SettingGroupDBTable::Name).toString();
+        QList<int> codes = parseGroupItemCodes(&groups[i]);
+        for (int j = 0; j < codes.count(); j++)
+            s += QString(" %1").arg(codes[j]);
+        qDebug() << s;
+    }
+#endif
+}
+
+DBRecordList* Settings::updateItems(const DBRecordList& records)
+{
+    items.clear();
+    items.append(records);
+    return &items;
 }
 
 DBRecord *Settings::getByIndex(DBRecordList& records, const int index)

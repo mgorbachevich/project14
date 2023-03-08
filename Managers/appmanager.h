@@ -32,6 +32,8 @@ public:
     ~AppManager();
 
 private:
+    void createDB();
+    void createModels();
     double price();
     QString priceAsString();
     QString weightAsString();
@@ -51,6 +53,7 @@ private:
     void saveTransaction();
     void log(const int, const QString&);
 
+    QQmlContext* context = nullptr;
     Mode mode = Mode::Start;
     DataBase* db = nullptr;
     QThread* dbThread = nullptr;
@@ -121,12 +124,13 @@ public slots:
     void onProductPanelCloseClicked() { emit resetProduct(); }
     void onSettingInputClosed(const int, const QString&);
     void onAdminSettingsClicked();
-    void onLockClicked() { emit showConfirmationBox(DialogSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?"); }
+    void onLockClicked();
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
     void onUpdateDBResult(const DataBase::Selector, const bool);
     void onConfirmationClicked(const int);
-    void onKeyPressed(const int, const qint32);
+    void onZero();
+    void onTare();
 };
 
 #endif // APPMANAGER_H

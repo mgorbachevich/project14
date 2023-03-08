@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Rectangle
 {
     id:  showcasePanel
+    objectName: "showcasePanel"
     color: Material.background
     property int imageSize: (height - Constants.margin * 3) / 2
 

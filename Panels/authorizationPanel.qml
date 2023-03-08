@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Popup
 {
     id: authorizationPanel
+    objectName: "authorizationPanel"
     padding : 0
     closePolicy: Popup.NoAutoClose
     focus: true
@@ -35,6 +36,10 @@ Popup
     Column
     {
         anchors.centerIn: parent
+        /*
+        focus: true
+        Keys.onPressed: (event) => {}
+        */
 
         Text
         {

@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Rectangle
 {
     id:  tablePanel
+    objectName: "tablePanel"
     color: Material.background
 
     Connections // Slot for signal AppManager::showTablePanelTitle:

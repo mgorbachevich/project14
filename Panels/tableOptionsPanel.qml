@@ -8,6 +8,7 @@ import RegisteredTypes 1.0
 Popup
 {
     id: tableOptionsPanel
+    objectName: "tableOptionsPanel"
     padding : 0
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     focus: true
@@ -22,6 +23,10 @@ Popup
         columnSpacing: 0
         columns: 4
         rows: 2
+        /*
+        focus: true
+        Keys.onPressed: (event) => {}
+        */
 
         Rectangle
         {

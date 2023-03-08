@@ -19,7 +19,6 @@
 #include "settingspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "tools.h"
-#include "jsonparser.h"
 #ifdef HTTP_SERVER
 #include "httpserver.h"
 #endif
@@ -30,10 +29,28 @@
 AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 {
     qDebug() << "@@@@@ AppManager::AppManager";
+    this->context = context;
     mode = Mode::Start;
     user = UserDBTable::defaultAdmin();
+    createDB();
+    createModels();
+    startHTTPClient(db);
+    QTimer::singleShot(10, this, &AppManager::start); //emit start();
+}
 
-    // БД:
+AppManager::~AppManager()
+{
+    if (dbThread != nullptr)
+    {
+        dbThread->quit();
+        dbThread->wait();
+    }
+    stopHTTPClient();
+    stopHTTPServer();
+}
+
+void AppManager::createDB()
+{
     dbThread = new QThread(this);
     db = new DataBase();
     db->moveToThread(dbThread);
@@ -50,11 +67,10 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     connect(db, &DataBase::log, this, &AppManager::onLog);
     dbThread->start();
-    QTimer::singleShot(10, this, &AppManager::start); //emit start();
+}
 
-    startHTTPClient(db);
-
-    // Модели:
+void AppManager::createModels()
+{
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
     tablePanelModel = new TablePanelModel(this);
@@ -69,17 +85,6 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
-}
-
-AppManager::~AppManager()
-{
-    if (dbThread != nullptr)
-    {
-        dbThread->quit();
-        dbThread->wait();
-    }
-    stopHTTPClient();
-    stopHTTPServer();
 }
 
 void AppManager::startHTTPClient(DataBase* db)
@@ -189,7 +194,7 @@ double AppManager::price()
 
 void AppManager::onWeightChanged(double value)
 {
-#ifdef LOG_BACKGROUND_THREADS
+#ifdef DEBUG_LOG_BACKGROUND_THREADS
     qDebug() << "@@@@@ AppManager::onWeightChanged " << value;
 #endif
 
@@ -219,8 +224,7 @@ void AppManager::showCurrentProduct()
 void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
-    emit selectFromDB(DataBase::Selector::GetMessageByResourceCode,
-                      product[ProductDBTable::MessageCode].toString());
+    emit selectFromDB(DataBase::Selector::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
 }
 
 void AppManager::filteredSearch()
@@ -287,6 +291,12 @@ void AppManager::onAdminSettingsClicked()
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
     // todo
     emit showSettingsPanel();
+}
+
+void AppManager::onLockClicked()
+{
+    qDebug() << "@@@@@ AppManager::onLockClicked";
+    emit showConfirmationBox(DialogSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
@@ -416,14 +426,6 @@ void AppManager::onConfirmationClicked(const int selector)
         startAuthorization();
         break;
     }
-}
-
-void AppManager::onKeyPressed(const int key, const qint32 scanCode)
-{
-    qDebug() << "@@@@@ AppManager::onKeyPressed " << key << scanCode;
-    QString s = QString::number(key, 10) + ", 0x" + QString::number(key, 16);
-    s +="\nScanCode: " + QString::number(scanCode, 10) + ", 0x" + QString::number(scanCode, 16);
-    emit showMessageBox("Key", s);
 }
 
 void AppManager::onTableResultClicked(const int index)
@@ -578,9 +580,7 @@ void AppManager::log(const int type, const QString &comment)
 void AppManager::onSettingsChanged(const DBRecordList& records)
 {
     qDebug() << "@@@@@ AppManager::onSettingsChanged";
-    settings.items.clear();
-    settings.items.append(records);
-    settingsPanelModel->update(&settings.items);
+    settingsPanelModel->update(settings.updateItems(records));
 
 #ifdef HTTP_SERVER
     const int newPort = settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort);
@@ -595,7 +595,7 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
 void AppManager::onDBStarted()
 {
     qDebug() << "@@@@@ AppManager::onDBStarted";
-    settings.loadGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
+    settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
 }
@@ -623,6 +623,17 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     user[UserDBTable::Password] = password;
     emit selectFromDB(DataBase::GetAuthorizationUserByName, normalizedLogin);
 }
+
+void AppManager::onZero()
+{
+    emit showMessageBox("", ">0<");
+}
+
+void AppManager::onTare()
+{
+    emit showMessageBox("", ">T<");
+}
+
 
 
 

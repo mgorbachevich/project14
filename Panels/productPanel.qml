@@ -15,6 +15,7 @@ Popup
     Material.primary: Material.color(Material.Indigo, Material.Shade100)
 
     id: productPanel
+    objectName: "productPanel"
     padding : 0
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     focus: true
@@ -43,6 +44,35 @@ Popup
         rowSpacing: Constants.margin
         columns: 4
         rows: 2
+
+        focus: true
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ productPanel Keys.onPressed ", JSON.stringify(event))
+            switch (event.key)
+            {
+                case Qt.Key_Escape: // Круглая стрелка
+                    app.onProductPanelCloseClicked()
+                    break
+                case Qt.Key_T: // >T<
+                    app.onTare()
+                    break
+                case Qt.Key_Z: // >0<
+                    app.onZero()
+                    break
+                case Qt.Key_F8: // Печать
+                    app.onPrint()
+                    break
+                case Qt.Key_Enter:
+                case Qt.Key_C:
+                case Qt.Key_Q: // Поиск
+                case Qt.Key_F7: // Резерв
+                case Qt.Key_F9: // Ключ
+                case Qt.Key_F10: // Крыша
+                    app.onShowMessageBox("ВНИМАНИЕ!", "Закройте окно!");
+                    break
+            }
+        }
 
         Image
         {

@@ -13,7 +13,7 @@ WeightManager::WeightManager(QObject *parent): QObject(parent)
 
 void WeightManager::timerEvent(QTimerEvent*)
 {
-#ifdef LOG_BACKGROUND_THREADS
+#ifdef DEBUG_LOG_BACKGROUND_THREADS
     qDebug() << "@@@@@ WeightManager::timerEvent";
 #endif
 
