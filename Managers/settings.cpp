@@ -14,10 +14,32 @@ DBRecord* Settings::getItemByCode(const int code)
     return nullptr;
 }
 
+DBRecord *Settings::getItemByIndexInGroup(const int indexInGroup)
+{
+    QList<int> currentGroupItemCodes = getCurrentGroupItemCodes();
+    int j = 0;
+    for (int i = 0; i < currentGroupItemCodes.count(); i++)
+    {
+        DBRecord* ri = getItemByCode(currentGroupItemCodes[i]);
+        if(ri != nullptr)
+        {
+            if (j == indexInGroup)
+                return ri;
+            j++;
+        }
+    }
+    return nullptr;
+}
+
 QString Settings::getItemStringValue(const SettingDBTable::SettingCode code)
 {
     DBRecord* r = getItemByCode(code);
     return r != nullptr ? (r->at(SettingDBTable::Value)).toString() : "";
+}
+
+QList<int> Settings::getCurrentGroupItemCodes()
+{
+    return parseGroupItemCodes(getGroupByIndex(currentGroupIndex));
 }
 
 int Settings::getItemIntValue(const SettingDBTable::SettingCode code)
@@ -54,11 +76,10 @@ void Settings::createGroups(SettingGroupDBTable* table)
 #endif
 }
 
-DBRecordList* Settings::updateItems(const DBRecordList& records)
+void Settings::updateAllItems(const DBRecordList& records)
 {
     items.clear();
     items.append(records);
-    return &items;
 }
 
 DBRecord *Settings::getByIndex(DBRecordList& records, const int index)

@@ -2,7 +2,8 @@
 #define SETTINGSPANELMODEL_H
 
 #include "baselistmodel2.h"
-#include "constants.h"
+
+class Settings;
 
 class SettingsPanelModel : public BaseListModel2
 {
@@ -10,10 +11,7 @@ class SettingsPanelModel : public BaseListModel2
 
 public:
     SettingsPanelModel(QObject *parent): BaseListModel2(parent) {}
-    void update(DBRecordList*);
-
-private:
-    DBRecordList* settings = nullptr;
+    void update(Settings&);
 };
 
 #endif // SETTINGSPANELMODEL_H

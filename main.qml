@@ -74,9 +74,9 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showSettingInputBox:
     {
         target: app
-        function onShowSettingInputBox(index, name, value)
+        function onShowSettingInputBox(code, name, value)
         {
-            console.debug("@@@@@ settingPanel.showSettingInputBox ", index, " ", name, " ", value);
+            console.debug("@@@@@ settingPanel.showSettingInputBox ", code, " ", name, " ", value);
             Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
                                                                        {
                                                                            x: popupX,
@@ -85,7 +85,7 @@ ApplicationWindow
                                                                            height: popupHeight,
                                                                            titleText: name,
                                                                            inputText: value,
-                                                                           settingIndex: index
+                                                                           settingItemCode: code
                                                                        }).open()
         }
     }
@@ -154,6 +154,22 @@ ApplicationWindow
                                                                            titleText: titleText,
                                                                            messageText: messageText,
                                                                            dialogSelector: selector
+                                                                       }).open()
+        }
+    }
+
+    Connections // Slot for signal AppManager::showSettingGroupsPanel:
+    {
+        target: app
+        function onShowSettingGroupsPanel()
+        {
+            console.debug("@@@@@ mainWindow.onShowSettingGroupsPanel");
+            Qt.createComponent("Panels/settingGroupsPanel.qml").createObject(mainWindow,
+                                                                       {
+                                                                           x: 0,
+                                                                           y: 0,
+                                                                           width: mainWindow.width,
+                                                                           height: mainWindow.height
                                                                        }).open()
         }
     }

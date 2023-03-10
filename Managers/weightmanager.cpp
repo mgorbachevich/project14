@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QDateTime>
 #include "weightmanager.h"
 
 WeightManager::WeightManager(QObject *parent): QObject(parent)
@@ -18,7 +19,7 @@ void WeightManager::timerEvent(QTimerEvent*)
 #endif
 
 #ifdef WEIGHT_EMULATION
-    weight +=  0.001 * (arc4random() % 10);
+    weight +=  0.001 * (QDateTime::currentMSecsSinceEpoch() % 10); // Псевдослучайное число
     emit weightChanged(weight);
 #endif
 }

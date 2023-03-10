@@ -14,6 +14,7 @@ class ShowcasePanelModel;
 class SearchFilterModel;
 class SearchPanelModel;
 class SettingsPanelModel;
+class SettingGroupsPanelModel;
 class UserNameModel;
 class QQmlContext;
 
@@ -69,68 +70,71 @@ private:
     TablePanelModel* tablePanelModel;
     SearchPanelModel* searchPanelModel;
     SettingsPanelModel* settingsPanelModel;
+    SettingGroupsPanelModel* settingGroupsPanelModel;
     SearchFilterModel* searchFilterModel;
     UserNameModel* userNameModel;
 
 signals:
-    void start();
-    void saveLog(const DBRecord&);
+    void authorizationSucceded();
+    void newData(const QString&);
     void print();
     void printed(const DBRecord&);
     void resetProduct();
-    void newData(const QString&);
+    void saveLog(const DBRecord&);
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
-    void updateDBRecord(const DataBase::Selector, const DBRecord&);
-    void authorizationSucceded();
     void sendHTTPClientGet(const QString&);
-    void showMessageBox(const QString&, const QString&);
-    void showConfirmationBox(const int, const QString&, const QString&);
-    void showPrice(const QString&);
-    void showAmount(const QString&);
-    void showWeight(const QString&);
-    void showPriceColor(const QString&);
-    void showAmountColor(const QString&);
-    void showWeightColor(const QString&);
-    void showProductImage(const QString&);
-    void showTablePanelTitle(const QString&);
-    void showProductPanel();
-    void showGroupHierarchyRoot(const bool);
-    void showTableOptions();
-    void showSearchOptions();
-    void showAuthorizationPanel(const QString&);
-    void showSettingsPanel();
     void showAdminMenu(bool);
+    void showAmount(const QString&);
+    void showAmountColor(const QString&);
+    void showAuthorizationPanel(const QString&);
+    void showConfirmationBox(const int, const QString&, const QString&);
+    void showGroupHierarchyRoot(const bool);
+    void showMessageBox(const QString&, const QString&);
+    void showPrice(const QString&);
+    void showPriceColor(const QString&);
+    void showProductImage(const QString&);
+    void showProductPanel();
+    void showSearchOptions();
+    void showSettingGroupsPanel();
     void showSettingInputBox(const int, const QString&, const QString&);
+    void showSettingsPanel();
+    void showTableOptions();
+    void showTablePanelTitle(const QString&);
+    void showWeight(const QString&);
+    void showWeightColor(const QString&);
+    void start();
+    void updateDBRecord(const DataBase::Selector, const DBRecord&);
 
 public slots:
+    void onAdminSettingsClicked();
+    void onCheckAuthorizationClicked(const QString&, const QString&);
+    void onConfirmationClicked(const int);
     void onDBStarted();
+    void onLockClicked();
+    void onLog(const int type, const QString &comment) { log(type, comment); }
     void onPrint() { emit print(); }
     void onPrinted();
-    void onLog(const int type, const QString &comment) { log(type, comment); }
-    void onResetProduct();
-    void onShowMessageBox(const QString&, const QString&);
-    void onWeightChanged(double);
-    void onSearchFilterEdited(const QString&);
-    void onSearchFilterClicked(const int);
     void onProductDescriptionClicked();
+    void onProductPanelCloseClicked() { emit resetProduct(); }
+    void onResetProduct();
+    void onSearchFilterClicked(const int);
+    void onSearchFilterEdited(const QString&);
     void onSearchOptionsClicked() { emit showSearchOptions(); }
     void onSearchResultClicked(const int);
-    void onShowcaseClicked(const int);
-    void onTableResultClicked(const int);
-    void onTableOptionsClicked() { emit showTableOptions(); }
-    void onSettingsItemClicked(const int);
-    void onTableBackClicked();
-    void onProductPanelCloseClicked() { emit resetProduct(); }
-    void onSettingInputClosed(const int, const QString&);
-    void onAdminSettingsClicked();
-    void onLockClicked();
-    void onCheckAuthorizationClicked(const QString&, const QString&);
     void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
-    void onUpdateDBResult(const DataBase::Selector, const bool);
-    void onConfirmationClicked(const int);
-    void onZero();
+    void onSettingGroupClicked(const int);
+    void onSettingInputClosed(const int, const QString&);
+    void onSettingsItemClicked(const int);
+    void onShowcaseClicked(const int);
+    void onShowMessageBox(const QString&, const QString&);
+    void onTableBackClicked();
+    void onTableOptionsClicked() { emit showTableOptions(); }
+    void onTableResultClicked(const int);
     void onTare();
+    void onUpdateDBResult(const DataBase::Selector, const bool);
+    void onWeightChanged(double);
+    void onZero();
 };
 
 #endif // APPMANAGER_H

@@ -1,19 +1,19 @@
 #include "settingspanelmodel.h"
 #include "settingdbtable.h"
+#include "settings.h"
 
-void SettingsPanelModel::update(DBRecordList* newSettings)
+void SettingsPanelModel::update(Settings& settings)
 {
     qDebug() << "@@@@@ SettingsPanelModel::update";
-    settings = newSettings;
     beginResetModel();
     items.clear();
-    if (settings != nullptr)
+    QList<int> groupItemCodes = settings.getCurrentGroupItemCodes();
+    for (int i = 0; i < groupItemCodes.count(); i++)
     {
-        for (int i = 0; i < settings->count(); i++)
-        {
-            const DBRecord& ri = settings->at(i);
-            addItem(ri[SettingDBTable::Name].toString(), ri[SettingDBTable::Value].toString());
-        }
+        int itemCode = groupItemCodes[i];
+        DBRecord* ri = settings.getItemByCode(itemCode);
+        if(ri != nullptr)
+            addItem(ri->at(SettingDBTable::Name).toString(), ri->at(SettingDBTable::Value).toString());
     }
     endResetModel();
 }

@@ -17,6 +17,7 @@
 #include "showcasepanelmodel.h"
 #include "searchpanelmodel.h"
 #include "settingspanelmodel.h"
+#include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "tools.h"
 #ifdef HTTP_SERVER
@@ -75,6 +76,7 @@ void AppManager::createModels()
     showcasePanelModel = new ShowcasePanelModel(this);
     tablePanelModel = new TablePanelModel(this);
     settingsPanelModel = new SettingsPanelModel(this);
+    settingGroupsPanelModel = new SettingGroupsPanelModel(this);
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
@@ -82,6 +84,7 @@ void AppManager::createModels()
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
     context->setContextProperty("settingsPanelModel", settingsPanelModel);
+    context->setContextProperty("settingGroupsPanelModel", settingGroupsPanelModel);
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
@@ -157,29 +160,17 @@ void AppManager::startHTTPServer()
 
 QString AppManager::weightAsString()
 {
-#ifdef WEIGHT_0_ALLWAYS
-    return WEIGHT_0;
-#else
     return Tools::weightToText(weight);
-#endif
 }
 
 QString AppManager::priceAsString()
 {
-#ifdef WEIGHT_0_ALLWAYS
-    return PRICE_0;
-#else
     return (price() == 0) ? PRICE_0 : Tools::moneyToText(price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
-#endif
 }
 
 QString AppManager::amountAsString()
 {
-#ifdef WEIGHT_0_ALLWAYS
-    return AMOUNT_0;
-#else
     return (price() == 0) ?  AMOUNT_0 : Tools::moneyToText(weight * price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
-#endif
 }
 
 QString AppManager::versionAsString()
@@ -275,10 +266,10 @@ void AppManager::onTableBackClicked()
     if (tablePanelModel->groupUp()) updateTablePanel();
 }
 
-void AppManager::onSettingInputClosed(const int index, const QString &value)
+void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
 {
-    qDebug() << "@@@@@ AppManager::onSettingInputClosed " << index << value;
-    DBRecord* r = settings.getItemByIndex(index);
+    qDebug() << "@@@@@ AppManager::onSettingInputClosed " << settingItemCode << value;
+    DBRecord* r = settings.getItemByCode(settingItemCode);
     if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
     {
         r->replace(SettingDBTable::Value, value);
@@ -290,7 +281,7 @@ void AppManager::onAdminSettingsClicked()
 {
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
     // todo
-    emit showSettingsPanel();
+    emit showSettingGroupsPanel();
 }
 
 void AppManager::onLockClicked()
@@ -449,11 +440,19 @@ void AppManager::onTableResultClicked(const int index)
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
-    DBRecord* r =  settings.getItemByIndex(index);
+    DBRecord* r =  settings.getItemByIndexInGroup(index);
     if (r != nullptr && !r->empty())
-        emit showSettingInputBox(index,
+        emit showSettingInputBox((r->at(SettingDBTable::Code)).toInt(),
                                  (r->at(SettingDBTable::Name)).toString(),
                                  (r->at(SettingDBTable::Value)).toString());
+}
+
+void AppManager::onSettingGroupClicked(const int index)
+{
+    qDebug() << "@@@@@ AppManager::onSettingGroupClicked " << index;
+    settings.currentGroupIndex = index;
+    settingsPanelModel->update(settings);
+    emit showSettingsPanel();
 }
 
 void AppManager::onSearchResultClicked(const int index)
@@ -580,7 +579,8 @@ void AppManager::log(const int type, const QString &comment)
 void AppManager::onSettingsChanged(const DBRecordList& records)
 {
     qDebug() << "@@@@@ AppManager::onSettingsChanged";
-    settingsPanelModel->update(settings.updateItems(records));
+    settings.updateAllItems(records);
+    settingsPanelModel->update(settings);
 
 #ifdef HTTP_SERVER
     const int newPort = settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort);
@@ -596,6 +596,7 @@ void AppManager::onDBStarted()
 {
     qDebug() << "@@@@@ AppManager::onDBStarted";
     settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
+    settingGroupsPanelModel->update(settings);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
 }

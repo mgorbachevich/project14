@@ -31,6 +31,7 @@ SOURCES += \
     Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
+    Models/settinggroupspanelmodel.cpp \
     Models/usernamemodel.cpp \
     main.cpp \
     tools.cpp \
@@ -61,6 +62,7 @@ HEADERS += \
     Models/baselistmodel2.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
+    Models/settinggroupspanelmodel.h \
     Models/usernamemodel.h \
     constants.h \
     tools.h \
@@ -87,6 +89,7 @@ RESOURCES += \
     Panels/searchPanel.qml \
     Panels/searchOptionsPanel.qml \
     Panels/settingsPanel.qml \
+    Panels/settingGroupsPanel.qml \
     Panels/showcasePanel.qml \
     Panels/tablePanel.qml \
     Panels/tableOptionsPanel.qml \
