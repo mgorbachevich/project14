@@ -59,7 +59,7 @@ Popup
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
                 wrapMode: Text.WordWrap
-                text: qsTr("Разделы настроек")
+                text: qsTr("Настройки")
             }
         }
 

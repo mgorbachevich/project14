@@ -15,6 +15,7 @@ Popup
     focus: true
     modal: true
     dim: true
+    property string panelTitle: ""
 
     GridLayout
     {
@@ -59,7 +60,7 @@ Popup
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
                 wrapMode: Text.WordWrap
-                text: qsTr("Настройки")
+                text: panelTitle
             }
         }
 

@@ -47,6 +47,14 @@ int Settings::getItemIntValue(const SettingDBTable::SettingCode code)
     return Tools::stringToInt(getItemStringValue(code));
 }
 
+QString Settings::getCurrentGroupName()
+{
+    DBRecord* r = getGroupByIndex(currentGroupIndex);
+    if (r != nullptr)
+        return r->at(SettingGroupDBTable::Name).toString();
+    return "";
+}
+
 QList<int> Settings::parseGroupItemCodes(DBRecord* group)
 {
     QList<int> codes;

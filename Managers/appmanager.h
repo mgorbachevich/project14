@@ -29,6 +29,12 @@ public:
         Scale,
     };
 
+    enum DialogSelector
+    {
+        None = 0,
+        Authorization,
+    };
+
     explicit AppManager(QObject*, QQmlContext*);
     ~AppManager();
 
@@ -98,7 +104,7 @@ signals:
     void showSearchOptions();
     void showSettingGroupsPanel();
     void showSettingInputBox(const int, const QString&, const QString&);
-    void showSettingsPanel();
+    void showSettingsPanel(const QString&);
     void showTableOptions();
     void showTablePanelTitle(const QString&);
     void showWeight(const QString&);

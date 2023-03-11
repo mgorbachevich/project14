@@ -13,10 +13,11 @@ public:
     DBRecord* getItemByIndex(const int index) { return getByIndex(items, index); }
     DBRecord* getItemByCode(const int code);
     DBRecord* getGroupByIndex(const int index) { return getByIndex(groups, index); }
-    DBRecord * getItemByIndexInGroup(const int);
+    DBRecord* getItemByIndexInGroup(const int);
+    int getItemIntValue(const SettingDBTable::SettingCode code);
+    QString getCurrentGroupName();
     QString getItemStringValue(const SettingDBTable::SettingCode code);
     QList<int> getCurrentGroupItemCodes();
-    int getItemIntValue(const SettingDBTable::SettingCode code);
     void createGroups(SettingGroupDBTable*);
     void updateAllItems(const DBRecordList&);
 

@@ -13,9 +13,9 @@ public:
         Name,
         Name2,
         Code2,
-        Type, // enum
+        Type, // enum ProductType
         Price,
-        PriceBase, // enum
+        PriceBase, // enum ProductPriceBase
         Price2,
         DiscountCode,
         GroupCode,

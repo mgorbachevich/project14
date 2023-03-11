@@ -452,7 +452,7 @@ void AppManager::onSettingGroupClicked(const int index)
     qDebug() << "@@@@@ AppManager::onSettingGroupClicked " << index;
     settings.currentGroupIndex = index;
     settingsPanelModel->update(settings);
-    emit showSettingsPanel();
+    emit showSettingsPanel(settings.getCurrentGroupName());
 }
 
 void AppManager::onSearchResultClicked(const int index)

@@ -177,15 +177,16 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showSettingsPanel:
     {
         target: app
-        function onShowSettingsPanel()
+        function onShowSettingsPanel(title)
         {
-            console.debug("@@@@@ mainWindow.onShowSettingsPanel");
+            console.debug("@@@@@ mainWindow.onShowSettingsPanel ", title);
             Qt.createComponent("Panels/settingsPanel.qml").createObject(mainWindow,
                                                                        {
                                                                            x: 0,
                                                                            y: 0,
                                                                            width: mainWindow.width,
-                                                                           height: mainWindow.height
+                                                                           height: mainWindow.height,
+                                                                           panelTitle: title
                                                                        }).open()
         }
     }
