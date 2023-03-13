@@ -1,6 +1,7 @@
 #ifndef APPMANAGER_H
 #define APPMANAGER_H
 
+#include <QApplication>
 #include <QObject>
 #include "constants.h"
 #include "database.h"
@@ -96,6 +97,7 @@ signals:
     void showAuthorizationPanel(const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);
     void showGroupHierarchyRoot(const bool);
+    void showMainPage(const int);
     void showMessageBox(const QString&, const QString&);
     void showPrice(const QString&);
     void showPriceColor(const QString&);
@@ -114,6 +116,7 @@ signals:
 
 public slots:
     void onAdminSettingsClicked();
+    void onBeep() { QApplication::beep(); }
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onConfirmationClicked(const int);
     void onDBStarted();
@@ -133,6 +136,7 @@ public slots:
     void onSettingInputClosed(const int, const QString&);
     void onSettingsItemClicked(const int);
     void onShowcaseClicked(const int);
+    void onShowMainPage(const int page) { emit showMainPage(page); }
     void onShowMessageBox(const QString&, const QString&);
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }

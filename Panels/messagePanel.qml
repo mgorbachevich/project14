@@ -26,10 +26,13 @@ Popup
         rowSpacing: Constants.margin
         columns: 3
         rows: 2
-        /*
+
         focus: true
-        Keys.onPressed: (event) => {}
-        */
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ messagePanel Keys.onPressed ", JSON.stringify(event))
+            messagePanel.close()
+        }
 
         Rectangle
         {

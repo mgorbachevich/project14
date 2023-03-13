@@ -54,6 +54,10 @@ Popup
                 case Qt.Key_Escape: // Круглая стрелка
                     app.onProductPanelCloseClicked()
                     break
+                case Qt.Key_Q:
+                    app.onShowMainPage(2)
+                    app.onProductPanelCloseClicked()
+                    break;
                 case Qt.Key_T: // >T<
                     app.onTare()
                     break
@@ -63,13 +67,16 @@ Popup
                 case Qt.Key_F8: // Печать
                     app.onPrint()
                     break
-                case Qt.Key_Enter:
-                case Qt.Key_C:
-                case Qt.Key_Q: // Поиск
-                case Qt.Key_F7: // Резерв
-                case Qt.Key_F9: // Ключ
-                case Qt.Key_F10: // Крыша
-                    app.onShowMessageBox("ВНИМАНИЕ!", "Закройте окно!");
+                case Qt.Key_Up:
+                    if (!productPanelList.atYBeginning) productPanelList.flick(0, Constants.flickVelocity)
+                    else app.onBeep()
+                    break;
+                case Qt.Key_Down:
+                    if (!productPanelList.atYEnd) productPanelList.flick(0, -Constants.flickVelocity)
+                    else app.onBeep()
+                    break;
+                default:
+                    app.onBeep();
                     break
             }
         }

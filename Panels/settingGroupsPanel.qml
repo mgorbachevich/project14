@@ -24,10 +24,29 @@ Popup
         rowSpacing: Constants.margin
         columns: 3
         rows: 2
-        /*
+
         focus: true
-        Keys.onPressed: (event) => {}
-        */
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ settingGroupsPanel Keys.onPressed ", JSON.stringify(event))
+            switch (event.key)
+            {
+                case Qt.Key_Up:
+                    if (!settingGroupsPanelList.atYBeginning) settingGroupsPanelList.flick(0, Constants.flickVelocity)
+                    else app.onBeep()
+                    break;
+                case Qt.Key_Down:
+                    if (!settingGroupsPanelList.atYEnd) settingGroupsPanelList.flick(0, -Constants.flickVelocity)
+                    else app.onBeep()
+                    break;
+                case Qt.Key_Escape: // Круглая стрелка
+                    settingGroupsPanel.close()
+                    break
+                default:
+                    app.onBeep();
+                    break
+            }
+        }
 
         Button
         {

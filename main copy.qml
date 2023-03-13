@@ -43,16 +43,6 @@ ApplicationWindow
         }
     }
 
-    Connections // Slot for signal AppManager::showMainPage:
-    {
-        target: app
-        function onShowMainPage(value)
-        {
-            console.debug("@@@@@ mainWindow.onShowMainPage");
-            mainSwipeView.setCurrentIndex(value)
-        }
-    }
-
     Connections // Slot for signal AppManager::showAuthorizationPanel:
     {
         target: app
@@ -223,6 +213,24 @@ ApplicationWindow
         spacing: 0
         padding: 0
 
+        focus: true
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ mainWindow Keys.onPressed ", JSON.stringify(event))
+            switch (event.key)
+            {
+                case Qt.Key_T: // >T<
+                    app.onTare()
+                    break
+                case Qt.Key_Z: // >0<
+                    app.onZero()
+                    break
+                default:
+                    app.onBeep();
+                    break
+            }
+        }
+
         Loader
         {
             id: mainWeightPanel
@@ -297,20 +305,11 @@ ApplicationWindow
                         currentIndex: 0
                         clip: true
 
-                        focus: true
+                        Loader { source: "Panels/showcasePanel.qml" }
+                        Loader { source: "Panels/tablePanel.qml" }
                         Loader
                         {
-                            focus: true
-                            source: "Panels/showcasePanel.qml"
-                        }
-                        Loader
-                        {
-                            focus: true
-                            source: "Panels/tablePanel.qml"
-                        }
-                        Loader
-                        {
-                            focus: true
+                            id:  searchPanel
                             source: "Panels/searchPanel.qml"
                         }
                     }

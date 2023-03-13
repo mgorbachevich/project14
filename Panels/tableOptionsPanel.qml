@@ -23,10 +23,22 @@ Popup
         columnSpacing: 0
         columns: 4
         rows: 2
-        /*
+
         focus: true
-        Keys.onPressed: (event) => {}
-        */
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ tableOptionsPanel Keys.onPressed ", JSON.stringify(event))
+            switch (event.key)
+            {
+                case Qt.Key_Escape: // Круглая стрелка
+                case Qt.Key_Enter:
+                    tableOptionsPanel.close()
+                    break
+                default:
+                    app.onBeep();
+                    break
+            }
+        }
 
         Rectangle
         {

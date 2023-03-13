@@ -12,6 +12,43 @@ Rectangle
     color: Material.background
     property int imageSize: (height - Constants.margin * 3) / 2
 
+    focus: true
+    Keys.onPressed: (event) =>
+    {
+        console.debug("@@@@@ showcasePanel Keys.onPressed ", JSON.stringify(event));
+        event.accepted = true;
+        switch (event.key)
+        {
+            case Qt.Key_F9: // Ключ
+                app.onLockClicked()
+                break;
+            case Qt.Key_T: // >T<
+                app.onTare();
+                break;
+            case Qt.Key_Z: // >0<
+                app.onZero();
+                break;
+            case Qt.Key_Right:
+                app.onShowMainPage(1)
+                break;
+            case Qt.Key_Q:
+                app.onShowMainPage(2)
+                break;
+            case Qt.Key_Up:
+                if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, Constants.flickVelocity)
+                else app.onBeep()
+                break;
+            case Qt.Key_Down:
+                if (!showcasePanelGrid.atYEnd) showcasePanelGrid.flick(0, -Constants.flickVelocity)
+                else app.onBeep()
+                break;
+            default:
+                app.onBeep();
+                break;
+        }
+
+    }
+
     GridView
     {
         id: showcasePanelGrid

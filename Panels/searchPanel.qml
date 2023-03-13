@@ -101,8 +101,57 @@ Rectangle
             Layout.bottomMargin: Constants.margin
             font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Regular' }
             placeholderText: "?????"
-            inputMethodHints: Qt.ImhDigitsOnly // Keyboard
-            onTextEdited: app.onSearchFilterEdited(text) // AppManager's slot
+            //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
+            //onTextEdited: app.onSearchFilterEdited(text) // AppManager's slot
+
+            focus: true
+            Keys.onPressed: (event) =>
+            {
+                console.debug("@@@@@ searchPanelTextField Keys.onPressed ", JSON.stringify(event));
+                event.accepted = true;
+                switch (event.key)
+                {
+                    case Qt.Key_0:
+                    case Qt.Key_1:
+                    case Qt.Key_2:
+                    case Qt.Key_3:
+                    case Qt.Key_4:
+                    case Qt.Key_5:
+                    case Qt.Key_7:
+                    case Qt.Key_8:
+                    case Qt.Key_9:
+                        text += event.text
+                        app.onSearchFilterEdited(text);
+                        break;
+                    case Qt.Key_C:
+                        text = ""
+                        app.onSearchFilterEdited(text);
+                        break;
+                    case Qt.Key_F9: // Ключ
+                        app.onLockClicked()
+                        break;
+                    case Qt.Key_T: // >T<
+                        app.onTare();
+                        break;
+                    case Qt.Key_Z: // >0<
+                        app.onZero();
+                        break;
+                    case Qt.Key_Left:
+                        app.onShowMainPage(1)
+                        break;
+                    case Qt.Key_Up:
+                        if (!searchPanelResultList.atYBeginning) searchPanelResultList.flick(0, Constants.flickVelocity)
+                        else app.onBeep()
+                        break;
+                    case Qt.Key_Down:
+                        if (!searchPanelResultList.atYEnd) searchPanelResultList.flick(0, -Constants.flickVelocity)
+                        else app.onBeep()
+                        break;
+                    default:
+                        app.onBeep();
+                        break;
+                }
+            }
         }
 
         Rectangle

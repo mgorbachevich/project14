@@ -27,10 +27,6 @@ Popup
         rowSpacing: Constants.margin
         columns: 3
         rows: 2
-        /*
-        focus: true
-        Keys.onPressed: (event) => {}
-        */
 
         Rectangle
         {
@@ -74,7 +70,6 @@ Popup
             rightInset: 0
             bottomInset: 0
             Material.background: Material.primary
-
             onClicked:
             {
                 app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text) // AppManager's slot
@@ -96,6 +91,41 @@ Popup
                 anchors.horizontalCenter: parent.horizontalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Regular' }
                 text: inputText
+
+                focus: true
+                Keys.onPressed: (event) =>
+                {
+                    console.debug("@@@@@ inputSettingPanelText Keys.onPressed ", JSON.stringify(event))
+                    event.accepted = true;
+                    switch (event.key)
+                    {
+                        case Qt.Key_0:
+                        case Qt.Key_1:
+                        case Qt.Key_2:
+                        case Qt.Key_3:
+                        case Qt.Key_4:
+                        case Qt.Key_5:
+                        case Qt.Key_6:
+                        case Qt.Key_7:
+                        case Qt.Key_8:
+                        case Qt.Key_9:
+                            text += event.text
+                            break;
+                        case Qt.Key_C:
+                            text = text.substring(0, text.length - 1);
+                            break;
+                        case Qt.Key_Escape:
+                            text = ""
+                            break;
+                        case Qt.Key_Enter:
+                            app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text)
+                            inputSettingPanel.close()
+                            break
+                         default:
+                            app.onBeep();
+                            break
+                    }
+                }
             }
         }
     }

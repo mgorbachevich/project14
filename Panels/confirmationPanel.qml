@@ -27,10 +27,25 @@ Popup
         rowSpacing: Constants.margin
         columns: 2
         rows: 3
-        /*
+
         focus: true
-        Keys.onPressed: (event) => {}
-        */
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ confirmationPanel Keys.onPressed ", JSON.stringify(event))
+            switch (event.key)
+            {
+                case Qt.Key_Escape: // Круглая стрелка
+                    confirmationPanel.close()
+                    break
+                case Qt.Key_Enter:
+                    app.onConfirmationClicked(dialogSelector)
+                    confirmationPanel.close()
+                    break
+                default:
+                    app.onBeep();
+                    break
+            }
+        }
 
         Rectangle
         {

@@ -11,6 +11,44 @@ Rectangle
     objectName: "tablePanel"
     color: Material.background
 
+    focus: true
+    Keys.onPressed: (event) =>
+    {
+        console.debug("@@@@@ tablePanel Keys.onPressed ", JSON.stringify(event));
+        event.accepted = true;
+        switch (event.key)
+        {
+            case Qt.Key_F9: // Ключ
+                app.onLockClicked()
+                break;
+            case Qt.Key_T: // >T<
+                app.onTare();
+                break;
+            case Qt.Key_Z: // >0<
+                app.onZero();
+                break;
+            case Qt.Key_Left:
+                app.onShowMainPage(0)
+                break;
+            case Qt.Key_Right:
+            case Qt.Key_Q:
+                app.onShowMainPage(2)
+                break;
+            case Qt.Key_Up:
+                if (!tablePanelResultList.atYBeginning) tablePanelResultList.flick(0, Constants.flickVelocity)
+                else app.onBeep()
+                break;
+            case Qt.Key_Down:
+                if (!tablePanelResultList.atYEnd) tablePanelResultList.flick(0, -Constants.flickVelocity)
+                else app.onBeep()
+                break;
+            default:
+                app.onBeep();
+                break;
+        }
+
+    }
+
     Connections // Slot for signal AppManager::showTablePanelTitle:
     {
         target: app

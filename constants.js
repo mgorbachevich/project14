@@ -12,4 +12,4 @@ const largeFontSize = 20;
 const smallFontSize = 12;
 const tinyFontSize = 10;
 const inputFieldWidth = 200;
-
+const flickVelocity = 300;
