@@ -54,8 +54,9 @@ public:
 
     ProductDBTable(const QString&, QObject*);
     int columnCount() { return Columns::COLUMN_COUNT; }
-    static bool isSuitableForShowcase(const DBRecord&);
+    static bool isForShowcase(const DBRecord&);
     static bool isGroup(const DBRecord&);
+    static bool isPiece(const DBRecord&);
 };
 
 #endif // PRODUCTDBTABLE_H

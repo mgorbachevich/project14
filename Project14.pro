@@ -27,6 +27,7 @@ SOURCES += \
     HTTP/httpserver.cpp \
     HTTP/socketthread.cpp \
     Managers/appmanager.cpp \
+    Managers/net.cpp \
     Managers/settings.cpp \
     Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
@@ -58,6 +59,7 @@ HEADERS += \
     HTTP/httpserver.h \
     HTTP/socketthread.h \
     Managers/appmanager.h \
+    Managers/net.h \
     Managers/settings.h \
     Models/baselistmodel2.h \
     Models/searchfiltermodel.h \
@@ -112,15 +114,21 @@ RESOURCES += \
     Icons/weight_48.png \
     Icons/empty_48.png \
     Images/image_dummy.png \
-    Images/image_fruit1.png \
-    Images/image_fruit2.png \
-    Images/image_fruit3.png \
-    Images/image_fruit4.png \
-    Images/image_fruit5.png \
-    Images/image_fruit6.png \
-    Images/image_fruit7.png \
-    Images/image_fruit8.png \
-    Images/image_fruit9.png \
+    Images/image1.png \
+    Images/image2.png \
+    Images/image3.png \
+    Images/image4.png \
+    Images/image5.png \
+    Images/image6.png \
+    Images/image7.png \
+    Images/image8.png \
+    Images/image9.png \
+    Images/image10.png \
+    Images/image11.png \
+    Images/image12.png \
+    Images/image13.png \
+    Images/image14.png \
+    Images/image15.png \
     Text/json_default_setting_groups.txt \
     Text/json_default_settings.txt \
     Text/json_settings.txt \

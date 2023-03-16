@@ -7,40 +7,64 @@
         [
             {
                 "code":"1",
-                "value":"../Images/image_fruit1.png"
+                "value":"../Images/image1.png"
             },
             {
                 "code":"2",
-                "value":"../Images/image_fruit2.png"
+                "value":"../Images/image2.png"
             },
             {
                 "code":"3",
-                "value":"../Images/image_fruit3.png"
+                "value":"../Images/image3.png"
             },
             {
                 "code":"4",
-                "value":"../Images/image_fruit4.png"
+                "value":"../Images/image4.png"
             },
             {
                 "code":"5",
-                "value":"../Images/image_fruit5.png"
+                "value":"../Images/image5.png"
             },
             {
                 "code":"6",
-                "value":"../Images/image_fruit6.png"
+                "value":"../Images/image6.png"
             },
             {
                 "code":"7",
-                "value":"../Images/image_fruit7.png"
+                "value":"../Images/image7.png"
             },
             {
                 "code":"8",
-                "value":"../Images/image_fruit8.png"
+                "value":"../Images/image8.png"
             },
             {
                 "code":"9",
-                "value":"../Images/image_fruit9.png"
+                "value":"../Images/image9.png"
+            },
+            {
+                "code":"10",
+                "value":"../Images/image10.png"
+            },
+            {
+                "code":"11",
+                "value":"../Images/image11.png"
+            },
+            {
+                "code":"12",
+                "value":"../Images/image12.png"
+            },
+            {
+                "code":"13",
+                "value":"../Images/image13.png"
+            },
+            {
+                "code":"14",
+                "value":"../Images/image14.png"
+            },
+            {
+                "code":"15",
+                "value":"../Images/image15.png"
             }
-        ]
+          ]
     }
 }

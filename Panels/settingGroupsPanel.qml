@@ -16,6 +16,9 @@ Popup
     modal: true
     dim: true
 
+    onClosed:app.onPopupClosed(objectName)
+    onOpened: app.onPopupOpened(objectName)
+
     GridLayout
     {
         anchors.fill: parent
@@ -29,6 +32,7 @@ Popup
         Keys.onPressed: (event) =>
         {
             console.debug("@@@@@ settingGroupsPanel Keys.onPressed ", JSON.stringify(event))
+            event.accepted = true;
             switch (event.key)
             {
                 case Qt.Key_Up:

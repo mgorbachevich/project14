@@ -334,7 +334,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         {
             DBRecord r;
             QString showcaseProductCode = showcaseRecords[i][ShowcaseDBTable::Code].toString();
-            if (selectById(productTable, showcaseProductCode, r) && ProductDBTable::isSuitableForShowcase(r))
+            if (selectById(productTable, showcaseProductCode, r) && ProductDBTable::isForShowcase(r))
                 resultRecords.append(r);
         }
         break;

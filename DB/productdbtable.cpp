@@ -33,7 +33,7 @@ ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(na
     addColumn("Код звукового файла",    "sound_code",       "INT");
 }
 
-bool ProductDBTable::isSuitableForShowcase(const DBRecord& record)
+bool ProductDBTable::isForShowcase(const DBRecord& record)
 {
     return (record.count() >= ProductDBTable::COLUMN_COUNT) && !isGroup(record);
 }
@@ -42,4 +42,10 @@ bool ProductDBTable::isGroup(const DBRecord& record)
 {
     return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
             record[ProductDBTable::Type].toInt() == ProductDBTable::ProductType_Group;
+}
+
+bool ProductDBTable::isPiece(const DBRecord& record)
+{
+    return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
+            record[ProductDBTable::Type].toInt() == ProductDBTable::ProductType_Piece;
 }

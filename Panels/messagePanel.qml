@@ -18,6 +18,9 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
 
+    onClosed:app.onPopupClosed(objectName)
+    onOpened: app.onPopupOpened(objectName)
+
     GridLayout
     {
         anchors.fill: parent
@@ -31,6 +34,7 @@ Popup
         Keys.onPressed: (event) =>
         {
             console.debug("@@@@@ messagePanel Keys.onPressed ", JSON.stringify(event))
+            event.accepted = true;
             messagePanel.close()
         }
 

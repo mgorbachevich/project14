@@ -28,40 +28,65 @@ Rectangle
     property int priceWidth: displayWidth * 7 / (6 + 7 + 9)
     property int amountWidth: displayWidth - weightWidth - priceWidth
 
-    Connections // Slot for signal AppManager::showWeight:
+    Connections // Slot for signal AppManager::showWeightValue:
     {
         target: app
-        function onShowWeight(value) { weightPanelWeightValue.text = value }
+        function onShowWeightValue(param, value)
+        {
+            switch (param)
+            {
+            case 0:
+                weightPanelWeightValue.text = value
+                break
+            case 1:
+                weightPanelPriceValue.text = value
+                break;
+            case 2:
+                weightPanelAmountValue.text = value
+                break;
+            case 3:
+                weightPanelWeightValue.color = value
+                break
+            case 4:
+                weightPanelPriceValue.color = value
+                break
+            case 5:
+                weightPanelAmountValue.color = value
+                break
+            case 6:
+                weightPanelWeightTitle.text = value
+                break
+            case 7:
+                weightPanelPriceTitle.text = value
+                break
+            case 8:
+                weightPanelAmountTitle.text = value
+                break
+            }
+        }
     }
 
-    Connections // Slot for signal AppManager::showPrice:
+    Connections // Slot for signal AppManager::showWeightParam:
     {
         target: app
-        function onShowPrice(value) { weightPanelPriceValue.text = value  }
-    }
-
-    Connections // Slot for signal AppManager::showAmount:
-    {
-        target: app
-        function onShowAmount(value) { weightPanelAmountValue.text = value }
-    }
-
-    Connections // Slot for signal AppManager::showWeightColor:
-    {
-        target: app
-        function onShowWeightColor(value) { weightPanelWeightValue.color = value }
-    }
-
-    Connections // Slot for signal AppManager::showPriceColor:
-    {
-        target: app
-        function onShowPriceColor(value) { weightPanelPriceValue.color = value  }
-    }
-
-    Connections // Slot for signal AppManager::showAmountColor:
-    {
-        target: app
-        function onShowAmountColor(value) { weightPanelAmountValue.color = value }
+        function onShowWeightParam(param, value)
+        {
+            switch (param)
+            {
+            case 0: // >0<
+                if (value) productPanelZeroIcon.source = "../Icons/0_48"
+                else productPanelZeroIcon.source = "../Icons/empty_48"
+                break
+            case 1: // >T<
+                if (value) productPanelTareIcon.source = "../Icons/tare_48"
+                else productPanelTareIcon.source = "../Icons/empty_48"
+                break
+            case 2: // Auto
+                if (value) productPanelAutoWeightIcon.source = "../Icons/weight_48"
+                else productPanelAutoWeightIcon.source = "../Icons/empty_48"
+                break
+            }
+        }
     }
 
     Row
@@ -85,20 +110,20 @@ Rectangle
 
                 Image
                 {
-                    id: productPanelWeightIcon
+                    id: productPanelAutoWeightIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagSize
                     height: flagSize
-                    source: "../Icons/weight_48"
+                    source: "../Icons/empty_48"
                 }
 
                 Image
                 {
-                    id: productPanel0Icon
+                    id: productPanelZeroIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagSize
                     height: flagSize
-                    source: "../Icons/0_48"
+                    source: "../Icons/empty_48"
                 }
 
                 Image
@@ -107,7 +132,7 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagSize
                     height: flagSize
-                    source: "../Icons/tare_48"
+                    source: "../Icons/empty_48"
                 }
             }
         }
@@ -126,7 +151,6 @@ Rectangle
                 height: titleFontSize
                 font { pointSize: titleFontSize; family:'Roboto'; styleName:'Regular' }
                 color: Material.color(Material.Grey, Material.Shade400)
-                text: qsTr("МАССА, кг")
             }
 
             Text
@@ -136,7 +160,6 @@ Rectangle
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic'; styleName:'Regular' }
                 color: Material.foreground
-                text: ""
             }
         }
 
@@ -154,7 +177,6 @@ Rectangle
                 height: titleFontSize
                 font { pointSize: titleFontSize; family:'Roboto'; styleName:'Regular' }
                 color: Material.color(Material.Grey, Material.Shade400)
-                text: qsTr("ЦЕНА, руб")
             }
 
             Text
@@ -164,7 +186,6 @@ Rectangle
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic'; styleName:'Regular' }
                 color: Material.foreground
-                text: ""
             }
         }
 
@@ -182,7 +203,6 @@ Rectangle
                 height: titleFontSize
                 font { pointSize: titleFontSize; family:'Roboto'; styleName:'Regular' }
                 color: Material.color(Material.Grey, Material.Shade400)
-                text: qsTr("СТОИМОСТЬ, руб")
             }
 
             Text
@@ -192,7 +212,6 @@ Rectangle
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic'; styleName:'Regular' }
                 color: Material.foreground
-                text: ""
             }
         }
     }

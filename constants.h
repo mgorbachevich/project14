@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.5"
+#define APP_VERSION "1.7"
 #define DB_VERSION "1.0"
 
 #define WEIGHT_EMULATION
@@ -21,10 +21,6 @@
 #define DUMMY_IMAGE_FILE "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define DEFAULT_SETTING_GROUPS_FILE ":/Text/json_default_setting_groups.txt"
-
-#define WEIGHT_0 "00.000"
-#define PRICE_0 "0000.00"
-#define AMOUNT_0 "000000.00"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>

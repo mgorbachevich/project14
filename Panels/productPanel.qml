@@ -23,6 +23,9 @@ Popup
     dim: false
     property int imageSize: (height - Constants.margin * 3) / 2
 
+    onClosed:app.onPopupClosed(objectName)
+    onOpened: app.onPopupOpened(objectName)
+
     Connections // Slot for signal AppManager::showProductImage:
     {
         target: app
@@ -49,6 +52,7 @@ Popup
         Keys.onPressed: (event) =>
         {
             console.debug("@@@@@ productPanel Keys.onPressed ", JSON.stringify(event))
+            event.accepted = true;
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка
@@ -59,10 +63,10 @@ Popup
                     app.onProductPanelCloseClicked()
                     break;
                 case Qt.Key_T: // >T<
-                    app.onTare()
+                    app.onWeightParam(1)
                     break
                 case Qt.Key_Z: // >0<
-                    app.onZero()
+                    app.onWeightParam(0)
                     break
                 case Qt.Key_F8: // Печать
                     app.onPrint()
@@ -90,7 +94,7 @@ Popup
             Layout.row: 0
             Layout.rowSpan: 2
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-            source: "../Images/image_fruit1"
+            source: "../Images/image_dummy"
         }
 
         Rectangle

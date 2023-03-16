@@ -10,7 +10,7 @@ Rectangle
     id:  showcasePanel
     objectName: "showcasePanel"
     color: Material.background
-    property int imageSize: (height - Constants.margin * 3) / 2
+    property int imageSize: (height - Constants.margin * 3 + 1) / 2
 
     focus: true
     Keys.onPressed: (event) =>
@@ -23,10 +23,10 @@ Rectangle
                 app.onLockClicked()
                 break;
             case Qt.Key_T: // >T<
-                app.onTare();
+                app.onWeightParam(1);
                 break;
             case Qt.Key_Z: // >0<
-                app.onZero();
+                app.onWeightParam(0);
                 break;
             case Qt.Key_Right:
                 app.onShowMainPage(1)
@@ -46,7 +46,16 @@ Rectangle
                 app.onBeep();
                 break;
         }
+    }
 
+    Connections // Slot for signal AppManager::activateMainWindow:
+    {
+        target: app
+        function onActivateMainWindow()
+        {
+            console.debug("@@@@@ showcasePanel onActivateMainWindow");
+            showcasePanel.focus = true;
+        }
     }
 
     GridView

@@ -18,6 +18,7 @@ class SettingsPanelModel;
 class SettingGroupsPanelModel;
 class UserNameModel;
 class QQmlContext;
+class Net;
 
 class AppManager : public QObject
 {
@@ -26,14 +27,34 @@ class AppManager : public QObject
 public:
     enum Mode
     {
-        Start = 0,
-        Scale,
+        Mode_Start = 0,
+        Mode_Scale,
+    };
+
+    enum WeightParam
+    {
+        WeightParam_Zero = 0,
+        WeightParam_Tare = 1,
+        WeightParam_Auto = 2,
+    };
+
+    enum WeightValue
+    {
+        WeightValue_Weight = 0,
+        WeightValue_Price = 1,
+        WeightValue_Amount = 2,
+        WeightValue_WeightColor = 3,
+        WeightValue_PriceColor = 4,
+        WeightValue_AmountColor = 5,
+        WeightValue_WeightTitle = 6,
+        WeightValue_PriceTitle = 7,
+        WeightValue_AmountTitle = 8,
     };
 
     enum DialogSelector
     {
-        None = 0,
-        Authorization,
+        Dialog_None = 0,
+        Dialog_Authorization,
     };
 
     explicit AppManager(QObject*, QQmlContext*);
@@ -54,23 +75,19 @@ private:
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
     void onSettingsChanged(const DBRecordList&);
-    void startHTTPServer();
-    void stopHTTPServer();
-    void startHTTPClient(DataBase*);
-    void stopHTTPClient();
     void saveTransaction();
     void log(const int, const QString&);
 
     QQmlContext* context = nullptr;
-    Mode mode = Mode::Start;
+    Mode mode = Mode::Mode_Start;
     DataBase* db = nullptr;
     QThread* dbThread = nullptr;
-    QThread* httpClientThread = nullptr;
-    HTTPServer* httpServer = nullptr;
-    double weight = 0;
+     double weight = 0;
     DBRecord user;
     DBRecord product;
     Settings settings;
+    Net* net;
+    int openedPopupCount = 0;
 
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
@@ -82,6 +99,7 @@ private:
     UserNameModel* userNameModel;
 
 signals:
+    void activateMainWindow();
     void authorizationSucceded();
     void newData(const QString&);
     void print();
@@ -91,16 +109,13 @@ signals:
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void sendHTTPClientGet(const QString&);
+    void setWeightParam(const int, const bool);
     void showAdminMenu(bool);
-    void showAmount(const QString&);
-    void showAmountColor(const QString&);
     void showAuthorizationPanel(const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);
     void showGroupHierarchyRoot(const bool);
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&);
-    void showPrice(const QString&);
-    void showPriceColor(const QString&);
     void showProductImage(const QString&);
     void showProductPanel();
     void showSearchOptions();
@@ -109,8 +124,8 @@ signals:
     void showSettingsPanel(const QString&);
     void showTableOptions();
     void showTablePanelTitle(const QString&);
-    void showWeight(const QString&);
-    void showWeightColor(const QString&);
+    void showWeightParam(const int, const bool);
+    void showWeightValue(const int, const QString&);
     void start();
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
 
@@ -122,6 +137,8 @@ public slots:
     void onDBStarted();
     void onLockClicked();
     void onLog(const int type, const QString &comment) { log(type, comment); }
+    void onPopupClosed(const QString&);
+    void onPopupOpened(const QString&);
     void onPrint() { emit print(); }
     void onPrinted();
     void onProductDescriptionClicked();
@@ -141,10 +158,10 @@ public slots:
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);
-    void onTare();
+    void onWeightParam(const int param) { emit setWeightParam(param, true); }
     void onUpdateDBResult(const DataBase::Selector, const bool);
     void onWeightChanged(double);
-    void onZero();
+    void onWeightParamChanged(const int param, const bool value) { emit showWeightParam(param, value); }
 };
 
 #endif // APPMANAGER_H

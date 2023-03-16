@@ -16,6 +16,9 @@ Popup
     dim: true
     property string versionValue: "Version"
 
+    onClosed:app.onPopupClosed(objectName)
+    onOpened: app.onPopupOpened(objectName)
+
     Connections // Slot for signal AppManager::authorizationSucceded:
     {
         target: app
@@ -76,6 +79,7 @@ Popup
                         loginComboBox.currentIndex = index
                         loginComboBox.displayText = text
                         loginComboBox.popup.close()
+                        passwordTextField.focus = true
                     }
                 }
             }

@@ -44,20 +44,20 @@
                 "name":"Груши"
             },
             {
-                "code":"41",
+                "code":"4",
                 "type":"0",
                 "group_code":"0",
-                "barcode":"1234567890041",
+                "barcode":"1234567890004",
                 "message_code":"104",
                 "picture_code":"4",
                 "price":"444.44",
                 "name":"Вишня"
             },
             {
-                "code":"15",
+                "code":"150",
                 "type":"0",
                 "group_code":"0",
-                "barcode":"1234567890015",
+                "barcode":"1234567890150",
                 "message_code":"105",
                 "picture_code":"5",
                 "price":"555.55",
@@ -90,7 +90,7 @@
                 "barcode":"1234567890008",
                 "message_code":"108",
                 "picture_code":"8",
-                "price":"888.88",
+                "price":"88.88",
                 "name":"Капуста"
             },
             {
@@ -100,8 +100,68 @@
                 "barcode":"1234567890099",
                 "message_code":"109",
                 "picture_code":"9",
-                "price":"9999.99",
+                "price":"99.99",
                 "name":"Помидоры"
+            },
+            {
+                "code":"10",
+                "type":"0",
+                "group_code":"1000",
+                "barcode":"1234567890010",
+                "message_code":"110",
+                "picture_code":"10",
+                "price":"10.10",
+                "name":"Огурцы"
+            },
+            {
+                "code":"11",
+                "type":"0",
+                "group_code":"1000",
+                "barcode":"1234567890011",
+                "message_code":"111",
+                "picture_code":"11",
+                "price":"111.11",
+                "name":"Баклажаны"
+            },
+            {
+                "code":"12",
+                "type":"0",
+                "group_code":"1000",
+                "barcode":"1234567890012",
+                "message_code":"112",
+                "picture_code":"12",
+                "price":"112.12",
+                "name":"Кабачки"
+            },
+            {
+                "code":"13",
+                "type":"0",
+                "group_code":"1000",
+                "barcode":"1234567890013",
+                "message_code":"113",
+                "picture_code":"13",
+                "price":"113.13",
+                "name":"Цукини"
+            },
+            {
+                "code":"14",
+                "type":"0",
+                "group_code":"0",
+                "barcode":"1234567890014",
+                "message_code":"114",
+                "picture_code":"14",
+                "price":"444.44",
+                "name":"Киви"
+            },
+            {
+                "code":"15",
+                "type":"0",
+                "group_code":"0",
+                "barcode":"1234567890015",
+                "message_code":"115",
+                "picture_code":"15",
+                "price":"15.15",
+                "name":"Бананы"
             }
         ]
     }

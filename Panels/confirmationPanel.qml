@@ -19,6 +19,9 @@ Popup
     property string messageText: "Message"
     property int dialogSelector: 0
 
+    onClosed:app.onPopupClosed(objectName)
+    onOpened: app.onPopupOpened(objectName)
+
     GridLayout
     {
         anchors.fill: parent
@@ -32,6 +35,7 @@ Popup
         Keys.onPressed: (event) =>
         {
             console.debug("@@@@@ confirmationPanel Keys.onPressed ", JSON.stringify(event))
+            event.accepted = true;
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка

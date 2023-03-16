@@ -17,10 +17,19 @@ private:
     double weight = 0;
 #endif
 
+private:
+    bool tareWeight = false;
+    bool zeroWeight = false;
+    bool autoWeight = false;
+
 signals:
-    void showMessageBox(const QString&, const QString&);
-    void weightChanged(const double&);
     void log(const int, const QString&);
+    void showMessageBox(const QString&, const QString&);
+    void weightChanged(const double);
+    void weightParamChanged(const int, const bool);
+
+public slots:
+    void onSetWeightParam(const int, const bool);
 };
 
 #endif // WEIGHTMANAGER_H

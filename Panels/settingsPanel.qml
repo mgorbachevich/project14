@@ -17,6 +17,9 @@ Popup
     dim: true
     property string panelTitle: ""
 
+    onClosed:app.onPopupClosed(objectName)
+    onOpened: app.onPopupOpened(objectName)
+
     GridLayout
     {
         anchors.fill: parent
@@ -30,6 +33,7 @@ Popup
         Keys.onPressed: (event) =>
         {
             console.debug("@@@@@ settingPanel Keys.onPressed ", JSON.stringify(event))
+            event.accepted = true;
             switch (event.key)
             {
                 case Qt.Key_Up:
@@ -157,29 +161,6 @@ Popup
                     }
                 }
             }
-            /*
-            ListView
-            {
-                id: settingPanelList
-                anchors.fill: parent
-                orientation: Qt.Vertical
-                clip: true
-                ScrollBar.vertical: ScrollBar
-                {
-                    width: Constants.margin
-                    background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AlwaysOn
-                }
-
-                model: settingPanelModel
-                delegate: Text
-                {
-                    leftPadding: Constants.margin
-                    font { pointSize: Constants.normalFontSize; family: "Roboto" }
-                    text: model.value // Roles::ValueRole
-                }
-            }
-            */
         }
     }
 }

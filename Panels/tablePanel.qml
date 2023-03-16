@@ -22,10 +22,10 @@ Rectangle
                 app.onLockClicked()
                 break;
             case Qt.Key_T: // >T<
-                app.onTare();
+                app.onWeightParam(1);
                 break;
             case Qt.Key_Z: // >0<
-                app.onZero();
+                app.onWeightParam(0);
                 break;
             case Qt.Key_Left:
                 app.onShowMainPage(0)
@@ -46,7 +46,16 @@ Rectangle
                 app.onBeep();
                 break;
         }
+    }
 
+    Connections // Slot for signal AppManager::activateMainWindow:
+    {
+        target: app
+        function onActivateMainWindow()
+        {
+            console.debug("@@@@@ showcasePanel onActivateMainWindow");
+            tablePanel.focus = true;
+        }
     }
 
     Connections // Slot for signal AppManager::showTablePanelTitle:

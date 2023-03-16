@@ -12,6 +12,16 @@ Rectangle
     color: Material.background
     property int filterWidth: width * 0.25
 
+    Connections // Slot for signal AppManager::activateMainWindow:
+    {
+        target: app
+        function onActivateMainWindow()
+        {
+            console.debug("@@@@@ searchPanel onActivateMainWindow");
+            searchPanelTextField.focus = true
+        }
+    }
+
     GridLayout
     {
         id: searchPanelLayout
@@ -131,10 +141,10 @@ Rectangle
                         app.onLockClicked()
                         break;
                     case Qt.Key_T: // >T<
-                        app.onTare();
+                        app.onWeightParam(1);
                         break;
                     case Qt.Key_Z: // >0<
-                        app.onZero();
+                        app.onWeightParam(0);
                         break;
                     case Qt.Key_Left:
                         app.onShowMainPage(1)

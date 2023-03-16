@@ -19,6 +19,9 @@ Popup
     property string inputText: "Input"
     property int settingItemCode: 0
 
+    onClosed:app.onPopupClosed(objectName)
+    onOpened: app.onPopupOpened(objectName)
+
     GridLayout
     {
         anchors.fill: parent

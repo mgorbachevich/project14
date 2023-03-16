@@ -24,4 +24,9 @@ void WeightManager::timerEvent(QTimerEvent*)
 #endif
 }
 
+void WeightManager::onSetWeightParam(const int param, const bool value) // param: 0 - >0<, 1 - >T<, 2 - Auto
+{
+    emit weightParamChanged(param, value);
+}
+
 

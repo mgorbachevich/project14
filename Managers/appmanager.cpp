@@ -20,22 +20,17 @@
 #include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "tools.h"
-#ifdef HTTP_SERVER
-#include "httpserver.h"
-#endif
-#ifdef HTTP_CLIENT
-#include "httpclient.h"
-#endif
+#include "net.h"
 
 AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 {
     qDebug() << "@@@@@ AppManager::AppManager";
     this->context = context;
-    mode = Mode::Start;
+    mode = Mode::Mode_Start;
     user = UserDBTable::defaultAdmin();
     createDB();
     createModels();
-    startHTTPClient(db);
+    net = new Net(this);
     QTimer::singleShot(10, this, &AppManager::start); //emit start();
 }
 
@@ -46,8 +41,8 @@ AppManager::~AppManager()
         dbThread->quit();
         dbThread->wait();
     }
-    stopHTTPClient();
-    stopHTTPServer();
+    net->stopClient();
+    net->stopServer();
 }
 
 void AppManager::createDB()
@@ -55,18 +50,22 @@ void AppManager::createDB()
     dbThread = new QThread(this);
     db = new DataBase();
     db->moveToThread(dbThread);
+
     connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
+
     connect(this, &AppManager::start, db, &DataBase::onStart);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
     connect(this, &AppManager::saveLog, db, &DataBase::onSaveLog);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
+
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
     connect(db, &DataBase::updateResult, this, &AppManager::onUpdateDBResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     connect(db, &DataBase::log, this, &AppManager::onLog);
+
     dbThread->start();
 }
 
@@ -90,74 +89,6 @@ void AppManager::createModels()
     context->setContextProperty("userNameModel", userNameModel);
 }
 
-void AppManager::startHTTPClient(DataBase* db)
-{
-#if defined(HTTP_CLIENT) || defined(HTTP_SERVER)    // Поддержка SSL:
-    // https://doc.qt.io/qt-6/android-openssl-support.html
-    qDebug() << "@@@@@ AppManager::AppManager Device supports OpenSSL:" << QSslSocket::supportsSsl();
-#endif
-
-#ifdef HTTP_CLIENT
-    if (httpClientThread == nullptr)
-    {
-        qDebug() << "@@@@@ AppManager::startHTTPClient";
-        httpClientThread = new QThread();
-        HTTPClient* httpClient = new HTTPClient();
-        httpClient->moveToThread(httpClientThread);
-        connect(httpClientThread, &QThread::finished, httpClient, &QObject::deleteLater);
-        connect(httpClient, &HTTPClient::newData, db, &DataBase::onNewData);
-        connect(httpClient, &HTTPClient::showMessageBox, this, &AppManager::showMessageBox);
-        connect(httpClient, &HTTPClient::log, this, &AppManager::onLog);
-        connect(this, &AppManager::sendHTTPClientGet, httpClient, &HTTPClient::onSendGet);
-        httpClientThread->start();
-    }
-#endif
-}
-
-void AppManager::stopHTTPClient()
-{
-#ifdef HTTP_CLIENT
-    if (httpClientThread != nullptr)
-    {
-        qDebug() << "@@@@@ AppManager::stopHTTPClient";
-        emit showMessageBox("", "HTTP Client stoped");
-        httpClientThread->quit();
-        httpClientThread->wait();
-        delete httpClientThread;
-        httpClientThread = nullptr;
-    }
-#endif
-}
-
-void AppManager::stopHTTPServer()
-{
-#ifdef HTTP_SERVER
-    if (httpServer != nullptr)
-    {
-        qDebug() << "@@@@@ AppManager::stopHTTPServer";
-        disconnect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
-        delete httpServer;
-        httpServer = nullptr;
-    }
-#endif
-}
-
-void AppManager::startHTTPServer()
-{
-#ifdef HTTP_SERVER
-    if (httpServer == nullptr)
-    {
-        qDebug() << "@@@@@ AppManager::startHTTPServer";
-        const int newPort = settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort);
-        //emit showMessageBox("", "HTTP Server started");
-        qDebug() << "@@@@@ AppManager::AppManager TCP port:" << newPort;
-        httpServer = new HTTPServer(nullptr, newPort);
-        connect(httpServer, &HTTPServer::showMessageBox, this, &AppManager::showMessageBox);
-        connect(httpServer, &HTTPServer::log, this, &AppManager::onLog);
-    }
-#endif
-}
-
 QString AppManager::weightAsString()
 {
     return Tools::weightToText(weight);
@@ -165,12 +96,12 @@ QString AppManager::weightAsString()
 
 QString AppManager::priceAsString()
 {
-    return (price() == 0) ? PRICE_0 : Tools::moneyToText(price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
+    return Tools::moneyToText(price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 }
 
 QString AppManager::amountAsString()
 {
-    return (price() == 0) ?  AMOUNT_0 : Tools::moneyToText(weight * price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
+    return Tools::moneyToText(weight * price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 }
 
 QString AppManager::versionAsString()
@@ -189,7 +120,7 @@ void AppManager::onWeightChanged(double value)
     qDebug() << "@@@@@ AppManager::onWeightChanged " << value;
 #endif
 
-    if (mode == Mode::Scale)
+    if (mode == Mode::Mode_Scale)
     {
         weight = value;
         updateWeightPanel();
@@ -287,7 +218,22 @@ void AppManager::onAdminSettingsClicked()
 void AppManager::onLockClicked()
 {
     qDebug() << "@@@@@ AppManager::onLockClicked";
-    emit showConfirmationBox(DialogSelector::Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
+    emit showConfirmationBox(DialogSelector::Dialog_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
+}
+
+void AppManager::onPopupClosed(const QString &name)
+{
+    if (openedPopupCount > 0)
+        openedPopupCount--;
+    if(openedPopupCount == 0)
+        emit activateMainWindow();
+    qDebug() << "@@@@@ AppManager::onPopupClosed " << openedPopupCount << name;
+}
+
+void AppManager::onPopupOpened(const QString &name)
+{
+    openedPopupCount++;
+    qDebug() << "@@@@@ AppManager::onPopupOpened " << openedPopupCount << name;
 }
 
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
@@ -413,7 +359,7 @@ void AppManager::onConfirmationClicked(const int selector)
     qDebug() << "@@@@@ AppManager::onConfirmationClicked " << selector;
     switch (selector)
     {
-    case DialogSelector::Authorization:
+    case DialogSelector::Dialog_Authorization:
         startAuthorization();
         break;
     }
@@ -484,22 +430,25 @@ void AppManager::updateWeightPanel()
     QString c1 = "#FFFFFF";
 
     QString w = weightAsString();
-    emit showWeight(w);
-    emit showWeightColor((weight != 0 && w != WEIGHT_0) ? c1 : c0);
+    emit showWeightValue(WeightValue::WeightValue_Weight, w);
+    emit showWeightValue(WeightValue::WeightValue_WeightColor, Tools::stringToDouble(w) != 0 ? c1 : c0);
+    emit showWeightValue(WeightValue::WeightValue_WeightTitle, ProductDBTable::isPiece(product) ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
 
     QString p = priceAsString();
-    emit showPrice(p);
-    emit showPriceColor((p != PRICE_0) ? c1 : c0);
+    emit showWeightValue(WeightValue::WeightValue_Price, p);
+    emit showWeightValue(WeightValue::WeightValue_PriceColor, Tools::stringToDouble(p) != 0 ? c1 : c0);
+    emit showWeightValue(WeightValue::WeightValue_PriceTitle, "ЦЕНА, руб");
 
     QString a = amountAsString();
-    emit showAmount(a);
-    emit showAmountColor((a != AMOUNT_0) ? c1 : c0);
+    emit showWeightValue(WeightValue::WeightValue_Amount, a);
+    emit showWeightValue(WeightValue::WeightValue_AmountColor, Tools::stringToDouble(a) != 0 ? c1 : c0);
+    emit showWeightValue(WeightValue::WeightValue_AmountTitle, "СТОИМОСТЬ, руб");
 }
 
 void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
-    mode = Mode::Start;
+    mode = Mode::Mode_Start;
     emit showAuthorizationPanel(versionAsString());
     emit selectFromDB(DataBase::GetUserNames, "");
 }
@@ -532,9 +481,9 @@ void AppManager::checkAuthorization(const DBRecordList& users)
 
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
     log(LogDBTable::LogType_Info, "Авторизация. Пользователь " + user[UserDBTable::Name].toString());
-    if(mode == Mode::Start)
+    if(mode == Mode::Mode_Start)
     {
-        mode = Mode::Scale;
+        mode = Mode::Mode_Scale;
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
         emit showAdminMenu(UserDBTable::isAdmin(user));
@@ -581,15 +530,7 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
     qDebug() << "@@@@@ AppManager::onSettingsChanged";
     settings.updateAllItems(records);
     settingsPanelModel->update(settings);
-
-#ifdef HTTP_SERVER
-    const int newPort = settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort);
-    if (httpServer == nullptr || httpServer->port != newPort) // Start or restart server
-    {
-       stopHTTPServer();
-       startHTTPServer();
-    }
-#endif
+    net->startServer(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
 }
 
 void AppManager::onDBStarted()
@@ -597,6 +538,7 @@ void AppManager::onDBStarted()
     qDebug() << "@@@@@ AppManager::onDBStarted";
     settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
     settingGroupsPanelModel->update(settings);
+    net->startClient(db);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
 }
@@ -625,15 +567,6 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     emit selectFromDB(DataBase::GetAuthorizationUserByName, normalizedLogin);
 }
 
-void AppManager::onZero()
-{
-    emit showMessageBox("", ">0<");
-}
-
-void AppManager::onTare()
-{
-    emit showMessageBox("", ">T<");
-}
 
 
 
