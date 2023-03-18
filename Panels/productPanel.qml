@@ -23,8 +23,8 @@ Popup
     dim: false
     property int imageSize: (height - Constants.margin * 3) / 2
 
-    onClosed:app.onPopupClosed(objectName)
-    onOpened: app.onPopupOpened(objectName)
+    onOpened: app.onPopupOpened()
+    onClosed: app.onPopupClosed()
 
     Connections // Slot for signal AppManager::showProductImage:
     {

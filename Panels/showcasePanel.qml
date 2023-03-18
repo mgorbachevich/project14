@@ -54,7 +54,7 @@ Rectangle
         function onActivateMainWindow()
         {
             console.debug("@@@@@ showcasePanel onActivateMainWindow");
-            showcasePanel.focus = true;
+            showcasePanel.forceActiveFocus()
         }
     }
 

@@ -16,13 +16,23 @@ Popup
     dim: true
     property string versionValue: "Version"
 
-    onClosed:app.onPopupClosed(objectName)
-    onOpened: app.onPopupOpened(objectName)
+    onOpened: app.onPopupOpened()
+    onClosed: app.onPopupClosed()
 
     Connections // Slot for signal AppManager::authorizationSucceded:
     {
         target: app
         function onAuthorizationSucceded() { authorizationPanel.close() }
+    }
+
+    Connections // Slot for signal AppManager::setCurrentUser:
+    {
+        target: app
+        function onSetCurrentUser(index, name)
+        {
+            loginComboBox.currentIndex = index
+            loginComboBox.displayText = name
+        }
     }
 
     Text
@@ -79,7 +89,7 @@ Popup
                         loginComboBox.currentIndex = index
                         loginComboBox.displayText = text
                         loginComboBox.popup.close()
-                        passwordTextField.focus = true
+                        passwordTextField.forceActiveFocus()
                     }
                 }
             }

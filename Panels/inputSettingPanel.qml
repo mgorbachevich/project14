@@ -19,8 +19,8 @@ Popup
     property string inputText: "Input"
     property int settingItemCode: 0
 
-    onClosed:app.onPopupClosed(objectName)
-    onOpened: app.onPopupOpened(objectName)
+    onOpened: app.onPopupOpened()
+    onClosed: app.onPopupClosed()
 
     GridLayout
     {

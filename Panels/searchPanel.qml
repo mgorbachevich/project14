@@ -18,7 +18,7 @@ Rectangle
         function onActivateMainWindow()
         {
             console.debug("@@@@@ searchPanel onActivateMainWindow");
-            searchPanelTextField.focus = true
+            searchPanelTextField.forceActiveFocus()
         }
     }
 

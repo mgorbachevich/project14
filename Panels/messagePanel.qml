@@ -18,8 +18,8 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
 
-    onClosed:app.onPopupClosed(objectName)
-    onOpened: app.onPopupOpened(objectName)
+    onOpened: app.onPopupOpened()
+    onClosed: app.onPopupClosed()
 
     GridLayout
     {

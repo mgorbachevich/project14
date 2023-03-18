@@ -221,19 +221,13 @@ void AppManager::onLockClicked()
     emit showConfirmationBox(DialogSelector::Dialog_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
-void AppManager::onPopupClosed(const QString &name)
+void AppManager::onPopupClosed()
 {
-    if (openedPopupCount > 0)
-        openedPopupCount--;
-    if(openedPopupCount == 0)
+    if (--openedPopupCount <= 0)
+    {
+        openedPopupCount = 0;
         emit activateMainWindow();
-    qDebug() << "@@@@@ AppManager::onPopupClosed " << openedPopupCount << name;
-}
-
-void AppManager::onPopupOpened(const QString &name)
-{
-    openedPopupCount++;
-    qDebug() << "@@@@@ AppManager::onPopupOpened " << openedPopupCount << name;
+    }
 }
 
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
@@ -305,14 +299,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
 
         case DataBase::Selector::GetUserNames:
         // Отображение имен пользователей при авторизации:
-            if (records.isEmpty()) // В базе нет пользователей. Добавить администратора по умолчанию:
-            {
-                DBRecordList users;
-                users << UserDBTable::defaultAdmin();
-                userNameModel->update(users);
-            }
-            else
-                userNameModel->update(records);
+            showUsers(records);
             break;
 
         case DataBase::Selector::GetProductsByGroupCodeIncludeGroups:
@@ -512,6 +499,32 @@ void AppManager::saveTransaction()
     r[TransactionDBTable::Cost2] = 0; // todo
     emit printed(r);
 #endif
+}
+
+void AppManager::showUsers(const DBRecordList& records)
+{
+    DBRecordList users;
+    if (records.isEmpty()) // В базе нет пользователей. Добавить администратора по умолчанию:
+        users << UserDBTable::defaultAdmin();
+    else
+        users.append(records);
+    userNameModel->update(users);
+
+    if(users.count() == 1)
+    {
+        user.clear();
+        user.append(users.at(0));
+        emit setCurrentUser(0, user.at(UserDBTable::Name).toString());
+        return;
+    }
+    for (int i = 0; i < users.count(); i++)
+    {
+        if(users.at(i).at(UserDBTable::Code).toInt() == user.at(UserDBTable::Code).toInt())
+        {
+            emit setCurrentUser(i, users.at(i).at(UserDBTable::Name).toString());
+            return;
+        }
+    }
 }
 
 void AppManager::log(const int type, const QString &comment)

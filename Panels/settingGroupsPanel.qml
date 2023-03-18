@@ -16,8 +16,8 @@ Popup
     modal: true
     dim: true
 
-    onClosed:app.onPopupClosed(objectName)
-    onOpened: app.onPopupOpened(objectName)
+    onOpened: app.onPopupOpened()
+    onClosed: app.onPopupClosed()
 
     GridLayout
     {

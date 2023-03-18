@@ -6,6 +6,12 @@
         "users":
         [
             {
+                "code":"0",
+                "name":"Гость",
+                "role":"1",
+                "password":""
+            },
+            {
                 "code":"1",
                 "name":"Дима",
                 "role":"1",

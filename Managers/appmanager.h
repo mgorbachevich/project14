@@ -76,6 +76,7 @@ private:
     void checkAuthorization(const DBRecordList&);
     void onSettingsChanged(const DBRecordList&);
     void saveTransaction();
+    void showUsers(const DBRecordList&);
     void log(const int, const QString&);
 
     QQmlContext* context = nullptr;
@@ -109,6 +110,7 @@ signals:
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void sendHTTPClientGet(const QString&);
+    void setCurrentUser(const int userIndex, const QString& userName);
     void setWeightParam(const int, const bool);
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
@@ -137,8 +139,8 @@ public slots:
     void onDBStarted();
     void onLockClicked();
     void onLog(const int type, const QString &comment) { log(type, comment); }
-    void onPopupClosed(const QString&);
-    void onPopupOpened(const QString&);
+    void onPopupClosed();
+    void onPopupOpened() { openedPopupCount++; }
     void onPrint() { emit print(); }
     void onPrinted();
     void onProductDescriptionClicked();
