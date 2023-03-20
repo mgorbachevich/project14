@@ -48,13 +48,16 @@ Rectangle
         }
     }
 
-    Connections // Slot for signal AppManager::activateMainWindow:
+    Connections // Slot for signal AppManager::activateMainPage:
     {
         target: app
-        function onActivateMainWindow()
+        function onActivateMainPage(index)
         {
-            console.debug("@@@@@ showcasePanel onActivateMainWindow");
-            showcasePanel.forceActiveFocus()
+            if (index === 0)
+            {
+                console.debug("@@@@@ showcasePanel onActivateMainPage");
+                showcasePanel.forceActiveFocus()
+            }
         }
     }
 

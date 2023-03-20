@@ -294,8 +294,9 @@ ApplicationWindow
                     {
                         id: mainSwipeView
                         anchors.fill: parent
-                        currentIndex: 0
                         clip: true
+                        currentIndex: 0
+                        onCurrentIndexChanged: app.onMainPageChanged(currentIndex);
 
                         focus: true
                         Loader

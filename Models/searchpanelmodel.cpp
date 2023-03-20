@@ -13,11 +13,11 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilte
         QString s;
         switch(filterIndex)
         {
-            case SearchFilterModel::FilterIndex::Code:
+            case SearchFilterModel::Code:
                 //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Code).toString() + " ";
                 s += ri[ProductDBTable::Code].toString() + " ";
                 break;
-            case SearchFilterModel::FilterIndex::Barcode:
+            case SearchFilterModel::Barcode:
                 //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Barcode).toString() + " ";
                 s += ri[ProductDBTable::Barcode].toString() + " ";
                 break;

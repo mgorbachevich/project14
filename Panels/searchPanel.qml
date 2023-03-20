@@ -12,13 +12,16 @@ Rectangle
     color: Material.background
     property int filterWidth: width * 0.25
 
-    Connections // Slot for signal AppManager::activateMainWindow:
+    Connections // Slot for signal AppManager::activateMainPage:
     {
         target: app
-        function onActivateMainWindow()
+        function onActivateMainPage(index)
         {
-            console.debug("@@@@@ searchPanel onActivateMainWindow");
-            searchPanelTextField.forceActiveFocus()
+            if (index === 2)
+            {
+                console.debug("@@@@@ searchPanel onActivateMainPage");
+                searchPanelTextField.forceActiveFocus()
+            }
         }
     }
 

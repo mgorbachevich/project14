@@ -6,6 +6,7 @@
 #include "constants.h"
 #include "database.h"
 #include "settings.h"
+#include "tools.h"
 
 class QThread;
 class HTTPServer;
@@ -65,7 +66,7 @@ private:
     void createModels();
     double price();
     QString priceAsString();
-    QString weightAsString();
+    QString weightAsString() { return Tools::weightToText(weight); }
     QString amountAsString();
     QString versionAsString();
     void showCurrentProduct();
@@ -89,6 +90,7 @@ private:
     Settings settings;
     Net* net;
     int openedPopupCount = 0;
+    int mainPageIndex = 0;
 
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
@@ -100,7 +102,7 @@ private:
     UserNameModel* userNameModel;
 
 signals:
-    void activateMainWindow();
+    void activateMainPage(const int index);
     void authorizationSucceded();
     void newData(const QString&);
     void print();
@@ -139,8 +141,9 @@ public slots:
     void onDBStarted();
     void onLockClicked();
     void onLog(const int type, const QString &comment) { log(type, comment); }
+    void onMainPageChanged(const int);
     void onPopupClosed();
-    void onPopupOpened() { openedPopupCount++; }
+    void onPopupOpened();
     void onPrint() { emit print(); }
     void onPrinted();
     void onProductDescriptionClicked();

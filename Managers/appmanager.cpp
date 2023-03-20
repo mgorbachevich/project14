@@ -19,7 +19,6 @@
 #include "settingspanelmodel.h"
 #include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
-#include "tools.h"
 #include "net.h"
 
 AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
@@ -79,6 +78,7 @@ void AppManager::createModels()
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
+
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
@@ -89,9 +89,14 @@ void AppManager::createModels()
     context->setContextProperty("userNameModel", userNameModel);
 }
 
-QString AppManager::weightAsString()
+void AppManager::onDBStarted()
 {
-    return Tools::weightToText(weight);
+    qDebug() << "@@@@@ AppManager::onDBStarted";
+    settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
+    settingGroupsPanelModel->update(settings);
+    net->startClient(db);
+    startAuthorization();
+    emit selectFromDB(DataBase::GetSettings, "");
 }
 
 QString AppManager::priceAsString()
@@ -132,8 +137,7 @@ void AppManager::showCurrentProduct()
     qDebug() << "@@@@@ AppManager::showCurrentProduct " << product[ProductDBTable::Code].toString();
     productPanelModel->update(product, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
     emit showProductPanel();
-    emit selectFromDB(DataBase::Selector::GetImageByResourceCode,
-                      product[ProductDBTable::PictureCode].toString());
+    emit selectFromDB(DataBase::GetImageByResourceCode, product[ProductDBTable::PictureCode].toString());
     updateWeightPanel();
 
     if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
@@ -146,28 +150,25 @@ void AppManager::showCurrentProduct()
 void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
-    emit selectFromDB(DataBase::Selector::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
+    emit selectFromDB(DataBase::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
 }
 
 void AppManager::filteredSearch()
 {
     QString& v = searchFilterModel->filterValue;
     qDebug() << "@@@@@ AppManager::filteredSearch " << v;
-    if (!v.isEmpty())
+    switch(searchFilterModel->index)
     {
-        switch(searchFilterModel->index)
-        {
-            case SearchFilterModel::FilterIndex::Code:
-                emit selectFromDB(DataBase::Selector::GetProductsByFilteredCode, v);
-                break;
-            case SearchFilterModel::FilterIndex::Barcode:
-                emit selectFromDB(DataBase::Selector::GetProductsByFilteredBarcode, v);
-                break;
-             default:
-                qDebug() << "@@@@@ AppManager::filteredSearch ERROR";
-                log(LogDBTable::LogType_Warning, "Неизвестный фильтр поиска");
-                break;
-        }
+        case SearchFilterModel::Code:
+            emit selectFromDB(DataBase::GetProductsByFilteredCode, v);
+            break;
+        case SearchFilterModel::Barcode:
+            emit selectFromDB(DataBase::GetProductsByFilteredBarcode, v);
+            break;
+         default:
+            qDebug() << "@@@@@ AppManager::filteredSearch ERROR";
+            log(LogDBTable::LogType_Warning, "Неизвестный фильтр поиска");
+            break;
     }
 }
 
@@ -204,7 +205,7 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
     {
         r->replace(SettingDBTable::Value, value);
-        emit updateDBRecord(DataBase::Selector::ReplaceSettingsItem, *r);
+        emit updateDBRecord(DataBase::ReplaceSettingsItem, *r);
     }
 }
 
@@ -221,13 +222,27 @@ void AppManager::onLockClicked()
     emit showConfirmationBox(DialogSelector::Dialog_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
+void AppManager::onMainPageChanged(const int index)
+{
+    qDebug() << "@@@@@ AppManager::onMainPageChanged " << index;
+    mainPageIndex = index;
+    emit activateMainPage(mainPageIndex);
+}
+
 void AppManager::onPopupClosed()
 {
     if (--openedPopupCount <= 0)
     {
         openedPopupCount = 0;
-        emit activateMainWindow();
+        emit activateMainPage(mainPageIndex);
     }
+    qDebug() << "@@@@@ AppManager::onPopupClosed " << openedPopupCount;
+}
+
+void AppManager::onPopupOpened()
+{
+    openedPopupCount++;
+    qDebug() << "@@@@@ AppManager::onPopupOpened " << openedPopupCount;
 }
 
 void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
@@ -235,18 +250,18 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     qDebug() << "@@@@@ AppManager::onSelectFromDBResult " << selector;
     switch(selector)
     {
-    case DataBase::Selector::GetSettings:
+    case DataBase::GetSettings:
     // Обновление настроек:
         onSettingsChanged(records);
         break;
 
-    case DataBase::Selector::GetShowcaseProducts:
+    case DataBase::GetShowcaseProducts:
     // Обновление списка товаров экрана Showcase:
         showcasePanelModel->updateProducts(records);
-        emit selectFromDBByList(DataBase::Selector::GetShowcaseResources, records);
+        emit selectFromDBByList(DataBase::GetShowcaseResources, records);
         break;
 
-       case DataBase::Selector::GetShowcaseResources:
+       case DataBase::GetShowcaseResources:
         // Отображение картинок товаров экрана Showcase:
         {
             QStringList fileNames;
@@ -265,12 +280,12 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             break;
         }
 
-        case DataBase::Selector::GetAuthorizationUserByName:
+        case DataBase::GetAuthorizationUserByName:
         // Получен результат поиска пользователя по введеному имени при авторизации:
             checkAuthorization(records);
             break;
 
-        case DataBase::Selector::GetImageByResourceCode:
+        case DataBase::GetImageByResourceCode:
         // Отображение картинки выбранного товара:
         {
             QString fileName = DUMMY_IMAGE_FILE;
@@ -287,7 +302,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             break;
         }
 
-        case DataBase::Selector::GetMessageByResourceCode:
+        case DataBase::GetMessageByResourceCode:
         // Отображение сообщения (описания) выбранного товара:
             if (!records.isEmpty())
             {
@@ -297,24 +312,24 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
             }
             break;
 
-        case DataBase::Selector::GetUserNames:
+        case DataBase::GetUserNames:
         // Отображение имен пользователей при авторизации:
             showUsers(records);
             break;
 
-        case DataBase::Selector::GetProductsByGroupCodeIncludeGroups:
+        case DataBase::GetProductsByGroupCodeIncludeGroups:
         // Отображение товаров выбранной группы:
             tablePanelModel->update(records);
             break;
 
-        case DataBase::Selector::GetProductsByFilteredCode:
+        case DataBase::GetProductsByFilteredCode:
         // Отображение товаров с заданным фрагментом кода:
-            searchPanelModel->update(records, SearchFilterModel::FilterIndex::Code);
+            searchPanelModel->update(records, SearchFilterModel::Code);
             break;
 
-        case DataBase::Selector::GetProductsByFilteredBarcode:
+        case DataBase::GetProductsByFilteredBarcode:
         // Отображение товаров с заданным фрагментом штрих-кода:
-            searchPanelModel->update(records, SearchFilterModel::FilterIndex::Barcode);
+            searchPanelModel->update(records, SearchFilterModel::Barcode);
             break;
 
         default:
@@ -334,7 +349,7 @@ void AppManager::onUpdateDBResult(const DataBase::Selector selector, const bool 
     }
     switch(selector)
     {
-    case DataBase::Selector::ReplaceSettingsItem:
+    case DataBase::ReplaceSettingsItem:
         emit selectFromDB(DataBase::GetSettings, "");
         break;
     default: break;
@@ -438,6 +453,15 @@ void AppManager::startAuthorization()
     mode = Mode::Mode_Start;
     emit showAuthorizationPanel(versionAsString());
     emit selectFromDB(DataBase::GetUserNames, "");
+}
+
+void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
+{
+    QString normalizedLogin = UserDBTable::fromAdminName(login);
+    qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
+    user[UserDBTable::Name] = normalizedLogin;
+    user[UserDBTable::Password] = password;
+    emit selectFromDB(DataBase::GetAuthorizationUserByName, normalizedLogin);
 }
 
 void AppManager::checkAuthorization(const DBRecordList& users)
@@ -546,16 +570,6 @@ void AppManager::onSettingsChanged(const DBRecordList& records)
     net->startServer(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
 }
 
-void AppManager::onDBStarted()
-{
-    qDebug() << "@@@@@ AppManager::onDBStarted";
-    settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
-    settingGroupsPanelModel->update(settings);
-    net->startClient(db);
-    startAuthorization();
-    emit selectFromDB(DataBase::GetSettings, "");
-}
-
 void AppManager::onPrinted()
 {
     qDebug() << "@@@@@ AppManager::onPrinted";
@@ -571,14 +585,6 @@ void AppManager::onResetProduct()
     updateWeightPanel();
 }
 
-void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
-{
-    QString normalizedLogin = UserDBTable::fromAdminName(login);
-    qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
-    user[UserDBTable::Name] = normalizedLogin;
-    user[UserDBTable::Password] = password;
-    emit selectFromDB(DataBase::GetAuthorizationUserByName, normalizedLogin);
-}
 
 
 

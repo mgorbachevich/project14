@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.8"
+#define APP_VERSION "1.10"
 #define DB_VERSION "1.0"
 
 #define WEIGHT_EMULATION

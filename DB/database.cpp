@@ -451,7 +451,7 @@ void DataBase::onUpdateRecord(const DataBase::Selector selector, const DBRecord&
     bool result = false;
     switch(selector)
     {
-    case DataBase::Selector::ReplaceSettingsItem:
+    case DataBase::ReplaceSettingsItem:
     {
         result = updateOrInsertRecord(getTableByName(DBTABLENAME_SETTINGS), record);
         break;
