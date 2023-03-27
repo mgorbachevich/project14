@@ -28,16 +28,16 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("app", appManager);
 
     QObject::connect(appManager, &AppManager::resetProduct, appManager, &AppManager::onResetProduct);
-    QObject::connect(appManager, &AppManager::print, printManager, &PrintManager::onPrint);
-    QObject::connect(appManager, &AppManager::setWeightParam, weightManager, &WeightManager::onSetWeightParam);
 
-    QObject::connect(weightManager, &WeightManager::weightChanged, appManager, &AppManager::onWeightChanged);
+    QObject::connect(appManager, &AppManager::settingsChanged, weightManager, &WeightManager::onSettingsChanged);
+    QObject::connect(appManager, &AppManager::setWeightParam, weightManager, &WeightManager::onSetWeightParam);
     QObject::connect(weightManager, &WeightManager::weightParamChanged, appManager, &AppManager::onWeightParamChanged);
     QObject::connect(weightManager, &WeightManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
     QObject::connect(weightManager, &WeightManager::log, appManager, &AppManager::onLog);
 
-    QObject::connect(printManager, &PrintManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
+    QObject::connect(appManager, &AppManager::print, printManager, &PrintManager::onPrint);
     QObject::connect(printManager, &PrintManager::printed, appManager, &AppManager::onPrinted);
+    QObject::connect(printManager, &PrintManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
     QObject::connect(printManager, &PrintManager::log, appManager, &AppManager::onLog);
 
 #ifdef RECOMENDED

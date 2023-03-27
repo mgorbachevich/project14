@@ -1,10 +1,9 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.10"
+#define APP_VERSION "1.11"
 #define DB_VERSION "1.0"
 
-#define WEIGHT_EMULATION
 #define DB_EMULATION
 #define HTTP_SERVER
 #define HTTP_CLIENT
@@ -13,7 +12,6 @@
 #define SAVE_TRANSACTION_ON_PRINT
 #define SAVE_LOG_IN_DB
 
-//#define DEBUG_LOG_BACKGROUND_THREADS
 //#define DEBUG_LOG_SELECT_RESULT
 //#define DEBUG_LOG_SETTING_GROUPS
 

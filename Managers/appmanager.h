@@ -34,9 +34,11 @@ public:
 
     enum WeightParam
     {
-        WeightParam_Zero = 0,
-        WeightParam_Tare = 1,
-        WeightParam_Auto = 2,
+        WeightParam_ZeroFlag = 0,
+        WeightParam_TareFlag = 1,
+        WeightParam_AutoFlag = 2,
+        WeightParam_TareValue = 3,
+        WeightParam_WeightValue = 4,
     };
 
     enum WeightValue
@@ -75,7 +77,6 @@ private:
     void updateWeightPanel();
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
-    void onSettingsChanged(const DBRecordList&);
     void saveTransaction();
     void showUsers(const DBRecordList&);
     void log(const int, const QString&);
@@ -84,7 +85,8 @@ private:
     Mode mode = Mode::Mode_Start;
     DataBase* db = nullptr;
     QThread* dbThread = nullptr;
-     double weight = 0;
+    double weight = 0;
+    double tare = 0;
     DBRecord user;
     DBRecord product;
     Settings settings;
@@ -104,7 +106,7 @@ private:
 signals:
     void activateMainPage(const int index);
     void authorizationSucceded();
-    void newData(const QString&);
+    void newData(const QString& json);
     void print();
     void printed(const DBRecord&);
     void resetProduct();
@@ -113,7 +115,8 @@ signals:
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void sendHTTPClientGet(const QString&);
     void setCurrentUser(const int userIndex, const QString& userName);
-    void setWeightParam(const int, const bool);
+    void settingsChanged();
+    void setWeightParam(const int);
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);
@@ -128,7 +131,7 @@ signals:
     void showSettingsPanel(const QString&);
     void showTableOptions();
     void showTablePanelTitle(const QString&);
-    void showWeightParam(const int, const bool);
+    void showWeightFlag(const int, const bool);
     void showWeightValue(const int, const QString&);
     void start();
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
@@ -142,6 +145,7 @@ public slots:
     void onLockClicked();
     void onLog(const int type, const QString &comment) { log(type, comment); }
     void onMainPageChanged(const int);
+    void onNewData(const QString& json) { emit newData(json); }
     void onPopupClosed();
     void onPopupOpened();
     void onPrint() { emit print(); }
@@ -163,10 +167,9 @@ public slots:
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);
-    void onWeightParam(const int param) { emit setWeightParam(param, true); }
     void onUpdateDBResult(const DataBase::Selector, const bool);
-    void onWeightChanged(double);
-    void onWeightParamChanged(const int param, const bool value) { emit showWeightParam(param, value); }
+    void onWeightParamClicked(const int param) { emit setWeightParam(param); }
+    void onWeightParamChanged(const int, const double, const bool);
 };
 
 #endif // APPMANAGER_H

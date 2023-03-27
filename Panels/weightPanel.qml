@@ -66,10 +66,10 @@ Rectangle
         }
     }
 
-    Connections // Slot for signal AppManager::showWeightParam:
+    Connections // Slot for signal AppManager::showWeightFlag:
     {
         target: app
-        function onShowWeightParam(param, value)
+        function onShowWeightFlag(param, value)
         {
             switch (param)
             {

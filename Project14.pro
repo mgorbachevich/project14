@@ -1,4 +1,4 @@
-QT += quick sql widgets core gui network
+QT += quick sql widgets core gui network serialport
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -16,6 +16,8 @@ INCLUDEPATH += \
     Managers \
     Models \
     Settings \
+    Equipment \
+    Equipment/WM100 \
 
 SOURCES += \
     DB/dbtable.cpp \
@@ -23,6 +25,9 @@ SOURCES += \
     DB/productdbtable.cpp \
     DB/settingdbtable.cpp \
     DB/userdbtable.cpp \
+    Equipment/WM100/IO/iobase.cpp \
+    Equipment/WM100/IO/iocom.cpp \
+    Equipment/WM100/wm100.cpp \
     HTTP/httpclient.cpp \
     HTTP/httpserver.cpp \
     HTTP/socketthread.cpp \
@@ -55,6 +60,9 @@ HEADERS += \
     DB/showcasedbtable.h \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
+    Equipment/WM100/IO/iobase.h \
+    Equipment/WM100/IO/iocom.h \
+    Equipment/WM100/wm100.h \
     HTTP/httpclient.h \
     HTTP/httpserver.h \
     HTTP/socketthread.h \

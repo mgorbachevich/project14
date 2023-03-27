@@ -1,32 +1,75 @@
 #include <QDebug>
 #include <QDateTime>
+#include "appmanager.h"
 #include "weightmanager.h"
 
 WeightManager::WeightManager(QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ WeightManager::WeightManager";
-
-#ifdef WEIGHT_EMULATION
-    weight = 5.000;
-    this->startTimer(1000);
-#endif
+    wm100 = new Wm100(this);
+    connect(wm100, &Wm100::weightStatusChanged, this, &WeightManager::onWeightStatusChanged);
+    connect(wm100, &Wm100::errorStatusChanged, this, &WeightManager::onErrorStatusChanged);
 }
 
-void WeightManager::timerEvent(QTimerEvent*)
+void WeightManager::start()
 {
-#ifdef DEBUG_LOG_BACKGROUND_THREADS
-    qDebug() << "@@@@@ WeightManager::timerEvent";
-#endif
-
-#ifdef WEIGHT_EMULATION
-    weight +=  0.001 * (QDateTime::currentMSecsSinceEpoch() % 10); // Псевдослучайное число
-    emit weightChanged(weight);
-#endif
+    qDebug() << "@@@@@ WeightManager::start";
+    if (wm100 != nullptr && !started)
+    {
+        int error = wm100->connectDevice("demo://COM3?baudrate=115200&timeout=100");
+        wm100->startPolling(200);
+        started = (error == 0);
+        qDebug() << "@@@@@ WeightManager::start error = " << error;
+    }
 }
 
-void WeightManager::onSetWeightParam(const int param, const bool value) // param: 0 - >0<, 1 - >T<, 2 - Auto
+void WeightManager::stop()
 {
-    emit weightParamChanged(param, value);
+    qDebug() << "@@@@@ WeightManager::stop";
+    if (wm100 != nullptr && started)
+    {
+        wm100->stopPolling();
+        int error = wm100->disconnectDevice();
+        started = false;
+        qDebug() << "@@@@@ WeightManager::stop error = " << error;
+    }
+}
+
+void WeightManager::onSettingsChanged()
+{
+    qDebug() << "@@@@@ WeightManager::onSettingsChanged";
+    start();
+}
+
+void WeightManager::onSetWeightParam(const int param)
+{
+    if (wm100 != nullptr && started)
+    {
+        switch (param)
+        {
+        case AppManager::WeightParam_TareFlag:
+            wm100->setTare();
+            break;
+        case AppManager::WeightParam_ZeroFlag:
+            wm100->setZero();
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void WeightManager::onWeightStatusChanged(channel_status &status)
+{
+    emit weightParamChanged(AppManager::WeightParam_WeightValue, status.weight, true);
+    emit weightParamChanged(AppManager::WeightParam_TareValue, status.tare, true);
+    emit weightParamChanged(AppManager::WeightParam_ZeroFlag, 0, (status.state & 0x0002) != 0); // бит 1 — признак работы автонуля
+    emit weightParamChanged(AppManager::WeightParam_TareFlag, 0, (status.state & 0x0008) != 0); // бит 3 — признак тары
+}
+
+void WeightManager::onErrorStatusChanged(int status)
+{
+
 }
 
 

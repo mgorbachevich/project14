@@ -63,10 +63,10 @@ Popup
                     app.onProductPanelCloseClicked()
                     break;
                 case Qt.Key_T: // >T<
-                    app.onWeightParam(1)
+                    app.onWeightParamClicked(1)
                     break
                 case Qt.Key_Z: // >0<
-                    app.onWeightParam(0)
+                    app.onWeightParamClicked(0)
                     break
                 case Qt.Key_F8: // Печать
                     app.onPrint()

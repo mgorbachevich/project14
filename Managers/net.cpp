@@ -9,6 +9,18 @@
 #include "httpclient.h"
 #endif
 
+void Net::start(const int port)
+{
+    startClient();
+    startServer(port);
+}
+
+void Net::stop()
+{
+    stopServer();
+    stopClient();
+}
+
 void Net::startServer(const int port)
 {
 #ifdef HTTP_SERVER
@@ -40,22 +52,21 @@ void Net::stopServer()
 #endif
 }
 
-void Net::startClient(DataBase *db)
+void Net::startClient()
 {
-#if defined(HTTP_CLIENT) || defined(HTTP_SERVER)    // Поддержка SSL:
-    // https://doc.qt.io/qt-6/android-openssl-support.html
-    qDebug() << "@@@@@ Net.startClient. Device supports OpenSSL:" << QSslSocket::supportsSsl();
-#endif
-
 #ifdef HTTP_CLIENT
     if (clientThread == nullptr)
     {
         qDebug() << "@@@@@ Net::startClient";
+#if defined(HTTP_CLIENT) || defined(HTTP_SERVER)    // Поддержка SSL:
+        // https://doc.qt.io/qt-6/android-openssl-support.html
+        qDebug() << "@@@@@ Net.startClient. Device supports OpenSSL:" << QSslSocket::supportsSsl();
+#endif
         clientThread = new QThread();
         HTTPClient* client = new HTTPClient();
         client->moveToThread(clientThread);
         connect(clientThread, &QThread::finished, client, &QObject::deleteLater);
-        connect(client, &HTTPClient::newData, db, &DataBase::onNewData);
+        connect(client, &HTTPClient::newData, appManager, &AppManager::onNewData);
         connect(client, &HTTPClient::showMessageBox, appManager, &AppManager::showMessageBox);
         connect(client, &HTTPClient::log, appManager, &AppManager::onLog);
         connect(appManager, &AppManager::sendHTTPClientGet, client, &HTTPClient::onSendGet);

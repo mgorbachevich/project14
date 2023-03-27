@@ -5,7 +5,6 @@
 
 class QThread;
 class HTTPServer;
-class DataBase;
 class AppManager;
 
 class Net : public QObject
@@ -14,12 +13,15 @@ class Net : public QObject
 
 public:
     Net(AppManager* app, QObject *parent = nullptr): QObject(parent), appManager(app) {}
-    void startServer(const int);
-    void stopServer();
-    void startClient(DataBase*);
-    void stopClient();
+    void start(const int);
+    void stop();
 
 private:
+    void startServer(const int);
+    void stopServer();
+    void startClient();
+    void stopClient();
+
     QThread* clientThread = nullptr;
     HTTPServer* server = nullptr;
     AppManager* appManager = nullptr;

@@ -40,8 +40,7 @@ AppManager::~AppManager()
         dbThread->quit();
         dbThread->wait();
     }
-    net->stopClient();
-    net->stopServer();
+    net->stop();
 }
 
 void AppManager::createDB()
@@ -53,6 +52,7 @@ void AppManager::createDB()
     connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
 
     connect(this, &AppManager::start, db, &DataBase::onStart);
+    connect(this, &AppManager::newData, db, &DataBase::onNewData);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
     connect(this, &AppManager::saveLog, db, &DataBase::onSaveLog);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
@@ -94,7 +94,6 @@ void AppManager::onDBStarted()
     qDebug() << "@@@@@ AppManager::onDBStarted";
     settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
     settingGroupsPanelModel->update(settings);
-    net->startClient(db);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
 }
@@ -119,16 +118,23 @@ double AppManager::price()
     return product.count() <= ProductDBTable::Price? 0: product[ProductDBTable::Price].toDouble();
 }
 
-void AppManager::onWeightChanged(double value)
+void AppManager::onWeightParamChanged(const int param, const double doubleValue, const bool boolValue)
 {
-#ifdef DEBUG_LOG_BACKGROUND_THREADS
-    qDebug() << "@@@@@ AppManager::onWeightChanged " << value;
-#endif
-
-    if (mode == Mode::Mode_Scale)
+    switch (param)
     {
-        weight = value;
+    case AppManager::WeightParam_AutoFlag:
+    case AppManager::WeightParam_ZeroFlag:
+    case AppManager::WeightParam_TareFlag:
+        emit showWeightFlag(param, boolValue);
+        break;
+    case AppManager::WeightParam_TareValue:
+        tare = doubleValue;
         updateWeightPanel();
+        break;
+    case AppManager::WeightParam_WeightValue:
+        weight = doubleValue;
+        updateWeightPanel();
+        break;
     }
 }
 
@@ -252,7 +258,10 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     {
     case DataBase::GetSettings:
     // Обновление настроек:
-        onSettingsChanged(records);
+        settings.updateAllItems(records);
+        settingsPanelModel->update(settings);
+        net->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
+        emit settingsChanged();
         break;
 
     case DataBase::GetShowcaseProducts:
@@ -560,14 +569,6 @@ void AppManager::log(const int type, const QString &comment)
     r[LogDBTable::Comment] = comment;
     emit saveLog(r);
 #endif
-}
-
-void AppManager::onSettingsChanged(const DBRecordList& records)
-{
-    qDebug() << "@@@@@ AppManager::onSettingsChanged";
-    settings.updateAllItems(records);
-    settingsPanelModel->update(settings);
-    net->startServer(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
 }
 
 void AppManager::onPrinted()

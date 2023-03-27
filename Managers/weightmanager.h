@@ -2,7 +2,7 @@
 #define WEIGHTMANAGER_H
 
 #include <QObject>
-#include "constants.h"
+#include "wm100.h"
 
 class WeightManager : public QObject
 {
@@ -10,26 +10,23 @@ class WeightManager : public QObject
 
 public:
     explicit WeightManager(QObject*);
-    virtual void timerEvent(QTimerEvent*);
+    void start();
+    void stop();
 
 private:
-#ifdef WEIGHT_EMULATION
-    double weight = 0;
-#endif
-
-private:
-    bool tareWeight = false;
-    bool zeroWeight = false;
-    bool autoWeight = false;
+    Wm100* wm100 = nullptr;
+    bool started = false;
 
 signals:
     void log(const int, const QString&);
     void showMessageBox(const QString&, const QString&);
-    void weightChanged(const double);
-    void weightParamChanged(const int, const bool);
+    void weightParamChanged(const int, const double, const bool);
 
 public slots:
-    void onSetWeightParam(const int, const bool);
+    void onSettingsChanged();
+    void onSetWeightParam(const int);
+    void onWeightStatusChanged(channel_status&);
+    void onErrorStatusChanged(int);
 };
 
 #endif // WEIGHTMANAGER_H
