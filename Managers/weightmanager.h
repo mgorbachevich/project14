@@ -20,7 +20,7 @@ private:
 signals:
     void log(const int, const QString&);
     void showMessageBox(const QString&, const QString&);
-    void weightParamChanged(const int, const double, const bool);
+    void weightParamChanged(const int, const QString&);
 
 public slots:
     void onSettingsChanged();

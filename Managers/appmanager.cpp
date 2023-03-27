@@ -118,21 +118,21 @@ double AppManager::price()
     return product.count() <= ProductDBTable::Price? 0: product[ProductDBTable::Price].toDouble();
 }
 
-void AppManager::onWeightParamChanged(const int param, const double doubleValue, const bool boolValue)
+void AppManager::onWeightParamChanged(const int param, const QString& value)
 {
     switch (param)
     {
     case AppManager::WeightParam_AutoFlag:
     case AppManager::WeightParam_ZeroFlag:
     case AppManager::WeightParam_TareFlag:
-        emit showWeightFlag(param, boolValue);
+        emit showWeightParam(param, value);
         break;
     case AppManager::WeightParam_TareValue:
-        tare = doubleValue;
+        tare = Tools::stringToDouble(value);
         updateWeightPanel();
         break;
     case AppManager::WeightParam_WeightValue:
-        weight = doubleValue;
+        weight = Tools::stringToDouble(value);
         updateWeightPanel();
         break;
     }
@@ -441,19 +441,19 @@ void AppManager::updateWeightPanel()
     QString c1 = "#FFFFFF";
 
     QString w = weightAsString();
-    emit showWeightValue(WeightValue::WeightValue_Weight, w);
-    emit showWeightValue(WeightValue::WeightValue_WeightColor, Tools::stringToDouble(w) != 0 ? c1 : c0);
-    emit showWeightValue(WeightValue::WeightValue_WeightTitle, ProductDBTable::isPiece(product) ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
+    emit showWeightParam(WeightParam::WeightParam_WeightValue, w);
+    emit showWeightParam(WeightParam::WeightParam_WeightColor, Tools::stringToDouble(w) != 0 ? c1 : c0);
+    emit showWeightParam(WeightParam::WeightParam_WeightTitle, ProductDBTable::isPiece(product) ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
 
     QString p = priceAsString();
-    emit showWeightValue(WeightValue::WeightValue_Price, p);
-    emit showWeightValue(WeightValue::WeightValue_PriceColor, Tools::stringToDouble(p) != 0 ? c1 : c0);
-    emit showWeightValue(WeightValue::WeightValue_PriceTitle, "ЦЕНА, руб");
+    emit showWeightParam(WeightParam::WeightParam_PriceValue, p);
+    emit showWeightParam(WeightParam::WeightParam_PriceColor, Tools::stringToDouble(p) != 0 ? c1 : c0);
+    emit showWeightParam(WeightParam::WeightParam_PriceTitle, "ЦЕНА, руб");
 
     QString a = amountAsString();
-    emit showWeightValue(WeightValue::WeightValue_Amount, a);
-    emit showWeightValue(WeightValue::WeightValue_AmountColor, Tools::stringToDouble(a) != 0 ? c1 : c0);
-    emit showWeightValue(WeightValue::WeightValue_AmountTitle, "СТОИМОСТЬ, руб");
+    emit showWeightParam(WeightParam::WeightParam_AmountValue, a);
+    emit showWeightParam(WeightParam::WeightParam_AmountColor, Tools::stringToDouble(a) != 0 ? c1 : c0);
+    emit showWeightParam(WeightParam::WeightParam_AmountTitle, "СТОИМОСТЬ, руб");
 }
 
 void AppManager::startAuthorization()

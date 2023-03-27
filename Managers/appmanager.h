@@ -39,19 +39,14 @@ public:
         WeightParam_AutoFlag = 2,
         WeightParam_TareValue = 3,
         WeightParam_WeightValue = 4,
-    };
-
-    enum WeightValue
-    {
-        WeightValue_Weight = 0,
-        WeightValue_Price = 1,
-        WeightValue_Amount = 2,
-        WeightValue_WeightColor = 3,
-        WeightValue_PriceColor = 4,
-        WeightValue_AmountColor = 5,
-        WeightValue_WeightTitle = 6,
-        WeightValue_PriceTitle = 7,
-        WeightValue_AmountTitle = 8,
+        WeightParam_PriceValue = 5,
+        WeightParam_AmountValue = 6,
+        WeightParam_WeightColor = 7,
+        WeightParam_PriceColor = 8,
+        WeightParam_AmountColor = 9,
+        WeightParam_WeightTitle = 10,
+        WeightParam_PriceTitle = 11,
+        WeightParam_AmountTitle = 12,
     };
 
     enum DialogSelector
@@ -131,8 +126,7 @@ signals:
     void showSettingsPanel(const QString&);
     void showTableOptions();
     void showTablePanelTitle(const QString&);
-    void showWeightFlag(const int, const bool);
-    void showWeightValue(const int, const QString&);
+    void showWeightParam(const int, const QString&);
     void start();
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
 
@@ -169,7 +163,7 @@ public slots:
     void onTableResultClicked(const int);
     void onUpdateDBResult(const DataBase::Selector, const bool);
     void onWeightParamClicked(const int param) { emit setWeightParam(param); }
-    void onWeightParamChanged(const int, const double, const bool);
+    void onWeightParamChanged(const int, const QString&);
 };
 
 #endif // APPMANAGER_H

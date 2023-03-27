@@ -61,15 +61,20 @@ void WeightManager::onSetWeightParam(const int param)
 
 void WeightManager::onWeightStatusChanged(channel_status &status)
 {
-    emit weightParamChanged(AppManager::WeightParam_WeightValue, status.weight, true);
-    emit weightParamChanged(AppManager::WeightParam_TareValue, status.tare, true);
-    emit weightParamChanged(AppManager::WeightParam_ZeroFlag, 0, (status.state & 0x0002) != 0); // бит 1 — признак работы автонуля
-    emit weightParamChanged(AppManager::WeightParam_TareFlag, 0, (status.state & 0x0008) != 0); // бит 3 — признак тары
+    emit weightParamChanged(AppManager::WeightParam_WeightValue, QString::number(status.weight));
+    emit weightParamChanged(AppManager::WeightParam_TareValue, QString::number(status.tare));
+    emit weightParamChanged(AppManager::WeightParam_ZeroFlag, QVariant((status.state & 0x0002) != 0).toString()); // бит 1 — признак работы автонуля
+    emit weightParamChanged(AppManager::WeightParam_TareFlag, QVariant((status.state & 0x0008) != 0).toString()); // бит 3 — признак тары
 }
 
-void WeightManager::onErrorStatusChanged(int status)
+void WeightManager::onErrorStatusChanged(int error)
 {
-
+    if (wm100 != nullptr && error != 0)
+    {
+        QString s = wm100->errorDescription(error);
+        emit showMessageBox("Ошибка Весового модуля " + QString::number(error), s);
+        emit log(error, s);
+    }
 }
 
 

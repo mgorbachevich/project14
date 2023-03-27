@@ -28,62 +28,53 @@ Rectangle
     property int priceWidth: displayWidth * 7 / (6 + 7 + 9)
     property int amountWidth: displayWidth - weightWidth - priceWidth
 
-    Connections // Slot for signal AppManager::showWeightValue:
+    Connections // Slot for signal AppManager::showWeightParam:
     {
         target: app
-        function onShowWeightValue(param, value)
+        function onShowWeightParam(param, value)
         {
             switch (param)
             {
-            case 0:
-                weightPanelWeightValue.text = value
-                break
-            case 1:
-                weightPanelPriceValue.text = value
-                break;
-            case 2:
-                weightPanelAmountValue.text = value
-                break;
-            case 3:
-                weightPanelWeightValue.color = value
-                break
-            case 4:
-                weightPanelPriceValue.color = value
-                break
-            case 5:
-                weightPanelAmountValue.color = value
-                break
-            case 6:
-                weightPanelWeightTitle.text = value
-                break
-            case 7:
-                weightPanelPriceTitle.text = value
-                break
-            case 8:
-                weightPanelAmountTitle.text = value
-                break
-            }
-        }
-    }
-
-    Connections // Slot for signal AppManager::showWeightFlag:
-    {
-        target: app
-        function onShowWeightFlag(param, value)
-        {
-            switch (param)
-            {
-            case 0: // >0<
-                if (value) productPanelZeroIcon.source = "../Icons/0_48"
+            case 0: // WeightParam_ZeroFlag >0<
+                if (value === 'true') productPanelZeroIcon.source = "../Icons/0_48"
                 else productPanelZeroIcon.source = "../Icons/empty_48"
                 break
-            case 1: // >T<
-                if (value) productPanelTareIcon.source = "../Icons/tare_48"
+            case 1: // WeightParam_TareFlag >T<
+                if (value === 'true') productPanelTareIcon.source = "../Icons/tare_48"
                 else productPanelTareIcon.source = "../Icons/empty_48"
                 break
-            case 2: // Auto
-                if (value) productPanelAutoWeightIcon.source = "../Icons/weight_48"
+            case 2: // WeightParam_AutoFlag
+                if (value === 'true') productPanelAutoWeightIcon.source = "../Icons/weight_48"
                 else productPanelAutoWeightIcon.source = "../Icons/empty_48"
+                break
+            case 3: // WeightParam_TareValue
+                break
+            case 4: // WeightParam_WeightValue
+                weightPanelWeightValue.text = value
+                break
+            case 5: // WeightParam_PriceValue
+                weightPanelPriceValue.text = value
+                break;
+            case 6: // WeightParam_AmountValue
+                weightPanelAmountValue.text = value
+                break;
+            case 7: // WeightParam_WeightColor
+                weightPanelWeightValue.color = value
+                break
+            case 8: // WeightParam_PriceColor
+                weightPanelPriceValue.color = value
+                break
+            case 9: // WeightParam_AmountColor
+                weightPanelAmountValue.color = value
+                break
+            case 10: // WeightParam_WeightTitle
+                weightPanelWeightTitle.text = value
+                break
+            case 11: // WeightParam_PriceTitle
+                weightPanelPriceTitle.text = value
+                break
+            case 12: // WeightParam_AmountTitle
+                weightPanelAmountTitle.text = value
                 break
             }
         }
