@@ -20,6 +20,8 @@
 #include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "net.h"
+#include "dbthread.h"
+#include "tools.h"
 
 AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 {
@@ -27,30 +29,10 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     this->context = context;
     mode = Mode::Mode_Start;
     user = UserDBTable::defaultAdmin();
-    createDB();
-    createModels();
     net = new Net(this);
-    QTimer::singleShot(10, this, &AppManager::start); //emit start();
-}
 
-AppManager::~AppManager()
-{
-    if (dbThread != nullptr)
-    {
-        dbThread->quit();
-        dbThread->wait();
-    }
-    net->stop();
-}
-
-void AppManager::createDB()
-{
-    dbThread = new QThread(this);
-    db = new DataBase();
-    db->moveToThread(dbThread);
-
-    connect(dbThread, &QThread::finished, db, &QObject::deleteLater);
-
+    db = new DataBase(settings);
+    dbThread = new DBThread(db, this);
     connect(this, &AppManager::start, db, &DataBase::onStart);
     connect(this, &AppManager::newData, db, &DataBase::onNewData);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
@@ -58,18 +40,12 @@ void AppManager::createDB()
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
-
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
     connect(db, &DataBase::updateResult, this, &AppManager::onUpdateDBResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     connect(db, &DataBase::log, this, &AppManager::onLog);
 
-    dbThread->start();
-}
-
-void AppManager::createModels()
-{
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
     tablePanelModel = new TablePanelModel(this);
@@ -78,7 +54,6 @@ void AppManager::createModels()
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
-
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
@@ -87,6 +62,20 @@ void AppManager::createModels()
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
+
+    dbThread->start();
+    QTimer::singleShot(10, this, &AppManager::start);
+}
+
+AppManager::~AppManager()
+{
+    dbThread->stop();
+    net->stop();
+}
+
+QString AppManager::versionAsString()
+{
+    return QString("Версия приложения %1. Версия БД %2").arg(APP_VERSION, DB_VERSION);
 }
 
 void AppManager::onDBStarted()
@@ -103,14 +92,14 @@ QString AppManager::priceAsString()
     return Tools::moneyToText(price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 }
 
+QString AppManager::weightAsString()
+{
+    return Tools::weightToText(weight);
+}
+
 QString AppManager::amountAsString()
 {
     return Tools::moneyToText(weight * price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
-}
-
-QString AppManager::versionAsString()
-{
-    return QString("Версия приложения %1. Версия БД %2").arg(APP_VERSION, DB_VERSION);
 }
 
 double AppManager::price()
@@ -176,12 +165,6 @@ void AppManager::filteredSearch()
             log(LogDBTable::LogType_Warning, "Неизвестный фильтр поиска");
             break;
     }
-}
-
-void AppManager::onShowMessageBox(const QString& titleText, const QString& messageText)
-{
-    qDebug() << "@@@@@ AppManager::onShowMessageBox " << titleText << messageText;
-    emit showMessageBox(titleText, messageText);
 }
 
 void AppManager::onSearchFilterEdited(const QString& value)

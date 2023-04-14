@@ -19,7 +19,7 @@
 #include "logdbtable.h"
 #include "jsonparser.h"
 
-DataBase::DataBase(QObject *parent): QObject(parent)
+DataBase::DataBase(Settings& newSettings, QObject *parent): QObject(parent), settings(newSettings)
 {
     qDebug() << "@@@@@ DataBase::DataBase";
 
@@ -479,9 +479,19 @@ void DataBase::onPrinted(const DBRecord& transaction)
 
 void DataBase::onSaveLog(const DBRecord& record)
 {
+    if (!started) return;
     qDebug() << "@@@@@ DataBase::onSaveLog";
-    // Лог:
-    insertRecord(getTableByName(DBTABLENAME_LOG), record);
+    DBTable* t = getTableByName(DBTABLENAME_LOG);
+    insertRecord(t, record);
+
+    qint64 logDuration = settings.getItemIntValue(SettingDBTable::SettingCode_LogDuration);
+    if(logDuration > 0)
+    {
+        qint64 first = QDateTime::currentMSecsSinceEpoch() - logDuration * 24 * 60 * 60 * 1000;
+        QString sql = QString("DELETE FROM %1 WHERE %2 < '%3'").
+                arg(t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
+        executeSQL(sql);
+    }
 }
 
 void DataBase::onTableParsed(DBTable* table, const DBRecordList& records)

@@ -43,6 +43,7 @@ const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
         case SettingCode_ScalesName:
         case SettingCode_ShopName:
         case SettingCode_TCPPort:
+        case SettingCode_LogDuration:
             break; // Без проверки
         default: continue;
         }
@@ -57,6 +58,7 @@ const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
     checkDefault(SettingCode_PointPosition, defaultRecords, resultRecords);
     checkDefault(SettingCode_ProductReset, defaultRecords, resultRecords);
     checkDefault(SettingCode_ProductResetTime, defaultRecords, resultRecords);
+    checkDefault(SettingCode_LogDuration, defaultRecords, resultRecords);
 
     return resultRecords;
 }

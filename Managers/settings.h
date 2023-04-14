@@ -26,7 +26,6 @@ public:
     int currentGroupIndex = 0;
 
 private:
-    QList<int> parseGroupItemCodes(DBRecord*);
     DBRecord* getByIndex(DBRecordList&, const int);
 
 };

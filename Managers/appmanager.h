@@ -6,9 +6,8 @@
 #include "constants.h"
 #include "database.h"
 #include "settings.h"
-#include "tools.h"
 
-class QThread;
+class DBThread;
 class HTTPServer;
 class ProductPanelModel;
 class TablePanelModel;
@@ -59,11 +58,9 @@ public:
     ~AppManager();
 
 private:
-    void createDB();
-    void createModels();
     double price();
     QString priceAsString();
-    QString weightAsString() { return Tools::weightToText(weight); }
+    QString weightAsString();
     QString amountAsString();
     QString versionAsString();
     void showCurrentProduct();
@@ -79,13 +76,13 @@ private:
     QQmlContext* context = nullptr;
     Mode mode = Mode::Mode_Start;
     DataBase* db = nullptr;
-    QThread* dbThread = nullptr;
-    double weight = 0;
-    double tare = 0;
+    DBThread* dbThread = nullptr;
+    Net* net = nullptr;
+    Settings settings;
     DBRecord user;
     DBRecord product;
-    Settings settings;
-    Net* net;
+    double weight = 0;
+    double tare = 0;
     int openedPopupCount = 0;
     int mainPageIndex = 0;
 
@@ -157,7 +154,7 @@ public slots:
     void onSettingsItemClicked(const int);
     void onShowcaseClicked(const int);
     void onShowMainPage(const int page) { emit showMainPage(page); }
-    void onShowMessageBox(const QString&, const QString&);
+    void onShowMessageBox(const QString& title, const QString& text) { emit showMessageBox(title, text); }
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);

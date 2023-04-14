@@ -21,6 +21,7 @@ INCLUDEPATH += \
 
 SOURCES += \
     DB/dbtable.cpp \
+    DB/dbthread.cpp \
     DB/jsonparser.cpp \
     DB/productdbtable.cpp \
     DB/settingdbtable.cpp \
@@ -58,6 +59,7 @@ HEADERS += \
     DB/settingdbtable.h \
     DB/settinggroupdbtable.h \
     DB/showcasedbtable.h \
+    DB/dbthread.h \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
     Equipment/WM100/IO/iobase.h \

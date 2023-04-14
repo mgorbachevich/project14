@@ -24,6 +24,7 @@ public:
         SettingCode_PointPosition = 12,
         SettingCode_ProductReset = 7,
         SettingCode_ProductResetTime = 8,
+        SettingCode_LogDuration = 607,
         /*
         SettingCode_Power = 17,
         SettingCode_Blocking = 3,
@@ -45,7 +46,6 @@ public:
         SettingCode_PrintAutoPcs = 218,
         SettingCode_PrintLabelFormat = 213,
         SettingCode_Logging = 606,
-        SettingCode_LogDuration = 607,
         */
     };
 

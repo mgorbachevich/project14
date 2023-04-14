@@ -39,7 +39,15 @@ QString Settings::getItemStringValue(const SettingDBTable::SettingCode code)
 
 QList<int> Settings::getCurrentGroupItemCodes()
 {
-    return parseGroupItemCodes(getGroupByIndex(currentGroupIndex));
+    QList<int> codes;
+    DBRecord* group = getGroupByIndex(currentGroupIndex);
+    if(group != nullptr)
+    {
+        QStringList sl = group->at(SettingGroupDBTable::Items).toString().split(',');
+        for (int i = 0; i < sl.count(); i++)
+            codes.append(Tools::stringToInt(sl[i]));
+    }
+    return codes;
 }
 
 int Settings::getItemIntValue(const SettingDBTable::SettingCode code)
@@ -53,18 +61,6 @@ QString Settings::getCurrentGroupName()
     if (r != nullptr)
         return r->at(SettingGroupDBTable::Name).toString();
     return "";
-}
-
-QList<int> Settings::parseGroupItemCodes(DBRecord* group)
-{
-    QList<int> codes;
-    if(group != nullptr)
-    {
-        QStringList sl = group->at(SettingGroupDBTable::Items).toString().split(',');
-        for (int i = 0; i < sl.count(); i++)
-            codes.append(Tools::stringToInt(sl[i]));
-    }
-    return codes;
 }
 
 void Settings::createGroups(SettingGroupDBTable* table)

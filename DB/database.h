@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include "dbtable.h"
+#include "settings.h"
 
 #define DB_HOSTNAME "ShtrihScaleDataBase"
 #define DB_FILENAME "ShtrihScale.db"
@@ -47,7 +48,7 @@ public:
         ReplaceSettingsItem,
     };
 
-    explicit DataBase(QObject *parent = nullptr);
+    explicit DataBase(Settings&, QObject *parent = nullptr);
     ~DataBase();
     DBTable* getTableByName(const QString&);
     void onTableParsed(DBTable*, const DBRecordList&);
@@ -72,6 +73,7 @@ private:
 
     bool started = false;
     QSqlDatabase db;
+    Settings& settings;
 
 signals:
     void showMessageBox(const QString&, const QString&);
