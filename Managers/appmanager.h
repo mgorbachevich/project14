@@ -11,6 +11,7 @@ class DBThread;
 class HTTPServer;
 class ProductPanelModel;
 class TablePanelModel;
+class ViewLogPanelModel;
 class ShowcasePanelModel;
 class SearchFilterModel;
 class SearchPanelModel;
@@ -94,6 +95,7 @@ private:
     SettingGroupsPanelModel* settingGroupsPanelModel;
     SearchFilterModel* searchFilterModel;
     UserNameModel* userNameModel;
+    ViewLogPanelModel* viewLogPanelModel;
 
 signals:
     void activateMainPage(const int index);
@@ -123,6 +125,7 @@ signals:
     void showSettingsPanel(const QString&);
     void showTableOptions();
     void showTablePanelTitle(const QString&);
+    void showViewLogPanel();
     void showWeightParam(const int, const QString&);
     void start();
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
@@ -159,6 +162,7 @@ public slots:
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);
     void onUpdateDBResult(const DataBase::Selector, const bool);
+    void onViewLogClicked();
     void onWeightParamClicked(const int param) { emit setWeightParam(param); }
     void onWeightParamChanged(const int, const QString&);
 };

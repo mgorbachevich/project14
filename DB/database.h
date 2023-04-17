@@ -45,6 +45,7 @@ public:
         GetAuthorizationUserByName,
         GetSettingsItemByCode,
         GetSettings,
+        GetLog,
         ReplaceSettingsItem,
     };
 

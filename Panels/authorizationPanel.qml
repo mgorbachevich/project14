@@ -15,7 +15,6 @@ Popup
     modal: true
     dim: true
     property string versionValue: "Version"
-
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 

@@ -17,6 +17,7 @@
 #include "showcasepanelmodel.h"
 #include "searchpanelmodel.h"
 #include "settingspanelmodel.h"
+#include "viewlogpanelmodel.h"
 #include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "net.h"
@@ -54,6 +55,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
+    viewLogPanelModel = new ViewLogPanelModel(this);
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
@@ -62,6 +64,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
+    context->setContextProperty("viewLogPanelModel", viewLogPanelModel);
 
     dbThread->start();
     QTimer::singleShot(10, this, &AppManager::start);
@@ -253,81 +256,86 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         emit selectFromDBByList(DataBase::GetShowcaseResources, records);
         break;
 
-       case DataBase::GetShowcaseResources:
-        // Отображение картинок товаров экрана Showcase:
-        {
-            QStringList fileNames;
-            const int column = ResourceDBTable::Value;
-            for (int i = 0; i < records.count(); i++)
-            {
-                QString fileName = DUMMY_IMAGE_FILE;
-                if (records[i].count() > column)
-                {
-                    fileName = records[i][column].toString();
-                    // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
-                }
-                fileNames << fileName;
-            }
-            showcasePanelModel->updateImages(fileNames);
-            break;
-        }
-
-        case DataBase::GetAuthorizationUserByName:
-        // Получен результат поиска пользователя по введеному имени при авторизации:
-            checkAuthorization(records);
-            break;
-
-        case DataBase::GetImageByResourceCode:
-        // Отображение картинки выбранного товара:
+    case DataBase::GetShowcaseResources:
+     // Отображение картинок товаров экрана Showcase:
+    {
+        QStringList fileNames;
+        const int column = ResourceDBTable::Value;
+        for (int i = 0; i < records.count(); i++)
         {
             QString fileName = DUMMY_IMAGE_FILE;
-            if (records.count() > 0)
+            if (records[i].count() > column)
             {
-                const int column = ResourceDBTable::Value;
-                if (records[0].count() > column)
-                {
-                    fileName = records[0][column].toString();
-                    // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
-                }
+                fileName = records[i][column].toString();
+                // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
             }
-            emit showProductImage(fileName);
-            break;
+            fileNames << fileName;
         }
+        showcasePanelModel->updateImages(fileNames);
+        break;
+    }
 
-        case DataBase::GetMessageByResourceCode:
-        // Отображение сообщения (описания) выбранного товара:
-            if (!records.isEmpty())
+    case DataBase::GetAuthorizationUserByName:
+    // Получен результат поиска пользователя по введеному имени при авторизации:
+        checkAuthorization(records);
+        break;
+
+    case DataBase::GetImageByResourceCode:
+    // Отображение картинки выбранного товара:
+    {
+        QString fileName = DUMMY_IMAGE_FILE;
+        if (records.count() > 0)
+        {
+            const int column = ResourceDBTable::Value;
+            if (records[0].count() > column)
             {
-                const int messageValueColumn = ResourceDBTable::Value;
-                if (records[0].count() > messageValueColumn)
-                     emit showMessageBox("Описание товара", records[0][messageValueColumn].toString());
+                fileName = records[0][column].toString();
+                // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
             }
-            break;
+        }
+        emit showProductImage(fileName);
+        break;
+    }
 
-        case DataBase::GetUserNames:
-        // Отображение имен пользователей при авторизации:
-            showUsers(records);
-            break;
+    case DataBase::GetMessageByResourceCode:
+    // Отображение сообщения (описания) выбранного товара:
+        if (!records.isEmpty())
+        {
+            const int messageValueColumn = ResourceDBTable::Value;
+            if (records[0].count() > messageValueColumn)
+                 emit showMessageBox("Описание товара", records[0][messageValueColumn].toString());
+        }
+        break;
 
-        case DataBase::GetProductsByGroupCodeIncludeGroups:
-        // Отображение товаров выбранной группы:
-            tablePanelModel->update(records);
-            break;
+    case DataBase::GetUserNames:
+    // Отображение имен пользователей при авторизации:
+        showUsers(records);
+        break;
 
-        case DataBase::GetProductsByFilteredCode:
-        // Отображение товаров с заданным фрагментом кода:
-            searchPanelModel->update(records, SearchFilterModel::Code);
-            break;
+    case DataBase::GetLog:
+    // Отображение лога:
+        viewLogPanelModel->update(records);
+        break;
 
-        case DataBase::GetProductsByFilteredBarcode:
-        // Отображение товаров с заданным фрагментом штрих-кода:
-            searchPanelModel->update(records, SearchFilterModel::Barcode);
-            break;
+    case DataBase::GetProductsByGroupCodeIncludeGroups:
+    // Отображение товаров выбранной группы:
+        tablePanelModel->update(records);
+        break;
 
-        default:
-            qDebug() << "@@@@@ AppManager::onSelectFromDBResult ERROR unknown selector";
-            log(LogDBTable::LogType_Warning, "Неизвестный ответ БД");
-            break;
+    case DataBase::GetProductsByFilteredCode:
+    // Отображение товаров с заданным фрагментом кода:
+        searchPanelModel->update(records, SearchFilterModel::Code);
+        break;
+
+    case DataBase::GetProductsByFilteredBarcode:
+    // Отображение товаров с заданным фрагментом штрих-кода:
+        searchPanelModel->update(records, SearchFilterModel::Barcode);
+        break;
+
+    default:
+        qDebug() << "@@@@@ AppManager::onSelectFromDBResult ERROR unknown selector";
+        log(LogDBTable::LogType_Warning, "Неизвестный ответ БД");
+        break;
     }
 }
 
@@ -346,6 +354,12 @@ void AppManager::onUpdateDBResult(const DataBase::Selector selector, const bool 
         break;
     default: break;
     }
+}
+
+void AppManager::onViewLogClicked()
+{
+    emit selectFromDB(DataBase::GetLog, "");
+    emit showViewLogPanel();
 }
 
 void AppManager::onConfirmationClicked(const int selector)
@@ -504,7 +518,7 @@ void AppManager::saveTransaction()
 {
 #ifdef SAVE_TRANSACTION_ON_PRINT
     DBRecord r = ((TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS))->createRecord();
-    r[TransactionDBTable::DateTime] = QDateTime::currentMSecsSinceEpoch();
+    r[TransactionDBTable::DateTime] = Tools::currentDateTimeToInt();
     r[TransactionDBTable::User] = user[UserDBTable::Code];
     r[TransactionDBTable::ItemCode] = Tools::stringToInt(product[ProductDBTable::Code]);
     r[TransactionDBTable::LabelNumber] = 0; // todo
@@ -547,7 +561,7 @@ void AppManager::log(const int type, const QString &comment)
 {
 #ifdef SAVE_LOG_IN_DB
     DBRecord r = ((LogDBTable*)db->getTableByName(DBTABLENAME_LOG))->createRecord();
-    r[LogDBTable::DateTime] = QDateTime::currentMSecsSinceEpoch();
+    r[LogDBTable::DateTime] = Tools::currentDateTimeToInt();
     r[LogDBTable::Type] = type;
     r[LogDBTable::Comment] = comment;
     emit saveLog(r);

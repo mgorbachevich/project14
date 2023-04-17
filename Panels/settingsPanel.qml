@@ -16,7 +16,6 @@ Popup
     modal: true
     dim: true
     property string panelTitle: ""
-
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
@@ -60,7 +59,7 @@ Popup
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
-            icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/empty_48" }
+            icon.source: "../Icons/empty_48"
             leftInset: 0
             topInset: 0
             rightInset: 0
@@ -94,7 +93,7 @@ Popup
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
-            icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/close_black_48" }
+            icon.source: "../Icons/close_black_48"
             leftInset: 0
             topInset: 0
             rightInset: 0

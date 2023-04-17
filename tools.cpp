@@ -4,11 +4,6 @@
 #include "tools.h"
 #include "constants.h"
 
-QString Tools::moneyToText(const double& value, const int pointPosition)
-{
-    return QString("%1").arg(value, 0, 'f', pointPosition);
-}
-
 QDir Tools::getDataStorageDir()
 {
     QDir dir;
@@ -56,11 +51,6 @@ int Tools::stringToInt(const QString &s, const int defaultValue)
     return v;
 }
 
-int Tools::stringToInt(const QVariant &v, const int defaultValue)
-{
-    return stringToInt(v.toString(), defaultValue);
-}
-
 double Tools::stringToDouble(const QString &s, const double defaultValue)
 {
     bool ok;
@@ -69,5 +59,7 @@ double Tools::stringToDouble(const QString &s, const double defaultValue)
         return defaultValue;
     return v;
 }
+
+
 
 

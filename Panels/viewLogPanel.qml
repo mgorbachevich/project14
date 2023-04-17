@@ -7,17 +7,14 @@ import RegisteredTypes 1.0
 
 Popup
 {
-    id: inputSettingPanel
-    objectName: "inputSettingPanel"
+    id: viewLogPanel
+    objectName: "viewLogPanel"
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
     focus: true
     modal: true
     dim: true
-    property string titleText: "Title"
-    property string inputText: "Input"
-    property int settingItemCode: 0
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
@@ -30,14 +27,46 @@ Popup
         columns: 3
         rows: 2
 
-        Rectangle
+        focus: true
+        Keys.onPressed: (event) =>
+        {
+            console.debug("@@@@@ viewLogPanel Keys.onPressed ", JSON.stringify(event))
+            event.accepted = true;
+            switch (event.key)
+            {
+                case Qt.Key_Escape: // Круглая стрелка
+                    viewLogPanel.close()
+                    break
+                case Qt.Key_Enter:
+                    viewLogPanel.close()
+                    break
+                case Qt.Key_Up:
+                    if (!viewLogPanelList.atYBeginning) viewLogPanelList.flick(0, Constants.flickVelocity)
+                    else app.onBeep()
+                    break;
+                case Qt.Key_Down:
+                    if (!viewLogPanelList.atYEnd) viewLogPanelList.flick(0, -Constants.flickVelocity)
+                    else app.onBeep()
+                    break;
+                default:
+                    app.onBeep();
+                    break
+            }
+        }
+
+        Button
         {
             Layout.column: 0
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
-            color: "transparent"
+            icon.source: "../Icons/empty_48"
+            leftInset: 0
+            topInset: 0
+            rightInset: 0
+            bottomInset: 0
+            Material.background: "transparent"
         }
 
         Rectangle
@@ -50,12 +79,11 @@ Popup
 
             Text
             {
-                id: inputPanelTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
                 wrapMode: Text.WordWrap
-                text: titleText
+                text: qsTr("Лог")
             }
         }
 
@@ -72,11 +100,7 @@ Popup
             rightInset: 0
             bottomInset: 0
             Material.background: Material.primary
-            onClicked:
-            {
-                app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text) // AppManager's slot
-                inputSettingPanel.close()
-            }
+            onClicked:  viewLogPanel.close()
         }
 
         Rectangle
@@ -86,49 +110,31 @@ Popup
             Layout.columnSpan: 3
             Layout.fillWidth: parent
             Layout.fillHeight: parent
+            color: Material.color(Material.Grey, Material.Shade50)
 
-            TextField
+            ListView
             {
-                id: inputSettingPanelText
-                anchors.horizontalCenter: parent.horizontalCenter
-                font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Regular' }
-                text: inputText
+                id: viewLogPanelList
+                anchors.fill: parent
+                orientation: Qt.Vertical
+                clip: true
 
-                focus: true
-                Keys.onPressed: (event) =>
+                ScrollBar.vertical: ScrollBar
                 {
-                    console.debug("@@@@@ inputSettingPanelText Keys.onPressed ", JSON.stringify(event))
-                    event.accepted = true;
-                    switch (event.key)
-                    {
-                        case Qt.Key_0:
-                        case Qt.Key_1:
-                        case Qt.Key_2:
-                        case Qt.Key_3:
-                        case Qt.Key_4:
-                        case Qt.Key_5:
-                        case Qt.Key_6:
-                        case Qt.Key_7:
-                        case Qt.Key_8:
-                        case Qt.Key_9:
-                            text += event.text
-                            break;
-                        case Qt.Key_C:
-                            text = text.substring(0, text.length - 1);
-                            break;
-                        case Qt.Key_Escape:
-                            text = ""
-                            break;
-                        case Qt.Key_Enter:
-                            app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text)
-                            inputSettingPanel.close()
-                            break
-                         default:
-                            app.onBeep();
-                            break
-                    }
+                    width: Constants.margin
+                    background: Rectangle { color: "transparent" }
+                    policy: ScrollBar.AlwaysOn
+                }
+
+                model: viewLogPanelModel
+                delegate: Text
+                {
+                    leftPadding: Constants.margin
+                    font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                    text: model.value
                 }
             }
         }
     }
 }
+

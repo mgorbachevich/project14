@@ -19,7 +19,6 @@ ApplicationWindow
     title: qsTr("Project14")
     color: Material.background
     visible: true
-
     property int pageIndicatorHeight: 16
     property int adminMenuWidth: 0
     property int popupX: (mainWindow.width - mainWindow.width * 4 / 5) / 2
@@ -60,13 +59,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
             Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: 0,
-                                                                           y: 0,
-                                                                           width: mainWindow.width,
-                                                                           height: mainWindow.height,
-                                                                           versionValue: value
-                                                                       }).open()
+                { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: value}).open()
         }
     }
 
@@ -88,15 +81,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ settingPanel.showSettingInputBox ", code, " ", name, " ", value);
             Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: popupX,
-                                                                           y: popupY,
-                                                                           width: popupWidth,
-                                                                           height: popupHeight,
-                                                                           titleText: name,
-                                                                           inputText: value,
-                                                                           settingItemCode: code
-                                                                       }).open()
+            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: name, inputText: value, settingItemCode: code }).open()
         }
     }
     Connections // Slot for signal AppManager::showTableOptions:
@@ -106,12 +91,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowTableOptions");
             Qt.createComponent("Panels/tableOptionsPanel.qml").createObject(mainWindow,
-                                                                            {
-                                                                                x: popupX,
-                                                                                y: popupY,
-                                                                                width: popupWidth,
-                                                                                height: popupHeight
-                                                                            }).open()
+            { x: popupX, y: popupY, width: popupWidth, height: popupHeight }).open()
          }
     }
 
@@ -122,13 +102,19 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowSearchOptions");
             Qt.createComponent("Panels/searchOptionsPanel.qml").createObject(mainWindow,
-                                                                            {
-                                                                                 x: popupX,
-                                                                                 y: popupY,
-                                                                                 width: popupWidth,
-                                                                                 height: popupHeight
-                                                                            }).open()
-         }
+            { x: popupX, y: popupY, width: popupWidth, height: popupHeight }).open()
+        }
+    }
+
+    Connections // Slot for signal AppManager::showViewLogPanel:
+    {
+        target: app
+        function onShowViewLogPanel()
+        {
+            console.debug("@@@@@ mainWindow.onShowViewLogPanel");
+            Qt.createComponent("Panels/viewLogPanel.qml").createObject(mainWindow,
+            { x: 0, y: mainWeightPanel.height, width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height }).open()
+        }
     }
 
     Connections // Slot for signal AppManager::showMessageBox:
@@ -138,14 +124,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowMessageBox ", titleText, " ", messageText);
             Qt.createComponent("Panels/messagePanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: popupX,
-                                                                           y: popupY,
-                                                                           width: popupWidth,
-                                                                           height: popupHeight,
-                                                                           titleText: titleText,
-                                                                           messageText: messageText
-                                                                       }).open()
+            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText, messageText: messageText }).open()
         }
     }
 
@@ -175,12 +154,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowSettingGroupsPanel");
             Qt.createComponent("Panels/settingGroupsPanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: 0,
-                                                                           y: 0,
-                                                                           width: mainWindow.width,
-                                                                           height: mainWindow.height
-                                                                       }).open()
+            { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height }).open()
         }
     }
 
@@ -191,13 +165,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowSettingsPanel ", title);
             Qt.createComponent("Panels/settingsPanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: 0,
-                                                                           y: 0,
-                                                                           width: mainWindow.width,
-                                                                           height: mainWindow.height,
-                                                                           panelTitle: title
-                                                                       }).open()
+            { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, panelTitle: title }).open()
         }
     }
 
@@ -208,13 +176,8 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowProductPanel");
             Qt.createComponent("Panels/productPanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: 0,
-                                                                           y: mainWeightPanel.height,
-                                                                           width: mainWindow.width,
-                                                                           height: mainWindow.height - mainWeightPanel.height
-                                                                       }).open()
-         }
+            { x: 0, y: mainWeightPanel.height, width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height }).open()
+        }
     }
 
     Column
@@ -244,39 +207,10 @@ ApplicationWindow
                 height: parent.height
                 color: Material.accent
 
-                Column
+                Loader
                 {
-                    anchors.fill: parent
-                    topPadding: Constants.margin
-                    spacing: Constants.margin
-
-                    Button
-                    {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: Constants.buttonSize
-                        height: Constants.buttonSize
-                        icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/build_black_48" }
-                        leftInset: 0
-                        topInset: 0
-                        rightInset: 0
-                        bottomInset: 0
-                        Material.background: Material.primary
-                        onClicked: app.onAdminSettingsClicked() // AppManager's slot
-                    }
-
-                    Button
-                    {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: Constants.buttonSize
-                        height: Constants.buttonSize
-                        icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/lock_black_48" }
-                        leftInset: 0
-                        topInset: 0
-                        rightInset: 0
-                        bottomInset: 0
-                        Material.background: Material.primary
-                        onClicked: app.onLockClicked() // AppManager's slot
-                    }
+                    width: adminMenuWidth
+                    source: "Panels/adminMenuPanel.qml"
                 }
             }
 

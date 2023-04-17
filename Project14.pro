@@ -40,6 +40,7 @@ SOURCES += \
     Models/settingspanelmodel.cpp \
     Models/settinggroupspanelmodel.cpp \
     Models/usernamemodel.cpp \
+    Models/viewlogpanelmodel.cpp \
     main.cpp \
     tools.cpp \
     Models/baselistmodel.cpp \
@@ -76,6 +77,7 @@ HEADERS += \
     Models/settingspanelmodel.h \
     Models/settinggroupspanelmodel.h \
     Models/usernamemodel.h \
+    Models/viewlogpanelmodel.h \
     constants.h \
     tools.h \
     Models/baselistmodel.h \
@@ -93,6 +95,7 @@ HEADERS += \
 RESOURCES += \
     constants.js \
     main.qml \
+    Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
     Panels/confirmationPanel.qml \
     Panels/inputSettingPanel.qml \
@@ -105,6 +108,7 @@ RESOURCES += \
     Panels/showcasePanel.qml \
     Panels/tablePanel.qml \
     Panels/tableOptionsPanel.qml \
+    Panels/viewLogPanel.qml \
     Panels/weightPanel.qml \
     Resources/Roboto-Regular.ttf \
     Resources/Roboto-Bold.ttf \
@@ -116,6 +120,7 @@ RESOURCES += \
     Icons/close_black_48.png \
     Icons/info_outline_black_48.png \
     Icons/lock_black_48.png \
+    Icons/log_black_48.png \
     Icons/menu_black_48.png \
     Icons/print_black_48.png \
     Icons/settings_black_48.png \

@@ -323,6 +323,11 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         selectAndCheckAll(getTableByName(DBTABLENAME_USERS), resultRecords);
         break;
 
+    case Selector::GetLog:
+    // Запрос списка записей лога:
+        selectAndCheckAll(getTableByName(DBTABLENAME_LOG), resultRecords);
+        break;
+
     case Selector::GetShowcaseProducts:
     // Запрос списка товаров для отображения на экране Showcase:
     {
@@ -487,7 +492,7 @@ void DataBase::onSaveLog(const DBRecord& record)
     qint64 logDuration = settings.getItemIntValue(SettingDBTable::SettingCode_LogDuration);
     if(logDuration > 0)
     {
-        qint64 first = QDateTime::currentMSecsSinceEpoch() - logDuration * 24 * 60 * 60 * 1000;
+        qint64 first = Tools::currentDateTimeToInt() - logDuration * 24 * 60 * 60 * 1000;
         QString sql = QString("DELETE FROM %1 WHERE %2 < '%3'").
                 arg(t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
         executeSQL(sql);

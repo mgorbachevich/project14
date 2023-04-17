@@ -18,7 +18,6 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
     property int dialogSelector: 0
-
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 

@@ -22,7 +22,6 @@ Popup
     modal: true
     dim: false
     property int imageSize: (height - Constants.margin * 3) / 2
-
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
@@ -139,7 +138,7 @@ Popup
             Layout.alignment: Qt.AlignTop
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
-            icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/info_outline_black_48" }
+            icon.source: "../Icons/info_outline_black_48"
             leftInset: 0
             topInset: 0
             rightInset: 0
@@ -156,7 +155,7 @@ Popup
             Layout.alignment: Qt.AlignTop
             Layout.preferredWidth: Constants.buttonSize
             Layout.preferredHeight: Constants.buttonSize
-            icon { width: Constants.iconSize; height: Constants.iconSize; source: "../Icons/close_black_48" }
+            icon.source: "../Icons/close_black_48"
             leftInset: 0
             topInset: 0
             rightInset: 0
