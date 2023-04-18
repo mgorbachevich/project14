@@ -40,6 +40,13 @@ const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
         case SettingCode_ProductResetTime:
             if (value < 0) continue;
             break;
+        case SettingCode_SearchType:
+            if (value < 0 || value > 1) continue;
+            break;
+        case SettingCode_SearchCodeSymbols:
+        case SettingCode_SearchBarcodeSymbols:
+            if (value < 0 || value > 9) continue;
+            break;
         case SettingCode_ScalesName:
         case SettingCode_ShopName:
         case SettingCode_TCPPort:

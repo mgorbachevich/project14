@@ -391,14 +391,23 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     }
 
     case Selector::GetProductsByFilteredCode:
-    case Selector::GetProductsByFilteredCodeIncludeGroups:
-    // Запрос списка товаров по фрагменту кода (исвключая / включая группы):
+    //case Selector::GetProductsByFilteredCodeIncludeGroups:
+    // Запрос списка товаров по фрагменту кода (исключая / включая группы):
     {
+        QString p = param.trimmed();
+        if (p.isEmpty())
+            break;
+        if (settings.getItemIntValue(SettingDBTable::SettingCode_SearchType) != SettingDBTable::SearchType_Dynamic)
+            if (p.size() < settings.getItemIntValue(SettingDBTable::SettingCode_SearchCodeSymbols))
+                break;
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
-        sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '%" + param + "%'";
+        sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '%" + p + "%'";
+        /*
         if (selector == Selector::GetProductsByFilteredCode)
            sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
+        */
+        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
         sql += " ORDER BY ";
         sql += t->columnName(ProductDBTable::Code) + " ASC";
         executeSelectSQL(t, sql, resultRecords);
@@ -406,14 +415,23 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     }
 
     case Selector::GetProductsByFilteredBarcode:
-    case Selector::GetProductsByFilteredBarcodeIncludeGroups:
-    // Запрос списка товаров по фрагменту штрих-кода (исвключая / включая группы):
+    //case Selector::GetProductsByFilteredBarcodeIncludeGroups:
+    // Запрос списка товаров по фрагменту штрих-кода (исключая / включая группы):
     {
+        QString p = param.trimmed();
+        if (p.isEmpty())
+            break;
+        if (settings.getItemIntValue(SettingDBTable::SettingCode_SearchType) != SettingDBTable::SearchType_Dynamic)
+            if (p.size() < settings.getItemIntValue(SettingDBTable::SettingCode_SearchBarcodeSymbols))
+                break;
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
-        sql += " WHERE " + t->columnName(ProductDBTable::Barcode) + " LIKE '%" + param + "%'";
+        sql += " WHERE " + t->columnName(ProductDBTable::Barcode) + " LIKE '%" + p + "%'";
+        /*
         if (selector == Selector::GetProductsByFilteredBarcode)
             sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
+        */
+        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
         sql += " ORDER BY ";
         sql += t->columnName(ProductDBTable::Barcode) + " ASC";
         executeSelectSQL(t, sql, resultRecords);

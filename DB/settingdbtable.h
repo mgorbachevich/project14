@@ -25,6 +25,9 @@ public:
         SettingCode_ProductReset = 7,
         SettingCode_ProductResetTime = 8,
         SettingCode_LogDuration = 607,
+        SettingCode_SearchType = 1004,
+        SettingCode_SearchCodeSymbols = 44,
+        SettingCode_SearchBarcodeSymbols = 45,
         /*
         SettingCode_Power = 17,
         SettingCode_Blocking = 3,
@@ -32,9 +35,6 @@ public:
         SettingCode_Language = 1001,
         SettingCode_Currency = 1002,
         SettingCode_PointPositionQuantity = 43,
-        SettingCode_SearchType = 1004,
-        SettingCode_SearchCodeSymbols = 44,
-        SettingCode_SearchBarcodeSymbols = 45,
         SettingCode_SearchCode2Symbols = 46,
         SettingCode_SearchEquality = 47,
         SettingCode_PrinterAutoFeed = 42,
@@ -54,6 +54,12 @@ public:
         ProductReset_None = 0, // нет
         ProductReset_Print = 1, // после печати
         ProductReset_Time = 2, // через заданное время бездействия (секунды)
+    };
+
+    enum SearchType
+    {
+        SearchType_Static = 0,
+        SearchType_Dynamic = 1, // Динамический поиск
     };
 
     SettingDBTable(const QString&, QObject*);

@@ -154,7 +154,7 @@ void AppManager::onProductDescriptionClicked()
 void AppManager::filteredSearch()
 {
     QString& v = searchFilterModel->filterValue;
-    qDebug() << "@@@@@ AppManager::filteredSearch " << v;
+    qDebug() << "@@@@@ AppManager::filteredSearch " << searchFilterModel->index << v;
     switch(searchFilterModel->index)
     {
         case SearchFilterModel::Code:
