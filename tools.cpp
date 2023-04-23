@@ -63,3 +63,4 @@ double Tools::stringToDouble(const QString &s, const double defaultValue)
 
 
 
+

@@ -12,7 +12,7 @@ ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
 
 INCLUDEPATH += \
     DB \
-    HTTP \
+    Net \
     Managers \
     Models \
     Settings \
@@ -29,11 +29,7 @@ SOURCES += \
     Equipment/WM100/IO/iobase.cpp \
     Equipment/WM100/IO/iocom.cpp \
     Equipment/WM100/wm100.cpp \
-    HTTP/httpclient.cpp \
-    HTTP/httpserver.cpp \
-    HTTP/socketthread.cpp \
     Managers/appmanager.cpp \
-    Managers/net.cpp \
     Managers/settings.cpp \
     Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
@@ -41,6 +37,8 @@ SOURCES += \
     Models/settinggroupspanelmodel.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
+    Net/socketthread.cpp \
+    Net/tcpserver.cpp \
     main.cpp \
     tools.cpp \
     Models/baselistmodel.cpp \
@@ -66,11 +64,7 @@ HEADERS += \
     Equipment/WM100/IO/iobase.h \
     Equipment/WM100/IO/iocom.h \
     Equipment/WM100/wm100.h \
-    HTTP/httpclient.h \
-    HTTP/httpserver.h \
-    HTTP/socketthread.h \
     Managers/appmanager.h \
-    Managers/net.h \
     Managers/settings.h \
     Models/baselistmodel2.h \
     Models/searchfiltermodel.h \
@@ -78,6 +72,9 @@ HEADERS += \
     Models/settinggroupspanelmodel.h \
     Models/usernamemodel.h \
     Models/viewlogpanelmodel.h \
+    Net/netparams.h \
+    Net/socketthread.h \
+    Net/tcpserver.h \
     constants.h \
     tools.h \
     Models/baselistmodel.h \

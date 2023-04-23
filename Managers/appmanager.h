@@ -8,7 +8,6 @@
 #include "settings.h"
 
 class DBThread;
-class HTTPServer;
 class ProductPanelModel;
 class TablePanelModel;
 class ViewLogPanelModel;
@@ -19,7 +18,7 @@ class SettingsPanelModel;
 class SettingGroupsPanelModel;
 class UserNameModel;
 class QQmlContext;
-class Net;
+class TCPServer;
 
 class AppManager : public QObject
 {
@@ -78,7 +77,7 @@ private:
     Mode mode = Mode::Mode_Start;
     DataBase* db = nullptr;
     DBThread* dbThread = nullptr;
-    Net* net = nullptr;
+    TCPServer* tcpServer = nullptr;
     Settings settings;
     DBRecord user;
     DBRecord product;

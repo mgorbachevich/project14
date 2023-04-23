@@ -376,7 +376,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
 
     case Selector::GetProductsByGroupCode:
     case Selector::GetProductsByGroupCodeIncludeGroups:
-    // Запрос списка товаров по коду группы (исвключая / включая группы):
+    // Запрос списка товаров по коду группы (исключая / включая группы):
     {
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;

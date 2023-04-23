@@ -1,13 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.15"
+#define APP_VERSION "1.16"
 #define DB_VERSION "1.0"
 
 #define DB_EMULATION
-#define HTTP_SERVER
-#define HTTP_CLIENT
-//#define HTTP_CLIENT_TEST
 #define CHECK_AUTHORIZATION
 #define SAVE_TRANSACTION_ON_PRINT
 #define SAVE_LOG_IN_DB

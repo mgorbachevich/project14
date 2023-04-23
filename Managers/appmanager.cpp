@@ -20,7 +20,7 @@
 #include "viewlogpanelmodel.h"
 #include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
-#include "net.h"
+#include "tcpserver.h"
 #include "dbthread.h"
 #include "tools.h"
 
@@ -30,7 +30,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     this->context = context;
     mode = Mode::Mode_Start;
     user = UserDBTable::defaultAdmin();
-    net = new Net(this);
+    tcpServer = new TCPServer(this);
 
     db = new DataBase(settings);
     dbThread = new DBThread(db, this);
@@ -73,7 +73,6 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 AppManager::~AppManager()
 {
     dbThread->stop();
-    net->stop();
 }
 
 QString AppManager::versionAsString()
@@ -88,6 +87,8 @@ void AppManager::onDBStarted()
     settingGroupsPanelModel->update(settings);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
+
+    emit showMessageBox("NetParams", QString("IP = %1").arg(TCPServer::getNetParams().localHostIP));
 }
 
 QString AppManager::priceAsString()
@@ -246,7 +247,7 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
     // Обновление настроек:
         settings.updateAllItems(records);
         settingsPanelModel->update(settings);
-        net->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
+        tcpServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
         emit settingsChanged();
         break;
 
@@ -509,9 +510,6 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         updateTablePanel();
     }
 
-#ifdef HTTP_CLIENT_TEST
-    emit sendHTTPClientGet("127.0.0.1:" + settings.getItemStringValue(SettingDBTable::SettingCode_TCPPort));
-#endif
 }
 
 void AppManager::saveTransaction()

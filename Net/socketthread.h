@@ -10,7 +10,7 @@ class SocketThread : public QThread
     Q_OBJECT
 
 public:
-    explicit SocketThread(qintptr, QObject *parent = nullptr);
+    explicit SocketThread(qintptr, QObject*);
     ~SocketThread();
     void run();
 

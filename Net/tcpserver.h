@@ -2,15 +2,16 @@
 #define HTTPSERVER_H
 
 #include <QTcpServer>
+#include "netparams.h"
 
-class HTTPServer : public QTcpServer
+class TCPServer : public QTcpServer
 {
     Q_OBJECT
 
 public:
-    HTTPServer(QObject *parent, const int port);
-
-    int port = 0;
+    TCPServer(QObject *parent): QTcpServer(parent) {}
+    void start(const int);
+    static NetParams getNetParams();
 
 protected:
     void incomingConnection(qintptr);
