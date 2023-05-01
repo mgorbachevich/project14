@@ -9,7 +9,7 @@ class TablePanelModel : public BaseListModel
     Q_OBJECT
 
 public:
-    explicit TablePanelModel(QObject *parent): BaseListModel(parent) {}
+    explicit TablePanelModel(AppManager *parent): BaseListModel(parent) {}
     void update(const DBRecordList&);
     bool groupUp();
     bool groupDown(DBRecord&);

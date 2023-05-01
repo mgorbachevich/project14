@@ -1,6 +1,4 @@
 {
-    "result":"0",
-    "description":"ok",
     "data":
     {
         "showcase":

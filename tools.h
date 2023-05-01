@@ -9,7 +9,7 @@ class Tools
 public:
     static QString weightToText(const double& value) {  return QString("%1").arg(value, 0, 'f', 3); }
     static QString moneyToText(const double& value, const int pointPosition) { return QString("%1").arg(value, 0, 'f', pointPosition); }
-    static double moneyFromText(const QString& value) {  return  QString(value).toDouble();; }
+    static double priceToDouble(const QString&, const int);
     static QString getDataFilePath(const QString& fileName) { return getDataStorageDir().filePath(fileName); }
     static QDir getDataStorageDir();
     static bool fileExists(const QString&);

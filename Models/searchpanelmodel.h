@@ -10,7 +10,7 @@ class SearchPanelModel : public BaseListModel
     Q_OBJECT
 
 public:
-    explicit SearchPanelModel(QObject *parent): BaseListModel(parent) {}
+    explicit SearchPanelModel(AppManager *parent): BaseListModel(parent) {}
     void update(const DBRecordList&, const SearchFilterModel::FilterIndex);
     DBRecord &productByIndex(const int);
 

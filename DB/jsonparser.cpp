@@ -69,12 +69,14 @@ QJsonValue JSONParser::prepare(const QString &json, bool *ok)
 
     const QJsonObject jo = Tools::stringToJson(json);
     QJsonValue result = jo["result"];
+    /*
     if (!result.isString() || Tools::stringToInt(result.toString()) != 0)
     {
         qDebug() << "@@@@@ JSONParser::prepare result " << result.toString("") << jo["description"].toString("");
         *ok = false;
         return *new QJsonValue;
     }
+    */
     QJsonValue data = jo["data"];
     if (!data.isObject())
     {

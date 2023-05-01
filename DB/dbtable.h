@@ -21,6 +21,8 @@ public:
     virtual int columnCount() { return 0; }
     virtual const DBRecord* checkRecord(const DBRecord&);
     virtual const DBRecordList checkAll(const DBRecordList&);
+    static QString toJsonString(DBTable*, const DBRecord&);
+    static QString toJsonString(DBTable*, const DBRecordList&);
 
     QString name;
 

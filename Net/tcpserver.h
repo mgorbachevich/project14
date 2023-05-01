@@ -3,15 +3,20 @@
 
 #include <QTcpServer>
 #include "netparams.h"
+#include "database.h"
+
+class AppManager;
 
 class TCPServer : public QTcpServer
 {
     Q_OBJECT
 
 public:
-    TCPServer(QObject *parent): QTcpServer(parent) {}
+    TCPServer(QObject *parent, DataBase* dataBase): QTcpServer(parent), db(dataBase) {}
     void start(const int);
     static NetParams getNetParams();
+
+    DataBase* db;
 
 protected:
     void incomingConnection(qintptr);

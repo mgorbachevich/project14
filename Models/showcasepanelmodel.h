@@ -9,7 +9,7 @@ class ShowcasePanelModel : public BaseListModel
     Q_OBJECT
 
 public:
-    explicit ShowcasePanelModel(QObject *parent): BaseListModel(parent) {}
+    explicit ShowcasePanelModel(AppManager *parent): BaseListModel(parent) {}
     void updateProducts(const DBRecordList&);
     void updateImages(const QStringList&);
     DBRecord& productByIndex(const int);

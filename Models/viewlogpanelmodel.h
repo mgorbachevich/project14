@@ -9,7 +9,7 @@ class ViewLogPanelModel : public BaseListModel
     Q_OBJECT
 
 public:
-    ViewLogPanelModel(QObject *parent): BaseListModel(parent) {}
+    ViewLogPanelModel(AppManager *parent): BaseListModel(parent) {}
     void update(const DBRecordList&);
 };
 

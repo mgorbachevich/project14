@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.16"
+#define APP_VERSION "1.17"
 #define DB_VERSION "1.0"
 
 #define DB_EMULATION

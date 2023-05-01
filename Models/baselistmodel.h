@@ -3,6 +3,8 @@
 
 #include <QStringListModel>
 
+class AppManager;
+
 class BaseListModel : public QStringListModel
 {
     Q_OBJECT
@@ -10,9 +12,12 @@ class BaseListModel : public QStringListModel
 public:
     enum Roles { ValueRole = Qt::UserRole + 1 };
 
-    explicit BaseListModel(QObject *parent): QStringListModel(parent) {}
+    explicit BaseListModel(AppManager *parent): QStringListModel((QObject*)parent) { appManager = parent; }
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+
+protected:
+    AppManager* appManager;
 };
 
 #endif // BASELISTMODEL_H

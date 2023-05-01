@@ -31,4 +31,28 @@ const DBRecordList DBTable::checkAll(const DBRecordList &records)
     return resultRecords;
 }
 
+QString DBTable::toJsonString(DBTable *table, const DBRecord &record)
+{
+    QString json;
+    for (int i = 0; i < record.count() && i < table->columnCount(); i++)
+    {
+        if (i > 0)
+            json += ",";
+        json += QString("\"%1\":\"%2\"").arg(table->columnName(i), record.at(i).toString());
+    }
+    return "{" + json + "}";
+}
+
+QString DBTable::toJsonString(DBTable *table, const DBRecordList &records)
+{
+    QString json;
+    for (int i = 0; i < records.count(); i++)
+    {
+        if (i > 0)
+            json += ",";
+        json += toJsonString(table, records.at(i));
+    }
+    return "[" + json + "]";
+}
+
 

@@ -10,9 +10,9 @@ ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(na
     addColumn("Краткое наименование",   "name2",            "TEXT");
     addColumn("Короткий код",           "code2",            "TEXT");
     addColumn("Тип",                    "type",             "INT");
-    addColumn("Цена",                   "price",            "REAL");
+    addColumn("Цена",                   "price",            "INT");
     addColumn("Ценовая база",           "price_base",       "INT");
-    addColumn("Цена 2",                 "price2",           "REAL");
+    addColumn("Цена 2",                 "price2",           "INT");
     addColumn("Код схемы скидки",       "discount_code",    "INT");
     addColumn("Код группы",             "group_code",       "TEXT");
     addColumn("Масса штуки",            "unit_weight",      "INT");

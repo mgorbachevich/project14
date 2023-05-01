@@ -56,12 +56,14 @@ public:
 
     explicit AppManager(QObject*, QQmlContext*);
     ~AppManager();
+    double productPrice(const DBRecord&);
+
+    DataBase* db = nullptr;
 
 private:
-    double price();
-    QString priceAsString();
+    QString priceAsString(const DBRecord&);
     QString weightAsString();
-    QString amountAsString();
+    QString amountAsString(const DBRecord&);
     QString versionAsString();
     void showCurrentProduct();
     void filteredSearch();
@@ -75,12 +77,11 @@ private:
 
     QQmlContext* context = nullptr;
     Mode mode = Mode::Mode_Start;
-    DataBase* db = nullptr;
     DBThread* dbThread = nullptr;
     TCPServer* tcpServer = nullptr;
     Settings settings;
     DBRecord user;
-    DBRecord product;
+    DBRecord currentProduct;
     double weight = 0;
     double tare = 0;
     int openedPopupCount = 0;
@@ -99,7 +100,6 @@ private:
 signals:
     void activateMainPage(const int index);
     void authorizationSucceded();
-    void newData(const QString& json);
     void print();
     void printed(const DBRecord&);
     void resetProduct();
@@ -138,7 +138,6 @@ public slots:
     void onLockClicked();
     void onLog(const int type, const QString &comment) { log(type, comment); }
     void onMainPageChanged(const int);
-    void onNewData(const QString& json) { emit newData(json); }
     void onPopupClosed();
     void onPopupOpened();
     void onPrint() { emit print(); }
@@ -160,7 +159,7 @@ public slots:
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);
-    void onUpdateDBResult(const DataBase::Selector, const bool);
+    void onUpdateResult(const DataBase::Selector, const bool);
     void onViewLogClicked();
     void onWeightParamClicked(const int param) { emit setWeightParam(param); }
     void onWeightParamChanged(const int, const QString&);

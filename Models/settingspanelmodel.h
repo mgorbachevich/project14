@@ -10,7 +10,7 @@ class SettingsPanelModel : public BaseListModel2
     Q_OBJECT
 
 public:
-    SettingsPanelModel(QObject *parent): BaseListModel2(parent) {}
+    SettingsPanelModel(AppManager *parent): BaseListModel2(parent) {}
     void update(Settings&);
 };
 

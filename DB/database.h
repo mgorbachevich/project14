@@ -41,12 +41,14 @@ public:
         //GetProductsByFilteredCodeIncludeGroups,
         GetProductsByFilteredBarcode,
         //GetProductsByFilteredBarcodeIncludeGroups,
+        GetProductsByCodes,
         GetUserNames,
         GetAuthorizationUserByName,
         GetSettingsItemByCode,
         GetSettings,
         GetLog,
         ReplaceSettingsItem,
+        Download
     };
 
     explicit DataBase(Settings&, QObject *parent = nullptr);
@@ -88,7 +90,7 @@ public slots:
     void onSelect(const DataBase::Selector, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);
-    void onNewData(const QString&);
+    void onDownload(const DataBase::Selector, const QString&);
     void onPrinted(const DBRecord&);
     void onSaveLog(const DBRecord&);
 };

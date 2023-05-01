@@ -9,7 +9,7 @@ class UserNameModel : public BaseListModel
     Q_OBJECT
 
 public:
-    explicit UserNameModel(QObject *parent): BaseListModel(parent) {}
+    explicit UserNameModel(AppManager *parent): BaseListModel(parent) {}
     void update(const DBRecordList&);
 };
 

@@ -14,7 +14,7 @@ public:
         Barcode,
     };
 
-    explicit SearchFilterModel(QObject *parent): BaseListModel(parent) {}
+    explicit SearchFilterModel(AppManager *parent): BaseListModel(parent) {}
     void update();
 
     FilterIndex index = FilterIndex::Code;

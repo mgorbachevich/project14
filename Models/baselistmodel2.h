@@ -6,6 +6,8 @@
 
 #define StringPair QPair<QString, QString>
 
+class AppManager;
+
 class BaseListModel2: public QAbstractListModel
 {
     Q_OBJECT
@@ -13,7 +15,7 @@ class BaseListModel2: public QAbstractListModel
 public:
     enum Roles { FirstRole = Qt::UserRole + 1, SecondRole = Qt::UserRole + 2 };
 
-    explicit BaseListModel2(QObject *parent = nullptr): QAbstractListModel(parent) {}
+    explicit BaseListModel2(AppManager *parent = nullptr): QAbstractListModel((QObject*)parent) { appManager = parent; }
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &) const override { return items.count(); }
     QHash<int, QByteArray> roleNames() const override;
@@ -23,6 +25,7 @@ protected:
 
     QList<StringPair> items;
     QHash<int, QByteArray> roles;
+    AppManager* appManager;
 };
 
 #endif // BASELISTMODEL2_H

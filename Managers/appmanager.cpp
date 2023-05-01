@@ -30,12 +30,11 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     this->context = context;
     mode = Mode::Mode_Start;
     user = UserDBTable::defaultAdmin();
-    tcpServer = new TCPServer(this);
-
     db = new DataBase(settings);
     dbThread = new DBThread(db, this);
+    tcpServer = new TCPServer(this, db);
+
     connect(this, &AppManager::start, db, &DataBase::onStart);
-    connect(this, &AppManager::newData, db, &DataBase::onNewData);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
     connect(this, &AppManager::saveLog, db, &DataBase::onSaveLog);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
@@ -43,7 +42,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
-    connect(db, &DataBase::updateResult, this, &AppManager::onUpdateDBResult);
+    connect(db, &DataBase::updateResult, this, &AppManager::onUpdateResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     connect(db, &DataBase::log, this, &AppManager::onLog);
 
@@ -91,9 +90,9 @@ void AppManager::onDBStarted()
     emit showMessageBox("NetParams", QString("IP = %1").arg(TCPServer::getNetParams().localHostIP));
 }
 
-QString AppManager::priceAsString()
+QString AppManager::priceAsString(const DBRecord& product)
 {
-    return Tools::moneyToText(price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
+    return Tools::moneyToText(productPrice(product), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 }
 
 QString AppManager::weightAsString()
@@ -101,14 +100,17 @@ QString AppManager::weightAsString()
     return Tools::weightToText(weight);
 }
 
-QString AppManager::amountAsString()
+QString AppManager::amountAsString(const DBRecord& product)
 {
-    return Tools::moneyToText(weight * price(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
+    return Tools::moneyToText(weight * productPrice(product), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 }
 
-double AppManager::price()
+double AppManager::productPrice(const DBRecord& product)
 {
-    return product.count() <= ProductDBTable::Price? 0: product[ProductDBTable::Price].toDouble();
+    const int p = ProductDBTable::Price;
+    if (product.count() <= p)
+        return 0;
+    return Tools::priceToDouble(product[p].toString(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
 }
 
 void AppManager::onWeightParamChanged(const int param, const QString& value)
@@ -133,10 +135,10 @@ void AppManager::onWeightParamChanged(const int param, const QString& value)
 
 void AppManager::showCurrentProduct()
 {
-    qDebug() << "@@@@@ AppManager::showCurrentProduct " << product[ProductDBTable::Code].toString();
-    productPanelModel->update(product, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
+    qDebug() << "@@@@@ AppManager::showCurrentProduct " << currentProduct[ProductDBTable::Code].toString();
+    productPanelModel->update(currentProduct, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
     emit showProductPanel();
-    emit selectFromDB(DataBase::GetImageByResourceCode, product[ProductDBTable::PictureCode].toString());
+    emit selectFromDB(DataBase::GetImageByResourceCode, currentProduct[ProductDBTable::PictureCode].toString());
     updateWeightPanel();
 
     if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
@@ -149,7 +151,7 @@ void AppManager::showCurrentProduct()
 void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
-    emit selectFromDB(DataBase::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
+    emit selectFromDB(DataBase::GetMessageByResourceCode, currentProduct[ProductDBTable::MessageCode].toString());
 }
 
 void AppManager::filteredSearch()
@@ -333,16 +335,13 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         searchPanelModel->update(records, SearchFilterModel::Barcode);
         break;
 
-    default:
-        qDebug() << "@@@@@ AppManager::onSelectFromDBResult ERROR unknown selector";
-        log(LogDBTable::LogType_Warning, "Неизвестный ответ БД");
-        break;
+    default:break;
     }
 }
 
-void AppManager::onUpdateDBResult(const DataBase::Selector selector, const bool result)
+void AppManager::onUpdateResult(const DataBase::Selector selector, const bool result)
 {
-    qDebug() << "@@@@@ AppManager::onUpdateDBResult " << selector << result;
+    qDebug() << "@@@@@ AppManager::onUpdateResult " << selector << result;
     if (!result)
     {
         emit showMessageBox("ВНИМАНИЕ!", "Ошибка при сохранении данных!");
@@ -386,7 +385,7 @@ void AppManager::onTableResultClicked(const int index)
         }
         else
         {
-            product = clickedProduct;
+            currentProduct = clickedProduct;
             showCurrentProduct();
         }
     }
@@ -413,14 +412,14 @@ void AppManager::onSettingGroupClicked(const int index)
 void AppManager::onSearchResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSearchResultClicked " << index;
-    product = searchPanelModel->productByIndex(index);
+    currentProduct = searchPanelModel->productByIndex(index);
     showCurrentProduct();
 }
 
 void AppManager::onShowcaseClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onShowcaseClicked " << index;
-    product = showcasePanelModel->productByIndex(index);
+    currentProduct = showcasePanelModel->productByIndex(index);
     showCurrentProduct();
 }
 
@@ -441,14 +440,14 @@ void AppManager::updateWeightPanel()
     QString w = weightAsString();
     emit showWeightParam(WeightParam::WeightParam_WeightValue, w);
     emit showWeightParam(WeightParam::WeightParam_WeightColor, Tools::stringToDouble(w) != 0 ? c1 : c0);
-    emit showWeightParam(WeightParam::WeightParam_WeightTitle, ProductDBTable::isPiece(product) ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
+    emit showWeightParam(WeightParam::WeightParam_WeightTitle, ProductDBTable::isPiece(currentProduct) ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
 
-    QString p = priceAsString();
+    QString p = priceAsString(currentProduct);
     emit showWeightParam(WeightParam::WeightParam_PriceValue, p);
     emit showWeightParam(WeightParam::WeightParam_PriceColor, Tools::stringToDouble(p) != 0 ? c1 : c0);
     emit showWeightParam(WeightParam::WeightParam_PriceTitle, "ЦЕНА, руб");
 
-    QString a = amountAsString();
+    QString a = amountAsString(currentProduct);
     emit showWeightParam(WeightParam::WeightParam_AmountValue, a);
     emit showWeightParam(WeightParam::WeightParam_AmountColor, Tools::stringToDouble(a) != 0 ? c1 : c0);
     emit showWeightParam(WeightParam::WeightParam_AmountTitle, "СТОИМОСТЬ, руб");
@@ -518,11 +517,11 @@ void AppManager::saveTransaction()
     DBRecord r = ((TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS))->createRecord();
     r[TransactionDBTable::DateTime] = Tools::currentDateTimeToInt();
     r[TransactionDBTable::User] = user[UserDBTable::Code];
-    r[TransactionDBTable::ItemCode] = Tools::stringToInt(product[ProductDBTable::Code]);
+    r[TransactionDBTable::ItemCode] = Tools::stringToInt(currentProduct[ProductDBTable::Code]);
     r[TransactionDBTable::LabelNumber] = 0; // todo
     r[TransactionDBTable::Weight] = weightAsString(); // todo
-    r[TransactionDBTable::Price] = priceAsString(); // todo
-    r[TransactionDBTable::Cost] = amountAsString(); // todo
+    r[TransactionDBTable::Price] = priceAsString(currentProduct); // todo
+    r[TransactionDBTable::Cost] = amountAsString(currentProduct); // todo
     r[TransactionDBTable::Price2] = 0; // todo
     r[TransactionDBTable::Cost2] = 0; // todo
     emit printed(r);
@@ -577,7 +576,7 @@ void AppManager::onPrinted()
 void AppManager::onResetProduct()
 {
     qDebug() << "@@@@@ AppManager::onResetProduct";
-    product.clear();
+    currentProduct.clear();
     updateWeightPanel();
 }
 

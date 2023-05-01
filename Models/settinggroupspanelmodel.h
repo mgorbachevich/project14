@@ -10,7 +10,7 @@ class SettingGroupsPanelModel : public BaseListModel
     Q_OBJECT
 
 public:
-    SettingGroupsPanelModel(QObject *parent): BaseListModel(parent) {}
+    SettingGroupsPanelModel(AppManager *parent): BaseListModel(parent) {}
     void update(const Settings&);
 };
 

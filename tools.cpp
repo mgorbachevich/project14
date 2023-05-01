@@ -60,7 +60,10 @@ double Tools::stringToDouble(const QString &s, const double defaultValue)
     return v;
 }
 
-
-
-
-
+double Tools::priceToDouble(const QString &dbPrice, const int pointPosition)
+{
+    double v = dbPrice.toDouble();
+    for (int i = 0; i < pointPosition; i++)
+        v /= 10;
+    return v;
+}

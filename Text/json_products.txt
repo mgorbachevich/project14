@@ -1,6 +1,4 @@
 {
-    "result":"0",
-    "description":"ошибок нет",
     "data":
     {
         "products":
@@ -20,7 +18,7 @@
                 "barcode":"1234567890001",
                 "message_code":"101",
                 "picture_code":"1",
-                "price":"111.11",
+                "price":"11111",
                 "name":"Виноград"
             },
             {
@@ -30,17 +28,17 @@
                 "barcode":"1234567890002",
                 "message_code":"102",
                 "picture_code":"2",
-                "price":"222",
+                "price":"22200",
                 "name":"Яблоки"
             },
             {
-                "code":"3",
+                "code":"123",
                 "type":"0",
                 "group_code":"0",
                 "barcode":"1234567890003",
                 "message_code":"103",
                 "picture_code":"3",
-                "price":"333.33",
+                "price":"33333",
                 "name":"Груши"
             },
             {
@@ -50,7 +48,7 @@
                 "barcode":"1234567890004",
                 "message_code":"104",
                 "picture_code":"4",
-                "price":"444.44",
+                "price":"44444",
                 "name":"Вишня"
             },
             {
@@ -60,7 +58,7 @@
                 "barcode":"1234567890150",
                 "message_code":"105",
                 "picture_code":"5",
-                "price":"555.55",
+                "price":"55555",
                 "name":"Черешня"
             },
             {
@@ -70,7 +68,7 @@
                 "barcode":"1234567890006",
                 "message_code":"106",
                 "picture_code":"6",
-                "price":"66.66",
+                "price":"6666",
                 "name":"Арбуз"
             },
             {
@@ -80,7 +78,7 @@
                 "barcode":"1234567890007",
                 "message_code":"107",
                 "picture_code":"7",
-                "price":"7.07",
+                "price":"707",
                 "name":"Картофель"
             },
             {
@@ -90,7 +88,7 @@
                 "barcode":"1234567890008",
                 "message_code":"108",
                 "picture_code":"8",
-                "price":"88.88",
+                "price":"8888",
                 "name":"Капуста"
             },
             {
@@ -100,7 +98,7 @@
                 "barcode":"1234567890099",
                 "message_code":"109",
                 "picture_code":"9",
-                "price":"99.99",
+                "price":"9999",
                 "name":"Помидоры"
             },
             {
@@ -110,7 +108,7 @@
                 "barcode":"1234567890010",
                 "message_code":"110",
                 "picture_code":"10",
-                "price":"10.10",
+                "price":"1010",
                 "name":"Огурцы"
             },
             {
@@ -120,7 +118,7 @@
                 "barcode":"1234567890011",
                 "message_code":"111",
                 "picture_code":"11",
-                "price":"111.11",
+                "price":"11111",
                 "name":"Баклажаны"
             },
             {
@@ -130,7 +128,7 @@
                 "barcode":"1234567890012",
                 "message_code":"112",
                 "picture_code":"12",
-                "price":"112.12",
+                "price":"11212",
                 "name":"Кабачки"
             },
             {
@@ -140,7 +138,7 @@
                 "barcode":"1234567890013",
                 "message_code":"113",
                 "picture_code":"13",
-                "price":"113.13",
+                "price":"11313",
                 "name":"Цукини"
             },
             {
@@ -150,7 +148,7 @@
                 "barcode":"1234567890014",
                 "message_code":"114",
                 "picture_code":"14",
-                "price":"444.44",
+                "price":"44444",
                 "name":"Киви"
             },
             {
@@ -160,7 +158,7 @@
                 "barcode":"1234567890015",
                 "message_code":"115",
                 "picture_code":"15",
-                "price":"15.15",
+                "price":"1515",
                 "name":"Бананы"
             }
         ]

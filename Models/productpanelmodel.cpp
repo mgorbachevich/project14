@@ -1,5 +1,6 @@
 #include "productpanelmodel.h"
 #include "productdbtable.h"
+#include "appmanager.h"
 
 void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productTable)
 {
@@ -13,7 +14,6 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
         {
         case ProductDBTable::Code:
         case ProductDBTable::Barcode:
-        case ProductDBTable::Price:
         case ProductDBTable::Shelflife:
         case ProductDBTable::SellDate:
         case ProductDBTable::ProduceDate:
@@ -21,6 +21,9 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
         case ProductDBTable::Tare:
         case ProductDBTable::Certificate:
             s += product.at(i).toString();
+            break;
+        case ProductDBTable::Price:
+            s += QString("%1").arg(appManager->productPrice(product));
             break;
         case ProductDBTable::Type:
             switch (product.at(ProductDBTable::Type).toInt())

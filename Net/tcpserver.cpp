@@ -14,7 +14,7 @@ void TCPServer::start(const int port)
     //while (isListening()) {}
     if (!listen(QHostAddress::Any, port))
     {
-        qDebug() << "@@@@@ TCPServer::HTTPServer ERROR " << errorString();
+        qDebug() << "@@@@@ TCPServer::HTTPServer ERROR: " << errorString();
         emit log(LogDBTable::LogType_Error, "TCPServer " + errorString());
     }
 }
@@ -22,8 +22,12 @@ void TCPServer::start(const int port)
 void TCPServer::incomingConnection(qintptr socketDescriptor)
 {
     qDebug() << "@@@@@ TCPServer::incomingConnection";
-    SocketThread* thread = new SocketThread(socketDescriptor, this);
+    SocketThread* thread = new SocketThread(this, socketDescriptor, db);
     connect(thread, &SocketThread::finished, thread, &QObject::deleteLater);
+    connect(thread, &SocketThread::selectFromDB, db, &DataBase::onSelect);
+    connect(thread, &SocketThread::download, db, &DataBase::onDownload);
+    connect(db, &DataBase::selectResult, thread, &SocketThread::onSelectFromDBResult);
+    connect(db, &DataBase::updateResult, thread, &SocketThread::onUpdateResult);
     thread->start();
 }
 
@@ -53,3 +57,4 @@ NetParams TCPServer::getNetParams()
     qDebug() << "@@@@@ TCPServer::getNetParams " << np.localHostName << np.localMacAddress << np.localHostIP << np.localNetMask;
     return np;
 }
+
