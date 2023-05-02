@@ -345,8 +345,20 @@ void AppManager::onDBResult(const DataBase::Selector selector, const DBRecordLis
         break;
 
     case DataBase::Download:
+    // Загрузка завершена:
         //emit showMessageBox("ВНИМАНИЕ!", "Загружены новые данные.");
         refreshAll();
+        if (!currentProduct.isEmpty())
+            emit selectFromDB(DataBase::GetProductByCode, currentProduct.at(ProductDBTable::Code).toString());
+        break;
+
+    case DataBase::GetProductByCode:
+    // Сброс выбранного товара после загрузки:
+        if (!currentProduct.isEmpty() && !DBTable::isEqual(currentProduct, records.at(0)))
+        {
+            emit resetProduct();
+            emit showMessageBox("ВНИМАНИЕ!", "Выбранный товар изменен");
+        }
         break;
 
     default:break;
@@ -503,19 +515,19 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
         refreshAll();
+        emit resetProduct();
+        mainPageIndex = 0;
+        emit activateMainPage(mainPageIndex);
     }
 }
 
 void AppManager::refreshAll()
 {
     qDebug() << "@@@@@ AppManager::refreshAll";
-    emit resetProduct();
     emit showAdminMenu(UserDBTable::isAdmin(user));
     emit selectFromDB(DataBase::GetShowcaseProducts, "");
     searchFilterModel->update();
     updateTablePanel(true);
-    mainPageIndex = 0;
-    emit activateMainPage(mainPageIndex);
 }
 
 void AppManager::saveTransaction()

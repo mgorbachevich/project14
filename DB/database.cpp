@@ -414,6 +414,14 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         break;
     }
 
+    case Selector::GetProductByCode:
+    {
+        DBRecord r;
+        selectById(getTableByName(DBTABLENAME_PRODUCTS), param, r);
+        resultRecords.append(r);
+        break;
+    }
+
     case Selector::GetProductsByCodes:
     {
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);

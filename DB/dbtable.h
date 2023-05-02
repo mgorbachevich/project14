@@ -23,6 +23,7 @@ public:
     virtual int columnCount() { return 0; }
     virtual const DBRecordList checkList(const DBRecordList&);
     virtual const DBRecord checkRecord(const DBRecord&);
+    static bool isEqual(const DBRecord&, const DBRecord&);
 
     QString name;
 

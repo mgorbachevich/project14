@@ -29,6 +29,20 @@ const DBRecord DBTable::checkRecord(const DBRecord& record)
     return result;
 }
 
+bool DBTable::isEqual(const DBRecord& r1, const DBRecord& r2)
+{
+    if (r1.count() == r2.count())
+    {
+        for (int i = 0; i < r1.count(); i++)
+        {
+            if (r1[i] != r2[i])
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
 const DBRecordList DBTable::checkList(const DBRecordList &records)
 {
     qDebug() << "@@@@@ DBTable::checkList: table =" << name;

@@ -42,6 +42,7 @@ public:
         GetProductsByFilteredBarcode,
         //GetProductsByFilteredBarcodeIncludeGroups,
         GetProductsByCodes,
+        GetProductByCode,
         GetUserNames,
         GetAuthorizationUserByName,
         GetSettingsItemByCode,
