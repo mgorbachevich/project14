@@ -64,7 +64,8 @@ public:
 
     SettingDBTable(const QString&, QObject*);
     int columnCount() { return Columns::COLUMN_COUNT; }
-    const DBRecordList checkAll(const DBRecordList&);
+    const DBRecord checkRecord(const DBRecord&);
+    const DBRecordList checkList(const DBRecordList&);
 
 private:
     void checkDefault(const SettingCode, const DBRecordList&, DBRecordList&);

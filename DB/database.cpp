@@ -126,55 +126,13 @@ bool DataBase::removeRecord(DBTable* table, const DBRecord& record)
             arg(table->name, table->columnName(0), record[0].toString());
     return executeSQL(sql);
 }
-/*
-bool DataBase::insertRecord(DBTable* table, const DBRecord& record)
-{
-    if (!started) return false;
-    qDebug() << "@@@@@ DataBase::insertRecord into " << table->name;
-
-    if (table->checkRecord(record) == nullptr)
-    {
-        qDebug() << "@@@@@ DataBase::insertRecord ERROR (check record)";
-        return false;
-    }
-
-    QString sql =  "INSERT INTO " + table->name + " (";
-    for (int i = 0; i < table->columnCount(); i++)
-    {
-        sql += table->columnName(i);
-        sql += (i == table->columnCount() - 1) ? ")" : ", ";
-    }
-    sql +=  " VALUES (";
-    for (int i = 0; i < table->columnCount(); i++)
-    {
-        sql += (i < record.count()) ? "'" + record[i].toString() + "'" : "''";
-        sql += (i == table->columnCount() - 1) ? ")" : ", ";
-    }
-    return executeSQL(sql);
-}
-
-bool DataBase::updateRecord(DBTable *table, const DBRecord& record)
-{
-    if (!started) return false;
-    qDebug() << "@@@@@ DataBase::updateRecord in " << table->name;
-
-    QString sql =  "UPDATE " + table->name + " SET ";
-    for (int i = 1; i < table->columnCount(); i++)
-    {
-        sql += table->columnName(i) + " = ";
-        sql +=  "'" + record[i].toString() + "'";
-        sql += (i == table->columnCount() - 1) ? " " : ", ";
-    }
-    sql +=  " WHERE " + table->columnName(0) + " = '" + record[0].toString() + "'";
-    return executeSQL(sql);
-}
-*/
 
 bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record, const bool forceInsert)
 {
     if (!started) return false;
     qDebug() << "@@@@@ DataBase::updateOrInsertRecord: table name =" << table->name;
-    if (table->checkRecord(record) == nullptr)
+    DBRecord checkedRecord = table->checkRecord(record);
+    if (checkedRecord.isEmpty())
     {
         qDebug() << "@@@@@ DataBase::updateOrInsertRecord ERROR (check record)";
         emit log(LogDBTable::LogType_Error, "БД. Не сохранена запись в таблице " + table->name);
@@ -183,7 +141,7 @@ bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record, cons
 
     QString sql;
     DBRecord r;
-    if (!forceInsert && selectById(table, record.at(0).toString(), r))
+    if (!forceInsert && selectById(table, checkedRecord.at(0).toString(), r))
     {
         removeRecord(table, r);
     }
@@ -196,7 +154,7 @@ bool DataBase::updateOrInsertRecord(DBTable *table, const DBRecord& record, cons
     sql +=  " VALUES (";
     for (int i = 0; i < table->columnCount(); i++)
     {
-        sql += (i < record.count()) ? "'" + record[i].toString() + "'" : "''";
+        sql += (i < checkedRecord.count()) ? "'" + checkedRecord[i].toString() + "'" : "''";
         sql += (i == table->columnCount() - 1) ? ")" : ", ";
     }
     /*
@@ -321,7 +279,7 @@ void DataBase::selectAndCheckAll(DBTable *table, DBRecordList& resultRecords)
     DBRecordList records;
     selectAll(table, records);
     resultRecords.clear();
-    resultRecords.append(table->checkAll(records));
+    resultRecords.append(table->checkList(records));
 }
 
 void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
@@ -482,7 +440,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
 
     default: break;
     }
-    emit selectResult(selector, resultRecords);
+    emit dbResult(selector, resultRecords, true);
 }
 
 void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordList& param)
@@ -507,7 +465,7 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
 
     default: break;
     }
-    emit selectResult(selector, resultRecords);
+    emit dbResult(selector, resultRecords, true);
 }
 
 void DataBase::onUpdateRecord(const DataBase::Selector selector, const DBRecord& record)
@@ -523,7 +481,7 @@ void DataBase::onUpdateRecord(const DataBase::Selector selector, const DBRecord&
     }
     default: break;
     }
-    emit updateResult(selector, result);
+    emit dbResult(selector, *new DBRecordList(), result);
 }
 
 void DataBase::onDownload(const DataBase::Selector selector, const QString& json)
@@ -542,7 +500,7 @@ void DataBase::onDownload(const DataBase::Selector selector, const QString& json
     }
     default: break;
     }
-    emit updateResult(selector, result);
+    emit dbResult(selector, *new DBRecordList(), result);
 }
 
 void DataBase::onPrinted(const DBRecord& transaction)

@@ -24,6 +24,11 @@ void TablePanelModel::update(const DBRecordList& newProducts)
     setStringList(ss);
 }
 
+void TablePanelModel::root()
+{
+    groupHierarchy.clear();
+}
+
 bool TablePanelModel::groupUp()
 {
     if (groupHierarchy.count() < 1) return false;

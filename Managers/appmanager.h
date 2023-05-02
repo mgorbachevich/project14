@@ -67,13 +67,14 @@ private:
     QString versionAsString();
     void showCurrentProduct();
     void filteredSearch();
-    void updateTablePanel();
+    void updateTablePanel(const bool);
     void updateWeightPanel();
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
     void saveTransaction();
     void showUsers(const DBRecordList&);
     void log(const int, const QString&);
+    void refreshAll();
 
     QQmlContext* context = nullptr;
     Mode mode = Mode::Mode_Start;
@@ -134,6 +135,7 @@ public slots:
     void onBeep() { QApplication::beep(); }
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onConfirmationClicked(const int);
+    void onDBResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
     void onLockClicked();
     void onLog(const int type, const QString &comment) { log(type, comment); }
@@ -149,7 +151,6 @@ public slots:
     void onSearchFilterEdited(const QString&);
     void onSearchOptionsClicked() { emit showSearchOptions(); }
     void onSearchResultClicked(const int);
-    void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
     void onSettingGroupClicked(const int);
     void onSettingInputClosed(const int, const QString&);
     void onSettingsItemClicked(const int);
@@ -159,7 +160,6 @@ public slots:
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);
-    void onUpdateResult(const DataBase::Selector, const bool);
     void onViewLogClicked();
     void onWeightParamClicked(const int param) { emit setWeightParam(param); }
     void onWeightParamChanged(const int, const QString&);

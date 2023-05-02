@@ -4,7 +4,8 @@
 #include <QThread>
 #include "database.h"
 
-#define WAIT_FOR_RESPONSE_SEC 10
+#define WAIT_FOR_RESPONSE_MSEC 10000
+#define WAIT_FOR_RESPONSE_SLEEP_MSEC 10
 
 class QTcpSocket;
 class TCPServer;
@@ -19,13 +20,20 @@ public:
     void run();
 
 private:
-    void waitForResponse();
+    enum State
+    {
+        Disconnected = 0,
+        Get,
+        Post,
+    };
+    void waitForDBResponse();
 
     qintptr socketDescriptor;
     QTcpSocket* socket = nullptr;
     DataBase* db = nullptr;
     QString response = "";
-    bool post = false;
+    QString request = "";
+    State state = Disconnected;
 
 signals:
     void selectFromDB(const DataBase::Selector, const QString&);
@@ -34,8 +42,8 @@ signals:
 public slots:
     void onReadyRead();
     void onDisconnected();
-    void onSelectFromDBResult(const DataBase::Selector, const DBRecordList&);
-    void onUpdateResult(const DataBase::Selector, const bool);
+    void onAboutToClose();
+    void onDBResult(const DataBase::Selector, const DBRecordList&, const bool);
 };
 
 #endif // SOCKETTHREAD_H

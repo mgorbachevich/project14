@@ -11,63 +11,76 @@ SettingDBTable::SettingDBTable(const QString& name, QObject *parent): DBTable(na
     addColumn("Значение",     "value", "TEXT");
 }
 
-const DBRecordList SettingDBTable::checkAll(const DBRecordList& records)
+const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
 {
-    qDebug() << "@@@@@ SettingDBTable::checkAll";
-    DBRecordList resultRecords;
+    qDebug() << "@@@@@ SettingDBTable::checkRecord: table =" << name;
+    bool ok = record.count() >= columnCount();
+    if(ok)
+    {
+        int code = Tools::stringToInt(record.at(Columns::Code).toString());
+        int value = Tools::stringToInt(record.at(Columns::Value).toString());
+        switch (code)
+        {
+        case 0:
+            ok = false;
+            break;
+        case SettingCode_ScalesNumber:
+            ok = value > 0 && value <= 999999;
+            break;
+        case SettingCode_PointPosition:
+            ok = value >= 0 && value <= 3;
+            break;
+        case SettingCode_ProductReset:
+            ok = value >= ProductReset_None && value <= ProductReset_Time;
+            break;
+        case SettingCode_ProductResetTime:
+            ok = value >= 0;
+            break;
+        case SettingCode_SearchType:
+            ok = value >= 0 && value <= 1;
+            break;
+        case SettingCode_SearchCodeSymbols:
+        case SettingCode_SearchBarcodeSymbols:
+            ok = value >= 0 && value <= 9;
+            break;
+        default: break; // Без проверки
+        }
+    }
+    DBRecord result;
+    if(ok)
+    {
+        result.append(record);
+    }
+    else
+    {
+        qDebug() << "@@@@@ SettingDBTable::checkRecord ERROR";
+    }
+    return result;
+}
+
+const DBRecordList SettingDBTable::checkList(const DBRecordList& records)
+{
+    qDebug() << "@@@@@ SettingDBTable::checkList";
+    DBRecordList result;
 
     // Проверка допустимых значений:
     for (int i = 0; i < records.count(); i++)
     {
-        const DBRecord& ri = records.at(i);
-        if (ri.count() != columnCount()) continue;
-        bool ok = false;
-        int code = ri.at(Columns::Code).toUInt(&ok);
-        if (!ok) continue;
-        int value = ri.at(Columns::Value).toInt(&ok);
-        if (!ok) value = 0;
-        switch (code)
-        {
-        case SettingCode_ScalesNumber:
-            if (value < 1 || value > 999999) continue;
-            break;
-        case SettingCode_PointPosition:
-            if (value < 0 || value > 3) continue;
-            break;
-        case SettingCode_ProductReset:
-            if (value < ProductReset_None || value > ProductReset_Time) continue;
-            break;
-        case SettingCode_ProductResetTime:
-            if (value < 0) continue;
-            break;
-        case SettingCode_SearchType:
-            if (value < 0 || value > 1) continue;
-            break;
-        case SettingCode_SearchCodeSymbols:
-        case SettingCode_SearchBarcodeSymbols:
-            if (value < 0 || value > 9) continue;
-            break;
-        case SettingCode_ScalesName:
-        case SettingCode_ShopName:
-        case SettingCode_TCPPort:
-        case SettingCode_LogDuration:
-            break; // Без проверки
-        default: continue;
-        }
-        resultRecords.append(ri);
+        DBRecord r = checkRecord(records[i]);
+        if (!r.isEmpty())
+            result.append(r);
     }
 
     // Добавление недостающих значений по умолчанию:
     JSONParser parser;
     DBRecordList defaultRecords = parser.parseTable(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    checkDefault(SettingCode_ScalesNumber, defaultRecords, resultRecords);
-    checkDefault(SettingCode_TCPPort, defaultRecords, resultRecords);
-    checkDefault(SettingCode_PointPosition, defaultRecords, resultRecords);
-    checkDefault(SettingCode_ProductReset, defaultRecords, resultRecords);
-    checkDefault(SettingCode_ProductResetTime, defaultRecords, resultRecords);
-    checkDefault(SettingCode_LogDuration, defaultRecords, resultRecords);
-
-    return resultRecords;
+    checkDefault(SettingCode_ScalesNumber, defaultRecords, result);
+    checkDefault(SettingCode_TCPPort, defaultRecords, result);
+    checkDefault(SettingCode_PointPosition, defaultRecords, result);
+    checkDefault(SettingCode_ProductReset, defaultRecords, result);
+    checkDefault(SettingCode_ProductResetTime, defaultRecords, result);
+    checkDefault(SettingCode_LogDuration, defaultRecords, result);
+    return result;
 }
 
 void SettingDBTable::checkDefault(const SettingCode code, const DBRecordList& defaultRecords, DBRecordList& resultRecords)

@@ -11,24 +11,35 @@ QVariantList DBTable::createRecord()
 void DBTable::addColumn(const QString& title, const QString& name, const QString& type)
 {
     qDebug() << "@@@@@ DBTable::addColumn " << name;
-
     columns.append(*new DBTableColumn(title, name, type));
 }
 
-const DBRecord* DBTable::checkRecord(const DBRecord& record)
+const DBRecord DBTable::checkRecord(const DBRecord& record)
 {
-    return record.count() >= columnCount() ? &record : nullptr;
+    qDebug() << "@@@@@ DBTable::checkRecord: table =" << name;
+    DBRecord result;
+    if(record.count() >= columnCount())
+    {
+        result.append(record);
+    }
+    else
+    {
+        qDebug() << "@@@@@ DBTable::checkRecord ERROR";
+    }
+    return result;
 }
 
-const DBRecordList DBTable::checkAll(const DBRecordList &records)
+const DBRecordList DBTable::checkList(const DBRecordList &records)
 {
-    DBRecordList resultRecords;
+    qDebug() << "@@@@@ DBTable::checkList: table =" << name;
+    DBRecordList result;
     for (int i = 0; i < records.count(); i++)
     {
-        const DBRecord* r = checkRecord(records.at(i));
-        if (r != nullptr) resultRecords.append(*r);
+        const DBRecord& ri = checkRecord(records[i]);
+        if (!ri.isEmpty())
+            result.append(ri);
     }
-    return resultRecords;
+    return result;
 }
 
 QString DBTable::toJsonString(DBTable *table, const DBRecord &record)

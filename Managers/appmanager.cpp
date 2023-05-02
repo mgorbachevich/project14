@@ -41,8 +41,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
-    connect(db, &DataBase::selectResult, this, &AppManager::onSelectFromDBResult);
-    connect(db, &DataBase::updateResult, this, &AppManager::onUpdateResult);
+    connect(db, &DataBase::dbResult, this, &AppManager::onDBResult);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     connect(db, &DataBase::log, this, &AppManager::onLog);
 
@@ -190,7 +189,7 @@ void AppManager::onSearchFilterClicked(const int index)
 void AppManager::onTableBackClicked()
 {
     qDebug() << "@@@@@ AppManager::onTableBackClicked";
-    if (tablePanelModel->groupUp()) updateTablePanel();
+    if (tablePanelModel->groupUp()) updateTablePanel(false);
 }
 
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
@@ -240,9 +239,15 @@ void AppManager::onPopupOpened()
     qDebug() << "@@@@@ AppManager::onPopupOpened " << openedPopupCount;
 }
 
-void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const DBRecordList& records)
+void AppManager::onDBResult(const DataBase::Selector selector, const DBRecordList& records, const bool ok)
 {
-    qDebug() << "@@@@@ AppManager::onSelectFromDBResult " << selector;
+    qDebug() << "@@@@@ AppManager::onDBResult " << selector;
+    if (!ok)
+    {
+        emit showMessageBox("ВНИМАНИЕ!", "Ошибка базы данных!");
+        return;
+    }
+
     switch(selector)
     {
     case DataBase::GetSettings:
@@ -335,24 +340,16 @@ void AppManager::onSelectFromDBResult(const DataBase::Selector selector, const D
         searchPanelModel->update(records, SearchFilterModel::Barcode);
         break;
 
-    default:break;
-    }
-}
-
-void AppManager::onUpdateResult(const DataBase::Selector selector, const bool result)
-{
-    qDebug() << "@@@@@ AppManager::onUpdateResult " << selector << result;
-    if (!result)
-    {
-        emit showMessageBox("ВНИМАНИЕ!", "Ошибка при сохранении данных!");
-        return;
-    }
-    switch(selector)
-    {
     case DataBase::ReplaceSettingsItem:
         emit selectFromDB(DataBase::GetSettings, "");
         break;
-    default: break;
+
+    case DataBase::Download:
+        //emit showMessageBox("ВНИМАНИЕ!", "Загружены новые данные.");
+        refreshAll();
+        break;
+
+    default:break;
     }
 }
 
@@ -381,7 +378,7 @@ void AppManager::onTableResultClicked(const int index)
         DBRecord clickedProduct = tablePanelModel->productByIndex(index);
         if (ProductDBTable::isGroup(clickedProduct))
         {
-            if (tablePanelModel->groupDown(clickedProduct)) updateTablePanel();
+            if (tablePanelModel->groupDown(clickedProduct)) updateTablePanel(false);
         }
         else
         {
@@ -423,9 +420,11 @@ void AppManager::onShowcaseClicked(const int index)
     showCurrentProduct();
 }
 
-void AppManager::updateTablePanel()
+void AppManager::updateTablePanel(const bool root)
 {
     qDebug() << "@@@@@ AppManager::updateTablePanel";
+    if (root)
+        tablePanelModel->root();
     emit showTablePanelTitle(tablePanelModel->title());
     const QString currentGroupCode = tablePanelModel->lastGroupCode();
     emit showGroupHierarchyRoot(currentGroupCode.isEmpty() || currentGroupCode == "0");
@@ -503,12 +502,20 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         mode = Mode::Mode_Scale;
         // emit showMessageBox("Авторизация", "Успешно!");
         emit authorizationSucceded();
-        emit showAdminMenu(UserDBTable::isAdmin(user));
-        emit selectFromDB(DataBase::GetShowcaseProducts, "");
-        searchFilterModel->update();
-        updateTablePanel();
+        refreshAll();
     }
+}
 
+void AppManager::refreshAll()
+{
+    qDebug() << "@@@@@ AppManager::refreshAll";
+    emit resetProduct();
+    emit showAdminMenu(UserDBTable::isAdmin(user));
+    emit selectFromDB(DataBase::GetShowcaseProducts, "");
+    searchFilterModel->update();
+    updateTablePanel(true);
+    mainPageIndex = 0;
+    emit activateMainPage(mainPageIndex);
 }
 
 void AppManager::saveTransaction()

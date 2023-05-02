@@ -26,8 +26,7 @@ void TCPServer::incomingConnection(qintptr socketDescriptor)
     connect(thread, &SocketThread::finished, thread, &QObject::deleteLater);
     connect(thread, &SocketThread::selectFromDB, db, &DataBase::onSelect);
     connect(thread, &SocketThread::download, db, &DataBase::onDownload);
-    connect(db, &DataBase::selectResult, thread, &SocketThread::onSelectFromDBResult);
-    connect(db, &DataBase::updateResult, thread, &SocketThread::onUpdateResult);
+    connect(db, &DataBase::dbResult, thread, &SocketThread::onDBResult);
     thread->start();
 }
 

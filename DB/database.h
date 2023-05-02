@@ -81,8 +81,7 @@ private:
 signals:
     void showMessageBox(const QString&, const QString&);
     void log(const int, const QString&);
-    void selectResult(const DataBase::Selector, const DBRecordList&);
-    void updateResult(const DataBase::Selector, const bool);
+    void dbResult(const DataBase::Selector, const DBRecordList&, const bool);
     void dbStarted();
 
 public slots:

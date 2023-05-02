@@ -1,4 +1,5 @@
 #include "productdbtable.h"
+#include "tools.h"
 
 ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
@@ -31,6 +32,23 @@ ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(na
     addColumn("Код файла сообщения",    "messageFile_code", "INT");
     addColumn("Код файла ролика",       "movie_code",       "INT");
     addColumn("Код звукового файла",    "sound_code",       "INT");
+}
+
+const DBRecord ProductDBTable::checkRecord(const DBRecord& record)
+{
+    qDebug() << "@@@@@ ProductDBTable::checkRecord: table =" << name;
+    DBRecord result;
+    if (record.count() < columnCount())
+    {
+        qDebug() << "@@@@@ ProductDBTable::checkRecord ERROR";
+        return result;
+    }
+    int code = Tools::stringToInt(record.at(Columns::Code), 0);
+    int groupCode = Tools::stringToInt(record.at(Columns::GroupCode), 0);
+    result.append(record);
+    result.replace(Columns::Code, QString("%1").arg(code));
+    result.replace(Columns::GroupCode, QString("%1").arg(groupCode));
+    return result;
 }
 
 bool ProductDBTable::isForShowcase(const DBRecord& record)
