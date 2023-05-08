@@ -9,6 +9,6 @@ PrintManager::PrintManager(QObject *parent): QObject(parent)
 void PrintManager::onPrint()
 {
     qDebug() << "@@@@@ PrintManager::onPrint";
-    emit showMessageBox("Сообщение", "Напечатано!");
+    emit showMessageBox("Сообщение", "Напечатано!", true);
     emit printed();
 }

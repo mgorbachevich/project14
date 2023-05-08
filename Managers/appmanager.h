@@ -73,8 +73,9 @@ private:
     void checkAuthorization(const DBRecordList&);
     void saveTransaction();
     void showUsers(const DBRecordList&);
-    void log(const int, const QString&);
     void refreshAll();
+    void showMessage(const QString& title, const QString& text) { emit showMessageBox(title, text, true); }
+    void showToast(const QString&, const QString&, const int delaySec = 5);
 
     QQmlContext* context = nullptr;
     Mode mode = Mode::Mode_Start;
@@ -101,13 +102,13 @@ private:
 signals:
     void activateMainPage(const int index);
     void authorizationSucceded();
+    void hideMessageBox();
     void print();
     void printed(const DBRecord&);
     void resetProduct();
-    void saveLog(const DBRecord&);
+    void saveLogInDB(const int, const QString&);
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
-    void sendHTTPClientGet(const QString&);
     void setCurrentUser(const int userIndex, const QString& userName);
     void settingsChanged();
     void setWeightParam(const int);
@@ -116,7 +117,7 @@ signals:
     void showConfirmationBox(const int, const QString&, const QString&);
     void showGroupHierarchyRoot(const bool);
     void showMainPage(const int);
-    void showMessageBox(const QString&, const QString&);
+    void showMessageBox(const QString&, const QString&, const bool);
     void showProductImage(const QString&);
     void showProductPanel();
     void showSearchOptions();
@@ -135,10 +136,11 @@ public slots:
     void onBeep() { QApplication::beep(); }
     void onCheckAuthorizationClicked(const QString&, const QString&);
     void onConfirmationClicked(const int);
-    void onDBResult(const DataBase::Selector, const DBRecordList&, const bool);
+    void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
+    void onDownloadFinished(const int);
     void onLockClicked();
-    void onLog(const int type, const QString &comment) { log(type, comment); }
+    void onLog(const int type, const QString& comment) { emit saveLogInDB(type, comment); }
     void onMainPageChanged(const int);
     void onPopupClosed();
     void onPopupOpened();
@@ -156,7 +158,7 @@ public slots:
     void onSettingsItemClicked(const int);
     void onShowcaseClicked(const int);
     void onShowMainPage(const int page) { emit showMainPage(page); }
-    void onShowMessageBox(const QString& title, const QString& text) { emit showMessageBox(title, text); }
+    void onShowMessageBox(const QString& title, const QString& text) { showMessage(title, text); }
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);

@@ -3,7 +3,8 @@
 
 void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilterModel::FilterIndex filterIndex)
 {
-    qDebug() << "@@@@@ SearchPanelModel::update";
+    qDebug() << "@@@@@ SearchPanelModel::update: index =" << filterIndex;
+    index = filterIndex;
     products.clear();
     products.append(newProducts);
     QStringList ss;
@@ -11,7 +12,7 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilte
     {
         DBRecord ri = products[i];
         QString s;
-        switch(filterIndex)
+        switch(index)
         {
             case SearchFilterModel::Code:
                 //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Code).toString() + " ";

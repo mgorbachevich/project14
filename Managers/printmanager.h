@@ -11,7 +11,7 @@ public:
     explicit PrintManager(QObject*);
 
 signals:
-    void showMessageBox(const QString&, const QString&);
+    void showMessageBox(const QString&, const QString&, const bool);
     void printed();
     void log(const int, const QString&);
 

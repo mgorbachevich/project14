@@ -4,11 +4,7 @@
 #include <QThread>
 #include "database.h"
 
-#define WAIT_FOR_RESPONSE_MSEC 10000
-#define WAIT_FOR_RESPONSE_SLEEP_MSEC 10
-
 class QTcpSocket;
-class TCPServer;
 
 class SocketThread : public QThread
 {
@@ -23,27 +19,26 @@ private:
     enum State
     {
         Disconnected = 0,
-        Get,
-        Post,
+        Upload,
+        Download,
     };
-    void waitForDBResponse();
 
     qintptr socketDescriptor;
-    QTcpSocket* socket = nullptr;
-    DataBase* db = nullptr;
-    QString response = "";
     QString request = "";
+    DBRecordList dbResponse;
     State state = Disconnected;
+    DataBase* db;
+    QTcpSocket* socket;
 
 signals:
-    void selectFromDB(const DataBase::Selector, const QString&);
-    void download(const DataBase::Selector, const QString&);
+    void selectFromDB(const DataBase::Selector, const QString&, const QString&);
+    void download(const QString&);
 
 public slots:
+    void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onReadyRead();
     void onDisconnected();
     void onAboutToClose();
-    void onDBResult(const DataBase::Selector, const DBRecordList&, const bool);
 };
 
 #endif // SOCKETTHREAD_H

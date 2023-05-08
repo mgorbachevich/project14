@@ -72,7 +72,7 @@ void WeightManager::onErrorStatusChanged(int error)
     if (wm100 != nullptr && error != 0)
     {
         QString s = wm100->errorDescription(error);
-        emit showMessageBox("Ошибка Весового модуля " + QString::number(error), s);
+        emit showMessageBox("Ошибка Весового модуля " + QString::number(error), s, true);
         emit log(error, s);
     }
 }

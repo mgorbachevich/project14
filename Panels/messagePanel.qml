@@ -17,8 +17,15 @@ Popup
     dim: true
     property string titleText: "Title"
     property string messageText: "Message"
+    property bool buttonVisibility: true
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
+
+    Connections // Slot for signal AppManager::hideMessageBox
+    {
+        target: app
+        function onHideMessageBox() { messagePanel.close() }
+    }
 
     GridLayout
     {
@@ -79,6 +86,7 @@ Popup
             rightInset: 0
             bottomInset: 0
             Material.background: Material.primary
+            visible: buttonVisibility
             onClicked: messagePanel.close()
         }
 

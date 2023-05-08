@@ -3,26 +3,25 @@
 
 #include <QTcpServer>
 #include "netparams.h"
-#include "database.h"
 
-class AppManager;
+class DataBase;
 
 class TCPServer : public QTcpServer
 {
     Q_OBJECT
 
 public:
-    TCPServer(QObject *parent, DataBase* dataBase): QTcpServer(parent), db(dataBase) {}
+    TCPServer(QObject*, DataBase*);
     void start(const int);
     static NetParams getNetParams();
-
-    DataBase* db;
 
 protected:
     void incomingConnection(qintptr);
 
+    DataBase* db;
+
 signals:
-    void showMessageBox(const QString&, const QString&);
+    void showMessageBox(const QString&, const QString&, const bool);
     void log(const int, const QString&);
 };
 

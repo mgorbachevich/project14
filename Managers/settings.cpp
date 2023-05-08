@@ -68,16 +68,6 @@ void Settings::createGroups(SettingGroupDBTable* table)
     JSONParser parser;
     groups.clear();
     groups.append(parser.parseTable(table, Tools::readTextFile(DEFAULT_SETTING_GROUPS_FILE)));
-#ifdef DEBUG_LOG_SETTING_GROUPS
-    for (int i = 0; i < groups.count(); i++)
-    {
-        QString s = "@@@@@ Settings::createGroups " + groups[i].at(SettingGroupDBTable::Name).toString();
-        QList<int> codes = parseGroupItemCodes(&groups[i]);
-        for (int j = 0; j < codes.count(); j++)
-            s += QString(" %1").arg(codes[j]);
-        qDebug() << s;
-    }
-#endif
 }
 
 void Settings::updateAllItems(const DBRecordList& records)

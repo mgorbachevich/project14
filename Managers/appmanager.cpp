@@ -30,20 +30,21 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     this->context = context;
     mode = Mode::Mode_Start;
     user = UserDBTable::defaultAdmin();
-    db = new DataBase(settings);
+    db = new DataBase(DB_FILENAME, settings, nullptr); // this); ??
     dbThread = new DBThread(db, this);
     tcpServer = new TCPServer(this, db);
 
     connect(this, &AppManager::start, db, &DataBase::onStart);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
-    connect(this, &AppManager::saveLog, db, &DataBase::onSaveLog);
+    connect(this, &AppManager::saveLogInDB, db, &DataBase::onSaveLog);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
-    connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
-    connect(db, &DataBase::dbResult, this, &AppManager::onDBResult);
+    connect(db, &DataBase::started, this, &AppManager::onDBStarted);
+    connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
+    connect(db, &DataBase::downloadFinished, this, &AppManager::onDownloadFinished);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
-    connect(db, &DataBase::log, this, &AppManager::onLog);
+    connect(tcpServer, &TCPServer::log, this, &AppManager::onLog);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
@@ -80,13 +81,22 @@ QString AppManager::versionAsString()
 
 void AppManager::onDBStarted()
 {
+    showToast("", "Инициализация");
     qDebug() << "@@@@@ AppManager::onDBStarted";
     settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
     settingGroupsPanelModel->update(settings);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
+    showMessage("NetParams", QString("IP = %1").arg(TCPServer::getNetParams().localHostIP));
+}
 
-    emit showMessageBox("NetParams", QString("IP = %1").arg(TCPServer::getNetParams().localHostIP));
+void AppManager::onDownloadFinished(const int count)
+{
+    qDebug() << "@@@@@ AppManager::onDownloadFinished ";
+    refreshAll();
+    showToast("Загрузка данных завершена", QString("Загружено записей: %1").arg(count));
+    if(!currentProduct.isEmpty())
+        emit selectFromDB(DataBase::GetCurrentProduct, currentProduct.at(ProductDBTable::Code).toString());
 }
 
 QString AppManager::priceAsString(const DBRecord& product)
@@ -167,7 +177,7 @@ void AppManager::filteredSearch()
             break;
          default:
             qDebug() << "@@@@@ AppManager::filteredSearch ERROR";
-            log(LogDBTable::LogType_Warning, "Неизвестный фильтр поиска");
+            emit saveLogInDB(LogDBTable::LogType_Warning, "Неизвестный фильтр поиска");
             break;
     }
 }
@@ -239,12 +249,12 @@ void AppManager::onPopupOpened()
     qDebug() << "@@@@@ AppManager::onPopupOpened " << openedPopupCount;
 }
 
-void AppManager::onDBResult(const DataBase::Selector selector, const DBRecordList& records, const bool ok)
+void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRecordList& records, const bool ok)
 {
-    qDebug() << "@@@@@ AppManager::onDBResult " << selector;
+    qDebug() << "@@@@@ AppManager::onDBRequestResult " << selector;
     if (!ok)
     {
-        emit showMessageBox("ВНИМАНИЕ!", "Ошибка базы данных!");
+        showMessage("ВНИМАНИЕ!", "Ошибка базы данных!");
         return;
     }
 
@@ -311,7 +321,7 @@ void AppManager::onDBResult(const DataBase::Selector selector, const DBRecordLis
         {
             const int messageValueColumn = ResourceDBTable::Value;
             if (records[0].count() > messageValueColumn)
-                 emit showMessageBox("Описание товара", records[0][messageValueColumn].toString());
+                showMessage("Описание товара", records[0][messageValueColumn].toString());
         }
         break;
 
@@ -344,20 +354,12 @@ void AppManager::onDBResult(const DataBase::Selector selector, const DBRecordLis
         emit selectFromDB(DataBase::GetSettings, "");
         break;
 
-    case DataBase::Download:
-    // Загрузка завершена:
-        //emit showMessageBox("ВНИМАНИЕ!", "Загружены новые данные.");
-        refreshAll();
-        if (!currentProduct.isEmpty())
-            emit selectFromDB(DataBase::GetProductByCode, currentProduct.at(ProductDBTable::Code).toString());
-        break;
-
-    case DataBase::GetProductByCode:
-    // Сброс выбранного товара после загрузки:
-        if (!currentProduct.isEmpty() && !DBTable::isEqual(currentProduct, records.at(0)))
+    case DataBase::GetCurrentProduct:
+        if (!currentProduct.isEmpty() && !records.isEmpty() && !DBTable::isEqual(currentProduct, records.at(0)))
         {
+            // Сброс выбранного товара после загрузки:
             emit resetProduct();
-            emit showMessageBox("ВНИМАНИЕ!", "Выбранный товар изменен");
+            showMessage("ВНИМАНИЕ!", "Выбранный товар изменен");
         }
         break;
 
@@ -435,8 +437,7 @@ void AppManager::onShowcaseClicked(const int index)
 void AppManager::updateTablePanel(const bool root)
 {
     qDebug() << "@@@@@ AppManager::updateTablePanel";
-    if (root)
-        tablePanelModel->root();
+    if (root) tablePanelModel->root();
     emit showTablePanelTitle(tablePanelModel->title());
     const QString currentGroupCode = tablePanelModel->lastGroupCode();
     emit showGroupHierarchyRoot(currentGroupCode.isEmpty() || currentGroupCode == "0");
@@ -488,8 +489,8 @@ void AppManager::checkAuthorization(const DBRecordList& users)
     if (users.isEmpty())
     {
         qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
-        emit showMessageBox("Авторизация", "Неизвестный пользователь!");
-        log(LogDBTable::LogType_Info, "Авторизация. Неизвестный пользователь");
+        showMessage("Авторизация", "Неизвестный пользователь!");
+        emit saveLogInDB(LogDBTable::LogType_Info, "Авторизация. Неизвестный пользователь");
         return;
     }
     const DBRecord& newUser = users[0];
@@ -497,8 +498,8 @@ void AppManager::checkAuthorization(const DBRecordList& users)
         user[UserDBTable::Password] != newUser[UserDBTable::Password])
     {
         qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
-        emit showMessageBox("Авторизация", "Неверные имя пользователя или пароль!");
-        log(LogDBTable::LogType_Info, "Авторизация. Неверные имя пользователя или пароль");
+        showMessage("Авторизация", "Неверные имя пользователя или пароль!");
+        emit saveLogInDB(LogDBTable::LogType_Info, "Авторизация. Неверные имя пользователя или пароль");
         return;
     }
     user.clear();
@@ -508,11 +509,11 @@ void AppManager::checkAuthorization(const DBRecordList& users)
 #endif
 
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
-    log(LogDBTable::LogType_Info, "Авторизация. Пользователь " + user[UserDBTable::Name].toString());
+    emit saveLogInDB(LogDBTable::LogType_Info, "Авторизация. Пользователь " + user[UserDBTable::Name].toString());
     if(mode == Mode::Mode_Start)
     {
         mode = Mode::Mode_Scale;
-        // emit showMessageBox("Авторизация", "Успешно!");
+        // showMessage("Авторизация", "Успешно!");
         emit authorizationSucceded();
         refreshAll();
         emit resetProduct();
@@ -527,7 +528,15 @@ void AppManager::refreshAll()
     emit showAdminMenu(UserDBTable::isAdmin(user));
     emit selectFromDB(DataBase::GetShowcaseProducts, "");
     searchFilterModel->update();
+    //searchPanelModel->update();
+    filteredSearch();
     updateTablePanel(true);
+}
+
+void AppManager::showToast(const QString &title, const QString &text, const int delaySec)
+{
+    emit showMessageBox(title, text, false);
+    QTimer::singleShot(delaySec * 1000, this, &AppManager::hideMessageBox);
 }
 
 void AppManager::saveTransaction()
@@ -571,17 +580,6 @@ void AppManager::showUsers(const DBRecordList& records)
             return;
         }
     }
-}
-
-void AppManager::log(const int type, const QString &comment)
-{
-#ifdef SAVE_LOG_IN_DB
-    DBRecord r = ((LogDBTable*)db->getTableByName(DBTABLENAME_LOG))->createRecord();
-    r[LogDBTable::DateTime] = Tools::currentDateTimeToInt();
-    r[LogDBTable::Type] = type;
-    r[LogDBTable::Comment] = comment;
-    emit saveLog(r);
-#endif
 }
 
 void AppManager::onPrinted()

@@ -12,9 +12,11 @@ class SearchPanelModel : public BaseListModel
 public:
     explicit SearchPanelModel(AppManager *parent): BaseListModel(parent) {}
     void update(const DBRecordList&, const SearchFilterModel::FilterIndex);
+    void update() { update(products, index); }
     DBRecord &productByIndex(const int);
 
 private:
+    SearchFilterModel::FilterIndex index = SearchFilterModel::Code;
     DBRecordList products;
 };
 

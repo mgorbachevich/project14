@@ -14,7 +14,7 @@ class JSONParser
 {
 public:
     JSONParser() {}
-    bool parseAllTables(DataBase*, const QString&);
+    int parseAllTables(DataBase*, const QString&);
     DBRecordList parseTable(DBTable*, const QString&);
 
 private:

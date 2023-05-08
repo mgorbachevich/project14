@@ -19,7 +19,7 @@ private:
 
 signals:
     void log(const int, const QString&);
-    void showMessageBox(const QString&, const QString&);
+    void showMessageBox(const QString&, const QString&, const bool);
     void weightParamChanged(const int, const QString&);
 
 public slots:

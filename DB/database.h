@@ -2,12 +2,7 @@
 #define DATABASE_H
 
 #include <QObject>
-#include <QSqlDatabase>
-#include "dbtable.h"
 #include "settings.h"
-
-#define DB_HOSTNAME "ShtrihScaleDataBase"
-#define DB_FILENAME "ShtrihScale.db"
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
@@ -41,59 +36,57 @@ public:
         //GetProductsByFilteredCodeIncludeGroups,
         GetProductsByFilteredBarcode,
         //GetProductsByFilteredBarcodeIncludeGroups,
-        GetProductsByCodes,
-        GetProductByCode,
+        GetItemsByCodes,
+        GetCurrentProduct,
         GetUserNames,
         GetAuthorizationUserByName,
         GetSettingsItemByCode,
         GetSettings,
         GetLog,
         ReplaceSettingsItem,
-        Download
     };
 
-    explicit DataBase(Settings&, QObject *parent = nullptr);
-    ~DataBase();
-    DBTable* getTableByName(const QString&);
-    void onTableParsed(DBTable*, const DBRecordList&);
+    explicit DataBase(const QString&, Settings&, QObject*);
+    ~DataBase() { db.close(); }
+    virtual bool start();
+    DBTable* getTableByName(const QString&, const bool log = true);
+    int insertRecords(DBTable*, const DBRecordList&, const bool log = true);
+    void selectAll(DBTable*, DBRecordList&, const bool log = true);
+    bool removeAll(DBTable*, const bool log = true);
 
+    QString filePath;
     QList<DBTable*> tables;
 
-private:
-    bool open();
-    bool executeSQL(const QString&);
-    bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
-    bool createTable(DBTable*);
-    bool selectById(DBTable*, const QString&, DBRecord&);
-    void selectAll(DBTable*, DBRecordList&);
-    void selectAndCheckAll(DBTable*, DBRecordList&);
+protected:
     void emulation();
-    bool removeRecord(DBTable*, const DBRecord&);
-    bool updateOrInsertRecord(DBTable*, const DBRecord&, const bool forceInsert = false);
-    bool insertRecord(DBTable *t, const DBRecord& r) { return updateOrInsertRecord(t, r, true); }
-    //bool updateRecord(DBTable*, const DBRecord&);
-    //bool insertRecord(DBTable*, const DBRecord&);
-    //int getMax(DBTable*, const QString&);
+    bool open();
+    bool createTable(DBTable*);
+    bool executeSQL(const QString&, const bool log = true);
+    bool executeSelectSQL(DBTable*, const QString&, DBRecordList&, const bool log = true);
+    bool selectById(DBTable*, const QString&, DBRecord&, const bool log = true);
+    bool removeRecord(DBTable*, const DBRecord&, const bool log = true);
+    bool insertRecord(DBTable*, const DBRecord&, const bool log = true);
+    void saveLog(const int type, const QString &comment, const bool reallySave = true);
 
-    bool started = false;
+    bool opened = false;
     QSqlDatabase db;
     Settings& settings;
 
 signals:
-    void showMessageBox(const QString&, const QString&);
-    void log(const int, const QString&);
-    void dbResult(const DataBase::Selector, const DBRecordList&, const bool);
-    void dbStarted();
+    void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
+    void started();
+    void downloadFinished(const int);
+    void showMessageBox(const QString&, const QString&, const bool);
 
 public slots:
-    void onStart();
+    void onStart() { start(); }
     void onSelect(const DataBase::Selector, const QString&);
+    void onSelectItems(const DataBase::Selector, const QString&, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);
-    void onDownload(const DataBase::Selector, const QString&);
     void onPrinted(const DBRecord&);
-    void onSaveLog(const DBRecord&);
+    void onSaveLog(const int type, const QString &comment) { saveLog(type, comment); }
+    void onDownload(const QString&);
 };
 
 #endif // DATABASE_H
-

@@ -4,10 +4,16 @@
 #include "tcpserver.h"
 #include "socketthread.h"
 #include "logdbtable.h"
+#include "database.h"
 
 // https://www.youtube.com/watch?v=ab1GoP_W5vw
 // https://www.youtube.com/watch?v=lwvtv9r8uaM
 // https://evileg.com/ru/post/108/
+
+TCPServer::TCPServer(QObject* parent, DataBase* dataBase): QTcpServer(parent), db(dataBase)
+{
+    qDebug() << "@@@@@ TCPServer::TCPServer";
+}
 
 void TCPServer::start(const int port)
 {
@@ -24,9 +30,9 @@ void TCPServer::incomingConnection(qintptr socketDescriptor)
     qDebug() << "@@@@@ TCPServer::incomingConnection";
     SocketThread* thread = new SocketThread(this, socketDescriptor, db);
     connect(thread, &SocketThread::finished, thread, &QObject::deleteLater);
-    connect(thread, &SocketThread::selectFromDB, db, &DataBase::onSelect);
+    connect(thread, &SocketThread::selectFromDB, db, &DataBase::onSelectItems);
     connect(thread, &SocketThread::download, db, &DataBase::onDownload);
-    connect(db, &DataBase::dbResult, thread, &SocketThread::onDBResult);
+    connect(db, &DataBase::requestResult, thread, &SocketThread::onDBRequestResult);
     thread->start();
 }
 
@@ -34,7 +40,7 @@ NetParams TCPServer::getNetParams()
 {
     // https://stackoverflow.com/questions/13835989/get-local-ip-address-in-qt
     NetParams np;
-    np.localHostName =  QHostInfo::localHostName();
+    np.localHostName = QHostInfo::localHostName();
     QList<QHostAddress> hosts = QHostInfo::fromName(np.localHostName).addresses();
     foreach (const QHostAddress& address, hosts)
     {

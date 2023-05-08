@@ -37,20 +37,24 @@ void JSONParser::parseTableColumn(DBTable* table, DBRecord& r, const QJsonObject
         r[columnIndex] = value;
 }
 
-bool JSONParser::parseAllTables(DataBase* db, const QString& json)
+int JSONParser::parseAllTables(DataBase* db, const QString& json)
 {
     qDebug() << "@@@@@ JSONParser::parseAllTables " << json;
     bool ok;
     QJsonValue data = prepare(json, &ok);
-    if(!ok)
-        return false;
-    for (int i = 0; i < db->tables.size(); i++)
+    int result = 0;
+    if(ok)
     {
-        DBTable* t = db->tables[i];
-        QJsonValue jv = data.toObject()[t->name];
-        if (jv.isArray()) db->onTableParsed(t, parseTable(t, jv.toArray()));
+        for (int i = 0; i < db->tables.size(); i++)
+        {
+            DBTable* ti = db->tables[i];
+            QJsonValue jv = data.toObject()[ti->name];
+            if (jv.isArray())
+                result += db->insertRecords(ti, parseTable(ti, jv.toArray()));
+        }
     }
-    return true;
+    qDebug() << "@@@@@ JSONParser::parseAllTables: result =" << result;
+    return result;
 }
 
 DBRecordList JSONParser::parseTable(DBTable *table, const QString &json)

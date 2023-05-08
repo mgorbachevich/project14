@@ -17,7 +17,6 @@ bool UserDBTable::isAdmin(const DBRecord& record)
 {
     return (record.count() >= UserDBTable::COLUMN_COUNT) &&
             record[UserDBTable::Role].toInt() == UserDBTable::UserRole_Admin;
-
 }
 
 QString UserDBTable::toAdminName(const QString & name)

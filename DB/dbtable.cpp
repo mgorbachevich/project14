@@ -16,16 +16,12 @@ void DBTable::addColumn(const QString& title, const QString& name, const QString
 
 const DBRecord DBTable::checkRecord(const DBRecord& record)
 {
-    qDebug() << "@@@@@ DBTable::checkRecord: table =" << name;
+    // qDebug() << "@@@@@ DBTable::checkRecord: table =" << name;
     DBRecord result;
     if(record.count() >= columnCount())
-    {
         result.append(record);
-    }
     else
-    {
         qDebug() << "@@@@@ DBTable::checkRecord ERROR";
-    }
     return result;
 }
 

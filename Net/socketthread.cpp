@@ -1,6 +1,9 @@
+#include <QString>
 #include <QTcpSocket>
 #include <QDebug>
+#include <QFile>
 #include "socketthread.h"
+#include "tools.h"
 
 SocketThread::SocketThread(QObject* parent, qintptr descriptor, DataBase* dataBase) :
     QThread(parent), socketDescriptor(descriptor), db(dataBase)
@@ -11,83 +14,7 @@ SocketThread::SocketThread(QObject* parent, qintptr descriptor, DataBase* dataBa
 SocketThread::~SocketThread()
 {
     qDebug() << "@@@@@ SocketThread::~SocketThread";
-    if(socket != nullptr)
-        delete socket;
-}
-
-void SocketThread::onDisconnected()
-{
-    qDebug() << "@@@@@ SocketThread::onDisconnected";
-    socket->close();
-    state = State::Disconnected;
-    quit();
-}
-
-void SocketThread::onAboutToClose()
-{
-    qDebug() << "@@@@@ SocketThread::onAboutToClose";
-    switch (state)
-    {
-    case State::Get:
-    {
-        const QString s1 = "source=";
-        const QString s2 = "codes=[";
-        const QString s3 = "code=";
-        int p1 = request.indexOf(s1);
-        int p2 = request.indexOf("&");
-        if (p1 >= 0 && p2 > p1)
-        {
-            if (request.contains(s2) || request.contains(s3))
-            {
-                p1 += s1.length();
-                QString source = request.mid(p1, p2 - p1);
-                QString param = "";
-                DataBase::Selector selector = DataBase::None;
-                if (source.contains("products"))
-                    selector = DataBase::GetProductsByCodes;
-                if (request.contains(s2))
-                {
-                    int p3 = request.indexOf(s2);
-                    int p4 = request.indexOf("]");
-                    p3 += s2.length();
-                    param = request.mid(p3, p4 - p3);
-                }
-                else if (request.contains(s3))
-                {
-                    int p3 = request.indexOf(s3);
-                    int p4 = request.length();
-                    p3 += s3.length();
-                    param = request.mid(p3, p4 - p3);
-                }
-                emit selectFromDB(selector, param);
-                waitForDBResponse();
-                //socket->disconnectFromHost();
-            }
-            else
-            {
-                qDebug() << "@@@@@ SocketThread::onAboutToClose: Bad GET request";
-            }
-        }
-        break;
-    }
-    case State::Post:
-    {
-        int p1 = request.indexOf("{");
-        int p2 = request.lastIndexOf("}") + 1;
-        if (p1 >= 0 && p2 > p1)
-        {
-            emit download(DataBase::Download, request.mid(p1, p2 - p1));
-            waitForDBResponse();
-            //socket->disconnectFromHost();
-        }
-        else
-        {
-            qDebug() << "@@@@@ SocketThread::onAboutToClose: Bad POST request";
-        }
-        break;
-    }
-    default: break;
-    }
+    if(socket != nullptr) delete socket;
 }
 
 void SocketThread::run()
@@ -101,77 +28,145 @@ void SocketThread::run()
     exec();
 }
 
-void SocketThread::waitForDBResponse()
+void SocketThread::onDBRequestResult(const DataBase::Selector selector, const DBRecordList& records, const bool ok)
 {
-    qDebug() << "@@@@@ SocketThread::waitForDBResponse";
-    QTime end = QTime::currentTime().addMSecs(WAIT_FOR_RESPONSE_MSEC);
-    while (response.isEmpty() && QTime::currentTime() < end)
-        QThread::msleep(WAIT_FOR_RESPONSE_SLEEP_MSEC);
-    qDebug() << "@@@@@ SocketThread::waitForDBResponse: response =" << response;
-    socket->write(response.toLatin1());
-    response = "";
+    qDebug() << "@@@@@ SocketThread::onDBRequestResult " << selector;
+    if (!ok)
+        return;
+
+    switch(selector)
+    {
+    case DataBase::GetItemsByCodes:
+        dbResponse.append(records);
+        break;
+
+    default:break;
+    }
+}
+
+void SocketThread::onDisconnected()
+{
+    qDebug() << "@@@@@ SocketThread::onDisconnected";
+    socket->close();
+    state = State::Disconnected;
+    quit();
+}
+
+void SocketThread::onAboutToClose()
+{
+    qDebug() << "@@@@@ SocketThread::onAboutToClose request =" << request;
+    switch (state)
+    {
+    case State::Upload:
+    {
+        qDebug() << "@@@@@ SocketThread::onAboutToClose: GET";
+        const QString s1 = "source=";
+        const QString s2 = "codes=";
+        const QString s3 = "code=";
+        QString codeList = "";
+        QString source = "";
+        DBTable* table = nullptr;
+        int p1 = request.indexOf(s1);
+        int p2 = request.indexOf("&");
+        bool ok = p1 >= 0 && p2 > p1 && (request.contains(s2) || request.contains(s3));
+        if(ok)
+        {
+            p1 += s1.length();
+            source = request.mid(p1, p2 - p1);
+            qDebug() << "@@@@@ SocketThread::onAboutToClose: source =" << source;
+            table = db->getTableByName(source);
+            ok = table != nullptr;
+        }
+        if(ok)
+        {
+            if (request.contains(s2))
+            {
+                int p3 = request.indexOf("[") + 1;
+                int p4 = request.indexOf("]");
+                codeList = request.mid(p3, p4 - p3);
+            }
+            else if (request.contains(s3))
+            {
+                int p3 = request.indexOf(s3);
+                int p4 = request.length();
+                p3 += s3.length();
+                codeList = request.mid(p3, p4 - p3);
+            }
+            else ok = false;
+        }
+        if(ok)
+        {
+            emit selectFromDB(DataBase::GetItemsByCodes, source, codeList);
+
+            // Wait for db response:
+            int now = Tools::currentDateTimeToInt();
+            while (dbResponse.count() > 0 && Tools::currentDateTimeToInt() < now + SOCKET_WAIT_FOR_RESPONSE_MSEC)
+                QThread::msleep(SOCKET_WAIT_FOR_RESPONSE_SLEEP_MSEC);
+
+            QString head = "HTTP/1.1 200 OK\r\n\r\n%1";
+            QString body = "{\"result\":\"0\",\"description\":\"ошибок нет\",\"data\":{\"%1\":%2}}";
+            QString response = head.arg(body.arg(source, DBTable::toJsonString(table, dbResponse)));
+            qDebug() << "@@@@@ SocketThread::onAboutToClose: response =" << response;
+            socket->write(response.toLatin1());
+        }
+        if (!ok) qDebug() << "@@@@@ SocketThread::onAboutToClose: Bad GET request";
+        dbResponse.clear();
+        break;
+    }
+    case State::Download:
+    {
+        qDebug() << "@@@@@ SocketThread::onAboutToClose: POST";
+        int p1 = request.indexOf("{");
+        int p2 = request.lastIndexOf("}") + 1;
+        if (p1 >= 0 && p2 > p1)
+        {
+            int result = 0;
+            QString description = "ошибок нет";
+            QString json = request.mid(p1, p2 - p1);
+            qDebug() << "@@@@@ SocketThread::onAboutToClose: json =" << json;
+            emit download(json);
+            QString head = "HTTP/1.1 200 OK\r\n\r\n%1";
+            QString body =  QString("{\"result\":\"%1\",\"description\":\"%2\"}").arg(QVariant(result).toString(), description);
+            QString response = head.arg(body);
+            qDebug() << "@@@@@ SyncDataBase::onAboutToClose: response =" << response;
+            socket->write(response.toLatin1());
+        }
+        else
+            qDebug() << "@@@@@ SocketThread::onAboutToClose: Bad POST request";
+        break;
+    }
+    default: break;
+    }
+    //socket->disconnectFromHost();
 }
 
 void SocketThread::onReadyRead()
 {
     qDebug() << "@@@@@ SocketThread::onReadyRead";
-    int bytesAvailable = socket->bytesAvailable();
-    qDebug() << "@@@@@ SocketThread::onReadyRead: bytesAvailable =" << bytesAvailable;
+    //int bytesAvailable = socket->bytesAvailable();
+    //qDebug() << "@@@@@ SocketThread::onReadyRead: bytesAvailable =" << bytesAvailable;
     QString read = QString(socket->readAll());
     qDebug() << "@@@@@ SocketThread::onReadyRead: read =" << read;
-
     if (read.contains("GET") && read.contains("/getData"))
     {
         qDebug() << "@@@@@ SocketThread::onReadyRead: GET";
-        state = State::Get;
-        request += read;
+        state = State::Upload;
     }
     else if (read.contains("POST") && read.contains("/setData"))
     {
         qDebug() << "@@@@@ SocketThread::onReadyRead: POST";
-        state = State::Post;
-        request += read;
+        state = State::Download;
     }
-    else if (state == State::Post)
+    else if (state == State::Upload)
+    {
+        qDebug() << "@@@@@ SocketThread::onReadyRead: GET content";
+    }
+    else if (state == State::Download)
     {
         qDebug() << "@@@@@ SocketThread::onReadyRead: POST content";
-        request += read;
     }
-}
-
-void SocketThread::onDBResult(const DataBase::Selector selector, const DBRecordList& records, const bool ok)
-{
-    qDebug() << "@@@@@ SocketThread::onDBResult " << selector;
-    response = "";
-    if (!ok)
-    {
-        qDebug() << "@@@@@ SocketThread::onDBResult: ERROR";
-        return;
-    }
-
-    switch(selector)
-    {
-    case DataBase::GetProductsByCodes:
-    {
-        DBTable* table = db->getTableByName(DBTABLENAME_PRODUCTS);
-        QString head = "HTTP/1.1 200 OK\r\n\r\n%1";
-        QString body = "{\"result\":\"0\",\"description\":\"ошибок нет\",\"data\":{\"products\":%1}}";
-        response = head.arg(body.arg(DBTable::toJsonString(table, records)));
-        //qDebug() << "@@@@@ SocketThread::onDBResult: response =" << response;
-        break;
-    }
-
-    case DataBase::Download:
-    {
-        QString head = "HTTP/1.1 200 OK\r\n\r\n%1";
-        QString body = "{\"result\":\"0\",\"description\":\"ошибок нет\"}}";
-        response = head.arg(body);
-        qDebug() << "@@@@@ SocketThread::onDBResult: response =" << response;
-        break;
-    }
-
-    default:break;
-    }
+    else return;
+    request += read;
 }
 
 

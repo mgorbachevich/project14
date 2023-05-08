@@ -120,11 +120,11 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showMessageBox:
     {
         target: app
-        function onShowMessageBox(titleText, messageText)
+        function onShowMessageBox(titleText, messageText, showButton)
         {
             console.debug("@@@@@ mainWindow.onShowMessageBox ", titleText, " ", messageText);
             Qt.createComponent("Panels/messagePanel.qml").createObject(mainWindow,
-            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText, messageText: messageText }).open()
+            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText, messageText: messageText, buttonVisibility: showButton }).open()
         }
     }
 

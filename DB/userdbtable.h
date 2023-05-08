@@ -3,8 +3,6 @@
 
 #include "dbtable.h"
 
-#define USER_ADMIN_POSTFIX " (A)"
-
 class UserDBTable: public DBTable
 {
 public:

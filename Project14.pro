@@ -20,6 +20,7 @@ INCLUDEPATH += \
     Equipment/WM100 \
 
 SOURCES += \
+    DB/database.cpp \
     DB/dbtable.cpp \
     DB/dbthread.cpp \
     DB/jsonparser.cpp \
@@ -46,11 +47,11 @@ SOURCES += \
     Models/searchpanelmodel.cpp \
     Models/showcasepanelmodel.cpp \
     Models/tablepanelmodel.cpp \
-    DB/database.cpp \
     Managers/printmanager.cpp \
     Managers/weightmanager.cpp \
 
 HEADERS += \
+    DB/database.h \
     DB/jsonparser.h \
     DB/labelformatdbtable.h \
     DB/logdbtable.h \
@@ -82,7 +83,6 @@ HEADERS += \
     Models/searchpanelmodel.h \
     Models/showcasepanelmodel.h \
     Models/tablepanelmodel.h \
-    DB/database.h \
     DB/productdbtable.h \
     DB/dbtable.h \
     DB/dbtablecolumn.h \
