@@ -25,7 +25,7 @@ signals:
 public slots:
     void onSettingsChanged();
     void onSetWeightParam(const int);
-    void onWeightStatusChanged(channel_status&);
+    void onWeightStatusChanged(Wm100::channel_status&);
     void onErrorStatusChanged(int);
 };
 

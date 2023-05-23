@@ -7,17 +7,15 @@ import RegisteredTypes 1.0
 
 Popup
 {
-    id: inputSettingPanel
-    objectName: "inputSettingPanel"
+    id: inputPiecesPanel
+    objectName: "inputPiecesPanel"
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
     focus: true
     modal: true
     dim: true
-    property string titleText: "Title"
     property string inputText: "Input"
-    property int settingItemCode: 0
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
@@ -54,7 +52,7 @@ Popup
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
                 wrapMode: Text.WordWrap
-                text: titleText
+                text: "Количество товара"
             }
         }
 
@@ -73,8 +71,8 @@ Popup
             Material.background: Material.primary
             onClicked:
             {
-                app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text) // AppManager's slot
-                inputSettingPanel.close()
+                app.onPiecesInputClosed(inputPiecesPanelText.text) // AppManager's slot
+                inputPiecesPanel.close()
             }
         }
 
@@ -88,7 +86,7 @@ Popup
 
             TextField
             {
-                id: inputSettingPanelText
+                id: inputPiecesPanelText
                 anchors.horizontalCenter: parent.horizontalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Regular' }
                 text: inputText
@@ -96,7 +94,7 @@ Popup
                 focus: true
                 Keys.onPressed: (event) =>
                 {
-                    console.debug("@@@@@ inputSettingPanelText Keys.onPressed ", JSON.stringify(event))
+                    console.debug("@@@@@ inputPiecesPanelText Keys.onPressed ", JSON.stringify(event))
                     event.accepted = true;
                     switch (event.key)
                     {
@@ -119,8 +117,8 @@ Popup
                             text = ""
                             break;
                         case Qt.Key_Enter:
-                            app.onSettingInputClosed(settingItemCode, text)
-                            inputSettingPanel.close()
+                            app.onPiecesInputClosed(text)
+                            inputPiecesPanel.close()
                             break
                          default:
                             app.onBeep();

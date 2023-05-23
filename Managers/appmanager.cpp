@@ -101,17 +101,24 @@ void AppManager::onDownloadFinished(const int count)
 
 QString AppManager::priceAsString(const DBRecord& product)
 {
-    return Tools::moneyToText(productPrice(product), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
+    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
+    return Tools::moneyToText(productPrice(product), pp);
 }
 
-QString AppManager::weightAsString()
+QString AppManager::weightOrPiecesAsString(const DBRecord& product)
 {
-    return Tools::weightToText(weight);
+    return ProductDBTable::isPiece(product) ? QString("%1").arg(pieces) : QString("%1").arg(weight, 0, 'f', 3);
 }
 
 QString AppManager::amountAsString(const DBRecord& product)
 {
-    return Tools::moneyToText(weight * productPrice(product), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
+    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
+    double v = 0;
+    if(ProductDBTable::isPiece(product))
+        v = pieces;
+    else
+        v = weight * (ProductDBTable::is100gBase(product) ? 10 : 1);
+    return Tools::moneyToText(v * productPrice(product), pp);
 }
 
 double AppManager::productPrice(const DBRecord& product)
@@ -119,7 +126,8 @@ double AppManager::productPrice(const DBRecord& product)
     const int p = ProductDBTable::Price;
     if (product.count() <= p)
         return 0;
-    return Tools::priceToDouble(product[p].toString(), settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition));
+    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
+    return Tools::priceToDouble(product[p].toString(), pp);
 }
 
 void AppManager::onWeightParamChanged(const int param, const QString& value)
@@ -146,7 +154,7 @@ void AppManager::showCurrentProduct()
 {
     qDebug() << "@@@@@ AppManager::showCurrentProduct " << currentProduct[ProductDBTable::Code].toString();
     productPanelModel->update(currentProduct, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
-    emit showProductPanel();
+    emit showProductPanel(ProductDBTable::isPiece(currentProduct));
     emit selectFromDB(DataBase::GetImageByResourceCode, currentProduct[ProductDBTable::PictureCode].toString());
     updateWeightPanel();
 
@@ -231,6 +239,13 @@ void AppManager::onMainPageChanged(const int index)
     qDebug() << "@@@@@ AppManager::onMainPageChanged " << index;
     mainPageIndex = index;
     emit activateMainPage(mainPageIndex);
+}
+
+void AppManager::onPiecesInputClosed(const QString &value)
+{
+    qDebug() << "@@@@@ AppManager::onPiecesInputClosed " << value;
+    pieces = Tools::stringToInt(value);
+    updateWeightPanel();
 }
 
 void AppManager::onPopupClosed()
@@ -448,21 +463,30 @@ void AppManager::updateWeightPanel()
 {
     QString c0 = "#404040";
     QString c1 = "#FFFFFF";
+    const bool isPiece = ProductDBTable::isPiece(currentProduct);
+    const bool is100gBase = ProductDBTable::is100gBase(currentProduct);
 
-    QString w = weightAsString();
+    emit showWeightParam(WeightParam::WeightParam_WeightTitle, isPiece ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
+    QString w = weightOrPiecesAsString(currentProduct);
     emit showWeightParam(WeightParam::WeightParam_WeightValue, w);
     emit showWeightParam(WeightParam::WeightParam_WeightColor, Tools::stringToDouble(w) != 0 ? c1 : c0);
-    emit showWeightParam(WeightParam::WeightParam_WeightTitle, ProductDBTable::isPiece(currentProduct) ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
 
+    QString pt = "ЦЕНА, руб";
+    if (isPiece)
+        pt += "/шт";
+    else if (is100gBase)
+        pt += "/100г";
+    else if (!currentProduct.isEmpty())
+        pt += "/кг";
+    emit showWeightParam(WeightParam::WeightParam_PriceTitle, pt);
     QString p = priceAsString(currentProduct);
     emit showWeightParam(WeightParam::WeightParam_PriceValue, p);
     emit showWeightParam(WeightParam::WeightParam_PriceColor, Tools::stringToDouble(p) != 0 ? c1 : c0);
-    emit showWeightParam(WeightParam::WeightParam_PriceTitle, "ЦЕНА, руб");
 
+    emit showWeightParam(WeightParam::WeightParam_AmountTitle, "СТОИМОСТЬ, руб");
     QString a = amountAsString(currentProduct);
     emit showWeightParam(WeightParam::WeightParam_AmountValue, a);
     emit showWeightParam(WeightParam::WeightParam_AmountColor, Tools::stringToDouble(a) != 0 ? c1 : c0);
-    emit showWeightParam(WeightParam::WeightParam_AmountTitle, "СТОИМОСТЬ, руб");
 }
 
 void AppManager::startAuthorization()
@@ -547,7 +571,7 @@ void AppManager::saveTransaction()
     r[TransactionDBTable::User] = user[UserDBTable::Code];
     r[TransactionDBTable::ItemCode] = Tools::stringToInt(currentProduct[ProductDBTable::Code]);
     r[TransactionDBTable::LabelNumber] = 0; // todo
-    r[TransactionDBTable::Weight] = weightAsString(); // todo
+    r[TransactionDBTable::Weight] = weightOrPiecesAsString(currentProduct); // todo
     r[TransactionDBTable::Price] = priceAsString(currentProduct); // todo
     r[TransactionDBTable::Cost] = amountAsString(currentProduct); // todo
     r[TransactionDBTable::Price2] = 0; // todo
@@ -594,6 +618,7 @@ void AppManager::onResetProduct()
 {
     qDebug() << "@@@@@ AppManager::onResetProduct";
     currentProduct.clear();
+    pieces = 1;
     updateWeightPanel();
 }
 

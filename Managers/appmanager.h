@@ -62,7 +62,7 @@ public:
 
 private:
     QString priceAsString(const DBRecord&);
-    QString weightAsString();
+    QString weightOrPiecesAsString(const DBRecord&);
     QString amountAsString(const DBRecord&);
     QString versionAsString();
     void showCurrentProduct();
@@ -85,6 +85,7 @@ private:
     DBRecord user;
     DBRecord currentProduct;
     double weight = 0;
+    int pieces = 1;
     double tare = 0;
     int openedPopupCount = 0;
     int mainPageIndex = 0;
@@ -118,8 +119,9 @@ signals:
     void showGroupHierarchyRoot(const bool);
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);
+    void showPiecesInputBox(const int);
     void showProductImage(const QString&);
-    void showProductPanel();
+    void showProductPanel(const bool);
     void showSearchOptions();
     void showSettingGroupsPanel();
     void showSettingInputBox(const int, const QString&, const QString&);
@@ -142,12 +144,14 @@ public slots:
     void onLockClicked();
     void onLog(const int type, const QString& comment) { emit saveLogInDB(type, comment); }
     void onMainPageChanged(const int);
+    void onPiecesInputClosed(const QString&);
     void onPopupClosed();
     void onPopupOpened();
     void onPrint() { emit print(); }
     void onPrinted();
     void onProductDescriptionClicked();
     void onProductPanelCloseClicked() { emit resetProduct(); }
+    void onProductPanelPiecesClicked() { emit showPiecesInputBox(pieces); }
     void onResetProduct();
     void onSearchFilterClicked(const int);
     void onSearchFilterEdited(const QString&);

@@ -16,8 +16,7 @@ INCLUDEPATH += \
     Managers \
     Models \
     Settings \
-    Equipment \
-    Equipment/WM100 \
+    Equipment/Wm100_Slpa100u \
 
 SOURCES += \
     DB/database.cpp \
@@ -27,9 +26,14 @@ SOURCES += \
     DB/productdbtable.cpp \
     DB/settingdbtable.cpp \
     DB/userdbtable.cpp \
-    Equipment/WM100/IO/iobase.cpp \
-    Equipment/WM100/IO/iocom.cpp \
-    Equipment/WM100/wm100.cpp \
+    Equipment/Wm100_Slpa100u/IO/iobase.cpp \
+    Equipment/Wm100_Slpa100u/IO/iocom.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100u.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocol.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolCom.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolDemo.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolUsb.cpp \
+    Equipment/Wm100_Slpa100u/wm100.cpp \
     Managers/appmanager.cpp \
     Managers/settings.cpp \
     Models/baselistmodel2.cpp \
@@ -38,6 +42,7 @@ SOURCES += \
     Models/settinggroupspanelmodel.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
+    Net/httpserver.cpp \
     Net/socketthread.cpp \
     Net/tcpserver.cpp \
     main.cpp \
@@ -62,9 +67,14 @@ HEADERS += \
     DB/dbthread.h \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
-    Equipment/WM100/IO/iobase.h \
-    Equipment/WM100/IO/iocom.h \
-    Equipment/WM100/wm100.h \
+    Equipment/Wm100_Slpa100u/IO/iobase.h \
+    Equipment/Wm100_Slpa100u/IO/iocom.h \
+    Equipment/Wm100_Slpa100u/Slpa100u.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocol.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolCom.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolDemo.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolUsb.h \
+    Equipment/Wm100_Slpa100u/wm100.h \
     Managers/appmanager.h \
     Managers/settings.h \
     Models/baselistmodel2.h \
@@ -73,6 +83,7 @@ HEADERS += \
     Models/settinggroupspanelmodel.h \
     Models/usernamemodel.h \
     Models/viewlogpanelmodel.h \
+    Net/httpserver.h \
     Net/netparams.h \
     Net/socketthread.h \
     Net/tcpserver.h \
@@ -95,6 +106,7 @@ RESOURCES += \
     Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
     Panels/confirmationPanel.qml \
+    Panels/inputPiecesPanel.qml \
     Panels/inputSettingPanel.qml \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
@@ -120,6 +132,7 @@ RESOURCES += \
     Icons/log_black_48.png \
     Icons/menu_black_48.png \
     Icons/print_black_48.png \
+    Icons/quantity_black_48.png \
     Icons/settings_black_48.png \
     Icons/0_48.png \
     Icons/tare_48.png \

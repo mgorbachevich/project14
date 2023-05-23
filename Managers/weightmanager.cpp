@@ -59,7 +59,7 @@ void WeightManager::onSetWeightParam(const int param)
     }
 }
 
-void WeightManager::onWeightStatusChanged(channel_status &status)
+void WeightManager::onWeightStatusChanged(Wm100::channel_status &status)
 {
     emit weightParamChanged(AppManager::WeightParam_WeightValue, QString::number(status.weight));
     emit weightParamChanged(AppManager::WeightParam_TareValue, QString::number(status.tare));

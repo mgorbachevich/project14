@@ -58,6 +58,7 @@ public:
     static bool isForShowcase(const DBRecord&);
     static bool isGroup(const DBRecord&);
     static bool isPiece(const DBRecord&);
+    static bool is100gBase(const DBRecord&);
 };
 
 #endif // PRODUCTDBTABLE_H

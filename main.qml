@@ -79,11 +79,23 @@ ApplicationWindow
         target: app
         function onShowSettingInputBox(code, name, value)
         {
-            console.debug("@@@@@ settingPanel.showSettingInputBox ", code, " ", name, " ", value);
+            console.debug("@@@@@ mainWindow.onShowSettingInputBox ", code, " ", name, " ", value);
             Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
             { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: name, inputText: value, settingItemCode: code }).open()
         }
     }
+
+    Connections // Slot for signal AppManager::showPiecesInputBox:
+    {
+        target: app
+        function onShowPiecesInputBox(value)
+        {
+            console.debug("@@@@@ mainWindow.onShowPiecesInputBox ", value);
+            Qt.createComponent("Panels/inputPiecesPanel.qml").createObject(mainWindow,
+            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showTableOptions:
     {
         target: app
@@ -135,15 +147,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowConfirmationBox ", selector, " ", titleText, " ", messageText);
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
-                                                                       {
-                                                                           x: popupX,
-                                                                           y: popupY,
-                                                                           width: popupWidth,
-                                                                           height: popupHeight,
-                                                                           titleText: titleText,
-                                                                           messageText: messageText,
-                                                                           dialogSelector: selector
-                                                                       }).open()
+            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText, messageText: messageText, dialogSelector: selector }).open()
         }
     }
 
@@ -172,11 +176,11 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showProductPanel:
     {
         target: app
-        function onShowProductPanel()
+        function onShowProductPanel(pieceProduct)
         {
             console.debug("@@@@@ mainWindow.onShowProductPanel");
             Qt.createComponent("Panels/productPanel.qml").createObject(mainWindow,
-            { x: 0, y: mainWeightPanel.height, width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height }).open()
+            { x: 0, y: mainWeightPanel.height, width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height, isPiece: pieceProduct }).open()
         }
     }
 

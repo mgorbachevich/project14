@@ -18,7 +18,8 @@
                 "barcode":"1234567890001",
                 "message_code":"101",
                 "picture_code":"1",
-                "price":"11111",
+                "price":"10000",
+                "price_base":"2",
                 "name":"Виноград"
             },
             {
@@ -63,7 +64,7 @@
             },
             {
                 "code":"6",
-                "type":"0",
+                "type":"1",
                 "group_code":"0",
                 "barcode":"1234567890006",
                 "message_code":"106",

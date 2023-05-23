@@ -1,5 +1,5 @@
-#ifndef HTTPSERVER_H
-#define HTTPSERVER_H
+#ifndef TCPSERVER_H
+#define TCPSERVER_H
 
 #include <QTcpServer>
 #include "netparams.h"
@@ -25,4 +25,4 @@ signals:
     void log(const int, const QString&);
 };
 
-#endif // HTTPSERVER_H
+#endif // TCPSERVER_H

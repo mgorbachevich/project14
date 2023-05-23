@@ -67,3 +67,9 @@ bool ProductDBTable::isPiece(const DBRecord& record)
     return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
             record[ProductDBTable::Type].toInt() == ProductDBTable::ProductType_Piece;
 }
+
+bool ProductDBTable::is100gBase(const DBRecord& record)
+{
+    return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
+            record[ProductDBTable::PriceBase].toInt() == ProductDBTable::ProductPriceBase_100g;
+}

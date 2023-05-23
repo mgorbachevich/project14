@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication application(argc, argv);
+    QApplication application(argc, argv);
     QQmlApplicationEngine engine;
 
     QFontDatabase::addApplicationFont(":/Resources/Roboto-Regular.ttf");
@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
     QObject::connect(appManager, &AppManager::settingsChanged, weightManager, &WeightManager::onSettingsChanged);
     QObject::connect(appManager, &AppManager::setWeightParam, weightManager, &WeightManager::onSetWeightParam);
     QObject::connect(appManager, &AppManager::print, printManager, &PrintManager::onPrint);
+    QObject::connect(appManager, &AppManager::settingsChanged, printManager, &PrintManager::onSettingsChanged);
     QObject::connect(weightManager, &WeightManager::weightParamChanged, appManager, &AppManager::onWeightParamChanged);
     QObject::connect(weightManager, &WeightManager::showMessageBox, appManager, &AppManager::onShowMessageBox);
     QObject::connect(weightManager, &WeightManager::log, appManager, &AppManager::onLog);

@@ -22,6 +22,7 @@ Popup
     modal: true
     dim: false
     property int imageSize: (height - Constants.margin * 3) / 2
+    property bool isPiece: false
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
@@ -45,7 +46,7 @@ Popup
         columnSpacing: Constants.margin
         rowSpacing: Constants.margin
         columns: 4
-        rows: 2
+        rows: 3
 
         focus: true
         Keys.onPressed: (event) =>
@@ -91,7 +92,7 @@ Popup
             Layout.preferredHeight: productPanel.imageSize
             Layout.column: 0
             Layout.row: 0
-            Layout.rowSpan: 2
+            Layout.rowSpan: 3
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             source: "../Images/image_dummy"
         }
@@ -100,7 +101,7 @@ Popup
         {
             Layout.column: 1
             Layout.row: 0
-            Layout.rowSpan: 2
+            Layout.rowSpan: 3
             Layout.fillWidth: parent
             Layout.fillHeight: parent
             color: "transparent"
@@ -166,9 +167,28 @@ Popup
 
         Button
         {
-            id: productPanelPrintButton
+            id: productPanelPiecesButton
             Layout.column: 2
             Layout.row: 1
+            Layout.columnSpan: 2
+            Layout.alignment: Qt.AlignTop
+            Layout.preferredWidth: Constants.buttonSize * 2 + Constants.margin
+            Layout.preferredHeight: Constants.buttonSize
+            icon.source: "../Icons/quantity_black_48"
+            leftInset: 0
+            topInset: 0
+            rightInset: 0
+            bottomInset: 0
+            visible: isPiece
+            Material.background: Material.primary
+            onClicked: app.onProductPanelPiecesClicked() // AppManager's slot
+        }
+
+        Button
+        {
+            id: productPanelPrintButton
+            Layout.column: 2
+            Layout.row: 2
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignRight | Qt.AlignBottom
             Layout.preferredWidth:  Constants.buttonSize * 2 + productPanelLayout.rowSpacing
