@@ -77,16 +77,18 @@ signals:
     void started();
     void downloadFinished(const int);
     void showMessageBox(const QString&, const QString&, const bool);
+    void downloadResult(const qint64, const QString&);
+    void loadResult(const qint64, const QString&);
 
 public slots:
     void onStart() { start(); }
     void onSelect(const DataBase::Selector, const QString&);
-    void onSelectItems(const DataBase::Selector, const QString&, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);
     void onPrinted(const DBRecord&);
     void onSaveLog(const int type, const QString &comment) { saveLog(type, comment); }
-    void onDownload(const QString&);
+    void onUpload(const qint64, const QString&, const QString&);
+    void onDownload(const qint64, const QString&);
 };
 
 #endif // DATABASE_H

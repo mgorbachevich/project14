@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.21"
+#define APP_VERSION "1.22"
 #define DB_VERSION "1.0"
 
 #define DB_EMULATION
@@ -16,9 +16,10 @@
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define DEFAULT_SETTING_GROUPS_FILE ":/Text/json_default_setting_groups.txt"
 #define USER_ADMIN_POSTFIX " (A)"
-#define SOCKET_WAIT_FOR_RESPONSE_MSEC 5000
-#define SOCKET_WAIT_FOR_RESPONSE_SLEEP_MSEC 10
+#define SERVER_WAIT_FOR_REPLY_MSEC 20000
+#define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 
+#define NetReply QPair<qint64, QString>
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
 

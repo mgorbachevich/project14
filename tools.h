@@ -3,6 +3,7 @@
 
 #include <QDir>
 #include <QJsonObject>
+#include "netparams.h"
 
 class Tools
 {
@@ -20,6 +21,7 @@ public:
     static double stringToDouble(const QString&, const double defaultValue = 0);
     static qint64 currentDateTimeToInt() { return QDateTime::currentMSecsSinceEpoch(); }
     static QString dateTimeFromInt(qint64 v) { return QDateTime::fromMSecsSinceEpoch(v).toString("dd.MM.yyyy HH:mm:ss"); }
+    static NetParams getNetParams();
 };
 
 #endif // TOOLS_H

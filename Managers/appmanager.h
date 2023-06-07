@@ -18,7 +18,7 @@ class SettingsPanelModel;
 class SettingGroupsPanelModel;
 class UserNameModel;
 class QQmlContext;
-class TCPServer;
+class NetServer;
 
 class AppManager : public QObject
 {
@@ -58,8 +58,6 @@ public:
     ~AppManager();
     double productPrice(const DBRecord&);
 
-    DataBase* db = nullptr;
-
 private:
     QString priceAsString(const DBRecord&);
     QString weightOrPiecesAsString(const DBRecord&);
@@ -79,8 +77,9 @@ private:
 
     QQmlContext* context = nullptr;
     Mode mode = Mode::Mode_Start;
+    DataBase* db = nullptr;
     DBThread* dbThread = nullptr;
-    TCPServer* tcpServer = nullptr;
+    NetServer* netServer = nullptr;
     Settings settings;
     DBRecord user;
     DBRecord currentProduct;
@@ -103,6 +102,7 @@ private:
 signals:
     void activateMainPage(const int index);
     void authorizationSucceded();
+    void download(const qint64, const QString&);
     void hideMessageBox();
     void print();
     void printed(const DBRecord&);
@@ -132,6 +132,7 @@ signals:
     void showWeightParam(const int, const QString&);
     void start();
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
+    void upload(const qint64, const QString&, const QString&);
 
 public slots:
     void onAdminSettingsClicked();
@@ -141,9 +142,11 @@ public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
     void onDownloadFinished(const int);
+    void onLoadResult(const qint64, const QString&);
     void onLockClicked();
     void onLog(const int type, const QString& comment) { emit saveLogInDB(type, comment); }
     void onMainPageChanged(const int);
+    void onNetRequest(const int, const NetReply&);
     void onPiecesInputClosed(const QString&);
     void onPopupClosed();
     void onPopupOpened();

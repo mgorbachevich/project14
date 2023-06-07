@@ -1,4 +1,4 @@
-QT += quick sql widgets core gui network serialport
+QT += quick sql widgets core gui httpserver serialport
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -42,9 +42,7 @@ SOURCES += \
     Models/settinggroupspanelmodel.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
-    Net/httpserver.cpp \
-    Net/socketthread.cpp \
-    Net/tcpserver.cpp \
+    Net/netserver.cpp \
     main.cpp \
     tools.cpp \
     Models/baselistmodel.cpp \
@@ -83,10 +81,8 @@ HEADERS += \
     Models/settinggroupspanelmodel.h \
     Models/usernamemodel.h \
     Models/viewlogpanelmodel.h \
-    Net/httpserver.h \
     Net/netparams.h \
-    Net/socketthread.h \
-    Net/tcpserver.h \
+    Net/netserver.h \
     constants.h \
     tools.h \
     Models/baselistmodel.h \

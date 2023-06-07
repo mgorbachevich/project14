@@ -401,43 +401,6 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     emit requestResult(selector, resultRecords, true);
 }
 
-void DataBase::onSelectItems(const DataBase::Selector selector, const QString& tableName, const QString& param)
-{
-    qDebug() << "@@@@@ DataBase::onSelectItems: selector =" << selector;
-    DBRecordList resultRecords;
-    switch(selector)
-    {
-    case Selector::GetItemsByCodes:
-    {
-        DBTable* t = getTableByName(tableName);
-        if (t != nullptr)
-        {
-            QStringList codes = param.split(QLatin1Char(',')); // Коды товаров через запятую
-            if (codes.count() > 0)
-            {
-                QString codeColumnName = t->columnName(0);
-                QString sql = "SELECT * FROM " + t->name + " WHERE (";
-                for (int i = 0; i < codes.count(); i++)
-                {
-                    if (i > 0) sql += " OR ";
-                    sql += codeColumnName + "='" + codes[i] + "'";
-                }
-                sql += ")";
-                executeSelectSQL(t, sql, resultRecords);
-            }
-            else
-            {
-                selectAll(t, resultRecords);
-            }
-        }
-        break;
-    }
-
-    default: break;
-    }
-    emit requestResult(selector, resultRecords, true);
-}
-
 void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordList& param)
 {
     qDebug() << "@@@@@ DataBase::onSelectByList: selector =" << selector;
@@ -486,12 +449,46 @@ void DataBase::onPrinted(const DBRecord& transaction)
     saveLog(LogDBTable::LogType_Transaction, transaction.at(TransactionDBTable::DateTime).toString());
 }
 
-void DataBase::onDownload(const QString& json)
+void DataBase::onUpload(const qint64 requestId, const QString &tableName, const QString &codeList)
 {
-    qDebug() << "@@@@@ DataBase::onDownload: json =" << json;
+    qDebug() << "@@@@@ DataBase::onUpload" << requestId << tableName << codeList;
+    DBRecordList resultRecords;
+    DBTable* t = getTableByName(tableName);
+    if (t == nullptr)
+        selectAll(t, resultRecords);
+    else
+    {
+        QStringList codes = codeList.split(QLatin1Char(',')); // Коды товаров через запятую
+        if (codes.count() > 0)
+        {
+            QString codeColumnName = t->columnName(0);
+            QString sql = "SELECT * FROM " + t->name + " WHERE (";
+            for (int i = 0; i < codes.count(); i++)
+            {
+                if (i > 0) sql += " OR ";
+                sql += codeColumnName + "='" + codes[i] + "'";
+            }
+            sql += ")";
+            executeSelectSQL(t, sql, resultRecords);
+        }
+    }
+    QString reply = "{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}";
+    QString result = "0";
+    QString description = "ошибок нет";
+    QString resultJson = reply.arg(result, description, tableName, DBTable::toJsonString(t, resultRecords)); // todo
+    qDebug() << "@@@@@ DataBase::onUpload: result" << requestId << resultJson;
+    emit loadResult(requestId, resultJson);
+}
+
+void DataBase::onDownload(const qint64 requestId, const QString &json)
+{
+    qDebug() << "@@@@@ DataBase::onDownload:" << requestId << json;
     JSONParser parser;
     int n = parser.parseAllTables(this, json);
     saveLog(LogDBTable::LogType_Info, QString("Загружено записей: %1").arg(n));
+    QString resultJson = "{\"result\":\"0\",\"description\":\"ошибок нет\"}"; // todo
+    qDebug() << "@@@@@ DataBase::onDownload: result" << requestId << resultJson;
+    emit loadResult(requestId, resultJson);
     emit downloadFinished(n);
 }
 

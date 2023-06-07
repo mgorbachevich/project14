@@ -1,6 +1,8 @@
 #include <QStandardPaths>
 #include <QFile>
 #include <QJsonDocument>
+#include <QHostInfo>
+#include <QNetworkInterface>
 #include "tools.h"
 #include "constants.h"
 
@@ -66,4 +68,31 @@ double Tools::priceToDouble(const QString &dbPrice, const int pointPosition)
     for (int i = 0; i < pointPosition; i++)
         v /= 10;
     return v;
+}
+
+NetParams Tools::getNetParams()
+{
+    // https://stackoverflow.com/questions/13835989/get-local-ip-address-in-qt
+    NetParams np;
+    np.localHostName = QHostInfo::localHostName();
+    QList<QHostAddress> hosts = QHostInfo::fromName(np.localHostName).addresses();
+    foreach (const QHostAddress& address, hosts)
+    {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol && address.isLoopback() == false)
+            np.localHostIP = address.toString();
+    }
+    foreach (const QNetworkInterface& networkInterface, QNetworkInterface::allInterfaces())
+    {
+        foreach (const QNetworkAddressEntry& entry, networkInterface.addressEntries())
+        {
+            if (entry.ip().toString() == np.localHostIP)
+            {
+                np.localMacAddress = networkInterface.hardwareAddress();
+                np.localNetMask = entry.netmask().toString();
+                break;
+            }
+        }
+    }
+    qDebug() << "@@@@@ Tools::getNetParams " << np.localHostName << np.localMacAddress << np.localHostIP << np.localNetMask;
+    return np;
 }

@@ -20,7 +20,7 @@
 #include "viewlogpanelmodel.h"
 #include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
-#include "tcpserver.h"
+#include "netserver.h"
 #include "dbthread.h"
 #include "tools.h"
 
@@ -32,7 +32,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     user = UserDBTable::defaultAdmin();
     db = new DataBase(DB_FILENAME, settings, nullptr); // this); ??
     dbThread = new DBThread(db, this);
-    tcpServer = new TCPServer(this, db);
+    netServer = new NetServer(this);
 
     connect(this, &AppManager::start, db, &DataBase::onStart);
     connect(this, &AppManager::printed, db, &DataBase::onPrinted);
@@ -40,11 +40,14 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
+    connect(this, &AppManager::download, db, &DataBase::onDownload);
+    connect(this, &AppManager::upload, db, &DataBase::onUpload);
     connect(db, &DataBase::started, this, &AppManager::onDBStarted);
+    connect(db, &DataBase::loadResult, this, &AppManager::onLoadResult, Qt::DirectConnection);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
     connect(db, &DataBase::downloadFinished, this, &AppManager::onDownloadFinished);
     connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
-    connect(tcpServer, &TCPServer::log, this, &AppManager::onLog);
+    connect(netServer, &NetServer::netRequest, this, &AppManager::onNetRequest);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
@@ -87,7 +90,7 @@ void AppManager::onDBStarted()
     settingGroupsPanelModel->update(settings);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
-    showMessage("NetParams", QString("IP = %1").arg(TCPServer::getNetParams().localHostIP));
+    showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
 }
 
 void AppManager::onDownloadFinished(const int count)
@@ -241,6 +244,93 @@ void AppManager::onMainPageChanged(const int index)
     emit activateMainPage(mainPageIndex);
 }
 
+void AppManager::onLoadResult(const qint64 requestId, const QString &json)
+{
+    qDebug() << "@@@@@ AppManager::onLoadResult " << requestId << json;
+    netServer->makeReply(NetReply(requestId, json));
+}
+
+void AppManager::onNetRequest(const int requestType, const NetReply& p)
+{
+    const qint64 requestId = p.first;
+    const QString& query = p.second;
+    qDebug() << (QString("@@@@@ AppManager::onNetRequest: request = \n%1, %2").arg(QString::number(requestId), query));
+    if (netServer == nullptr)
+    {
+        qDebug() << "@@@@@ AppManager::onNetRequest: server == null";
+        return;
+    }
+    switch(requestType)
+    {
+    case NetServer::GET: // Upload
+    {
+        // Parse list of codes to upload:
+        qDebug() << "@@@@@ AppManager::onNetRequest: GET";
+        QString codeList = "";
+        QString source = "";
+        DBTable* table = nullptr;
+        const QString s1 = "source=";
+        const QString s2 = "codes=";
+        const QString s3 = "code=";
+        int p1 = query.indexOf(s1);
+        int p2 = query.indexOf("&");
+        bool ok = p1 >= 0 && p2 > p1 && (query.contains(s2) || query.contains(s3));
+        if(ok)
+        {
+            p1 += s1.length();
+            source = query.mid(p1, p2 - p1); // table name
+            qDebug() << "@@@@@ AppManager::onNetRequest: source =" << source;
+            table = db->getTableByName(source);
+            ok = table != nullptr;
+        }
+        if(ok)
+        {
+            if (query.contains(s2))
+            {
+                int p3 = query.indexOf("[") + 1;
+                int p4 = query.indexOf("]");
+                codeList = query.mid(p3, p4 - p3);
+            }
+            else if (query.contains(s3))
+            {
+                int p3 = query.indexOf(s3);
+                int p4 = query.length();
+                p3 += s3.length();
+                codeList = query.mid(p3, p4 - p3);
+            }
+            else ok = false;
+        }
+        if(ok)
+            emit upload(requestId, source, codeList);
+        else
+            qDebug() << "@@@@@ AppManager::onNetRequest: bad GET request";
+        // reply = "{\"result\":\"0\",\"description\":\"ошибок нет\",\"data\":{\"products\":[]}}";
+        break;
+    }
+
+    case NetServer::POST: // Download
+    {
+        qDebug() << "@@@@@ AppManager::onNetRequest: POST";
+        int p1 = query.indexOf("{");
+        int p2 = query.lastIndexOf("}") + 1;
+        if (p1 >= 0 && p2 > p1)
+        {
+            QString json = query.mid(p1, p2 - p1);
+            qDebug() << "@@@@@ AppManager::onNetRequest: json =" << json;
+            emit download(requestId, json);
+        }
+        else
+            qDebug() << "@@@@@ AppManager::onNetRequest: bad POST request";
+        //reply = "{\"result\":\"0\",\"description\":\"ошибок нет\"}";
+        break;
+    }
+
+    default:
+        qDebug() << QString("@@@@@ AppManager::onNetRequest: ERROR unknown requst type");
+        break;
+    }
+}
+
 void AppManager::onPiecesInputClosed(const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onPiecesInputClosed " << value;
@@ -279,7 +369,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     // Обновление настроек:
         settings.updateAllItems(records);
         settingsPanelModel->update(settings);
-        tcpServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
+        netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
         emit settingsChanged();
         break;
 
