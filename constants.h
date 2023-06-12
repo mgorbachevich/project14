@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.22"
+#define APP_VERSION "1.23"
 #define DB_VERSION "1.0"
 
 #define DB_EMULATION
@@ -15,7 +15,6 @@
 #define DUMMY_IMAGE_FILE "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define DEFAULT_SETTING_GROUPS_FILE ":/Text/json_default_setting_groups.txt"
-#define USER_ADMIN_POSTFIX " (A)"
 #define SERVER_WAIT_FOR_REPLY_MSEC 20000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 

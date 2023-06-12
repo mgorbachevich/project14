@@ -21,11 +21,12 @@ bool UserDBTable::isAdmin(const DBRecord& record)
 
 QString UserDBTable::toAdminName(const QString & name)
 {
-    return name + USER_ADMIN_POSTFIX;
+    //return name + USER_ADMIN_POSTFIX;
+    return USER_ADMIN_PREFIX + name + USER_ADMIN_POSTFIX;
 }
 
 QString UserDBTable::fromAdminName(const QString & name)
 {
     QString s = name;
-    return s.remove(USER_ADMIN_POSTFIX);
+    return s.remove(USER_ADMIN_PREFIX).remove(USER_ADMIN_POSTFIX);
 }

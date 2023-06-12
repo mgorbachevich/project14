@@ -3,6 +3,9 @@
 
 #include "dbtable.h"
 
+#define USER_ADMIN_PREFIX ""
+#define USER_ADMIN_POSTFIX "*"
+
 class UserDBTable: public DBTable
 {
 public:
