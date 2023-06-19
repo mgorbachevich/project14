@@ -11,7 +11,7 @@ QVariantList DBTable::createRecord()
 void DBTable::addColumn(const QString& title, const QString& name, const QString& type)
 {
     qDebug() << "@@@@@ DBTable::addColumn " << name;
-    columns.append(*new DBTableColumn(title, name, type));
+    columns.append(DBTableColumn(title, name, type));
 }
 
 const DBRecord DBTable::checkRecord(const DBRecord& record)

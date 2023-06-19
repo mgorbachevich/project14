@@ -2,6 +2,7 @@
 #define BASELISTMODEL_H
 
 #include <QStringListModel>
+#include "constants.h"
 
 class AppManager;
 
@@ -18,6 +19,7 @@ public:
 
 protected:
     AppManager* appManager;
+    DBRecord emptyRecord;
 };
 
 #endif // BASELISTMODEL_H

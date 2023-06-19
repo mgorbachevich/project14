@@ -21,9 +21,9 @@ Rectangle
 
     property int valueFontSize: 70
     property int titleFontSize: 11
-    property int flagSize: (valueFontSize + titleFontSize) / 3
-    property int flagWidth: flagSize + Constants.margin
-    property int displayWidth: weightPanel.width - flagWidth - Constants.margin
+    property int flagIconSize: (valueFontSize + titleFontSize) / 4
+    property int flagIconWidth: flagIconSize + Constants.margin
+    property int displayWidth: weightPanel.width - flagIconWidth - Constants.margin
     property int weightWidth: displayWidth * 6 / (6 + 7 + 9)
     property int priceWidth: displayWidth * 7 / (6 + 7 + 9)
     property int amountWidth: displayWidth - weightWidth - priceWidth
@@ -45,6 +45,10 @@ Rectangle
                 break
             case 2: // WeightParam_AutoFlag
                 if (value === 'true') productPanelAutoWeightIcon.source = "../Icons/weight_48"
+                else productPanelAutoWeightIcon.source = "../Icons/empty_48"
+                break
+            case 13: // WeightParam_ErrorFlag
+                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_48"
                 else productPanelAutoWeightIcon.source = "../Icons/empty_48"
                 break
             case 3: // WeightParam_TareValue
@@ -88,7 +92,7 @@ Rectangle
 
         Rectangle
         {
-            width: flagWidth
+            width: flagIconWidth
             height: parent.height
             color: Material.background
 
@@ -101,10 +105,19 @@ Rectangle
 
                 Image
                 {
+                    id: productPanelErrorIcon
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: flagIconSize
+                    height: flagIconSize
+                    source: "../Icons/empty_48"
+                }
+
+                Image
+                {
                     id: productPanelAutoWeightIcon
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: flagSize
-                    height: flagSize
+                    width: flagIconSize
+                    height: flagIconSize
                     source: "../Icons/empty_48"
                 }
 
@@ -112,8 +125,8 @@ Rectangle
                 {
                     id: productPanelZeroIcon
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: flagSize
-                    height: flagSize
+                    width: flagIconSize
+                    height: flagIconSize
                     source: "../Icons/empty_48"
                 }
 
@@ -121,8 +134,8 @@ Rectangle
                 {
                     id: productPanelTareIcon
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: flagSize
-                    height: flagSize
+                    width: flagIconSize
+                    height: flagIconSize
                     source: "../Icons/empty_48"
                 }
             }

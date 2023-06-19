@@ -30,7 +30,7 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     this->context = context;
     mode = Mode::Mode_Start;
     user = UserDBTable::defaultAdmin();
-    db = new DataBase(DB_FILENAME, settings, nullptr); // this); ??
+    db = new DataBase(DB_FILENAME, settings, this);
     dbThread = new DBThread(db, this);
     netServer = new NetServer(this);
 
@@ -90,7 +90,7 @@ void AppManager::onDBStarted()
     settingGroupsPanelModel->update(settings);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
-    showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
+    //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
 }
 
 void AppManager::onDownloadFinished(const int count)
@@ -140,6 +140,7 @@ void AppManager::onWeightParamChanged(const int param, const QString& value)
     case AppManager::WeightParam_AutoFlag:
     case AppManager::WeightParam_ZeroFlag:
     case AppManager::WeightParam_TareFlag:
+    case AppManager::WeightParam_ErrorFlag:
         emit showWeightParam(param, value);
         break;
     case AppManager::WeightParam_TareValue:
@@ -583,7 +584,8 @@ void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
     mode = Mode::Mode_Start;
-    emit showAuthorizationPanel(versionAsString());
+    QString title = QString("%1. IP %2").arg(versionAsString(), Tools::getNetParams().localHostIP);
+    emit showAuthorizationPanel(title);
     emit selectFromDB(DataBase::GetUserNames, "");
 }
 

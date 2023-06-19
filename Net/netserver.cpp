@@ -11,7 +11,7 @@ NetServer::NetServer(QObject *parent): QObject{parent}
 void NetServer::start(const int port)
 {
     if (server != nullptr) delete server;
-    server = new QHttpServer();
+    server = new QHttpServer(this);
     if(server->listen(QHostAddress::Any, port) != 0)
         qDebug() << "@@@@@ NetServer::start: listening...";
     else

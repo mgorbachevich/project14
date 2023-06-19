@@ -55,11 +55,11 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showAuthorizationPanel:
     {
         target: app
-        function onShowAuthorizationPanel(value)
+        function onShowAuthorizationPanel(title)
         {
             console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
             Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
-                { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: value}).open()
+                { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: title}).open()
         }
     }
 

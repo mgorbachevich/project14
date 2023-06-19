@@ -438,7 +438,7 @@ void DataBase::onUpdateRecord(const DataBase::Selector selector, const DBRecord&
     }
     default: break;
     }
-    emit requestResult(selector, *new DBRecordList(), result);
+    emit requestResult(selector, DBRecordList(), result);
 }
 
 void DataBase::onPrinted(const DBRecord& transaction)

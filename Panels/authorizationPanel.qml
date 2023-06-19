@@ -41,7 +41,7 @@ Popup
         anchors.top: parent.Top
         topPadding: Constants.margin
         font { pointSize: Constants.tinyFontSize; family:'Roboto'; styleName:'Regular' }
-        color: Material.color(Material.Grey, Material.Shade400)
+        //color: Material.color(Material.Grey, Material.Shade400)
         text: versionValue
     }
 

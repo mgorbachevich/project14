@@ -46,6 +46,7 @@ public:
         WeightParam_WeightTitle = 10,
         WeightParam_PriceTitle = 11,
         WeightParam_AmountTitle = 12,
+        WeightParam_ErrorFlag = 13,
     };
 
     enum DialogSelector

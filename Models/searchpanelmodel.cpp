@@ -32,6 +32,6 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilte
 
 DBRecord& SearchPanelModel::productByIndex(const int index)
 {
-    return index < products.count() ? products[index] : *new DBRecord;
+    return index < products.count() ? products[index] : emptyRecord;
 }
 

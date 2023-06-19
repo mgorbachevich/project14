@@ -1,13 +1,13 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.23"
+#define APP_VERSION "1.24"
 #define DB_VERSION "1.0"
 
 #define DB_EMULATION
 #define CHECK_AUTHORIZATION
 #define SAVE_TRANSACTION_ON_PRINT
-#define SAVE_LOG_IN_DB
+#define SAVE_LOG_IN_DB4
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define DB_FILENAME "ShtrihScale.db"

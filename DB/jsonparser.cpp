@@ -64,7 +64,7 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json)
     QJsonValue jv = prepare(json, &ok).toObject()[table->name];
     if (ok && jv.isArray())
         return parseTable(table, jv.toArray());
-    return *new DBRecordList();
+    return DBRecordList();
 }
 
 QJsonValue JSONParser::prepare(const QString &json, bool *ok)
@@ -78,7 +78,7 @@ QJsonValue JSONParser::prepare(const QString &json, bool *ok)
     {
         qDebug() << "@@@@@ JSONParser::prepare result " << result.toString("") << jo["description"].toString("");
         *ok = false;
-        return *new QJsonValue;
+        return QJsonValue();
     }
     */
     QJsonValue data = jo["data"];
@@ -86,7 +86,7 @@ QJsonValue JSONParser::prepare(const QString &json, bool *ok)
     {
         qDebug() << "@@@@@ JSONParser::prepare ERROR (data is not object)";
         *ok = false;
-        return *new QJsonValue;
+        return QJsonValue();
     }
     *ok = true;
     return data;

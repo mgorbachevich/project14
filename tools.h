@@ -22,6 +22,7 @@ public:
     static qint64 currentDateTimeToInt() { return QDateTime::currentMSecsSinceEpoch(); }
     static QString dateTimeFromInt(qint64 v) { return QDateTime::fromMSecsSinceEpoch(v).toString("dd.MM.yyyy HH:mm:ss"); }
     static NetParams getNetParams();
+    //static void memoryCheck();
 };
 
 #endif // TOOLS_H

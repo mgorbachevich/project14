@@ -64,5 +64,5 @@ QString TablePanelModel::title()
 
 DBRecord &TablePanelModel::productByIndex(const int index)
 {
-    return index < products.count() ? products[index] : *new DBRecord();
+    return index < products.count() ? products[index] : emptyRecord;
 }

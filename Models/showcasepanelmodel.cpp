@@ -15,6 +15,6 @@ void ShowcasePanelModel::updateImages(const QStringList& images)
 
 DBRecord &ShowcasePanelModel::productByIndex(const int index)
 {
-    return index < products.count() ? products[index] : *new DBRecord;
+    return index < products.count() ? products[index] : emptyRecord;
 }
 

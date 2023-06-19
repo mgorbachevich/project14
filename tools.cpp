@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QHostInfo>
+#include <QProcess>
 #include <QNetworkInterface>
 #include "tools.h"
 #include "constants.h"
@@ -96,3 +97,17 @@ NetParams Tools::getNetParams()
     qDebug() << "@@@@@ Tools::getNetParams " << np.localHostName << np.localMacAddress << np.localHostIP << np.localNetMask;
     return np;
 }
+
+/*
+void Tools::memoryCheck()
+{
+#ifdef Q_OS_MAC
+    QProcess p;
+    p.start("sysctl", QStringList() << "kern.version" << "hw.physmem");
+    p.waitForFinished();
+    QString system_info = p.readAllStandardOutput();
+    qDebug() << "@@@@@ Tools::memoryCheck " << system_info;
+    p.close();
+#endif
+}
+*/
