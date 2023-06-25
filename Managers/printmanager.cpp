@@ -67,16 +67,56 @@ void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& pro
     }
 }
 
-void PrintManager::onStatusChanged(uint16_t)
+void PrintManager::onParamChanged(const EquipmentParam p, QVariant v, const QString& description)
 {
+    emit paramChanged(p, v.toString(), description);
+    emit message(description);
+}
 
+bool PrintManager::isStateError(uint16_t s)
+{
+    return isFlag(s, 0) || (isFlag(s, 1) && isFlag(s, 6)) || isFlag(s, 2) || isFlag(s, 3) || isFlag(s, 8);
+}
+
+void PrintManager::onStatusChanged(uint16_t s)
+{
+    bool b0 = isFlag(s, 0);
+    bool b1 = isFlag(s, 1);
+    bool b2 = isFlag(s, 2);
+    bool b3 = isFlag(s, 3);
+    bool b6 = isFlag(s, 6);
+    bool b8 = isFlag(s, 8);
+
+    if(isFlag(status, 0) != b0 && b0)
+        onParamChanged(EquipmentParam_PrintError, 1003, "Нет бумаги! Установите новый рулон!");
+    if(isFlag(status, 1) != b1 && b1)
+    {
+        if(b6) onParamChanged(EquipmentParam_PrintError, 1005, "Снимите этикетку!");
+        else emit message("Снимите этикетку!");
+    }
+    if(isFlag(status, 2) != b2 && !b2)
+        onParamChanged(EquipmentParam_PrintError, 1006, "Этикетка не спозиционирована! Нажмите клавишу промотки!");
+    if(isFlag(status, 3) != b3 && b3)
+        onParamChanged(EquipmentParam_PrintError, 1004, "Закройте головку принтера!");
+    if(isFlag(status, 8) != b8 && b8)
+        onParamChanged(EquipmentParam_PrintError, 1008, "Ошибка памяти принтера!");
+
+    if((isStateError(status) != isStateError(s)) && !isStateError(s) && (error == 0))
+        onParamChanged(EquipmentParam_PrintError, 0, "Ошибок нет");
+
+    status = s;
 }
 
 void PrintManager::onErrorStatusChanged(int errorCode)
 {
-    qDebug() << "@@@@@ PrintManager::onErrorStatusChanged ";
-    error = errorCode;
-    emit paramChanged(PrintParam_Error, QString::number(error), slpa->errorDescription(error));
+    if(error != errorCode)
+    {
+        if(errorCode != 0)
+            onParamChanged(EquipmentParam_PrintError, error, slpa->errorDescription(error));
+        else if(!isStateError(status))
+            onParamChanged(EquipmentParam_PrintError, 0, "Ошибок нет");
+        error = errorCode;
+    }
 }
 
 

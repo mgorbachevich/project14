@@ -13,25 +13,27 @@ class PrintManager : public QObject
     Q_OBJECT
 
 public:
-    enum PrintParam
-    {
-        PrintParam_Error = 0,
-    };
-
     explicit PrintManager(QObject*);
     void start();
     void stop();
     QString version();
     void print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
+    bool isError() { return error != 0 || isStateError(status); }
 
 private:
+    bool isFlag(uint16_t v, int shift) { return (v & (0x00000001 << shift)) != 0; }
+    void onParamChanged(const EquipmentParam, QVariant, const QString&);
+    bool isStateError(uint16_t);
+
     Slpa100u* slpa = nullptr;
     bool started = false;
     int error = 0;
+    uint16_t status = 0;
 
 signals:
     void printed(const DBRecord&);
     void paramChanged(const int, const QString&, const QString&);
+    void message(const QString&);
 
 public slots:
     void onStatusChanged(uint16_t);

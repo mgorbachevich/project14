@@ -54,6 +54,7 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
     connect(printManager, &PrintManager::paramChanged, this, &AppManager::onParamChanged);
+    connect(printManager, &PrintManager::message, this, &AppManager::onPrinterMessage);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
@@ -242,6 +243,11 @@ void AppManager::onMainPageChanged(const int index)
     qDebug() << "@@@@@ AppManager::onMainPageChanged " << index;
     mainPageIndex = index;
     emit activateMainPage(mainPageIndex);
+}
+
+void AppManager::onPrinterMessage(const QString &s)
+{
+    showMessage("Внимание!", s); // todo
 }
 
 void AppManager::onLoadResult(const qint64 requestId, const QString &json)
@@ -704,8 +710,12 @@ void AppManager::onParamChanged(const int param, const QString& value, const QSt
 {
     switch (param)
     {
-    case EquipmentParam_Error:
+    case EquipmentParam_WeightError:
         emit log(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").
+                arg(value, Tools::stringToInt(value) == 0 ? "" : description));
+        break;
+    case EquipmentParam_PrintError:
+        emit log(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").
                 arg(value, Tools::stringToInt(value) == 0 ? "" : description));
         break;
     }
@@ -725,7 +735,7 @@ void AppManager::updateWeightPanel()
     const bool isZeroFlag = weightManager->isZeroFlag();
 
     // Флажки:
-    emit showWeightParam(EquipmentParam_Error, Tools::boolToString(isError));
+    emit showWeightParam(EquipmentParam_WeightError, Tools::boolToString(isError));
     emit showWeightParam(EquipmentParam_ZeroFlag, Tools::boolToString(isZeroFlag));
     emit showWeightParam(EquipmentParam_TareFlag, Tools::boolToString(isTareFlag));
 
@@ -753,7 +763,8 @@ void AppManager::updateWeightPanel()
     QString a = amountAsString(currentProduct);
     emit showWeightParam(EquipmentParam_AmountValue, a);
     emit showWeightParam(EquipmentParam_AmountColor, isAmount ? c1 : c0);
-    emit enablePrint(isAmount);
+
+    emit enablePrint(isAmount && !printManager->isError());
 }
 
 

@@ -61,6 +61,11 @@ void WeightManager::onParamChanged(const EquipmentParam p, QVariant v, const QSt
     emit paramChanged(p, v.toString(), description);
 }
 
+bool WeightManager::isStateError(Wm100::channel_status s)
+{
+    return isFlag(s, 5) || isFlag(s, 6) || isFlag(s, 7) || isFlag(s, 8) || isFlag(s, 9);
+}
+
 void WeightManager::onStatusChanged(Wm100::channel_status &s)
 {
     bool b0 = isFlag(s, 0);
@@ -71,19 +76,20 @@ void WeightManager::onStatusChanged(Wm100::channel_status &s)
     bool b7 = isFlag(s, 7);
     bool b8 = isFlag(s, 8);
     bool b9 = isFlag(s, 9);
+
     if(status.weight != s.weight) onParamChanged(EquipmentParam_WeightValue, s.weight, "");
     if(status.tare != s.tare)     onParamChanged(EquipmentParam_TareValue, s.tare, "");
     if(isWeightFixed() != b0)     onParamChanged(EquipmentParam_WeightFixed, b0, "");
     if(isZeroFlag() != b1)        onParamChanged(EquipmentParam_ZeroFlag, b1, "");
     if(isTareFlag() != b3)        onParamChanged(EquipmentParam_TareFlag, b3, "");
-    if(isFlag(status, 5) != b5 && b5) onParamChanged(EquipmentParam_Error, 5003, "Ошибка автонуля при включении");
-    if(isFlag(status, 6) != b6 && b6) onParamChanged(EquipmentParam_Error, 5004, "Перегрузка по весу");
-    if(isFlag(status, 7) != b7 && b7) onParamChanged(EquipmentParam_Error, 5005, "Ошибка при получении измерения");
-    if(isFlag(status, 8) != b8 && b8) onParamChanged(EquipmentParam_Error, 5006, "Весы недогружены");
-    if(isFlag(status, 9) != b9 && b9) onParamChanged(EquipmentParam_Error, 5007, "Ошибка: нет ответа от АЦП");
+    if(isFlag(status, 5) != b5 && b5) onParamChanged(EquipmentParam_WeightError, 5003, "Ошибка автонуля при включении");
+    if(isFlag(status, 6) != b6 && b6) onParamChanged(EquipmentParam_WeightError, 5004, "Перегрузка по весу");
+    if(isFlag(status, 7) != b7 && b7) onParamChanged(EquipmentParam_WeightError, 5005, "Ошибка при получении измерения");
+    if(isFlag(status, 8) != b8 && b8) onParamChanged(EquipmentParam_WeightError, 5006, "Весы недогружены");
+    if(isFlag(status, 9) != b9 && b9) onParamChanged(EquipmentParam_WeightError, 5007, "Ошибка: нет ответа от АЦП");
 
     if((isStateError(status) != isStateError(s)) && !isStateError(s) && (error == 0))
-        onParamChanged(EquipmentParam_Error, 0, "Ошибок нет");
+        onParamChanged(EquipmentParam_WeightError, 0, "Ошибок нет");
 
     status.weight = s.weight;
     status.tare = s.tare;
@@ -92,13 +98,12 @@ void WeightManager::onStatusChanged(Wm100::channel_status &s)
 
 void WeightManager::onErrorStatusChanged(int errorCode)
 {
-    //qDebug() << "@@@@@ WeightManager::onErrorStatusChanged ";
     if(error != errorCode)
     {
         if(errorCode != 0)
-            onParamChanged(EquipmentParam_Error, error, wm100->errorDescription(error));
+            onParamChanged(EquipmentParam_WeightError, error, wm100->errorDescription(error));
         else if(!isStateError(status))
-            onParamChanged(EquipmentParam_Error, 0, "Ошибок нет");
+            onParamChanged(EquipmentParam_WeightError, 0, "Ошибок нет");
         error = errorCode;
     }
 }

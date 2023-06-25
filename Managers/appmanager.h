@@ -130,6 +130,7 @@ public slots:
     void onPopupOpened();
     void onPrint();
     void onPrinted(const DBRecord&);
+    void onPrinterMessage(const QString&);
     void onProductDescriptionClicked();
     void onProductPanelCloseClicked() { resetProduct(); }
     void onProductPanelPiecesClicked();

@@ -5,8 +5,6 @@
 #include "wm100.h"
 #include "constants.h"
 
-#define WEIGHT_STATE_ERROR_MASK 0x0003FE00
-
 class WeightManager : public QObject
 {
     Q_OBJECT
@@ -28,7 +26,7 @@ public:
 
 private:
     bool isFlag(Wm100::channel_status s, int shift) { return (s.state & (0x00000001 << shift)) != 0; }
-    bool isStateError(Wm100::channel_status s) { return (s.state & WEIGHT_STATE_ERROR_MASK) != 0; }
+    bool isStateError(Wm100::channel_status);
     void onParamChanged(const EquipmentParam, QVariant, const QString&);
 
     Wm100* wm100 = nullptr;
