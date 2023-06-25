@@ -6,6 +6,7 @@
 #include "constants.h"
 #include "database.h"
 #include "settings.h"
+#include "appinfo.h"
 
 class DBThread;
 class ProductPanelModel;
@@ -19,77 +20,54 @@ class SettingGroupsPanelModel;
 class UserNameModel;
 class QQmlContext;
 class NetServer;
+class AppInfo;
+class WeightManager;
+class PrintManager;
 
 class AppManager : public QObject
 {
     Q_OBJECT
 
 public:
-    enum Mode
-    {
-        Mode_Start = 0,
-        Mode_Scale,
-    };
-
-    enum WeightParam
-    {
-        WeightParam_ZeroFlag = 0,
-        WeightParam_TareFlag = 1,
-        WeightParam_AutoFlag = 2,
-        WeightParam_TareValue = 3,
-        WeightParam_WeightValue = 4,
-        WeightParam_PriceValue = 5,
-        WeightParam_AmountValue = 6,
-        WeightParam_WeightColor = 7,
-        WeightParam_PriceColor = 8,
-        WeightParam_AmountColor = 9,
-        WeightParam_WeightTitle = 10,
-        WeightParam_PriceTitle = 11,
-        WeightParam_AmountTitle = 12,
-        WeightParam_ErrorFlag = 13,
-    };
-
     enum DialogSelector
     {
         Dialog_None = 0,
         Dialog_Authorization,
     };
 
-    explicit AppManager(QObject*, QQmlContext*);
+    explicit AppManager(QQmlContext*, QObject*);
     ~AppManager();
-    double productPrice(const DBRecord&);
+    double price(const DBRecord&);
 
 private:
     QString priceAsString(const DBRecord&);
-    QString weightOrPiecesAsString(const DBRecord&);
     QString amountAsString(const DBRecord&);
-    QString versionAsString();
+    QString quantityAsString(const DBRecord&);
     void showCurrentProduct();
     void filteredSearch();
     void updateTablePanel(const bool);
     void updateWeightPanel();
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
-    void saveTransaction();
     void showUsers(const DBRecordList&);
     void refreshAll();
-    void showMessage(const QString& title, const QString& text) { emit showMessageBox(title, text, true); }
     void showToast(const QString&, const QString&, const int delaySec = 5);
+    void showMessage(const QString&, const QString&);
+    void resetProduct();
 
     QQmlContext* context = nullptr;
-    Mode mode = Mode::Mode_Start;
+    bool started = false;
     DataBase* db = nullptr;
     DBThread* dbThread = nullptr;
     NetServer* netServer = nullptr;
+    WeightManager* weightManager = nullptr;
+    PrintManager* printManager = nullptr;
     Settings settings;
     DBRecord user;
     DBRecord currentProduct;
-    double weight = 0;
-    int pieces = 1;
-    double tare = 0;
     int openedPopupCount = 0;
     int mainPageIndex = 0;
-
+    AppInfo appInfo;
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
     TablePanelModel* tablePanelModel;
@@ -104,16 +82,15 @@ signals:
     void activateMainPage(const int index);
     void authorizationSucceded();
     void download(const qint64, const QString&);
+    void enablePrint(const bool);
     void hideMessageBox();
-    void print();
-    void printed(const DBRecord&);
-    void resetProduct();
-    void saveLogInDB(const int, const QString&);
+    void transaction(const DBRecord&);
+    void resetCurrentProduct();
+    void log(const int, const int, const QString&);
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void setCurrentUser(const int userIndex, const QString& userName);
     void settingsChanged();
-    void setWeightParam(const int);
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);
@@ -145,18 +122,17 @@ public slots:
     void onDownloadFinished(const int);
     void onLoadResult(const qint64, const QString&);
     void onLockClicked();
-    void onLog(const int type, const QString& comment) { emit saveLogInDB(type, comment); }
     void onMainPageChanged(const int);
     void onNetRequest(const int, const NetReply&);
+    void onParamChanged(const int, const QString&, const QString&);
     void onPiecesInputClosed(const QString&);
     void onPopupClosed();
     void onPopupOpened();
-    void onPrint() { emit print(); }
-    void onPrinted();
+    void onPrint();
+    void onPrinted(const DBRecord&);
     void onProductDescriptionClicked();
-    void onProductPanelCloseClicked() { emit resetProduct(); }
-    void onProductPanelPiecesClicked() { emit showPiecesInputBox(pieces); }
-    void onResetProduct();
+    void onProductPanelCloseClicked() { resetProduct(); }
+    void onProductPanelPiecesClicked();
     void onSearchFilterClicked(const int);
     void onSearchFilterEdited(const QString&);
     void onSearchOptionsClicked() { emit showSearchOptions(); }
@@ -166,13 +142,11 @@ public slots:
     void onSettingsItemClicked(const int);
     void onShowcaseClicked(const int);
     void onShowMainPage(const int page) { emit showMainPage(page); }
-    void onShowMessageBox(const QString& title, const QString& text) { showMessage(title, text); }
     void onTableBackClicked();
     void onTableOptionsClicked() { emit showTableOptions(); }
     void onTableResultClicked(const int);
     void onViewLogClicked();
-    void onWeightParamClicked(const int param) { emit setWeightParam(param); }
-    void onWeightParamChanged(const int, const QString&);
+    void onWeightParamClicked(const int);
 };
 
 #endif // APPMANAGER_H

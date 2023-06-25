@@ -11,16 +11,17 @@ void ViewLogPanelModel::update(const DBRecordList& records)
         DBRecord ri = records[i];
         QString dateTime = Tools::dateTimeFromInt(ri[LogDBTable::DateTime].toLongLong());
         QString comment = ri[LogDBTable::Comment].toString();
-        QString type = "";
+        QString source = ri[LogDBTable::Source].toString();
+        QString type = ri[LogDBTable::Type].toString();
         switch(ri[LogDBTable::Type].toInt())
         {
-        case LogDBTable::LogType_Debug: type = "D"; break;
-        case LogDBTable::LogType_Error: type = "E"; break;
-        case LogDBTable::LogType_Info: type = "I"; break;
-        case LogDBTable::LogType_Warning: type = "W"; break;
-        case LogDBTable::LogType_Transaction: type = "T"; break;
+        case LogType_Debug: type = "D"; break;
+        case LogType_Error: type = "E"; break;
+        case LogType_Info: type = "I"; break;
+        case LogType_Warning: type = "W"; break;
+        case LogType_Transaction: type = "T"; break;
         }
-        ss << QString("%1 %2 %3").arg(dateTime, type, comment);
+        ss << QString("%1 %2 %3 %4").arg(dateTime, type, source, comment);
     }
     setStringList(ss);
 }

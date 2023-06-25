@@ -1,13 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.24"
-#define DB_VERSION "1.0"
+#define APP_VERSION "1.25"
 
 #define DB_EMULATION
 #define CHECK_AUTHORIZATION
-#define SAVE_TRANSACTION_ON_PRINT
-#define SAVE_LOG_IN_DB4
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define DB_FILENAME "ShtrihScale.db"
@@ -21,5 +18,51 @@
 #define NetReply QPair<qint64, QString>
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
+
+enum LogType
+{
+    LogType_None = 0,
+    LogType_Error = 1,
+    LogType_Warning = 2,
+    LogType_Info = 3,
+    LogType_Debug = 4,
+    LogType_Transaction = 5
+};
+
+enum LogSource
+{
+    LogSource_Print,
+    LogSource_Admin,
+    LogSource_User,
+    LogSource_DB,
+    LogSource_Weight,
+};
+
+enum LogError
+{
+    LogError_WrongRequest = 1101,
+    LogError_WrongRecord = 1102,
+    LogError_UnknownTable = 1103,
+    LogError_RecordNotFound = 1104,
+};
+
+enum EquipmentParam
+{
+    EquipmentParam_None = 0,
+    EquipmentParam_TareFlag = 1,
+    EquipmentParam_ZeroFlag = 2,
+    EquipmentParam_TareValue = 3,
+    EquipmentParam_WeightValue = 4,
+    EquipmentParam_PriceValue = 5,
+    EquipmentParam_AmountValue = 6,
+    EquipmentParam_WeightColor = 7,
+    EquipmentParam_PriceColor = 8,
+    EquipmentParam_AmountColor = 9,
+    EquipmentParam_WeightTitle = 10,
+    EquipmentParam_PriceTitle = 11,
+    EquipmentParam_AmountTitle = 12,
+    EquipmentParam_Error = 13,
+    EquipmentParam_WeightFixed = 14,
+};
 
 #endif // CONSTANTS_H

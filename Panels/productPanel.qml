@@ -32,10 +32,16 @@ Popup
         function onShowProductImage(value) { productPanelImage.source = value }
     }
 
-    Connections // Slot for signal AppManager::resetProduct:
+    Connections // Slot for signal AppManager::enablePrint:
     {
         target: app
-        function onResetProduct() { productPanel.close() }
+        function onEnablePrint(value) { productPanelPrintButton.visible = value }
+    }
+
+    Connections // Slot for signal AppManager::resetCurrentProduct:
+    {
+        target: app
+        function onResetCurrentProduct() { productPanel.close() }
     }
 
     GridLayout

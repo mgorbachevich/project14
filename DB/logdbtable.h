@@ -10,17 +10,9 @@ public:
     {
         DateTime, // the number of milliseconds since 1970-01-01T00:00:00 Universal Coordinated Time.
         Type,
+        Source,
         Comment,
         COLUMN_COUNT
-    };
-
-    enum LogType
-    {
-        LogType_Error = 0,
-        LogType_Warning = 1,
-        LogType_Info = 2,
-        LogType_Debug = 3,
-        LogType_Transaction = 4
     };
 
     LogDBTable(const QString& name, QObject *parent): DBTable(name, parent)
@@ -29,9 +21,12 @@ public:
 
         addColumn("Дата, время", "date_time", "BIGINT PRIMARY KEY");
         addColumn("Тип",         "type",      "INT");
-        addColumn("Сообщение",   "comment",   "INT");
+        addColumn("Источник",    "source",    "INT");
+        addColumn("Сообщение",   "comment",   "TEXT");
       }
+
     int columnCount() { return Columns::COLUMN_COUNT; }
+    DBRecord createRecord(const int type, const int source, const QString &comment);
 };
 
 #endif // LOGDBTABLE_H

@@ -4,6 +4,7 @@
 #include <QObject>
 #include "settings.h"
 
+#define DB_VERSION "1.0"
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
 #define DBTABLENAME_LABELFORMATS "labels"
@@ -49,34 +50,34 @@ public:
     explicit DataBase(const QString&, Settings&, QObject*);
     ~DataBase() { db.close(); }
     virtual bool start();
-    DBTable* getTableByName(const QString&, const bool log = true);
-    int insertRecords(DBTable*, const DBRecordList&, const bool log = true);
-    void selectAll(DBTable*, DBRecordList&, const bool log = true);
-    bool removeAll(DBTable*, const bool log = true);
+    DBTable* getTableByName(const QString&);
+    void selectAll(DBTable*, DBRecordList&);
+    bool removeAll(DBTable*);
+    QString version();
+    void saveLog(const int, const int, const QString&);
+    bool insertRecord(DBTable*, const DBRecord&);
 
     QString filePath;
+    Settings& settings;
     QList<DBTable*> tables;
 
 protected:
     void emulation();
     bool open();
     bool createTable(DBTable*);
-    bool executeSQL(const QString&, const bool log = true);
-    bool executeSelectSQL(DBTable*, const QString&, DBRecordList&, const bool log = true);
-    bool selectById(DBTable*, const QString&, DBRecord&, const bool log = true);
-    bool removeRecord(DBTable*, const DBRecord&, const bool log = true);
-    bool insertRecord(DBTable*, const DBRecord&, const bool log = true);
-    void saveLog(const int type, const QString &comment, const bool reallySave = true);
+    bool executeSQL(const QString&);
+    bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
+    bool selectById(DBTable*, const QString&, DBRecord&);
+    bool removeRecord(DBTable*, const DBRecord&);
+    void clearLog();
 
     bool opened = false;
     QSqlDatabase db;
-    Settings& settings;
 
 signals:
     void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void started();
     void downloadFinished(const int);
-    void showMessageBox(const QString&, const QString&, const bool);
     void downloadResult(const qint64, const QString&);
     void loadResult(const qint64, const QString&);
 
@@ -85,8 +86,8 @@ public slots:
     void onSelect(const DataBase::Selector, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);
-    void onPrinted(const DBRecord&);
-    void onSaveLog(const int type, const QString &comment) { saveLog(type, comment); }
+    void onTransaction(const DBRecord&);
+    void onLog(const int, const int, const QString&);
     void onUpload(const qint64, const QString&, const QString&);
     void onDownload(const qint64, const QString&);
 };

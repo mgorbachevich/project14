@@ -10,7 +10,6 @@
 #include "productdbtable.h"
 #include "transactiondbtable.h"
 #include "userdbtable.h"
-#include "logdbtable.h"
 #include "productpanelmodel.h"
 #include "tablepanelmodel.h"
 #include "usernamemodel.h"
@@ -23,20 +22,25 @@
 #include "netserver.h"
 #include "dbthread.h"
 #include "tools.h"
+#include "appinfo.h"
+#include "weightmanager.h"
+#include "printmanager.h"
 
-AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
+AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ AppManager::AppManager";
     this->context = context;
-    mode = Mode::Mode_Start;
+
     user = UserDBTable::defaultAdmin();
     db = new DataBase(DB_FILENAME, settings, this);
     dbThread = new DBThread(db, this);
     netServer = new NetServer(this);
+    weightManager = new WeightManager(this);
+    printManager = new PrintManager(this);
 
     connect(this, &AppManager::start, db, &DataBase::onStart);
-    connect(this, &AppManager::printed, db, &DataBase::onPrinted);
-    connect(this, &AppManager::saveLogInDB, db, &DataBase::onSaveLog);
+    connect(this, &AppManager::transaction, db, &DataBase::onTransaction);
+    connect(this, &AppManager::log, db, &DataBase::onLog);
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
@@ -46,8 +50,10 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     connect(db, &DataBase::loadResult, this, &AppManager::onLoadResult, Qt::DirectConnection);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
     connect(db, &DataBase::downloadFinished, this, &AppManager::onDownloadFinished);
-    connect(db, &DataBase::showMessageBox, this, &AppManager::showMessageBox);
     connect(netServer, &NetServer::netRequest, this, &AppManager::onNetRequest);
+    connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onParamChanged);
+    connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
+    connect(printManager, &PrintManager::paramChanged, this, &AppManager::onParamChanged);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
@@ -68,6 +74,13 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
     context->setContextProperty("userNameModel", userNameModel);
     context->setContextProperty("viewLogPanelModel", viewLogPanelModel);
 
+    appInfo.appVersion = APP_VERSION;
+    appInfo.dbVersion = db->version();
+    appInfo.weightManagerVersion = weightManager->version();
+    appInfo.printManagerVersion = printManager->version();
+    appInfo.netServerVersion = netServer->version();
+    appInfo.ip = Tools::getNetParams().localHostIP;
+
     dbThread->start();
     QTimer::singleShot(10, this, &AppManager::start);
 }
@@ -75,11 +88,6 @@ AppManager::AppManager(QObject *parent, QQmlContext* context): QObject(parent)
 AppManager::~AppManager()
 {
     dbThread->stop();
-}
-
-QString AppManager::versionAsString()
-{
-    return QString("Версия приложения %1. Версия БД %2").arg(APP_VERSION, DB_VERSION);
 }
 
 void AppManager::onDBStarted()
@@ -102,29 +110,31 @@ void AppManager::onDownloadFinished(const int count)
         emit selectFromDB(DataBase::GetCurrentProduct, currentProduct.at(ProductDBTable::Code).toString());
 }
 
+QString AppManager::quantityAsString(const DBRecord& product)
+{
+    if(ProductDBTable::isPiece(product)) return QString("%1").arg(weightManager->getPieces());
+    if(weightManager->isError()) return "";
+    return QString("%1").arg(weightManager->getWeight(), 0, 'f', 3);
+}
+
 QString AppManager::priceAsString(const DBRecord& product)
 {
     int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
-    return Tools::moneyToText(productPrice(product), pp);
-}
-
-QString AppManager::weightOrPiecesAsString(const DBRecord& product)
-{
-    return ProductDBTable::isPiece(product) ? QString("%1").arg(pieces) : QString("%1").arg(weight, 0, 'f', 3);
+    return Tools::moneyToText(price(product), pp);
 }
 
 QString AppManager::amountAsString(const DBRecord& product)
 {
-    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
-    double v = 0;
+    double q = 0;
     if(ProductDBTable::isPiece(product))
-        v = pieces;
-    else
-        v = weight * (ProductDBTable::is100gBase(product) ? 10 : 1);
-    return Tools::moneyToText(v * productPrice(product), pp);
+        q = weightManager->getPieces();
+    else if(!weightManager->isError())
+        q = weightManager->getWeight() * (ProductDBTable::is100gBase(product) ? 10 : 1);
+    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
+    return Tools::moneyToText(q * price(product), pp);
 }
 
-double AppManager::productPrice(const DBRecord& product)
+double AppManager::price(const DBRecord& product)
 {
     const int p = ProductDBTable::Price;
     if (product.count() <= p)
@@ -133,33 +143,15 @@ double AppManager::productPrice(const DBRecord& product)
     return Tools::priceToDouble(product[p].toString(), pp);
 }
 
-void AppManager::onWeightParamChanged(const int param, const QString& value)
-{
-    switch (param)
-    {
-    case AppManager::WeightParam_AutoFlag:
-    case AppManager::WeightParam_ZeroFlag:
-    case AppManager::WeightParam_TareFlag:
-    case AppManager::WeightParam_ErrorFlag:
-        emit showWeightParam(param, value);
-        break;
-    case AppManager::WeightParam_TareValue:
-        tare = Tools::stringToDouble(value);
-        updateWeightPanel();
-        break;
-    case AppManager::WeightParam_WeightValue:
-        weight = Tools::stringToDouble(value);
-        updateWeightPanel();
-        break;
-    }
-}
-
 void AppManager::showCurrentProduct()
 {
-    qDebug() << "@@@@@ AppManager::showCurrentProduct " << currentProduct[ProductDBTable::Code].toString();
+    QString productCode = currentProduct[ProductDBTable::Code].toString();
+    qDebug() << "@@@@@ AppManager::showCurrentProduct " << productCode;
     productPanelModel->update(currentProduct, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
     emit showProductPanel(ProductDBTable::isPiece(currentProduct));
-    emit selectFromDB(DataBase::GetImageByResourceCode, currentProduct[ProductDBTable::PictureCode].toString());
+    emit log(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
+    QString pictureCode = currentProduct[ProductDBTable::PictureCode].toString();
+    emit selectFromDB(DataBase::GetImageByResourceCode, pictureCode);
     updateWeightPanel();
 
     if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
@@ -173,6 +165,11 @@ void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
     emit selectFromDB(DataBase::GetMessageByResourceCode, currentProduct[ProductDBTable::MessageCode].toString());
+}
+
+void AppManager::onProductPanelPiecesClicked()
+{
+    emit showPiecesInputBox(weightManager->getPieces());
 }
 
 void AppManager::filteredSearch()
@@ -189,7 +186,7 @@ void AppManager::filteredSearch()
             break;
          default:
             qDebug() << "@@@@@ AppManager::filteredSearch ERROR";
-            emit saveLogInDB(LogDBTable::LogType_Warning, "Неизвестный фильтр поиска");
+            //emit saveLog(LogType_Warning, LogSource_AppManager, "Неизвестный фильтр поиска");
             break;
     }
 }
@@ -221,6 +218,8 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
     {
         r->replace(SettingDBTable::Value, value);
+        QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
+        emit log(LogType_Warning, LogSource_Admin, s);
         emit updateDBRecord(DataBase::ReplaceSettingsItem, *r);
     }
 }
@@ -228,7 +227,7 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
 void AppManager::onAdminSettingsClicked()
 {
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
-    // todo
+    emit log(LogType_Info, LogSource_Admin, "Просмотр настроек");
     emit showSettingGroupsPanel();
 }
 
@@ -335,7 +334,7 @@ void AppManager::onNetRequest(const int requestType, const NetReply& p)
 void AppManager::onPiecesInputClosed(const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onPiecesInputClosed " << value;
-    pieces = Tools::stringToInt(value);
+    weightManager->setPieces(Tools::stringToInt(value));
     updateWeightPanel();
 }
 
@@ -371,6 +370,8 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         settings.updateAllItems(records);
         settingsPanelModel->update(settings);
         netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
+        weightManager->start();
+        printManager->start();
         emit settingsChanged();
         break;
 
@@ -464,8 +465,8 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         if (!currentProduct.isEmpty() && !records.isEmpty() && !DBTable::isEqual(currentProduct, records.at(0)))
         {
             // Сброс выбранного товара после загрузки:
-            emit resetProduct();
-            showMessage("ВНИМАНИЕ!", "Выбранный товар изменен");
+            resetProduct();
+            showToast("ВНИМАНИЕ!", "Выбранный товар изменен");
         }
         break;
 
@@ -475,8 +476,15 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
 void AppManager::onViewLogClicked()
 {
+    emit log(LogType_Info, LogSource_Admin, "Просмотр лога");
     emit selectFromDB(DataBase::GetLog, "");
     emit showViewLogPanel();
+}
+
+void AppManager::onWeightParamClicked(const int param)
+{
+    qDebug() << "@@@@@ AppManager::onWeightParamClicked " << param;
+    weightManager->setWeightParam(param);
 }
 
 void AppManager::onConfirmationClicked(const int selector)
@@ -550,42 +558,12 @@ void AppManager::updateTablePanel(const bool root)
     emit selectFromDB(DataBase::GetProductsByGroupCodeIncludeGroups, currentGroupCode);
 }
 
-void AppManager::updateWeightPanel()
-{
-    QString c0 = "#404040";
-    QString c1 = "#FFFFFF";
-    const bool isPiece = ProductDBTable::isPiece(currentProduct);
-    const bool is100gBase = ProductDBTable::is100gBase(currentProduct);
-
-    emit showWeightParam(WeightParam::WeightParam_WeightTitle, isPiece ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
-    QString w = weightOrPiecesAsString(currentProduct);
-    emit showWeightParam(WeightParam::WeightParam_WeightValue, w);
-    emit showWeightParam(WeightParam::WeightParam_WeightColor, Tools::stringToDouble(w) != 0 ? c1 : c0);
-
-    QString pt = "ЦЕНА, руб";
-    if (isPiece)
-        pt += "/шт";
-    else if (is100gBase)
-        pt += "/100г";
-    else if (!currentProduct.isEmpty())
-        pt += "/кг";
-    emit showWeightParam(WeightParam::WeightParam_PriceTitle, pt);
-    QString p = priceAsString(currentProduct);
-    emit showWeightParam(WeightParam::WeightParam_PriceValue, p);
-    emit showWeightParam(WeightParam::WeightParam_PriceColor, Tools::stringToDouble(p) != 0 ? c1 : c0);
-
-    emit showWeightParam(WeightParam::WeightParam_AmountTitle, "СТОИМОСТЬ, руб");
-    QString a = amountAsString(currentProduct);
-    emit showWeightParam(WeightParam::WeightParam_AmountValue, a);
-    emit showWeightParam(WeightParam::WeightParam_AmountColor, Tools::stringToDouble(a) != 0 ? c1 : c0);
-}
-
 void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
-    mode = Mode::Mode_Start;
-    QString title = QString("%1. IP %2").arg(versionAsString(), Tools::getNetParams().localHostIP);
-    emit showAuthorizationPanel(title);
+    started = false;
+    emit showAuthorizationPanel(appInfo.all());
+    emit log(LogType_Warning, LogSource_User, "Авторизация");
     emit selectFromDB(DataBase::GetUserNames, "");
 }
 
@@ -598,41 +576,46 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     emit selectFromDB(DataBase::GetAuthorizationUserByName, normalizedLogin);
 }
 
-void AppManager::checkAuthorization(const DBRecordList& users)
+void AppManager::checkAuthorization(const DBRecordList& dbUsers)
 {
     qDebug() << "@@@@@ AppManager::checkAuthorization";
+    QString title = "Авторизация";
+    QString error = "";
+    QString login = user[UserDBTable::Name].toString();
+    QString password = user[UserDBTable::Password].toString();
+
 #ifdef CHECK_AUTHORIZATION
-    if (users.isEmpty())
+    if (dbUsers.isEmpty())
+        error = "Неизвестный пользователь";
+    else
     {
-        qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
-        showMessage("Авторизация", "Неизвестный пользователь!");
-        emit saveLogInDB(LogDBTable::LogType_Info, "Авторизация. Неизвестный пользователь");
-        return;
+        if (login != dbUsers[0][UserDBTable::Name].toString() || password != dbUsers[0][UserDBTable::Password])
+            error = "Неверные имя пользователя или пароль";
     }
-    const DBRecord& newUser = users[0];
-    if (user[UserDBTable::Name] != newUser[UserDBTable::Name] ||
-        user[UserDBTable::Password] != newUser[UserDBTable::Password])
+    if(!error.isEmpty())
     {
         qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
-        showMessage("Авторизация", "Неверные имя пользователя или пароль!");
-        emit saveLogInDB(LogDBTable::LogType_Info, "Авторизация. Неверные имя пользователя или пароль");
+        showMessage(title, error);
+        emit log(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
         return;
     }
     user.clear();
-    user.append(newUser);
+    user.append(dbUsers[0]);
 #else
     user = UserDBTable::defaultAdmin();
+    login = user[UserDBTable::Name].toString();
 #endif
 
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
-    emit saveLogInDB(LogDBTable::LogType_Info, "Авторизация. Пользователь " + user[UserDBTable::Name].toString());
-    if(mode == Mode::Mode_Start)
+    QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
+    emit log(LogType_Warning, LogSource_User, s);
+    if(!started)
     {
-        mode = Mode::Mode_Scale;
-        // showMessage("Авторизация", "Успешно!");
+        started = true;
+        // showMessage(title, "Успешно!");
         emit authorizationSucceded();
         refreshAll();
-        emit resetProduct();
+        resetProduct();
         mainPageIndex = 0;
         emit activateMainPage(mainPageIndex);
     }
@@ -655,21 +638,18 @@ void AppManager::showToast(const QString &title, const QString &text, const int 
     QTimer::singleShot(delaySec * 1000, this, &AppManager::hideMessageBox);
 }
 
-void AppManager::saveTransaction()
+void AppManager::showMessage(const QString &title, const QString &text)
 {
-#ifdef SAVE_TRANSACTION_ON_PRINT
-    DBRecord r = ((TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS))->createRecord();
-    r[TransactionDBTable::DateTime] = Tools::currentDateTimeToInt();
-    r[TransactionDBTable::User] = user[UserDBTable::Code];
-    r[TransactionDBTable::ItemCode] = Tools::stringToInt(currentProduct[ProductDBTable::Code]);
-    r[TransactionDBTable::LabelNumber] = 0; // todo
-    r[TransactionDBTable::Weight] = weightOrPiecesAsString(currentProduct); // todo
-    r[TransactionDBTable::Price] = priceAsString(currentProduct); // todo
-    r[TransactionDBTable::Cost] = amountAsString(currentProduct); // todo
-    r[TransactionDBTable::Price2] = 0; // todo
-    r[TransactionDBTable::Cost2] = 0; // todo
-    emit printed(r);
-#endif
+    emit showMessageBox(title, text, true);
+}
+
+void AppManager::resetProduct()
+{
+    qDebug() << "@@@@@ AppManager::resetProduct";
+    currentProduct.clear();
+    weightManager->setPieces(Tools::stringToInt(1));
+    emit resetCurrentProduct();
+    updateWeightPanel();
 }
 
 void AppManager::showUsers(const DBRecordList& records)
@@ -698,20 +678,82 @@ void AppManager::showUsers(const DBRecordList& records)
     }
 }
 
-void AppManager::onPrinted()
+void AppManager::onPrint()
 {
-    qDebug() << "@@@@@ AppManager::onPrinted";
-    saveTransaction();
-    if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
-        emit resetProduct();
+    qDebug() << "@@@@@ AppManager::onPrint ";
+    printManager->print(db,
+                        user,
+                        currentProduct,
+                        quantityAsString(currentProduct),
+                        priceAsString(currentProduct),
+                        amountAsString(currentProduct));
 }
 
-void AppManager::onResetProduct()
+void AppManager::onPrinted(const DBRecord& newTransaction)
 {
-    qDebug() << "@@@@@ AppManager::onResetProduct";
-    currentProduct.clear();
-    pieces = 1;
+    qDebug() << "@@@@@ AppManager::onPrinted";
+    emit log(LogType_Error, LogSource_Print, QString("Печать. Код товара: %1. Вес/Количество: %2").arg(
+                newTransaction[TransactionDBTable::ItemCode].toString(),
+                newTransaction[TransactionDBTable::Weight].toString()));
+    emit transaction(newTransaction);
+    if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
+        resetProduct();
+}
+
+void AppManager::onParamChanged(const int param, const QString& value, const QString& description)
+{
+    switch (param)
+    {
+    case EquipmentParam_Error:
+        emit log(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").
+                arg(value, Tools::stringToInt(value) == 0 ? "" : description));
+        break;
+    }
     updateWeightPanel();
+}
+
+void AppManager::updateWeightPanel()
+{
+    QString c0 = "#404040";
+    QString c1 = "#FFFFFF";
+    const bool isProduct = !currentProduct.empty();
+    const bool isPiece = isProduct && ProductDBTable::isPiece(currentProduct);
+    const bool is100g = isProduct && ProductDBTable::is100gBase(currentProduct);
+    const bool isError = weightManager->isError();
+    const bool isFixed = weightManager->isWeightFixed();
+    const bool isTareFlag = weightManager->isTareFlag();
+    const bool isZeroFlag = weightManager->isZeroFlag();
+
+    // Флажки:
+    emit showWeightParam(EquipmentParam_Error, Tools::boolToString(isError));
+    emit showWeightParam(EquipmentParam_ZeroFlag, Tools::boolToString(isZeroFlag));
+    emit showWeightParam(EquipmentParam_TareFlag, Tools::boolToString(isTareFlag));
+
+    // Загаловки:
+    emit showWeightParam(EquipmentParam_WeightTitle, isPiece ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
+    QString qt = "ЦЕНА, руб";
+    if (isPiece) qt += "/шт";
+    else if (is100g) qt += "/100г";
+    else if (!currentProduct.isEmpty()) qt += "/кг";
+    emit showWeightParam(EquipmentParam_PriceTitle, qt);
+    emit showWeightParam(EquipmentParam_AmountTitle, "СТОИМОСТЬ, руб");
+
+    // Вес/Штуки:
+    QString q = (isPiece || !isError) ? quantityAsString(currentProduct) : "-----";
+    emit showWeightParam(EquipmentParam_WeightValue, q);
+    emit showWeightParam(EquipmentParam_WeightColor, isPiece || isFixed ? c1 : c0);
+
+    // Цена:
+    QString p = priceAsString(currentProduct);
+    emit showWeightParam(EquipmentParam_PriceValue, p);
+    emit showWeightParam(EquipmentParam_PriceColor, isProduct ? c1 : c0);
+
+    // Стоимость:
+    const bool isAmount = isProduct && (isPiece || (!isError && isFixed));
+    QString a = amountAsString(currentProduct);
+    emit showWeightParam(EquipmentParam_AmountValue, a);
+    emit showWeightParam(EquipmentParam_AmountColor, isAmount ? c1 : c0);
+    emit enablePrint(isAmount);
 }
 
 

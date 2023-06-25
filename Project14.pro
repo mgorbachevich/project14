@@ -23,8 +23,10 @@ SOURCES += \
     DB/dbtable.cpp \
     DB/dbthread.cpp \
     DB/jsonparser.cpp \
+    DB/logdbtable.cpp \
     DB/productdbtable.cpp \
     DB/settingdbtable.cpp \
+    DB/transactiondbtable.cpp \
     DB/userdbtable.cpp \
     Equipment/Wm100_Slpa100u/IO/iobase.cpp \
     Equipment/Wm100_Slpa100u/IO/iocom.cpp \
@@ -73,6 +75,7 @@ HEADERS += \
     Equipment/Wm100_Slpa100u/Slpa100uProtocolDemo.h \
     Equipment/Wm100_Slpa100u/Slpa100uProtocolUsb.h \
     Equipment/Wm100_Slpa100u/wm100.h \
+    Managers/appinfo.h \
     Managers/appmanager.h \
     Managers/settings.h \
     Models/baselistmodel2.h \

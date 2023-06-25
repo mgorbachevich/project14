@@ -13,6 +13,8 @@
 #include <QSslKey>
 #endif
 
+#define SERVER_VERSION "1.0"
+
 class NetServer : public QObject
 {
     Q_OBJECT
@@ -27,6 +29,7 @@ public:
     ~NetServer() { if (server != nullptr) delete server; }
     void start(const int);
     void makeReply(const NetReply&);
+    QString version() { return SERVER_VERSION; }
 
 protected:
     QHttpServerResponse makeResponse(qint64);

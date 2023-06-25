@@ -23,7 +23,7 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
             s += product.at(i).toString();
             break;
         case ProductDBTable::Price:
-            s += QString("%1").arg(appManager->productPrice(product));
+            s += QString("%1").arg(appManager->price(product));
             break;
         case ProductDBTable::Type:
             switch (product.at(ProductDBTable::Type).toInt())

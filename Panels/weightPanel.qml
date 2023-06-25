@@ -35,23 +35,15 @@ Rectangle
         {
             switch (param)
             {
-            case 0: // WeightParam_ZeroFlag >0<
-                if (value === 'true') productPanelZeroIcon.source = "../Icons/0_48"
-                else productPanelZeroIcon.source = "../Icons/empty_48"
-                break
             case 1: // WeightParam_TareFlag >T<
                 if (value === 'true') productPanelTareIcon.source = "../Icons/tare_48"
                 else productPanelTareIcon.source = "../Icons/empty_48"
                 break
-            case 2: // WeightParam_AutoFlag
-                if (value === 'true') productPanelAutoWeightIcon.source = "../Icons/weight_48"
-                else productPanelAutoWeightIcon.source = "../Icons/empty_48"
+            case 2: // WeightParam_ZeroFlag >0<
+                if (value === 'true') productPanelZeroIcon.source = "../Icons/0_48"
+                else productPanelZeroIcon.source = "../Icons/empty_48"
                 break
-            case 13: // WeightParam_ErrorFlag
-                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_48"
-                else productPanelAutoWeightIcon.source = "../Icons/empty_48"
-                break
-            case 3: // WeightParam_TareValue
+            case 3: // WeightParam_TareValue todo
                 break
             case 4: // WeightParam_WeightValue
                 weightPanelWeightValue.text = value
@@ -79,6 +71,12 @@ Rectangle
                 break
             case 12: // WeightParam_AmountTitle
                 weightPanelAmountTitle.text = value
+                break
+            case 13: // WeightParam_Error
+                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_48"
+                else productPanelAutoWeightIcon.source = "../Icons/empty_48"
+                break
+            case 14: // WeightParam_WeightFixed
                 break
             }
         }

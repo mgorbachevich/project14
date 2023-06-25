@@ -39,6 +39,9 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
         case SettingCode_SearchType:
             ok = value >= 0 && value <= 1;
             break;
+        case SettingCode_Logging:
+            ok = value >= 0 && value <= 5;
+            break;
         case SettingCode_SearchCodeSymbols:
         case SettingCode_SearchBarcodeSymbols:
             ok = value >= 0 && value <= 9;
@@ -48,13 +51,9 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
     }
     DBRecord result;
     if(ok)
-    {
         result.append(record);
-    }
     else
-    {
         qDebug() << "@@@@@ SettingDBTable::checkRecord ERROR";
-    }
     return result;
 }
 
@@ -80,6 +79,7 @@ const DBRecordList SettingDBTable::checkList(const DBRecordList& records)
     checkDefault(SettingCode_ProductReset, defaultRecords, result);
     checkDefault(SettingCode_ProductResetTime, defaultRecords, result);
     checkDefault(SettingCode_LogDuration, defaultRecords, result);
+    checkDefault(SettingCode_Logging, defaultRecords, result);
     return result;
 }
 

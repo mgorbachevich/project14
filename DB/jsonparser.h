@@ -14,12 +14,12 @@ class JSONParser
 {
 public:
     JSONParser() {}
-    int parseAllTables(DataBase*, const QString&);
+    int parseAllTables(DataBase*, const QString&, int* returnErrorCode = nullptr, QString* returnDescription = nullptr);
     DBRecordList parseTable(DBTable*, const QString&);
 
 private:
     QJsonValue prepare(const QString &, bool*);
-    DBRecordList parseTable(DBTable*, const QJsonArray&);
+    DBRecordList parseArray(DBTable*, const QJsonArray&);
     void parseTableColumn(DBTable*, DBRecord&, const QJsonObject&, const int);
 };
 

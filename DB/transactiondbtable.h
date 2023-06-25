@@ -28,13 +28,14 @@ public:
         addColumn("Код пользователя", "user",         "INT");
         addColumn("Код товара",       "item_code",    "INT");
         addColumn("Номер этикетки",   "label_number", "INT");
-        addColumn("Вес / количество", "weight",       "REAL");
+        addColumn("Вес/количество",   "weight",       "REAL");
         addColumn("Цена",             "price",        "INT");
         addColumn("Стоимость",        "cost",         "INT");
         addColumn("Цена 2",           "price2",       "INT");
         addColumn("Стоимость 2",      "cost2",        "INT");
     }
     int columnCount() { return Columns::COLUMN_COUNT; }
+    DBRecord createRecord(const int, const int, const int, const double, const int, const int);
 };
 
 #endif // TRANSACTIONDBTABLE_H

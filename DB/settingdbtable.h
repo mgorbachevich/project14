@@ -19,15 +19,16 @@ public:
         SettingCode_None = 0,
         SettingCode_ScalesNumber = 1,
         SettingCode_ScalesName = 2,
-        SettingCode_ShopName = 202,
-        SettingCode_TCPPort = 1003,
-        SettingCode_PointPosition = 12,
         SettingCode_ProductReset = 7,
         SettingCode_ProductResetTime = 8,
-        SettingCode_LogDuration = 607,
-        SettingCode_SearchType = 1004,
+        SettingCode_PointPosition = 12,
         SettingCode_SearchCodeSymbols = 44,
         SettingCode_SearchBarcodeSymbols = 45,
+        SettingCode_ShopName = 202,
+        SettingCode_Logging = 606,
+        SettingCode_LogDuration = 607,
+        SettingCode_TCPPort = 1003,
+        SettingCode_SearchType = 1004,
         /*
         SettingCode_Power = 17,
         SettingCode_Blocking = 3,
@@ -45,7 +46,6 @@ public:
         SettingCode_PrintAutoWeight = 203,
         SettingCode_PrintAutoPcs = 218,
         SettingCode_PrintLabelFormat = 213,
-        SettingCode_Logging = 606,
         */
     };
 
