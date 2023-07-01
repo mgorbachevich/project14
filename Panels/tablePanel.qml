@@ -8,9 +8,7 @@ import RegisteredTypes 1.0
 Rectangle
 {
     id:  tablePanel
-    objectName: "tablePanel"
     color: Material.background
-
     focus: true
     Keys.onPressed: (event) =>
     {
@@ -90,20 +88,13 @@ Rectangle
         columns: 3
         rows: 2
 
-        Button
+        RoundIconButton
         {
             id: tablePanelBackButton
             Layout.column: 0
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
             icon.source: "../Icons/empty_48"
-            leftInset: 0
-            topInset: 0
-            rightInset: 0
-            bottomInset: 0
-            Material.background: Material.primary
             onClicked: app.onTableBackClicked() // AppManager's slot
         }
 
@@ -113,26 +104,19 @@ Rectangle
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
-            font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Italic' }
+            font { pointSize: Constants.normalFontSize }
             wrapMode: Text.WordWrap
-            //background: Rectangle { color: "transparent" }
+            color: Material.color(Material.BlueGrey, Material.Shade600)
             text: "/"
         }
 
-        Button
+        RoundIconButton
         {
             id: tablePanelOptionsButton
             Layout.column: 2
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
             icon.source: "../Icons/settings_black_48"
-            leftInset: 0
-            topInset: 0
-            rightInset: 0
-            bottomInset: 0
-            Material.background: Material.primary
             onClicked: app.onTableOptionsClicked() // AppManager's slot
         }
 
@@ -143,7 +127,7 @@ Rectangle
             Layout.columnSpan: 3
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            color: Material.color(Material.Grey, Material.Shade50)
+            color: Material.background
 
             ListView
             {
@@ -160,10 +144,17 @@ Rectangle
                 }
 
                 model: tablePanelModel
-                delegate: Text
+                delegate: Label
                 {
-                    font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                    width: parent.width
+                    font { pointSize: Constants.normalFontSize }
                     padding: Constants.margin
+                    color: Material.color(Material.BlueGrey, Material.Shade900)
+                    background: Rectangle
+                    {
+                        color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
+                                                 Material.color(Material.Grey, Material.Shade200)
+                    }
                     text: model.value // Roles::ValueRole
 
                     MouseArea

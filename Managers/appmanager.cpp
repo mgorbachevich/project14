@@ -51,10 +51,10 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
     connect(db, &DataBase::downloadFinished, this, &AppManager::onDownloadFinished);
     connect(netServer, &NetServer::netRequest, this, &AppManager::onNetRequest);
-    connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onParamChanged);
+    connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
-    connect(printManager, &PrintManager::paramChanged, this, &AppManager::onParamChanged);
-    connect(printManager, &PrintManager::message, this, &AppManager::onPrinterMessage);
+    connect(printManager, &PrintManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
+    connect(printManager, &PrintManager::printerMessage, this, &AppManager::onPrinterMessage);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
@@ -93,7 +93,7 @@ AppManager::~AppManager()
 
 void AppManager::onDBStarted()
 {
-    showToast("", "Инициализация");
+    //showToast("", "Инициализация");
     qDebug() << "@@@@@ AppManager::onDBStarted";
     settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
     settingGroupsPanelModel->update(settings);
@@ -104,9 +104,9 @@ void AppManager::onDBStarted()
 
 void AppManager::onDownloadFinished(const int count)
 {
-    qDebug() << "@@@@@ AppManager::onDownloadFinished ";
+    qDebug() << "@@@@@ AppManager::onDownloadFinished" << count;
     refreshAll();
-    showToast("Загрузка данных завершена", QString("Загружено записей: %1").arg(count));
+    //showToast("Загрузка данных завершена", QString("Загружено записей: %1").arg(count));
     if(!currentProduct.isEmpty())
         emit selectFromDB(DataBase::GetCurrentProduct, currentProduct.at(ProductDBTable::Code).toString());
 }
@@ -149,7 +149,7 @@ void AppManager::showCurrentProduct()
     QString productCode = currentProduct[ProductDBTable::Code].toString();
     qDebug() << "@@@@@ AppManager::showCurrentProduct " << productCode;
     productPanelModel->update(currentProduct, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
-    emit showProductPanel(ProductDBTable::isPiece(currentProduct));
+    emit showProductPanel(currentProduct[ProductDBTable::Name].toString(), ProductDBTable::isPiece(currentProduct));
     emit log(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
     QString pictureCode = currentProduct[ProductDBTable::PictureCode].toString();
     emit selectFromDB(DataBase::GetImageByResourceCode, pictureCode);
@@ -247,7 +247,8 @@ void AppManager::onMainPageChanged(const int index)
 
 void AppManager::onPrinterMessage(const QString &s)
 {
-    showMessage("Внимание!", s); // todo
+    emit showPrinterMessage(s);
+    // showMessage("Внимание!", s);
 }
 
 void AppManager::onLoadResult(const qint64 requestId, const QString &json)
@@ -375,9 +376,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     // Обновление настроек:
         settings.updateAllItems(records);
         settingsPanelModel->update(settings);
-        netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
-        weightManager->start();
-        printManager->start();
+        if(started) startEquipment();
         emit settingsChanged();
         break;
 
@@ -568,6 +567,7 @@ void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
     started = false;
+    stopEquipment();
     emit showAuthorizationPanel(appInfo.all());
     emit log(LogType_Warning, LogSource_User, "Авторизация");
     emit selectFromDB(DataBase::GetUserNames, "");
@@ -618,6 +618,7 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
     if(!started)
     {
         started = true;
+        startEquipment();
         // showMessage(title, "Успешно!");
         emit authorizationSucceded();
         refreshAll();
@@ -656,6 +657,20 @@ void AppManager::resetProduct()
     weightManager->setPieces(Tools::stringToInt(1));
     emit resetCurrentProduct();
     updateWeightPanel();
+}
+
+void AppManager::startEquipment()
+{
+    netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
+    weightManager->start();
+    printManager->start();
+}
+
+void AppManager::stopEquipment()
+{
+    netServer->stop();
+    weightManager->stop();
+    printManager->stop();
 }
 
 void AppManager::showUsers(const DBRecordList& records)
@@ -706,26 +721,37 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
         resetProduct();
 }
 
-void AppManager::onParamChanged(const int param, const QString& value, const QString& description)
+void AppManager::onEquipmentParamChanged(const int param, const QString& value, const QString& description)
 {
+    qDebug() << "@@@@@ AppManager::onEquipmentParamChanged" << param << value << description;
     switch (param)
     {
     case EquipmentParam_WeightError:
         emit log(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").
                 arg(value, Tools::stringToInt(value) == 0 ? "" : description));
+        updateWeightPanel();
         break;
     case EquipmentParam_PrintError:
         emit log(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").
                 arg(value, Tools::stringToInt(value) == 0 ? "" : description));
+        updateWeightPanel();
+        break;
+    case EquipmentParam_TareFlag:
+    case EquipmentParam_ZeroFlag:
+    case EquipmentParam_TareValue:
+    case EquipmentParam_WeightValue:
+    case EquipmentParam_PriceValue:
+    case EquipmentParam_AmountValue:
+    case EquipmentParam_WeightFixed:
+        updateWeightPanel();
         break;
     }
-    updateWeightPanel();
 }
 
 void AppManager::updateWeightPanel()
 {
-    QString c0 = "#404040";
-    QString c1 = "#FFFFFF";
+    QString c0 = "#424242";
+    QString c1 = "#fafafa";
     const bool isProduct = !currentProduct.empty();
     const bool isPiece = isProduct && ProductDBTable::isPiece(currentProduct);
     const bool is100g = isProduct && ProductDBTable::is100gBase(currentProduct);
@@ -765,6 +791,7 @@ void AppManager::updateWeightPanel()
     emit showWeightParam(EquipmentParam_AmountColor, isAmount ? c1 : c0);
 
     emit enablePrint(isAmount && !printManager->isError());
+    emit showPrinterMessage(printManager->getMessage());
 }
 
 

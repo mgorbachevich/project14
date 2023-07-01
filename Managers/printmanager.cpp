@@ -70,12 +70,18 @@ void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& pro
 void PrintManager::onParamChanged(const EquipmentParam p, QVariant v, const QString& description)
 {
     emit paramChanged(p, v.toString(), description);
-    emit message(description);
+    showMessage(description);
 }
 
 bool PrintManager::isStateError(uint16_t s)
 {
     return isFlag(s, 0) || (isFlag(s, 1) && isFlag(s, 6)) || isFlag(s, 2) || isFlag(s, 3) || isFlag(s, 8);
+}
+
+void PrintManager::showMessage(const QString &s)
+{
+    message = s;
+    emit printerMessage(s);
 }
 
 void PrintManager::onStatusChanged(uint16_t s)
@@ -92,7 +98,7 @@ void PrintManager::onStatusChanged(uint16_t s)
     if(isFlag(status, 1) != b1 && b1)
     {
         if(b6) onParamChanged(EquipmentParam_PrintError, 1005, "Снимите этикетку!");
-        else emit message("Снимите этикетку!");
+        else showMessage("Снимите этикетку!");
     }
     if(isFlag(status, 2) != b2 && !b2)
         onParamChanged(EquipmentParam_PrintError, 1006, "Этикетка не спозиционирована! Нажмите клавишу промотки!");
@@ -102,7 +108,7 @@ void PrintManager::onStatusChanged(uint16_t s)
         onParamChanged(EquipmentParam_PrintError, 1008, "Ошибка памяти принтера!");
 
     if((isStateError(status) != isStateError(s)) && !isStateError(s) && (error == 0))
-        onParamChanged(EquipmentParam_PrintError, 0, "Ошибок нет");
+        onParamChanged(EquipmentParam_PrintError, 0, "");
 
     status = s;
 }
@@ -114,7 +120,7 @@ void PrintManager::onErrorStatusChanged(int errorCode)
         if(errorCode != 0)
             onParamChanged(EquipmentParam_PrintError, error, slpa->errorDescription(error));
         else if(!isStateError(status))
-            onParamChanged(EquipmentParam_PrintError, 0, "Ошибок нет");
+            onParamChanged(EquipmentParam_PrintError, 0, "");
         error = errorCode;
     }
 }

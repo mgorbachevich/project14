@@ -7,8 +7,10 @@ import RegisteredTypes 1.0
 
 Popup
 {
+    Material.theme: Material.Light
+
     id: tableOptionsPanel
-    objectName: "tableOptionsPanel"
+    //objectName: "tableOptionsPanel"
     padding : 0
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     focus: true
@@ -64,7 +66,6 @@ Popup
 
             Text
             {
-                id: messagePanelTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }

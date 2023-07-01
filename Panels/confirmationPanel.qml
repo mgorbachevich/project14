@@ -8,110 +8,113 @@ import RegisteredTypes 1.0
 Popup
 {
     id: confirmationPanel
-    objectName: "confirmationPanel"
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
     focus: true
     modal: true
     dim: true
+    Material.background: "transparent"
     property string titleText: "Title"
     property string messageText: "Message"
     property int dialogSelector: 0
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
-    GridLayout
+    Rectangle
     {
         anchors.fill: parent
-        anchors.margins: Constants.margin
-        columnSpacing: Constants.margin
-        rowSpacing: Constants.margin
-        columns: 2
-        rows: 3
+        radius: Constants.margin
+        Material.background: Material.color(Material.Grey, Material.Shade100)
+        color: Material.background
 
-        focus: true
-        Keys.onPressed: (event) =>
+        GridLayout
         {
-            console.debug("@@@@@ confirmationPanel Keys.onPressed ", JSON.stringify(event))
-            event.accepted = true;
-            switch (event.key)
+            anchors.fill: parent
+            anchors.margins: Constants.margin
+            columnSpacing: Constants.margin
+            rowSpacing: Constants.margin
+            columns: 1
+            rows: 3
+
+            focus: true
+            Keys.onPressed: (event) =>
             {
-                case Qt.Key_Escape: // Круглая стрелка
-                    confirmationPanel.close()
-                    break
-                case Qt.Key_Enter:
-                    app.onConfirmationClicked(dialogSelector)
-                    confirmationPanel.close()
-                    break
-                default:
-                    app.onBeep();
-                    break
+                console.debug("@@@@@ confirmationPanel Keys.onPressed ", JSON.stringify(event))
+                event.accepted = true;
+                switch (event.key)
+                {
+                    case Qt.Key_Escape: // Круглая стрелка
+                        confirmationPanel.close()
+                        break
+                    case Qt.Key_Enter:
+                        app.onConfirmationClicked(dialogSelector)
+                        confirmationPanel.close()
+                        break
+                    default:
+                        app.onBeep();
+                        break
+                }
             }
-        }
 
-        Rectangle
-        {
-            Layout.column: 0
-            Layout.row: 0
-            Layout.columnSpan: 2
-            Layout.fillWidth: parent
-            Layout.preferredHeight: Constants.buttonSize
-            color: "transparent"
-
-            Text
+            Rectangle
             {
-                id: cofirmationPanelTitle
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
-                wrapMode: Text.WordWrap
-                text: titleText
+                Layout.column: 0
+                Layout.row: 0
+                Layout.fillWidth: parent
+                Layout.preferredHeight: Constants.buttonSize
+                color: "transparent"
+
+                CardTitleText
+                {
+                    text: titleText
+                }
             }
-        }
 
-        Rectangle
-        {
-            Layout.column: 0
-            Layout.row: 1
-            Layout.columnSpan: 2
-            Layout.fillWidth: parent
-            Layout.fillHeight: parent
-            color: "transparent"
-            //color: Material.color(Material.Grey, Material.Shade50)
-
-            Text
+            Rectangle
             {
-                id: cofirmationPanelText
-                anchors.horizontalCenter: parent.horizontalCenter
-                font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Regular' }
-                wrapMode: Text.WordWrap
-                text: messageText
-            }
-        }
+                Layout.column: 0
+                Layout.row: 1
+                Layout.fillWidth: parent
+                Layout.fillHeight: parent
+                Layout.bottomMargin: Constants.buttonSize / 2
+                color: "transparent"
 
-        Button
-        {
-            Layout.column: 0
-            Layout.row: 2
-            Layout.alignment: Qt.AlignTop | Qt.AlignCenter
-            text: qsTr(" ДА ")
-            Material.background: Material.primary
-            onClicked:
+                CardText
+                {
+                    text: messageText
+                }
+            }
+
+            Row
             {
-                app.onConfirmationClicked(dialogSelector) // AppManager's slot
-                confirmationPanel.close()
-            }
-        }
+                spacing: Constants.margin * 4
+                Layout.preferredWidth: Constants.buttonSize * 3 + spacing
+                Layout.preferredHeight: Constants.buttonSize
+                Layout.column: 0
+                Layout.row: 2
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
 
-        Button
-        {
-            Layout.column: 1
-            Layout.row: 2
-            Layout.alignment: Qt.AlignTop | Qt.AlignCenter
-            text: qsTr(" НЕТ ")
-            Material.background: Material.primary
-            onClicked: confirmationPanel.close()
+                RoundTextButton
+                {
+                    width: Constants.buttonSize * 3 / 2
+                    height: Constants.buttonSize
+                    text: qsTr(" ДА ")
+                    onClicked:
+                    {
+                        app.onConfirmationClicked(dialogSelector) // AppManager's slot
+                        confirmationPanel.close()
+                    }
+                 }
+
+                RoundTextButton
+                {
+                    width: Constants.buttonSize * 3 / 2
+                    height: Constants.buttonSize
+                    text: qsTr("НЕТ")
+                    onClicked: confirmationPanel.close()
+                }
+            }
         }
     }
 }

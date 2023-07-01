@@ -54,6 +54,8 @@ private:
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showMessage(const QString&, const QString&);
     void resetProduct();
+    void startEquipment();
+    void stopEquipment();
 
     QQmlContext* context = nullptr;
     bool started = false;
@@ -98,8 +100,9 @@ signals:
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);
     void showPiecesInputBox(const int);
+    void showPrinterMessage(const QString&);
     void showProductImage(const QString&);
-    void showProductPanel(const bool);
+    void showProductPanel(const QString&, const bool);
     void showSearchOptions();
     void showSettingGroupsPanel();
     void showSettingInputBox(const int, const QString&, const QString&);
@@ -120,11 +123,11 @@ public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
     void onDownloadFinished(const int);
+    void onEquipmentParamChanged(const int, const QString&, const QString&);
     void onLoadResult(const qint64, const QString&);
     void onLockClicked();
     void onMainPageChanged(const int);
     void onNetRequest(const int, const NetReply&);
-    void onParamChanged(const int, const QString&, const QString&);
     void onPiecesInputClosed(const QString&);
     void onPopupClosed();
     void onPopupOpened();

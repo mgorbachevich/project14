@@ -7,24 +7,19 @@ import RegisteredTypes 1.0
 
 ApplicationWindow
 {
-    // https://doc.qt.io/qt-5/qtquickcontrols2-material.html
-    Material.theme: Material.Light
-    Material.background: Material.color(Material.Grey, Material.Shade200)
-    Material.foreground: Material.color(Material.BlueGrey, Material.Shade900)
-    Material.accent: Material.Orange
-    Material.primary: Material.color(Material.Indigo, Material.Shade100)
-
     id: mainWindow
-    objectName: "mainWindow"
     title: qsTr("Project14")
-    color: Material.background
     visible: true
+    Material.theme: Material.Light
+    Material.background: Material.color(Material.Grey, Material.Shade100)
+    Material.accent: Material.Orange
+    color: Material.background
     property int pageIndicatorHeight: 16
     property int adminMenuWidth: 0
-    property int popupX: (mainWindow.width - mainWindow.width * 4 / 5) / 2
-    property int popupY: mainWindow.height / 4 + Constants.margin
-    property int popupWidth: mainWindow.width * 4 / 5
+    property int popupWidth: mainWindow.width * 3 / 4
     property int popupHeight: mainWindow.height * 2 / 3
+    property int popupX: (mainWindow.width - popupWidth) / 2
+    property int popupY: mainWindow.height / 4 + Constants.margin
 
     Connections // Slot for signal AppManager::start:
     {
@@ -59,7 +54,7 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
             Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
-                { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: title}).open()
+                { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: title }).open()
         }
     }
 
@@ -81,7 +76,10 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowSettingInputBox ", code, " ", name, " ", value);
             Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
-            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: name, inputText: value, settingItemCode: code }).open()
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight,
+                titleText: name, inputText: value, settingItemCode: code
+            }).open()
         }
     }
 
@@ -125,7 +123,10 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowViewLogPanel");
             Qt.createComponent("Panels/viewLogPanel.qml").createObject(mainWindow,
-            { x: 0, y: mainWeightPanel.height, width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height }).open()
+            {
+                x: 0, y: mainWeightPanel.height, width: mainWindow.width,
+                height: mainWindow.height - mainWeightPanel.height
+            }).open()
         }
     }
 
@@ -136,7 +137,10 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowMessageBox ", titleText, " ", messageText);
             Qt.createComponent("Panels/messagePanel.qml").createObject(mainWindow,
-            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText, messageText: messageText, buttonVisibility: showButton }).open()
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
+                messageText: messageText, buttonVisibility: showButton
+            }).open()
         }
     }
 
@@ -147,7 +151,10 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowConfirmationBox ", selector, " ", titleText, " ", messageText);
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
-            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText, messageText: messageText, dialogSelector: selector }).open()
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
+                messageText: messageText, dialogSelector: selector
+            }).open()
         }
     }
 
@@ -176,11 +183,15 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showProductPanel:
     {
         target: app
-        function onShowProductPanel(pieceProduct)
+        function onShowProductPanel(name, isPieceProduct)
         {
             console.debug("@@@@@ mainWindow.onShowProductPanel");
             Qt.createComponent("Panels/productPanel.qml").createObject(mainWindow,
-            { x: 0, y: mainWeightPanel.height, width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height, isPiece: pieceProduct }).open()
+            {
+                x: 0, y: mainWeightPanel.height,
+                width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height,
+                isPiece: isPieceProduct, productName: name
+            }).open()
         }
     }
 
@@ -209,7 +220,7 @@ ApplicationWindow
                 id: adminMenuPanel
                 width: adminMenuWidth
                 height: parent.height
-                color: Material.accent
+                color: "transparent"
 
                 Loader
                 {
@@ -222,11 +233,13 @@ ApplicationWindow
             {
                 width: parent.width - adminMenuWidth
                 height: parent.height
+                color: "transparent"
 
                 Rectangle
                 {
                     width: parent.width
                     height: parent.height - pageIndicatorHeight
+                    color: "transparent"
 
                     SwipeView
                     {
@@ -235,18 +248,20 @@ ApplicationWindow
                         clip: true
                         currentIndex: 0
                         onCurrentIndexChanged: app.onMainPageChanged(currentIndex);
-
                         focus: true
+
                         Loader
                         {
                             focus: true
                             source: "Panels/showcasePanel.qml"
                         }
+
                         Loader
                         {
                             focus: true
                             source: "Panels/tablePanel.qml"
                         }
+
                         Loader
                         {
                             focus: true
@@ -261,13 +276,14 @@ ApplicationWindow
                     height: pageIndicatorHeight
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
-                    color: Material.background
+                    color: "transparent"
 
                     PageIndicator
                     {
                         anchors.horizontalCenter: parent.horizontalCenter
                         count: mainSwipeView.count
                         currentIndex: mainSwipeView.currentIndex
+                        Material.foreground: Material.color(Material.Grey, Material.Shade600)
                     }
                 }
             }

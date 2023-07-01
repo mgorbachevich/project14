@@ -8,7 +8,7 @@ import RegisteredTypes 1.0
 Popup
 {
     id: viewLogPanel
-    objectName: "viewLogPanel"
+    //objectName: "viewLogPanel"
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -24,7 +24,7 @@ Popup
         anchors.margins: Constants.margin
         columnSpacing: Constants.margin
         rowSpacing: Constants.margin
-        columns: 3
+        columns: 2
         rows: 2
 
         focus: true
@@ -54,52 +54,31 @@ Popup
             }
         }
 
-        Button
+        Rectangle
         {
             Layout.column: 0
             Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
-            icon.source: "../Icons/empty_48"
-            leftInset: 0
-            topInset: 0
-            rightInset: 0
-            bottomInset: 0
-            Material.background: "transparent"
-        }
-
-        Rectangle
-        {
-            Layout.column: 1
-            Layout.row: 0
             Layout.fillWidth: parent
             Layout.preferredHeight: Constants.buttonSize
-            color: "transparent"
+            color: Material.background
 
             Text
             {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
+                font { pointSize: Constants.normalFontSize }
+                color: Material.color(Material.Grey, Material.Shade600)
                 wrapMode: Text.WordWrap
                 text: qsTr("Лог")
             }
         }
 
-        Button
+        RoundIconButton
         {
-            Layout.column: 2
+            Layout.column: 1
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
             icon.source: "../Icons/close_black_48"
-            leftInset: 0
-            topInset: 0
-            rightInset: 0
-            bottomInset: 0
-            Material.background: Material.primary
             onClicked:  viewLogPanel.close()
         }
 
@@ -107,7 +86,7 @@ Popup
         {
             Layout.column: 0
             Layout.row: 1
-            Layout.columnSpan: 3
+            Layout.columnSpan: 2
             Layout.fillWidth: parent
             Layout.fillHeight: parent
             color: Material.color(Material.Grey, Material.Shade50)
@@ -130,7 +109,8 @@ Popup
                 delegate: Text
                 {
                     leftPadding: Constants.margin
-                    font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                    font { pointSize: Constants.normalFontSize }
+                    color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value
                 }
             }

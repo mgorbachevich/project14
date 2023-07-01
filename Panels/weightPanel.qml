@@ -7,20 +7,13 @@ import RegisteredTypes 1.0
 
 Rectangle
 {
-    // https://doc.qt.io/qt-5/qtquickcontrols2-material.html
-    Material.theme: Material.Dark
-    Material.background: Material.color(Material.BlueGrey, Material.Shade900)
-    Material.foreground: Material.color(Material.Grey, Material.Shade50)
-    Material.accent: Material.Orange
-    Material.primary: Material.color(Material.Indigo, Material.Shade100)
-
     id:  weightPanel
-    objectName: "weightPanel"
     height: valueFontSize + titleFontSize + Constants.margin
+    Material.background: Material.color(Material.Grey, Material.Shade900)
     color: Material.background
 
     property int valueFontSize: 70
-    property int titleFontSize: 11
+    property int titleFontSize: 10
     property int flagIconSize: (valueFontSize + titleFontSize) / 4
     property int flagIconWidth: flagIconSize + Constants.margin
     property int displayWidth: weightPanel.width - flagIconWidth - Constants.margin
@@ -35,48 +28,53 @@ Rectangle
         {
             switch (param)
             {
-            case 1: // WeightParam_TareFlag >T<
-                if (value === 'true') productPanelTareIcon.source = "../Icons/tare_48"
-                else productPanelTareIcon.source = "../Icons/empty_48"
+            case 1: // TareFlag >T<
+                if (value === 'true') productPanelTareIcon.source = "../Icons/tare_flag_48"
+                else productPanelTareIcon.source = "../Icons/empty_flag_48"
                 break
-            case 2: // WeightParam_ZeroFlag >0<
-                if (value === 'true') productPanelZeroIcon.source = "../Icons/0_48"
-                else productPanelZeroIcon.source = "../Icons/empty_48"
+            case 2: // ZeroFlag >0<
+                if (value === 'true') productPanelZeroIcon.source = "../Icons/zero_flag_48"
+                else productPanelZeroIcon.source = "../Icons/empty_flag_48"
                 break
-            case 3: // WeightParam_TareValue todo
+            case 3: // TareValue todo
                 break
-            case 4: // WeightParam_WeightValue
+            case 4: // WeightValue
                 weightPanelWeightValue.text = value
                 break
-            case 5: // WeightParam_PriceValue
+            case 5: // PriceValue
                 weightPanelPriceValue.text = value
                 break;
-            case 6: // WeightParam_AmountValue
+            case 6: // AmountValue
                 weightPanelAmountValue.text = value
                 break;
-            case 7: // WeightParam_WeightColor
+            case 7: // WeightColor
                 weightPanelWeightValue.color = value
                 break
-            case 8: // WeightParam_PriceColor
+            case 8: // PriceColor
                 weightPanelPriceValue.color = value
                 break
-            case 9: // WeightParam_AmountColor
+            case 9: // AmountColor
                 weightPanelAmountValue.color = value
                 break
-            case 10: // WeightParam_WeightTitle
+            case 10: // WeightTitle
                 weightPanelWeightTitle.text = value
                 break
-            case 11: // WeightParam_PriceTitle
+            case 11: // PriceTitle
                 weightPanelPriceTitle.text = value
                 break
-            case 12: // WeightParam_AmountTitle
+            case 12: // AmountTitle
                 weightPanelAmountTitle.text = value
                 break
-            case 13: // WeightParam_Error
-                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_48"
-                else productPanelAutoWeightIcon.source = "../Icons/empty_48"
+            case 13: // WeightError
+                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_flag_48"
+                else productPanelErrorIcon.source = "../Icons/empty_flag_48"
                 break
-            case 14: // WeightParam_WeightFixed
+            case 14: // WeightFixed
+            case 15: // PrintError
+                break
+            case 16: // AutoPrint
+                if (value === 'true') productPanelAutoPrintIcon.source = "../Icons/auto_flag_48"
+                else productPanelAutoPrintIcon.source = "../Icons/empty_flag_48"
                 break
             }
         }
@@ -92,12 +90,11 @@ Rectangle
         {
             width: flagIconWidth
             height: parent.height
-            color: Material.background
+            color: "transparent"
 
             Column
             {
                 anchors.fill: parent
-                topPadding: Constants.margin / 2
                 spacing: 0
                 padding: 0
 
@@ -107,16 +104,16 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_48"
+                    source: "../Icons/empty_flag_48"
                 }
 
                 Image
                 {
-                    id: productPanelAutoWeightIcon
+                    id: productPanelAutoPrintIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_48"
+                    source: "../Icons/empty_flag_48"
                 }
 
                 Image
@@ -125,7 +122,7 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_48"
+                    source: "../Icons/empty_flag_48"
                 }
 
                 Image
@@ -134,7 +131,7 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_48"
+                    source: "../Icons/empty_flag_48"
                 }
             }
         }
@@ -151,7 +148,7 @@ Rectangle
                 id: weightPanelWeightTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: titleFontSize
-                font { pointSize: titleFontSize; family:'Roboto'; styleName:'Regular' }
+                font { pointSize: titleFontSize }
                 color: Material.color(Material.Grey, Material.Shade400)
             }
 
@@ -160,7 +157,7 @@ Rectangle
                 id: weightPanelWeightValue
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: valueFontSize
-                font { pointSize: valueFontSize; family:'League Gothic'; styleName:'Regular' }
+                font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
             }
         }
@@ -177,7 +174,7 @@ Rectangle
                 id: weightPanelPriceTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: titleFontSize
-                font { pointSize: titleFontSize; family:'Roboto'; styleName:'Regular' }
+                font { pointSize: titleFontSize }
                 color: Material.color(Material.Grey, Material.Shade400)
             }
 
@@ -186,7 +183,7 @@ Rectangle
                 id: weightPanelPriceValue
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: valueFontSize
-                font { pointSize: valueFontSize; family:'League Gothic'; styleName:'Regular' }
+                font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
             }
         }
@@ -203,7 +200,7 @@ Rectangle
                 id: weightPanelAmountTitle
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: titleFontSize
-                font { pointSize: titleFontSize; family:'Roboto'; styleName:'Regular' }
+                font { pointSize: titleFontSize }
                 color: Material.color(Material.Grey, Material.Shade400)
             }
 
@@ -212,7 +209,7 @@ Rectangle
                 id: weightPanelAmountValue
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: valueFontSize
-                font { pointSize: valueFontSize; family:'League Gothic'; styleName:'Regular' }
+                font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
             }
         }

@@ -26,8 +26,9 @@ public:
         POST
     };
     explicit NetServer(QObject *parent = nullptr);
-    ~NetServer() { if (server != nullptr) delete server; }
+    ~NetServer() { stop(); }
     void start(const int);
+    void stop();
     void makeReply(const NetReply&);
     QString version() { return SERVER_VERSION; }
 

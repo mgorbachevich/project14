@@ -8,7 +8,6 @@ import RegisteredTypes 1.0
 Rectangle
 {
     id:  showcasePanel
-    objectName: "showcasePanel"
     color: Material.background
     property int imageSize: (height - Constants.margin * 3 + 1) / 2
 
@@ -72,6 +71,7 @@ Rectangle
         clip: true
         cellWidth: showcasePanel.imageSize + Constants.margin
         cellHeight: showcasePanel.imageSize + Constants.margin
+
         ScrollBar.vertical: ScrollBar
         {
             width: Constants.margin

@@ -6,7 +6,7 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
 {
     qDebug() << "@@@@@ ProductPanelModel::update " << product.at(ProductDBTable::Code).toString();
     QStringList ss;
-    ss << "<b>" + product.at(ProductDBTable::Name).toString() +"</b>" << "";
+    //ss << "<b>" + product.at(ProductDBTable::Name).toString() +"</b>" << "";
     for (int i = 0; i < product.count() && i < productTable->columnCount(); i++)
     {
         QString s = productTable->columnTitle(i) + ":  ";

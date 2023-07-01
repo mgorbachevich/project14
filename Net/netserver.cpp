@@ -8,10 +8,21 @@ NetServer::NetServer(QObject *parent): QObject{parent}
     qDebug() << "@@@@@ NetServer::NetServer";
 }
 
+void NetServer::stop()
+{
+    if (server != nullptr)
+    {
+        qDebug() << "@@@@@ NetServer::stop";
+        delete server;
+        server = nullptr;
+    }
+}
+
 void NetServer::start(const int port)
 {
-    if (server != nullptr) delete server;
-    server = new QHttpServer(this);
+    qDebug() << "@@@@@ NetServer::start";
+    stop();
+    server = new QHttpServer();
     if(server->listen(QHostAddress::Any, port) != 0)
         qDebug() << "@@@@@ NetServer::start: listening...";
     else

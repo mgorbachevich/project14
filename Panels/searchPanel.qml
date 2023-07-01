@@ -8,7 +8,6 @@ import RegisteredTypes 1.0
 Rectangle
 {
     id:  searchPanel
-    objectName: "searchPanel"
     color: Material.background
     property int filterWidth: width * 0.25
 
@@ -38,43 +37,39 @@ Rectangle
         columns: 3
         rows: 3
 
-        Text
+        Rectangle
         {
-            id: searchPanelTitle
             Layout.column: 0
             Layout.row: 0
             Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignHCenter
-            font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Italic' }
-            color: Material.color(Material.Grey, Material.Shade600)
-            text: qsTr("Поиск товаров")
+            Layout.fillWidth: parent
+            color: "transparent"
+
+            CardTitleText
+            {
+                text: qsTr("Поиск товаров")
+            }
         }
 
-        Button
+        RoundIconButton
         {
             id: searchPanelOptionsButton
             Layout.column: 2
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
             icon.source: "../Icons/settings_black_48"
-            leftInset: 0
-            topInset: 0
-            rightInset: 0
-            bottomInset: 0
-            Material.background: Material.primary
             onClicked: app.onSearchOptionsClicked() // AppManager's slot
         }
 
         Rectangle
         {
+            id: searchPanelResultListRectangle
             Layout.column: 0
             Layout.row: 1
             Layout.rowSpan: 2
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            color: Material.color(Material.Grey, Material.Shade50)
+            color: "transparent"
 
             ListView
             {
@@ -82,6 +77,7 @@ Rectangle
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+
                 ScrollBar.vertical: ScrollBar
                 {
                     width: Constants.margin
@@ -90,18 +86,26 @@ Rectangle
                 }
 
                 model: searchPanelModel
-                delegate: Text
+                delegate: Label
                 {
                     padding: Constants.margin
-                    font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                    width: searchPanelResultListRectangle.width
+                    font { pointSize: Constants.normalFontSize }
+                    color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value // Roles::ValueRole
+                    background: Rectangle
+                    {
+                        color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
+                                                 Material.color(Material.Grey, Material.Shade200)
+                    }
+
                     MouseArea
                     {
                         anchors.fill: parent
                         onClicked: app.onSearchResultClicked(index) // AppManager's slot
                     }
-                 }
-             }
+                }
+            }
         }
 
         TextField
@@ -112,7 +116,9 @@ Rectangle
             Layout.columnSpan: 2
             Layout.preferredWidth: filterWidth
             Layout.bottomMargin: Constants.margin
-            font { pointSize: Constants.normalFontSize; family: "Roboto"; styleName:'Regular' }
+            Material.accent: Material.Orange
+            color: Material.color(Material.Grey, Material.Shade900)
+            font { pointSize: Constants.normalFontSize }
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
             //onTextEdited: app.onSearchFilterEdited(text) // AppManager's slot
@@ -175,7 +181,7 @@ Rectangle
             Layout.preferredWidth: filterWidth
             Layout.fillHeight: parent
             Layout.alignment: Qt.AlignTop
-            color: Material.color(Material.Grey, Material.Shade50)
+            color: "transparent"
 
             ListView
             {
@@ -184,24 +190,32 @@ Rectangle
                 orientation: Qt.Vertical
                 clip: true
                 currentIndex: 0
-                highlight: Rectangle { color: Material.primary }
-                /*
+                //highlight: Rectangle { color: Material.color(Material.BlueGrey, Material.Shade100) }
+
                 ScrollBar.vertical: ScrollBar
                 {
                     width: Constants.margin
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
-                */
 
                 model: searchFilterModel
-                delegate: Text
+                delegate: Label
                 {
-                    //width: parent.width
+                    width: parent.width
                     padding: Constants.margin
-                    font { pointSize: Constants.normalFontSize; family: "Roboto" }
+                    font
+                    {
+                        pointSize: Constants.normalFontSize;
+                        styleName: searchPanelFilterList.currentIndex === index ? 'Bold' : 'Regular'
+                    }
                     text: model.value // Roles::ValueRole
-                    //color: searchPanelFilterList.currentIndex === index ? "white" : "black"
+                    color: searchPanelFilterList.currentIndex === index ? Constants.colorBlack : Material.color(Material.BlueGrey, Material.Shade600)
+                    background: Rectangle
+                    {
+                        color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
+                                                 Material.color(Material.Grey, Material.Shade200)
+                    }
 
                     MouseArea
                     {

@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.26"
+#define APP_VERSION "1.27"
 
 #define DB_EMULATION
 #define CHECK_AUTHORIZATION
@@ -64,6 +64,7 @@ enum EquipmentParam
     EquipmentParam_WeightError = 13,
     EquipmentParam_WeightFixed = 14,
     EquipmentParam_PrintError = 15,
+    EquipmentParam_AutoPrint = 16,
 };
 
 #endif // CONSTANTS_H

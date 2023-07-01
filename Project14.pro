@@ -104,11 +104,15 @@ RESOURCES += \
     main.qml \
     Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
+    Panels/CardText.qml \
+    Panels/CardTitleText.qml \
     Panels/confirmationPanel.qml \
     Panels/inputPiecesPanel.qml \
     Panels/inputSettingPanel.qml \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
+    Panels/RoundIconButton.qml \
+    Panels/RoundTextButton.qml \
     Panels/searchPanel.qml \
     Panels/searchOptionsPanel.qml \
     Panels/settingsPanel.qml \
@@ -124,21 +128,19 @@ RESOURCES += \
     Resources/LeagueGothic-Regular.otf \
     Icons/arrow_left_black_48.png \
     Icons/arrow_up_black_48.png \
-    Icons/build_black_48.png \
     Icons/close_black_48.png \
-    Icons/error_48.png \
+    Icons/error_flag_48.png \
     Icons/info_outline_black_48.png \
     Icons/lock_black_48.png \
     Icons/log_black_48.png \
     Icons/menu_black_48.png \
     Icons/print_black_48.png \
     Icons/red_48.png \
-    Icons/quantity_black_48.png \
     Icons/settings_black_48.png \
-    Icons/0_48.png \
-    Icons/tare_48.png \
-    Icons/weight_48.png \
+    Icons/zero_flag_48.png \
+    Icons/tare_flag_48.png \
     Icons/empty_48.png \
+    Icons/empty_flag_48.png \
     Images/image_dummy.png \
     Images/image1.png \
     Images/image2.png \
@@ -166,6 +168,8 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
+
+DISTFILES +=
 
 
 
