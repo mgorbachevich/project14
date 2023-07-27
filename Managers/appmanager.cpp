@@ -144,7 +144,7 @@ double AppManager::price(const DBRecord& product)
     return Tools::priceToDouble(product[p].toString(), pp);
 }
 
-void AppManager::showCurrentProduct()
+void AppManager::showCurrentProduct() // Вывод на экран панели выбранного продукта
 {
     QString productCode = currentProduct[ProductDBTable::Code].toString();
     qDebug() << "@@@@@ AppManager::showCurrentProduct " << productCode;
@@ -175,6 +175,8 @@ void AppManager::onProductPanelPiecesClicked()
 
 void AppManager::filteredSearch()
 {
+    // Формирование запросов в БД в зависимости от параметров поиска
+
     QString& v = searchFilterModel->filterValue;
     qDebug() << "@@@@@ AppManager::filteredSearch " << searchFilterModel->index << v;
     switch(searchFilterModel->index)
@@ -194,6 +196,8 @@ void AppManager::filteredSearch()
 
 void AppManager::onSearchFilterEdited(const QString& value)
 {
+    // Изменился шаблон поиска
+
     qDebug() << "@@@@@ AppManager::onSearchFilterEdited " << value;
     searchFilterModel->filterValue = value;
     filteredSearch();
@@ -201,6 +205,8 @@ void AppManager::onSearchFilterEdited(const QString& value)
 
 void AppManager::onSearchFilterClicked(const int index)
 {
+    // Изменилось поле поиска (код, штрих-код...)
+
     qDebug() << "@@@@@ AppManager::onSearchFilterClicked " << index;
     searchFilterModel->index = (SearchFilterModel::FilterIndex)index;
     filteredSearch();
@@ -208,12 +214,16 @@ void AppManager::onSearchFilterClicked(const int index)
 
 void AppManager::onTableBackClicked()
 {
+    // Переход вверх по иерархическому дереву групп товаров
+
     qDebug() << "@@@@@ AppManager::onTableBackClicked";
     if (tablePanelModel->groupUp()) updateTablePanel(false);
 }
 
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
 {
+    // Настройка изменилась
+
     qDebug() << "@@@@@ AppManager::onSettingInputClosed " << settingItemCode << value;
     DBRecord* r = settings.getItemByCode(settingItemCode);
     if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
@@ -253,12 +263,16 @@ void AppManager::onPrinterMessage(const QString &s)
 
 void AppManager::onLoadResult(const qint64 requestId, const QString &json)
 {
+    // БД завершила загрузку/выгрузку. Формируем ответ клиенту
+
     qDebug() << "@@@@@ AppManager::onLoadResult " << requestId << json;
-    netServer->makeReply(NetReply(requestId, json));
+    netServer->addReply(NetReply(requestId, json));
 }
 
 void AppManager::onNetRequest(const int requestType, const NetReply& p)
 {
+    // Получен запрос от клиета на загрузку/выгрузку. Формируем запрос в БД
+
     const qint64 requestId = p.first;
     const QString& query = p.second;
     qDebug() << (QString("@@@@@ AppManager::onNetRequest: request = \n%1, %2").arg(QString::number(requestId), query));
@@ -363,6 +377,8 @@ void AppManager::onPopupOpened()
 
 void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRecordList& records, const bool ok)
 {
+    // Получен результ из БД
+
     qDebug() << "@@@@@ AppManager::onDBRequestResult " << selector;
     if (!ok)
     {
@@ -376,7 +392,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     // Обновление настроек:
         settings.updateAllItems(records);
         settingsPanelModel->update(settings);
-        if(started) startEquipment();
+        if(started) runEquipment(true);
         emit settingsChanged();
         break;
 
@@ -567,7 +583,7 @@ void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
     started = false;
-    stopEquipment();
+    runEquipment(false);
     emit showAuthorizationPanel(appInfo.all());
     emit log(LogType_Warning, LogSource_User, "Авторизация");
     emit selectFromDB(DataBase::GetUserNames, "");
@@ -584,6 +600,8 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
 
 void AppManager::checkAuthorization(const DBRecordList& dbUsers)
 {
+    // Введены логин и пароль. Проверка
+
     qDebug() << "@@@@@ AppManager::checkAuthorization";
     QString title = "Авторизация";
     QString error = "";
@@ -618,7 +636,7 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
     if(!started)
     {
         started = true;
-        startEquipment();
+        runEquipment(true);
         // showMessage(title, "Успешно!");
         emit authorizationSucceded();
         refreshAll();
@@ -630,6 +648,8 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
 
 void AppManager::refreshAll()
 {
+    // Обновить всё на экране
+
     qDebug() << "@@@@@ AppManager::refreshAll";
     emit showAdminMenu(UserDBTable::isAdmin(user));
     emit selectFromDB(DataBase::GetShowcaseProducts, "");
@@ -652,6 +672,8 @@ void AppManager::showMessage(const QString &title, const QString &text)
 
 void AppManager::resetProduct()
 {
+    // Сбросить выбранный продукт
+
     qDebug() << "@@@@@ AppManager::resetProduct";
     currentProduct.clear();
     weightManager->setPieces(Tools::stringToInt(1));
@@ -659,22 +681,29 @@ void AppManager::resetProduct()
     updateWeightPanel();
 }
 
-void AppManager::startEquipment()
+void AppManager::runEquipment(const bool start)
 {
-    netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
-    weightManager->start();
-    printManager->start();
-}
-
-void AppManager::stopEquipment()
-{
-    netServer->stop();
-    weightManager->stop();
-    printManager->stop();
+    // Запустить/остановить оборудование
+    if(start)
+    {
+        netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
+        int e1 = weightManager->start();
+        if(e1 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!").arg(e1));
+        int e2 = printManager->start();
+        if(e2 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка модуля печати %1!").arg(e2));
+    }
+    else
+    {
+        netServer->stop();
+        weightManager->stop();
+        printManager->stop();
+    }
 }
 
 void AppManager::showUsers(const DBRecordList& records)
 {
+    // Обновить список пользователей на экране авторизации
+
     DBRecordList users;
     if (records.isEmpty()) // В базе нет пользователей. Добавить администратора по умолчанию:
         users << UserDBTable::defaultAdmin();
@@ -701,6 +730,8 @@ void AppManager::showUsers(const DBRecordList& records)
 
 void AppManager::onPrint()
 {
+    // Печатаем этикетку
+
     qDebug() << "@@@@@ AppManager::onPrint ";
     printManager->print(db,
                         user,
@@ -712,6 +743,8 @@ void AppManager::onPrint()
 
 void AppManager::onPrinted(const DBRecord& newTransaction)
 {
+    // Принтер ответил что этикетка напечатана
+
     qDebug() << "@@@@@ AppManager::onPrinted";
     emit log(LogType_Error, LogSource_Print, QString("Печать. Код товара: %1. Вес/Количество: %2").arg(
                 newTransaction[TransactionDBTable::ItemCode].toString(),
@@ -723,6 +756,8 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
 
 void AppManager::onEquipmentParamChanged(const int param, const QString& value, const QString& description)
 {
+    // Изменился параметр оборудования
+
     qDebug() << "@@@@@ AppManager::onEquipmentParamChanged" << param << value << description;
     switch (param)
     {
@@ -750,6 +785,8 @@ void AppManager::onEquipmentParamChanged(const int param, const QString& value, 
 
 void AppManager::updateWeightPanel()
 {
+    // Обновить весовую панель (вес, цена...)
+
     QString c0 = "#424242";
     QString c1 = "#fafafa";
     const bool isProduct = !currentProduct.empty();

@@ -49,7 +49,6 @@ public:
 
     explicit DataBase(const QString&, Settings&, QObject*);
     ~DataBase() { db.close(); }
-    virtual bool start();
     DBTable* getTableByName(const QString&);
     void selectAll(DBTable*, DBRecordList&);
     bool removeAll(DBTable*);
@@ -82,7 +81,7 @@ signals:
     void loadResult(const qint64, const QString&);
 
 public slots:
-    void onStart() { start(); }
+    void onStart();
     void onSelect(const DataBase::Selector, const QString&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);

@@ -33,9 +33,9 @@ DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *p
     tables.append(new LogDBTable(DBTABLENAME_LOG, this));
 }
 
-bool DataBase::start()
+void DataBase::onStart()
 {
-    qDebug() << "@@@@@ DataBase::onStart";
+    qDebug() << "@@@@@ DataBase::start";
 #ifdef DB_EMULATION
     QFile(filePath).remove();
 #endif
@@ -66,7 +66,7 @@ bool DataBase::start()
         parser.parseAllTables(this, Tools::readTextFile(":/Text/json_messages.txt"));
         emit started();
     }
-    return ok && opened;
+    //return ok && opened;
 }
 
 bool DataBase::open()
@@ -258,6 +258,8 @@ void DataBase::clearLog()
 
 void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
 {
+    // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
+
     qDebug() << "@@@@@ DataBase::onSelect: selector =" << selector;
     DBRecordList resultRecords;
     switch(selector)
@@ -403,6 +405,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
 
 void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordList& param)
 {
+    // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
+
     qDebug() << "@@@@@ DataBase::onSelectByList: selector =" << selector;
     DBRecordList resultRecords;
     switch(selector)
@@ -454,6 +458,8 @@ void DataBase::onLog(const int type, const int source, const QString &comment)
 
 void DataBase::onUpload(const qint64 requestId, const QString &tableName, const QString &codeList)
 {
+    // Выгрузка из таблицы по списку кодов
+
     qDebug() << "@@@@@ DataBase::onUpload" << requestId << tableName << codeList;
     saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1").arg(tableName));
 
@@ -530,8 +536,9 @@ void DataBase::onUpload(const qint64 requestId, const QString &tableName, const 
 
 void DataBase::onDownload(const qint64 requestId, const QString &json)
 {
-    qDebug() << "@@@@@ DataBase::onDownload:" << requestId << json;
+    // Загрузка в БД
 
+    qDebug() << "@@@@@ DataBase::onDownload:" << requestId << json;
     int result; // For reply
     QString description; // For reply
     JSONParser parser;

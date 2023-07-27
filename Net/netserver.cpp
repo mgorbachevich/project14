@@ -30,34 +30,38 @@ void NetServer::start(const int port)
 
     server->route("/getData", [this] (const QHttpServerRequest &request) // GET
     {
-        const QString data = request.query().toString();
-        const qint64 id = Tools::currentDateTimeToInt();
+        const qint64 id = Tools::currentDateTimeToInt(); // id запроса, чтобы не перепутать
+        const QString data = request.query().toString(); // Данные запроса
         qDebug() << QString("@@@@@ NetServer::start: route query \n%1").arg(data);
         emit netRequest(RequestType::GET, NetReply(id, data));
-        return makeResponse(id);
+        return waitForReplyAndMakeResponse(id);
     });
     server->route("/setData", [this] (const QHttpServerRequest &request) // POST
     {
-        const QString data = request.body();
-        const qint64 id = Tools::currentDateTimeToInt();
+        const qint64 id = Tools::currentDateTimeToInt(); // id запроса, чтобы не перепутать
+        const QString data = request.query().toString(); // Данные запроса
         qDebug() << QString("@@@@@ NetServer::start: route body \n%1").arg(data);
         emit netRequest(RequestType::POST, NetReply(id, data));
-        return makeResponse(id);
+        return waitForReplyAndMakeResponse(id);
     });
 }
 
-void NetServer::makeReply(const NetReply& r)
+void NetServer::addReply(const NetReply& r)
 {
-    qDebug() << "@@@@@ NetServer::makeReply: " << r.first << r.second;
+    // Готов ответ БД на запрос клиента. Добавляем в список готовых ответов
+
+    qDebug() << "@@@@@ NetServer::addReply: " << r.first << r.second;
     replies.append(r);
 }
 
-QHttpServerResponse NetServer::makeResponse(qint64 id)
+QHttpServerResponse NetServer::waitForReplyAndMakeResponse(qint64 id)
 {
+    // Дожидаемся ответа от БД на запрос и формируем ответ клиенту
+
     int now = Tools::currentDateTimeToInt();
     bool done = false;
     QString response;
-    while (!done) // Wait for reply
+    while (!done) // Wait for reply (SERVER_WAIT_FOR_REPLY_MSEC)
     {
         for (int i = 0; !done && i < replies.count(); i++)
         {
@@ -71,7 +75,7 @@ QHttpServerResponse NetServer::makeResponse(qint64 id)
         if (!done && Tools::currentDateTimeToInt() < now + SERVER_WAIT_FOR_REPLY_MSEC)
             QThread::msleep(SERVER_WAIT_FOR_REPLY_SLEEP_MSEC);
     }
-    qDebug() << QString("@@@@@ NetServer::makeResponse: %1 \n%2").arg(QString::number(id), response);
+    qDebug() << QString("@@@@@ NetServer::waitForReplyAndMakeResponse: %1 \n%2").arg(QString::number(id), response);
     QHttpServerResponse r(response);
     r.setHeader("Content-Type", "application/json");
     return r;

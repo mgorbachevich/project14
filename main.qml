@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "constants.js" as Constants
-import RegisteredTypes 1.0
+import RegisteredTypes
 
 ApplicationWindow
 {

@@ -54,8 +54,7 @@ private:
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showMessage(const QString&, const QString&);
     void resetProduct();
-    void startEquipment();
-    void stopEquipment();
+    void runEquipment(const bool);
 
     QQmlContext* context = nullptr;
     bool started = false;

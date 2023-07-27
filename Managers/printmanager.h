@@ -14,7 +14,7 @@ class PrintManager : public QObject
 
 public:
     explicit PrintManager(QObject*);
-    void start();
+    int start();
     void stop();
     QString version();
     void print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);

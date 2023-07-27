@@ -29,11 +29,11 @@ public:
     ~NetServer() { stop(); }
     void start(const int);
     void stop();
-    void makeReply(const NetReply&);
+    void addReply(const NetReply&);
     QString version() { return SERVER_VERSION; }
 
 protected:
-    QHttpServerResponse makeResponse(qint64);
+    QHttpServerResponse waitForReplyAndMakeResponse(qint64);
 
     QHttpServer* server = nullptr;
     QList<NetReply> replies;

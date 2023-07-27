@@ -6,6 +6,9 @@
 #include "tools.h"
 #include "database.h"
 
+#define PRINT_MANAGER_URL "serial://ttyS8?baudrate=115200&timeout=100"
+//#define PRINT_MANAGER_URL "demo://COM3?baudrate=115200&timeout=100"
+
 PrintManager::PrintManager(QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ PrintManager::PrintManager";
@@ -14,16 +17,18 @@ PrintManager::PrintManager(QObject *parent): QObject(parent)
     connect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
 }
 
-void PrintManager::start()
+int PrintManager::start()
 {
     qDebug() << "@@@@@ PrintManager::start";
+    int error = 0;
     if (slpa != nullptr && !started)
     {
-        int error = slpa->connectDevice("demo://COM3?baudrate=115200&timeout=100");
-        slpa->startPolling(200);
+        error = slpa->connectDevice(PRINT_MANAGER_URL);
         started = (error == 0);
+        if(started) slpa->startPolling(200);
         qDebug() << "@@@@@ PrintManager::start error = " << error;
     }
+    return error;
 }
 
 void PrintManager::stop()
@@ -62,7 +67,7 @@ void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& pro
     }
     else
     {
-        QString s = QString("Ошибка печати %1").arg(error);
+        //QString s = QString("Ошибка печати %1").arg(error);
         //emit showMessageBox("Внимание!", s, true);
     }
 }
