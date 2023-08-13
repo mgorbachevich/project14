@@ -16,6 +16,7 @@ Rectangle
     {
         console.debug("@@@@@ showcasePanel Keys.onPressed ", JSON.stringify(event));
         event.accepted = true;
+        app.onUserAction(); // AppManager's slot
         switch (event.key)
         {
             case Qt.Key_F9: // Ключ
@@ -28,10 +29,10 @@ Rectangle
                 app.onWeightParamClicked(0);
                 break;
             case Qt.Key_Right:
-                app.onShowMainPage(1)
+                app.onSwipeMainPage(1)
                 break;
             case Qt.Key_Q:
-                app.onShowMainPage(2)
+                app.onSwipeMainPage(2)
                 break;
             case Qt.Key_Up:
                 if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, Constants.flickVelocity)
@@ -47,14 +48,14 @@ Rectangle
         }
     }
 
-    Connections // Slot for signal AppManager::activateMainPage:
+    Connections // Slot for signal AppManager::showMainPage:
     {
         target: app
-        function onActivateMainPage(index)
+        function onShowMainPage(index)
         {
             if (index === 0)
             {
-                console.debug("@@@@@ showcasePanel onActivateMainPage");
+                console.debug("@@@@@ showcasePanel onShowMainPage");
                 showcasePanel.forceActiveFocus()
             }
         }
@@ -88,7 +89,11 @@ Rectangle
             MouseArea
             {
                 anchors.fill: parent
-                onClicked: app.onShowcaseClicked(index) // AppManager's slot
+                onClicked:
+                {
+                    app.onUserAction(); // AppManager's slot
+                    app.onShowcaseClicked(index) // AppManager's slot
+                }
             }
         }
     }

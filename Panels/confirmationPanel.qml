@@ -42,6 +42,7 @@ Popup
             {
                 console.debug("@@@@@ confirmationPanel Keys.onPressed ", JSON.stringify(event))
                 event.accepted = true;
+                app.onUserAction(); // AppManager's slot
                 switch (event.key)
                 {
                     case Qt.Key_Escape: // Круглая стрелка
@@ -102,6 +103,7 @@ Popup
                     text: qsTr(" ДА ")
                     onClicked:
                     {
+                        app.onUserAction(); // AppManager's slot
                         app.onConfirmationClicked(dialogSelector) // AppManager's slot
                         confirmationPanel.close()
                     }
@@ -112,7 +114,11 @@ Popup
                     width: Constants.buttonSize * 3 / 2
                     height: Constants.buttonSize
                     text: qsTr("НЕТ")
-                    onClicked: confirmationPanel.close()
+                    onClicked:
+                    {
+                        app.onUserAction(); // AppManager's slot
+                        confirmationPanel.close()
+                    }
                 }
             }
         }

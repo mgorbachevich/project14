@@ -234,16 +234,16 @@ void DataBase::saveLog(const int type, const int source, const QString &comment)
         qDebug() << "@@@@@ DataBase::saveLog: " << type << source << comment;
         LogDBTable* t = (LogDBTable*)getTableByName(DBTABLENAME_LOG);
         if (t != nullptr && insertRecord(t, t->createRecord(type, source, comment)))
-            clearLog();
+            removeOldLogRecords();
         else
             qDebug() << "@@@@@ DataBase::saveLog ERROR";
     }
 }
 
-void DataBase::clearLog()
+void DataBase::removeOldLogRecords()
 {
     if (!opened) return;
-    qDebug() << "@@@@@ DataBase::clearLog";
+    qDebug() << "@@@@@ DataBase::removeOldLogRecords";
     DBTable* t = getTableByName(DBTABLENAME_LOG);
     qint64 logDuration = settings.getItemIntValue(SettingDBTable::SettingCode_LogDuration);
     if(t != nullptr && logDuration > 0) // Remove old records

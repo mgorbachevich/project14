@@ -21,7 +21,11 @@ Popup
     Connections // Slot for signal AppManager::authorizationSucceded:
     {
         target: app
-        function onAuthorizationSucceded() { authorizationPanel.close() }
+        function onAuthorizationSucceded()
+        {
+            app.onUserAction(); // AppManager's slot
+            authorizationPanel.close()
+        }
     }
 
     Connections // Slot for signal AppManager::setCurrentUser:
@@ -89,6 +93,7 @@ Popup
                         onClicked:
                         {
                             console.debug("@@@@@ authorizationPanel.loginComboBox.onClicked ", index)
+                            app.onUserAction(); // AppManager's slot
                             loginComboBox.currentIndex = index
                             loginComboBox.displayText = text
                             loginComboBox.popup.close()
@@ -122,6 +127,7 @@ Popup
                 {
                     console.debug("@@@@@ passwordTextField Keys.onPressed ", JSON.stringify(event))
                     event.accepted = true;
+                    app.onUserAction(); // AppManager's slot
                     switch (event.key)
                     {
                         case Qt.Key_0:
@@ -156,7 +162,11 @@ Popup
             {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("ПРОДОЛЖИТЬ")
-                onClicked: app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text) // AppManager's slot
+                onClicked:
+                {
+                    app.onUserAction(); // AppManager's slot
+                    app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text) // AppManager's slot
+                }
             }
         }
 

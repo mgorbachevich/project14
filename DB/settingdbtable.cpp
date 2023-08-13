@@ -76,6 +76,7 @@ const DBRecordList SettingDBTable::checkList(const DBRecordList& records)
     checkDefault(SettingCode_ScalesNumber, defaultRecords, result);
     checkDefault(SettingCode_TCPPort, defaultRecords, result);
     checkDefault(SettingCode_PointPosition, defaultRecords, result);
+    checkDefault(SettingCode_Blocking, defaultRecords, result);
     checkDefault(SettingCode_ProductReset, defaultRecords, result);
     checkDefault(SettingCode_ProductResetTime, defaultRecords, result);
     checkDefault(SettingCode_LogDuration, defaultRecords, result);

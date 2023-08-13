@@ -14,6 +14,7 @@ Rectangle
     {
         console.debug("@@@@@ tablePanel Keys.onPressed ", JSON.stringify(event));
         event.accepted = true;
+        app.onUserAction(); // AppManager's slot
         switch (event.key)
         {
             case Qt.Key_F9: // Ключ
@@ -26,11 +27,11 @@ Rectangle
                 app.onWeightParamClicked(0);
                 break;
             case Qt.Key_Left:
-                app.onShowMainPage(0)
+                app.onSwipeMainPage(0)
                 break;
             case Qt.Key_Right:
             case Qt.Key_Q:
-                app.onShowMainPage(2)
+                app.onSwipeMainPage(2)
                 break;
             case Qt.Key_Up:
                 if (!tablePanelResultList.atYBeginning) tablePanelResultList.flick(0, Constants.flickVelocity)
@@ -46,14 +47,14 @@ Rectangle
         }
     }
 
-    Connections // Slot for signal AppManager::activateMainPage:
+    Connections // Slot for signal AppManager::showMainPage:
     {
         target: app
-        function onActivateMainPage(index)
+        function onShowMainPage(index)
         {
             if (index === 1)
             {
-                console.debug("@@@@@ tablePanel onActivateMainPage");
+                console.debug("@@@@@ tablePanel onShowMainPage");
                 tablePanel.forceActiveFocus()
             }
         }
@@ -95,7 +96,11 @@ Rectangle
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             icon.source: "../Icons/empty_48"
-            onClicked: app.onTableBackClicked() // AppManager's slot
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onTableBackClicked() // AppManager's slot
+            }
         }
 
         Text
@@ -117,7 +122,11 @@ Rectangle
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
             icon.source: "../Icons/settings_black_48"
-            onClicked: app.onTableOptionsClicked() // AppManager's slot
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onTableOptionsClicked() // AppManager's slot
+            }
         }
 
         Rectangle
@@ -135,6 +144,7 @@ Rectangle
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+                onFlickStarted: app.onUserAction() // AppManager's slot
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -160,7 +170,11 @@ Rectangle
                     MouseArea
                     {
                         anchors.fill: parent
-                        onClicked: app.onTableResultClicked(index) // AppManager's slot
+                        onClicked:
+                        {
+                            app.onUserAction(); // AppManager's slot
+                            app.onTableResultClicked(index) // AppManager's slot
+                        }
                     }
                 }
             }

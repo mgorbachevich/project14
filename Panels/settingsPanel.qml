@@ -33,6 +33,7 @@ Popup
         {
             console.debug("@@@@@ settingPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
+            app.onUserAction(); // AppManager's slot
             switch (event.key)
             {
                 case Qt.Key_Up:
@@ -81,7 +82,11 @@ Popup
             Layout.row: 0
             icon.source: "../Icons/close_black_48"
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-            onClicked: settingPanel.close()
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                settingPanel.close()
+            }
         }
 
         Rectangle
@@ -99,6 +104,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+                onFlickStarted: app.onUserAction() // AppManager's slot
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -123,7 +129,11 @@ Popup
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onSettingsItemClicked(index) // AppManager's slot
+                            onClicked:
+                            {
+                                app.onUserAction(); // AppManager's slot
+                                app.onSettingsItemClicked(index) // AppManager's slot
+                            }
                         }
                     }
 
@@ -137,7 +147,11 @@ Popup
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onSettingsItemClicked(index) // AppManager's slot
+                            onClicked:
+                            {
+                                app.onUserAction(); // AppManager's slot
+                                app.onSettingsItemClicked(index) // AppManager's slot
+                            }
                         }
                     }
                 }

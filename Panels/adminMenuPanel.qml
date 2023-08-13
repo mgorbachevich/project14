@@ -15,20 +15,32 @@ Column
     {
         anchors.horizontalCenter: parent.horizontalCenter
         icon.source: "../Icons/settings_black_48"
-        onClicked: app.onAdminSettingsClicked() // AppManager's slot
+        onClicked:
+        {
+            app.onUserAction(); // AppManager's slot
+            app.onAdminSettingsClicked() // AppManager's slot
+        }
     }
 
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
         icon.source: "../Icons/lock_black_48"
-        onClicked: app.onLockClicked() // AppManager's slot
+        onClicked:
+        {
+            app.onUserAction(); // AppManager's slot
+            app.onLockClicked() // AppManager's slot
+        }
     }
 
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
         icon.source: "../Icons/log_black_48"
-        onClicked: app.onViewLogClicked() // AppManager's slot
+        onClicked:
+        {
+            app.onUserAction(); // AppManager's slot
+            app.onViewLogClicked() // AppManager's slot
+        }
     }
 }

@@ -67,6 +67,7 @@ Popup
                 icon.source: "../Icons/close_black_48"
                 onClicked:
                 {
+                    app.onUserAction(); // AppManager's slot
                     app.onPiecesInputClosed(inputPiecesPanelText.text) // AppManager's slot
                     inputPiecesPanel.close()
                 }
@@ -98,6 +99,7 @@ Popup
                     {
                         console.debug("@@@@@ inputPiecesPanelText Keys.onPressed ", JSON.stringify(event))
                         event.accepted = true;
+                        app.onUserAction(); // AppManager's slot
                         switch (event.key)
                         {
                             case Qt.Key_0:
@@ -146,6 +148,7 @@ Popup
                     text: qsTr("-")
                     onClicked:
                     {
+                        app.onUserAction(); // AppManager's slot
                         if (parseInt(inputPiecesPanelText.text) > 1)
                             inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) - 1
                     }
@@ -156,7 +159,11 @@ Popup
                     width: Constants.buttonSize
                     font { pointSize: Constants.hugeFontSize }
                     text: qsTr("+")
-                    onClicked: inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) + 1
+                    onClicked:
+                    {
+                        app.onUserAction(); // AppManager's slot
+                        inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) + 1
+                    }
                 }
             }
         }

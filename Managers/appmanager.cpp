@@ -30,14 +30,15 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ AppManager::AppManager";
     this->context = context;
-
     user = UserDBTable::defaultAdmin();
     db = new DataBase(DB_FILENAME, settings, this);
     dbThread = new DBThread(db, this);
     netServer = new NetServer(this);
     weightManager = new WeightManager(this);
     printManager = new PrintManager(this);
+    QTimer *timer = new QTimer(this);
 
+    connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
     connect(this, &AppManager::start, db, &DataBase::onStart);
     connect(this, &AppManager::transaction, db, &DataBase::onTransaction);
     connect(this, &AppManager::log, db, &DataBase::onLog);
@@ -84,6 +85,8 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
 
     dbThread->start();
     QTimer::singleShot(10, this, &AppManager::start);
+    onUserAction();
+    timer->start(APP_TIMER_MSEC);
 }
 
 AppManager::~AppManager()
@@ -95,6 +98,7 @@ void AppManager::onDBStarted()
 {
     //showToast("", "Инициализация");
     qDebug() << "@@@@@ AppManager::onDBStarted";
+    onUserAction();
     settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
     settingGroupsPanelModel->update(settings);
     startAuthorization();
@@ -168,9 +172,14 @@ void AppManager::onProductDescriptionClicked()
     emit selectFromDB(DataBase::GetMessageByResourceCode, currentProduct[ProductDBTable::MessageCode].toString());
 }
 
+void AppManager::onProductPanelCloseClicked()
+{
+    resetProduct();
+}
+
 void AppManager::onProductPanelPiecesClicked()
 {
-    emit showPiecesInputBox(weightManager->getPieces());
+   emit showPiecesInputBox(weightManager->getPieces());
 }
 
 void AppManager::filteredSearch()
@@ -203,6 +212,11 @@ void AppManager::onSearchFilterEdited(const QString& value)
     filteredSearch();
 }
 
+void AppManager::onSearchOptionsClicked()
+{
+    emit showSearchOptions();
+}
+
 void AppManager::onSearchFilterClicked(const int index)
 {
     // Изменилось поле поиска (код, штрих-код...)
@@ -218,6 +232,11 @@ void AppManager::onTableBackClicked()
 
     qDebug() << "@@@@@ AppManager::onTableBackClicked";
     if (tablePanelModel->groupUp()) updateTablePanel(false);
+}
+
+void AppManager::onTableOptionsClicked()
+{
+    emit showTableOptions();
 }
 
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
@@ -252,7 +271,7 @@ void AppManager::onMainPageChanged(const int index)
 {
     qDebug() << "@@@@@ AppManager::onMainPageChanged " << index;
     mainPageIndex = index;
-    emit activateMainPage(mainPageIndex);
+    emit showMainPage(mainPageIndex);
 }
 
 void AppManager::onPrinterMessage(const QString &s)
@@ -364,7 +383,8 @@ void AppManager::onPopupClosed()
     if (--openedPopupCount <= 0)
     {
         openedPopupCount = 0;
-        emit activateMainPage(mainPageIndex);
+        emit showMainPage(mainPageIndex);
+        authorizationOpened = false;
     }
     qDebug() << "@@@@@ AppManager::onPopupClosed " << openedPopupCount;
 }
@@ -537,6 +557,15 @@ void AppManager::onTableResultClicked(const int index)
     }
 }
 
+void AppManager::onTimer()
+{
+    quint64 dt = Tools::currentDateTimeToInt() - userActionTime; // минуты
+    quint64 bt = settings.getItemIntValue(SettingDBTable::SettingCode_Blocking); // минуты
+    qDebug() << "@@@@@ AppManager::onTimer " << dt << bt * 1000 * 60;
+    if(!authorizationOpened && bt > 0 && bt * 1000 * 60 < dt)
+        startAuthorization();
+}
+
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
@@ -569,6 +598,11 @@ void AppManager::onShowcaseClicked(const int index)
     showCurrentProduct();
 }
 
+void AppManager::onSwipeMainPage(const int page)
+{
+    emit showMainPage(page);
+}
+
 void AppManager::updateTablePanel(const bool root)
 {
     qDebug() << "@@@@@ AppManager::updateTablePanel";
@@ -585,6 +619,7 @@ void AppManager::startAuthorization()
     started = false;
     runEquipment(false);
     emit showAuthorizationPanel(appInfo.all());
+    authorizationOpened = true;
     emit log(LogType_Warning, LogSource_User, "Авторизация");
     emit selectFromDB(DataBase::GetUserNames, "");
 }
@@ -642,7 +677,8 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
         refreshAll();
         resetProduct();
         mainPageIndex = 0;
-        emit activateMainPage(mainPageIndex);
+        emit showMainPage(mainPageIndex);
+        authorizationOpened = false;
     }
 }
 
@@ -698,6 +734,12 @@ void AppManager::runEquipment(const bool start)
         weightManager->stop();
         printManager->stop();
     }
+}
+
+void AppManager::onUserAction()
+{
+    qDebug() << "@@@@@ AppManager::onUserAction";
+    userActionTime = Tools::currentDateTimeToInt();
 }
 
 void AppManager::showUsers(const DBRecordList& records)

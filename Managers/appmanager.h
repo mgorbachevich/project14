@@ -69,6 +69,8 @@ private:
     int openedPopupCount = 0;
     int mainPageIndex = 0;
     AppInfo appInfo;
+    quint64 userActionTime = 0;
+    bool authorizationOpened = false;
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
     TablePanelModel* tablePanelModel;
@@ -80,7 +82,6 @@ private:
     ViewLogPanelModel* viewLogPanelModel;
 
 signals:
-    void activateMainPage(const int index);
     void authorizationSucceded();
     void download(const qint64, const QString&);
     void enablePrint(const bool);
@@ -134,20 +135,22 @@ public slots:
     void onPrinted(const DBRecord&);
     void onPrinterMessage(const QString&);
     void onProductDescriptionClicked();
-    void onProductPanelCloseClicked() { resetProduct(); }
+    void onProductPanelCloseClicked();
     void onProductPanelPiecesClicked();
     void onSearchFilterClicked(const int);
     void onSearchFilterEdited(const QString&);
-    void onSearchOptionsClicked() { emit showSearchOptions(); }
+    void onSearchOptionsClicked();
     void onSearchResultClicked(const int);
     void onSettingGroupClicked(const int);
     void onSettingInputClosed(const int, const QString&);
     void onSettingsItemClicked(const int);
     void onShowcaseClicked(const int);
-    void onShowMainPage(const int page) { emit showMainPage(page); }
+    void onSwipeMainPage(const int);
     void onTableBackClicked();
-    void onTableOptionsClicked() { emit showTableOptions(); }
+    void onTableOptionsClicked();
     void onTableResultClicked(const int);
+    void onTimer();
+    void onUserAction();
     void onViewLogClicked();
     void onWeightParamClicked(const int);
 };

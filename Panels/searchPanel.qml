@@ -11,14 +11,14 @@ Rectangle
     color: Material.background
     property int filterWidth: width * 0.25
 
-    Connections // Slot for signal AppManager::activateMainPage:
+    Connections // Slot for signal AppManager::showMainPage:
     {
         target: app
-        function onActivateMainPage(index)
+        function onShowMainPage(index)
         {
             if (index === 2)
             {
-                console.debug("@@@@@ searchPanel onActivateMainPage");
+                console.debug("@@@@@ searchPanel onShowMainPage");
                 searchPanelTextField.forceActiveFocus()
             }
         }
@@ -58,7 +58,11 @@ Rectangle
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
             icon.source: "../Icons/settings_black_48"
-            onClicked: app.onSearchOptionsClicked() // AppManager's slot
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onSearchOptionsClicked() // AppManager's slot
+            }
         }
 
         Rectangle
@@ -77,6 +81,7 @@ Rectangle
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+                onFlickStarted: app.onUserAction() // AppManager's slot
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -102,7 +107,11 @@ Rectangle
                     MouseArea
                     {
                         anchors.fill: parent
-                        onClicked: app.onSearchResultClicked(index) // AppManager's slot
+                        onClicked:
+                        {
+                            app.onUserAction(); // AppManager's slot
+                            app.onSearchResultClicked(index) // AppManager's slot
+                        }
                     }
                 }
             }
@@ -121,13 +130,14 @@ Rectangle
             font { pointSize: Constants.normalFontSize }
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
-            //onTextEdited: app.onSearchFilterEdited(text) // AppManager's slot
+            onTextEdited: app.onUserAction(); // AppManager's slot
 
             focus: true
             Keys.onPressed: (event) =>
             {
                 console.debug("@@@@@ searchPanelTextField Keys.onPressed ", JSON.stringify(event));
                 event.accepted = true;
+                app.onUserAction(); // AppManager's slot
                 switch (event.key)
                 {
                     case Qt.Key_0:
@@ -156,7 +166,7 @@ Rectangle
                         app.onWeightParamClicked(0);
                         break;
                     case Qt.Key_Left:
-                        app.onShowMainPage(1)
+                        app.onSwipeMainPage(1)
                         break;
                     case Qt.Key_Up:
                         if (!searchPanelResultList.atYBeginning) searchPanelResultList.flick(0, Constants.flickVelocity)
@@ -190,6 +200,7 @@ Rectangle
                 orientation: Qt.Vertical
                 clip: true
                 currentIndex: 0
+                onFlickStarted: app.onUserAction() // AppManager's slot
                 //highlight: Rectangle { color: Material.color(Material.BlueGrey, Material.Shade100) }
 
                 ScrollBar.vertical: ScrollBar
@@ -222,6 +233,7 @@ Rectangle
                         anchors.fill: parent
                         onClicked:
                         {
+                            app.onUserAction(); // AppManager's slot
                             searchPanelFilterList.currentIndex = index
                             app.onSearchFilterClicked(index) // AppManager's slot
                         }

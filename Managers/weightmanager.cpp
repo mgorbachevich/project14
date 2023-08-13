@@ -2,8 +2,11 @@
 #include <QDateTime>
 #include "weightmanager.h"
 
+#ifdef WEIGHT_MANAGER_DEMO
+#define WEIGHT_MANAGER_URL "demo://COM3?baudrate=115200&timeout=100"
+#else
 #define WEIGHT_MANAGER_URL "serial://ttyS0?baudrate=115200&timeout=100"
-//#define WEIGHT_MANAGER_URL "demo://COM3?baudrate=115200&timeout=100"
+#endif
 
 WeightManager::WeightManager(QObject *parent): QObject(parent)
 {

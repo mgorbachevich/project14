@@ -77,13 +77,14 @@ Popup
         {
             console.debug("@@@@@ productPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
+            app.onUserAction(); // AppManager's slot
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка
                     app.onProductPanelCloseClicked()
                     break
                 case Qt.Key_Q:
-                    app.onShowMainPage(2)
+                    app.onSwipeMainPage(2)
                     app.onProductPanelCloseClicked()
                     break;
                 case Qt.Key_T: // >T<
@@ -151,6 +152,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+                onFlickStarted: app.onUserAction() // AppManager's slot
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -177,7 +179,11 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop
             icon.source: "../Icons/info_outline_black_48"
-            onClicked: app.onProductDescriptionClicked() // AppManager's slot
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onProductDescriptionClicked() // AppManager's slot
+            }
         }
 
         RoundIconButton
@@ -187,7 +193,11 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop
             icon.source: "../Icons/close_black_48"
-            onClicked: app.onProductPanelCloseClicked() // AppManager's slot
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onProductPanelCloseClicked() // AppManager's slot
+            }
         }
 
         RoundTextButton
@@ -202,7 +212,11 @@ Popup
             Material.background: Material.color(Material.BlueGrey, isPiece ? Material.Shade200 : Material.Shade700)
             text: isPiece ? qsTr("+ / -") : qsTr(" ")
             font { pointSize: Constants.hugeFontSize }
-            onClicked: app.onProductPanelPiecesClicked() // AppManager's slot
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onProductPanelPiecesClicked() // AppManager's slot
+            }
         }
 
         RoundIconButton
@@ -216,7 +230,11 @@ Popup
             height: Constants.buttonSize * 2 + productPanelLayout.rowSpacing
             icon { width: Constants.maxIconSize; height: Constants.maxIconSize; source: "../Icons/print_black_48" }
             Material.background: Constants.colorAuto
-            onClicked: app.onPrint() // AppManager's slot
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onPrint() // AppManager's slot
+            }
         }
 
         Rectangle

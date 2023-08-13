@@ -33,6 +33,7 @@ Popup
         {
             console.debug("@@@@@ sarchOptionsPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
+            app.onUserAction(); // AppManager's slot
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка
@@ -86,7 +87,11 @@ Popup
             topInset: 0
             rightInset: 0
             bottomInset: 0
-            onClicked: sarchOptionsPanel.close()
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                sarchOptionsPanel.close()
+            }
         }
 
         Column
@@ -109,6 +114,7 @@ Popup
             {
                 height: Constants.margin * 4
                 text: qsTr("По фильтру");
+                onClicked: app.onUserAction(); // AppManager's slot
             }
 
             RadioButton
@@ -116,6 +122,7 @@ Popup
                 height: Constants.margin * 4
                 text: qsTr("По наименованию")
                 checked: true
+                onClicked: app.onUserAction(); // AppManager's slot
             }
         }
 
@@ -139,6 +146,7 @@ Popup
             {
                 height: Constants.margin * 4
                 text: qsTr("Фильтр")
+                onClicked: app.onUserAction(); // AppManager's slot
             }
 
             CheckBox
@@ -146,6 +154,7 @@ Popup
                 height: Constants.margin * 4
                 text: qsTr("Наименование")
                 checked: true
+                onClicked: app.onUserAction(); // AppManager's slot
             }
         }
     }

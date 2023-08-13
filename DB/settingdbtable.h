@@ -19,6 +19,7 @@ public:
         SettingCode_None = 0,
         SettingCode_ScalesNumber = 1,
         SettingCode_ScalesName = 2,
+        SettingCode_Blocking = 3,
         SettingCode_ProductReset = 7,
         SettingCode_ProductResetTime = 8,
         SettingCode_PointPosition = 12,

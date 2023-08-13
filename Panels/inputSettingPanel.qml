@@ -69,6 +69,7 @@ Popup
                 icon.source: "../Icons/close_black_48"
                 onClicked:
                 {
+                    app.onUserAction(); // AppManager's slot
                     app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text) // AppManager's slot
                     inputSettingPanel.close()
                 }
@@ -100,6 +101,7 @@ Popup
                     {
                         console.debug("@@@@@ inputSettingPanelText Keys.onPressed ", JSON.stringify(event))
                         event.accepted = true;
+                        app.onUserAction(); // AppManager's slot
                         switch (event.key)
                         {
                             case Qt.Key_0:

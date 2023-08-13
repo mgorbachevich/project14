@@ -6,8 +6,11 @@
 #include "tools.h"
 #include "database.h"
 
+#ifdef PRINT_MANAGER_DEMO
+#define PRINT_MANAGER_URL "demo://COM3?baudrate=115200&timeout=100"
+#else
 #define PRINT_MANAGER_URL "serial://ttyS8?baudrate=115200&timeout=100"
-//#define PRINT_MANAGER_URL "demo://COM3?baudrate=115200&timeout=100"
+#endif
 
 PrintManager::PrintManager(QObject *parent): QObject(parent)
 {
@@ -80,7 +83,11 @@ void PrintManager::onParamChanged(const EquipmentParam p, QVariant v, const QStr
 
 bool PrintManager::isStateError(uint16_t s)
 {
+#ifdef PRINT_MANAGER_DEMO
+    return false;
+#else
     return isFlag(s, 0) || (isFlag(s, 1) && isFlag(s, 6)) || isFlag(s, 2) || isFlag(s, 3) || isFlag(s, 8);
+#endif
 }
 
 void PrintManager::showMessage(const QString &s)
@@ -91,6 +98,9 @@ void PrintManager::showMessage(const QString &s)
 
 void PrintManager::onStatusChanged(uint16_t s)
 {
+#ifdef PRINT_MANAGER_DEMO
+    status = 0;
+#else
     bool b0 = isFlag(s, 0);
     bool b1 = isFlag(s, 1);
     bool b2 = isFlag(s, 2);
@@ -111,15 +121,18 @@ void PrintManager::onStatusChanged(uint16_t s)
         onParamChanged(EquipmentParam_PrintError, 1004, "Закройте головку принтера!");
     if(isFlag(status, 8) != b8 && b8)
         onParamChanged(EquipmentParam_PrintError, 1008, "Ошибка памяти принтера!");
-
     if((isStateError(status) != isStateError(s)) && !isStateError(s) && (error == 0))
         onParamChanged(EquipmentParam_PrintError, 0, "");
 
     status = s;
+#endif
 }
 
 void PrintManager::onErrorStatusChanged(int errorCode)
 {
+#ifdef PRINT_MANAGER_DEMO
+    error = 0;
+#else
     if(error != errorCode)
     {
         if(errorCode != 0)
@@ -128,6 +141,7 @@ void PrintManager::onErrorStatusChanged(int errorCode)
             onParamChanged(EquipmentParam_PrintError, 0, "");
         error = errorCode;
     }
+#endif
 }
 
 

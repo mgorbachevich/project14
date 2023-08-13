@@ -47,6 +47,7 @@ Popup
             {
                 console.debug("@@@@@ messagePanel Keys.onPressed ", JSON.stringify(event))
                 event.accepted = true;
+                app.onUserAction(); // AppManager's slot
                 messagePanel.close()
             }
 
@@ -81,7 +82,11 @@ Popup
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close_black_48"
                 visible: buttonVisibility
-                onClicked: messagePanel.close()
+                onClicked:
+                {
+                    app.onUserAction(); // AppManager's slot
+                    messagePanel.close()
+                }
             }
 
             Rectangle

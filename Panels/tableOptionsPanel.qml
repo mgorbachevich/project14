@@ -33,6 +33,7 @@ Popup
         {
             console.debug("@@@@@ tableOptionsPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
+            app.onUserAction(); // AppManager's slot
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка
@@ -86,7 +87,11 @@ Popup
             topInset: 0
             rightInset: 0
             bottomInset: 0
-            onClicked: tableOptionsPanel.close()
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                tableOptionsPanel.close()
+            }
         }
 
         Column
@@ -109,12 +114,14 @@ Popup
             {
                 height: Constants.margin * 4
                 text: qsTr("По коду");
+                onClicked: app.onUserAction(); // AppManager's slot
             }
 
             RadioButton
             {
                 height: Constants.margin * 4
                 text: qsTr("По штрих-коду")
+                onClicked: app.onUserAction(); // AppManager's slot
             }
 
             RadioButton
@@ -122,6 +129,7 @@ Popup
                 height: Constants.margin * 4
                 text: qsTr("По наименованию")
                 checked: true
+                onClicked: app.onUserAction(); // AppManager's slot
             }
         }
 
@@ -145,12 +153,14 @@ Popup
             {
                 height: Constants.margin * 4
                 text: qsTr("Код")
+                onClicked: app.onUserAction(); // AppManager's slot
             }
 
             CheckBox
             {
                 height: Constants.margin * 4
                 text: qsTr("Штрих-код")
+                onClicked: app.onUserAction(); // AppManager's slot
             }
 
             CheckBox
@@ -158,6 +168,7 @@ Popup
                 height: Constants.margin * 4
                 text: qsTr("Наименование")
                 checked: true
+                onClicked: app.onUserAction(); // AppManager's slot
             }
         }
     }

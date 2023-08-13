@@ -32,6 +32,7 @@ Popup
         {
             console.debug("@@@@@ viewLogPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
+            app.onUserAction(); // AppManager's slot
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка
@@ -79,7 +80,11 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
             icon.source: "../Icons/close_black_48"
-            onClicked:  viewLogPanel.close()
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                viewLogPanel.close()
+            }
         }
 
         Rectangle
@@ -97,6 +102,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
+                onFlickStarted: app.onUserAction() // AppManager's slot
 
                 ScrollBar.vertical: ScrollBar
                 {

@@ -68,7 +68,7 @@ protected:
     bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
     bool selectById(DBTable*, const QString&, DBRecord&);
     bool removeRecord(DBTable*, const DBRecord&);
-    void clearLog();
+    void removeOldLogRecords();
 
     bool opened = false;
     QSqlDatabase db;

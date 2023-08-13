@@ -1,10 +1,12 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.29"
+#define APP_VERSION "1.30"
 
 #define DB_EMULATION
 #define CHECK_AUTHORIZATION
+#define WEIGHT_MANAGER_DEMO
+#define PRINT_MANAGER_DEMO
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define DB_FILENAME "ShtrihScale.db"
@@ -14,6 +16,7 @@
 #define DEFAULT_SETTING_GROUPS_FILE ":/Text/json_default_setting_groups.txt"
 #define SERVER_WAIT_FOR_REPLY_MSEC 20000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
+#define APP_TIMER_MSEC 10000
 
 #define NetReply QPair<qint64, QString>
 #define DBRecord QVariantList
