@@ -1,12 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.30"
+#define APP_VERSION "1.31"
 
 #define DB_EMULATION
 #define CHECK_AUTHORIZATION
-#define WEIGHT_MANAGER_DEMO
-#define PRINT_MANAGER_DEMO
 
 #define DATA_STORAGE_SUBDIR "ShtrihScale"
 #define DB_FILENAME "ShtrihScale.db"

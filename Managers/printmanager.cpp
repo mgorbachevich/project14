@@ -6,12 +6,6 @@
 #include "tools.h"
 #include "database.h"
 
-#ifdef PRINT_MANAGER_DEMO
-#define PRINT_MANAGER_URL "demo://COM3?baudrate=115200&timeout=100"
-#else
-#define PRINT_MANAGER_URL "serial://ttyS8?baudrate=115200&timeout=100"
-#endif
-
 PrintManager::PrintManager(QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ PrintManager::PrintManager";
@@ -20,13 +14,14 @@ PrintManager::PrintManager(QObject *parent): QObject(parent)
     connect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
 }
 
-int PrintManager::start()
+int PrintManager::start(const QString& url, const bool demo)
 {
     qDebug() << "@@@@@ PrintManager::start";
+    demoMode = demo;
     int error = 0;
     if (slpa != nullptr && !started)
     {
-        error = slpa->connectDevice(PRINT_MANAGER_URL);
+        error = slpa->connectDevice(url);
         started = (error == 0);
         if(started) slpa->startPolling(200);
         qDebug() << "@@@@@ PrintManager::start error = " << error;
@@ -83,11 +78,8 @@ void PrintManager::onParamChanged(const EquipmentParam p, QVariant v, const QStr
 
 bool PrintManager::isStateError(uint16_t s)
 {
-#ifdef PRINT_MANAGER_DEMO
-    return false;
-#else
+    if(demoMode) return false;
     return isFlag(s, 0) || (isFlag(s, 1) && isFlag(s, 6)) || isFlag(s, 2) || isFlag(s, 3) || isFlag(s, 8);
-#endif
 }
 
 void PrintManager::showMessage(const QString &s)
@@ -98,9 +90,11 @@ void PrintManager::showMessage(const QString &s)
 
 void PrintManager::onStatusChanged(uint16_t s)
 {
-#ifdef PRINT_MANAGER_DEMO
-    status = 0;
-#else
+    if(demoMode)
+    {
+        status = 0;
+        return;
+    }
     bool b0 = isFlag(s, 0);
     bool b1 = isFlag(s, 1);
     bool b2 = isFlag(s, 2);
@@ -123,16 +117,16 @@ void PrintManager::onStatusChanged(uint16_t s)
         onParamChanged(EquipmentParam_PrintError, 1008, "Ошибка памяти принтера!");
     if((isStateError(status) != isStateError(s)) && !isStateError(s) && (error == 0))
         onParamChanged(EquipmentParam_PrintError, 0, "");
-
     status = s;
-#endif
 }
 
 void PrintManager::onErrorStatusChanged(int errorCode)
 {
-#ifdef PRINT_MANAGER_DEMO
-    error = 0;
-#else
+    if(demoMode)
+    {
+        error = 0;
+        return;
+    }
     if(error != errorCode)
     {
         if(errorCode != 0)
@@ -141,7 +135,6 @@ void PrintManager::onErrorStatusChanged(int errorCode)
             onParamChanged(EquipmentParam_PrintError, 0, "");
         error = errorCode;
     }
-#endif
 }
 
 

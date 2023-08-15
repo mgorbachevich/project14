@@ -14,7 +14,7 @@ public:
         COLUMN_COUNT
     };
 
-    enum SettingCode
+    enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt, json_default_setting_groups.txt!
     {
         SettingCode_None = 0,
         SettingCode_ScalesNumber = 1,
@@ -30,9 +30,17 @@ public:
         SettingCode_LogDuration = 607,
         SettingCode_TCPPort = 1003,
         SettingCode_SearchType = 1004,
+        SettingCode_WMDemo = 1005,
+        SettingCode_WMAddress = 1006,
+        SettingCode_WMBaudrate = 1007,
+        SettingCode_WMTimeout = 1008,
+        SettingCode_PrinterDemo = 1009,
+        SettingCode_PrinterAddress = 1010,
+        SettingCode_PrinterBaudrate = 1011,
+        SettingCode_PrinterTimeout = 1012,
+        SettingCode_Max = 2000, // Max value
         /*
         SettingCode_Power = 17,
-        SettingCode_Blocking = 3,
         SettingCode_Cursor = 10,
         SettingCode_Language = 1001,
         SettingCode_Currency = 1002,
@@ -50,6 +58,17 @@ public:
         */
     };
 
+    enum WMBaudrate
+    {
+        WMBaudrate_2400 = 0,
+        WMBaudrate_4800 = 1,
+        WMBaudrate_9600 = 2,
+        WMBaudrate_19200 = 3,
+        WMBaudrate_38400 = 4,
+        WMBaudrate_57600 = 5,
+        WMBaudrate_115200 = 6,
+    };
+
     enum ProductReset
     {
         ProductReset_None = 0, // нет
@@ -57,20 +76,14 @@ public:
         ProductReset_Time = 2, // через заданное время бездействия (секунды)
     };
 
-    enum SearchType
-    {
-        SearchType_Static = 0,
-        SearchType_Dynamic = 1, // Динамический поиск
-    };
-
     SettingDBTable(const QString&, QObject*);
     int columnCount() { return Columns::COLUMN_COUNT; }
     const DBRecord checkRecord(const DBRecord&);
     const DBRecordList checkList(const DBRecordList&);
+    static int getBoudrate(const int);
 
 private:
-    void checkDefault(const SettingCode, const DBRecordList&, DBRecordList&);
-
+    void checkDefault(const int, const QList<QVariantList>&, QList<QVariantList>&);
 };
 
 #endif // SETTINGDBTABLE_H

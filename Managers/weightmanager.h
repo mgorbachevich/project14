@@ -11,7 +11,7 @@ class WeightManager : public QObject
 
 public:
     explicit WeightManager(QObject*);
-    int start();
+    int start(const QString&, const bool);
     void stop();
     QString version();
     bool isError() { return error != 0 || isStateError(status); }

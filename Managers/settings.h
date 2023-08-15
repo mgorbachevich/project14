@@ -11,12 +11,13 @@ class Settings
 public:
     Settings() {}
     DBRecord* getItemByIndex(const int index) { return getByIndex(items, index); }
-    DBRecord* getItemByCode(const int code);
+    DBRecord* getItemByCode(const int);
     DBRecord* getGroupByIndex(const int index) { return getByIndex(groups, index); }
     DBRecord* getItemByIndexInGroup(const int);
-    int getItemIntValue(const SettingDBTable::SettingCode code);
+    int getItemIntValue(const SettingDBTable::SettingCode);
+    bool getItemBoolValue(const SettingDBTable::SettingCode);
     QString getCurrentGroupName();
-    QString getItemStringValue(const SettingDBTable::SettingCode code);
+    QString getItemStringValue(const SettingDBTable::SettingCode);
     QList<int> getCurrentGroupItemCodes();
     void createGroups(SettingGroupDBTable*);
     void updateAllItems(const DBRecordList&);

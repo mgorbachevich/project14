@@ -55,6 +55,11 @@ int Settings::getItemIntValue(const SettingDBTable::SettingCode code)
     return Tools::stringToInt(getItemStringValue(code));
 }
 
+bool Settings::getItemBoolValue(const SettingDBTable::SettingCode code)
+{
+    return getItemIntValue(code) != 0;
+}
+
 QString Settings::getCurrentGroupName()
 {
     DBRecord* r = getGroupByIndex(currentGroupIndex);

@@ -348,7 +348,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         QString p = param.trimmed();
         if (p.isEmpty())
             break;
-        if (settings.getItemIntValue(SettingDBTable::SettingCode_SearchType) != SettingDBTable::SearchType_Dynamic)
+        if (!settings.getItemBoolValue(SettingDBTable::SettingCode_SearchType))
             if (p.size() < settings.getItemIntValue(SettingDBTable::SettingCode_SearchCodeSymbols))
                 break;
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
@@ -372,7 +372,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         QString p = param.trimmed();
         if (p.isEmpty())
             break;
-        if (settings.getItemIntValue(SettingDBTable::SettingCode_SearchType) != SettingDBTable::SearchType_Dynamic)
+        if (!settings.getItemBoolValue(SettingDBTable::SettingCode_SearchType))
             if (p.size() < settings.getItemIntValue(SettingDBTable::SettingCode_SearchBarcodeSymbols))
                 break;
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);

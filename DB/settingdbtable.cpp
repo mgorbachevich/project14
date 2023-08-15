@@ -46,6 +46,9 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
         case SettingCode_SearchBarcodeSymbols:
             ok = value >= 0 && value <= 9;
             break;
+        case SettingCode_WMBaudrate:
+            ok = value >= 0 && value <= 6;
+            break;
         default: break; // Без проверки
         }
     }
@@ -73,18 +76,28 @@ const DBRecordList SettingDBTable::checkList(const DBRecordList& records)
     // Добавление недостающих значений по умолчанию:
     JSONParser parser;
     DBRecordList defaultRecords = parser.parseTable(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    checkDefault(SettingCode_ScalesNumber, defaultRecords, result);
-    checkDefault(SettingCode_TCPPort, defaultRecords, result);
-    checkDefault(SettingCode_PointPosition, defaultRecords, result);
-    checkDefault(SettingCode_Blocking, defaultRecords, result);
-    checkDefault(SettingCode_ProductReset, defaultRecords, result);
-    checkDefault(SettingCode_ProductResetTime, defaultRecords, result);
-    checkDefault(SettingCode_LogDuration, defaultRecords, result);
-    checkDefault(SettingCode_Logging, defaultRecords, result);
+    for(int i = 0; i < SettingCode_Max; i++)
+        checkDefault(i, defaultRecords, result);
+
     return result;
 }
 
-void SettingDBTable::checkDefault(const SettingCode code, const DBRecordList& defaultRecords, DBRecordList& resultRecords)
+int SettingDBTable::getBoudrate(const int code)
+{
+    switch (code)
+    {
+    case SettingDBTable::WMBaudrate_2400:   return 2400;
+    case SettingDBTable::WMBaudrate_4800:   return 4800;
+    case SettingDBTable::WMBaudrate_9600:   return 9600;
+    case SettingDBTable::WMBaudrate_19200:  return 19200;
+    case SettingDBTable::WMBaudrate_38400:  return 38400;
+    case SettingDBTable::WMBaudrate_57600:  return 57600;
+    case SettingDBTable::WMBaudrate_115200: return 115200;
+    }
+    return 9600;
+}
+
+void SettingDBTable::checkDefault(const int code, const DBRecordList& defaultRecords, DBRecordList& resultRecords)
 {
     for (int i = 0; i < resultRecords.count(); i++)
     {
@@ -101,3 +114,5 @@ void SettingDBTable::checkDefault(const SettingCode code, const DBRecordList& de
         }
     }
 }
+
+

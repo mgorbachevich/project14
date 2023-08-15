@@ -723,9 +723,33 @@ void AppManager::runEquipment(const bool start)
     if(start)
     {
         netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
-        int e1 = weightManager->start();
+
+        QString url1;
+        bool demo1 = settings.getItemBoolValue(SettingDBTable::SettingCode_WMDemo);
+        if(demo1)
+            url1 = "demo://COM3?baudrate=115200&timeout=100"; // Demo
+        else
+        {
+            QString address = settings.getItemStringValue(SettingDBTable::SettingCode_WMAddress);
+            QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_WMBaudrate)));
+            QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_WMTimeout));
+            url1 = QString("serial://%1?baudrate=%20&timeout=%3").arg(address, boudrate, timeout);
+        }
+        int e1 = weightManager->start(url1, demo1);
         if(e1 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!").arg(e1));
-        int e2 = printManager->start();
+
+        QString url2;
+        bool demo2 = settings.getItemBoolValue(SettingDBTable::SettingCode_PrinterDemo);
+        if(demo2)
+            url2 = "demo://COM3?baudrate=115200&timeout=100";
+        else
+        {
+            QString address = settings.getItemStringValue(SettingDBTable::SettingCode_PrinterAddress);
+            QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_PrinterBaudrate)));
+            QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_PrinterTimeout));
+            url2 = QString("serial://%1?baudrate=%20&timeout=%3").arg(address, boudrate, timeout);
+        }
+        int e2 = printManager->start(url2, demo2);
         if(e2 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка модуля печати %1!").arg(e2));
     }
     else

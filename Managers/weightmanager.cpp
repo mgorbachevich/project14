@@ -2,12 +2,6 @@
 #include <QDateTime>
 #include "weightmanager.h"
 
-#ifdef WEIGHT_MANAGER_DEMO
-#define WEIGHT_MANAGER_URL "demo://COM3?baudrate=115200&timeout=100"
-#else
-#define WEIGHT_MANAGER_URL "serial://ttyS0?baudrate=115200&timeout=100"
-#endif
-
 WeightManager::WeightManager(QObject *parent): QObject(parent)
 {
     qDebug() << "@@@@@ WeightManager::WeightManager";
@@ -16,13 +10,13 @@ WeightManager::WeightManager(QObject *parent): QObject(parent)
     connect(wm100, &Wm100::errorStatusChanged, this, &WeightManager::onErrorStatusChanged);
 }
 
-int WeightManager::start() // return error
+int WeightManager::start(const QString& url, const bool) // return error
 {
-    qDebug() << "@@@@@ WeightManager::start";
+    qDebug() << "@@@@@ WeightManager::start url = " << url;
     int error = 0;
     if (wm100 != nullptr && !started)
     {
-        error = wm100->connectDevice(WEIGHT_MANAGER_URL);
+        error = wm100->connectDevice(url);
         qDebug() << "@@@@@ WeightManager::start error = " << error;
         started = (error == 0);
         if(started) wm100->startPolling(200);

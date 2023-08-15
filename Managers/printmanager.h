@@ -14,7 +14,7 @@ class PrintManager : public QObject
 
 public:
     explicit PrintManager(QObject*);
-    int start();
+    int start(const QString&, const bool demo);
     void stop();
     QString version();
     void print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
@@ -32,6 +32,7 @@ private:
     int error = 0;
     uint16_t status = 0;
     QString message;
+    bool demoMode = true;
 
 signals:
     void printed(const DBRecord&);
