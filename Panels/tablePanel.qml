@@ -156,7 +156,7 @@ Rectangle
                 model: tablePanelModel
                 delegate: Label
                 {
-                    width: parent.width
+                    width: tablePanelResultList.width
                     font { pointSize: Constants.normalFontSize }
                     padding: Constants.margin
                     color: Material.color(Material.BlueGrey, Material.Shade900)

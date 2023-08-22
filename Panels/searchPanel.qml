@@ -152,7 +152,12 @@ Rectangle
                         text += event.text
                         app.onSearchFilterEdited(text);
                         break;
+                    case Qt.Key_Backspace:
+                    case Qt.Key_Delete:
                     case Qt.Key_C:
+                        text = text.substring(0, text.length - 1);
+                        break;
+                    case Qt.Key_Escape:
                         text = ""
                         app.onSearchFilterEdited(text);
                         break;
@@ -213,7 +218,7 @@ Rectangle
                 model: searchFilterModel
                 delegate: Label
                 {
-                    width: parent.width
+                    width: searchPanelFilterList.width
                     padding: Constants.margin
                     font
                     {

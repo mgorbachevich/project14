@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.31"
+#define APP_VERSION "1.32"
 
 #define DB_EMULATION
 #define CHECK_AUTHORIZATION
@@ -15,6 +15,7 @@
 #define SERVER_WAIT_FOR_REPLY_MSEC 20000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
+#define WAIT_SECRET_MSEC 5000
 
 #define NetReply QPair<qint64, QString>
 #define DBRecord QVariantList

@@ -25,9 +25,8 @@ public:
     bool isTareFlag() { return isFlag(status, 3); }
 
 private:
-    bool isFlag(Wm100::channel_status s, int shift) { return (s.state & (0x00000001 << shift)) != 0; }
+    bool isFlag(Wm100::channel_status, int);
     bool isStateError(Wm100::channel_status);
-    void onParamChanged(const EquipmentParam, QVariant, const QString&);
 
     Wm100* wm100 = nullptr;
     bool started = false;
@@ -36,7 +35,7 @@ private:
     Wm100::channel_status status = {0, 0.0, 0.0, 0};
 
 signals:
-    void paramChanged(const int, const QString&, const QString&);
+    void paramChanged(const int, const int, const QString&);
 
 public slots:
     void onStatusChanged(Wm100::channel_status&);

@@ -68,6 +68,7 @@ private:
     DBRecord currentProduct;
     int openedPopupCount = 0;
     int mainPageIndex = 0;
+    int secret = 0;
     AppInfo appInfo;
     quint64 userActionTime = 0;
     bool authorizationOpened = false;
@@ -123,7 +124,7 @@ public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
     void onDownloadFinished(const int);
-    void onEquipmentParamChanged(const int, const QString&, const QString&);
+    void onEquipmentParamChanged(const int, const int, const QString&);
     void onLoadResult(const qint64, const QString&);
     void onLockClicked();
     void onMainPageChanged(const int);
@@ -133,10 +134,10 @@ public slots:
     void onPopupOpened();
     void onPrint();
     void onPrinted(const DBRecord&);
-    void onPrinterMessage(const QString&);
     void onProductDescriptionClicked();
     void onProductPanelCloseClicked();
     void onProductPanelPiecesClicked();
+    void onRewind();
     void onSearchFilterClicked(const int);
     void onSearchFilterEdited(const QString&);
     void onSearchOptionsClicked();
@@ -152,6 +153,7 @@ public slots:
     void onTimer();
     void onUserAction();
     void onViewLogClicked();
+    void onWeightPanelClicked(const int);
     void onWeightParamClicked(const int);
 };
 

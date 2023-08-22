@@ -159,6 +159,15 @@ Rectangle
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
+                MouseArea
+                {
+                    anchors.fill: parent
+                    onClicked:
+                    {
+                        // app.onUserAction(); // AppManager's slot
+                        app.onWeightPanelClicked(1); // AppManager's slot
+                    }
+                }
             }
         }
 
@@ -185,6 +194,15 @@ Rectangle
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
+                MouseArea
+                {
+                    anchors.fill: parent
+                    onClicked:
+                    {
+                        // app.onUserAction(); // AppManager's slot
+                        app.onWeightPanelClicked(2); // AppManager's slot
+                    }
+                }
             }
         }
 
@@ -211,6 +229,15 @@ Rectangle
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
+                MouseArea
+                {
+                    anchors.fill: parent
+                    onClicked:
+                    {
+                        // app.onUserAction(); // AppManager's slot
+                        app.onWeightPanelClicked(3); // AppManager's slot
+                    }
+                }
             }
         }
     }

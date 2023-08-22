@@ -55,7 +55,6 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
     connect(printManager, &PrintManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
-    connect(printManager, &PrintManager::printerMessage, this, &AppManager::onPrinterMessage);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
@@ -179,7 +178,13 @@ void AppManager::onProductPanelCloseClicked()
 
 void AppManager::onProductPanelPiecesClicked()
 {
-   emit showPiecesInputBox(weightManager->getPieces());
+    emit showPiecesInputBox(weightManager->getPieces());
+}
+
+void AppManager::onRewind() // Перемотка
+{
+    qDebug() << "@@@@@ AppManager::onRewind ";
+    printManager->feed();
 }
 
 void AppManager::filteredSearch()
@@ -272,12 +277,6 @@ void AppManager::onMainPageChanged(const int index)
     qDebug() << "@@@@@ AppManager::onMainPageChanged " << index;
     mainPageIndex = index;
     emit showMainPage(mainPageIndex);
-}
-
-void AppManager::onPrinterMessage(const QString &s)
-{
-    emit showPrinterMessage(s);
-    // showMessage("Внимание!", s);
 }
 
 void AppManager::onLoadResult(const qint64 requestId, const QString &json)
@@ -522,6 +521,13 @@ void AppManager::onViewLogClicked()
     emit showViewLogPanel();
 }
 
+void AppManager::onWeightPanelClicked(const int param)
+{
+    qDebug() << "@@@@@ AppManager::onWeightPanelClicked " << param;
+    if(param == 1) QTimer::singleShot(WAIT_SECRET_MSEC, this, &AppManager::onUserAction);
+    if(param == secret + 1 && ++secret == 3) onLockClicked();
+}
+
 void AppManager::onWeightParamClicked(const int param)
 {
     qDebug() << "@@@@@ AppManager::onWeightParamClicked " << param;
@@ -764,6 +770,7 @@ void AppManager::onUserAction()
 {
     qDebug() << "@@@@@ AppManager::onUserAction";
     userActionTime = Tools::currentDateTimeToInt();
+    secret = 0;
 }
 
 void AppManager::showUsers(const DBRecordList& records)
@@ -820,33 +827,27 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
         resetProduct();
 }
 
-void AppManager::onEquipmentParamChanged(const int param, const QString& value, const QString& description)
+void AppManager::onEquipmentParamChanged(const int param, const int value, const QString& description)
 {
     // Изменился параметр оборудования
+    qDebug() << QString("@@@@@ AppManager::onEquipmentParamChanged param=%1b value=%2 description=%3").
+                arg(QString::number(param), QString::number(value), description);
 
-    qDebug() << "@@@@@ AppManager::onEquipmentParamChanged" << param << value << description;
     switch (param)
     {
+    case EquipmentParam_None:
+        return;
     case EquipmentParam_WeightError:
         emit log(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").
-                arg(value, Tools::stringToInt(value) == 0 ? "" : description));
-        updateWeightPanel();
+                arg(QString::number(value), description));
         break;
     case EquipmentParam_PrintError:
         emit log(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").
-                arg(value, Tools::stringToInt(value) == 0 ? "" : description));
-        updateWeightPanel();
-        break;
-    case EquipmentParam_TareFlag:
-    case EquipmentParam_ZeroFlag:
-    case EquipmentParam_TareValue:
-    case EquipmentParam_WeightValue:
-    case EquipmentParam_PriceValue:
-    case EquipmentParam_AmountValue:
-    case EquipmentParam_WeightFixed:
-        updateWeightPanel();
+                arg(QString::number(value), description));
+        emit showPrinterMessage(description);
         break;
     }
+    updateWeightPanel();
 }
 
 void AppManager::updateWeightPanel()
@@ -894,7 +895,6 @@ void AppManager::updateWeightPanel()
     emit showWeightParam(EquipmentParam_AmountColor, isAmount ? c1 : c0);
 
     emit enablePrint(isAmount && !printManager->isError());
-    emit showPrinterMessage(printManager->getMessage());
 }
 
 

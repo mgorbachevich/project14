@@ -116,7 +116,9 @@ Popup
                             case Qt.Key_9:
                                 text += event.text
                                 break;
-                            case Qt.Key_C:
+                             case Qt.Key_Backspace:
+                             case Qt.Key_Delete:
+                             case Qt.Key_C:
                                 text = text.substring(0, text.length - 1);
                                 break;
                             case Qt.Key_Escape:

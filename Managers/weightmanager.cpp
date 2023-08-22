@@ -58,9 +58,9 @@ void WeightManager::setWeightParam(const int param)
     }
 }
 
-void WeightManager::onParamChanged(const EquipmentParam p, QVariant v, const QString& description)
+bool WeightManager::isFlag(Wm100::channel_status s, int shift)
 {
-    emit paramChanged(p, v.toString(), description);
+    return (s.state & (0x00000001 << shift)) != 0;
 }
 
 bool WeightManager::isStateError(Wm100::channel_status s)
@@ -70,43 +70,71 @@ bool WeightManager::isStateError(Wm100::channel_status s)
 
 void WeightManager::onStatusChanged(Wm100::channel_status &s)
 {
-    bool b0 = isFlag(s, 0);
-    bool b1 = isFlag(s, 1);
-    bool b3 = isFlag(s, 3);
-    bool b5 = isFlag(s, 5);
-    bool b6 = isFlag(s, 6);
-    bool b7 = isFlag(s, 7);
-    bool b8 = isFlag(s, 8);
-    bool b9 = isFlag(s, 9);
+    qDebug() << QString("@@@@@ WeightManager::onStatusChanged state=%1b weight=%2 tare=%3").arg(
+                QString::number(s.state, 2),
+                QString::number(s.weight),
+                QString::number(s.tare));
 
-    if(status.weight != s.weight) onParamChanged(EquipmentParam_WeightValue, s.weight, "");
-    if(status.tare != s.tare)     onParamChanged(EquipmentParam_TareValue, s.tare, "");
-    if(isWeightFixed() != b0)     onParamChanged(EquipmentParam_WeightFixed, b0, "");
-    if(isZeroFlag() != b1)        onParamChanged(EquipmentParam_ZeroFlag, b1, "");
-    if(isTareFlag() != b3)        onParamChanged(EquipmentParam_TareFlag, b3, "");
-    if(isFlag(status, 5) != b5 && b5) onParamChanged(EquipmentParam_WeightError, 5003, "Ошибка автонуля при включении");
-    if(isFlag(status, 6) != b6 && b6) onParamChanged(EquipmentParam_WeightError, 5004, "Перегрузка по весу");
-    if(isFlag(status, 7) != b7 && b7) onParamChanged(EquipmentParam_WeightError, 5005, "Ошибка при получении измерения");
-    if(isFlag(status, 8) != b8 && b8) onParamChanged(EquipmentParam_WeightError, 5006, "Весы недогружены");
-    if(isFlag(status, 9) != b9 && b9) onParamChanged(EquipmentParam_WeightError, 5007, "Ошибка: нет ответа от АЦП");
+    //bool b0 = isFlag(s, 0); // признак фиксации веса
+    //bool b1 = isFlag(s, 1); // признак работы автонуля
+    //bool b2 = isFlag(s, 2); // "0"- канал выключен, "1"- канал включен
+    //bool b3 = isFlag(s, 3); // признак тары
+    //bool b4 = isFlag(s, 4); // признак успокоения веса
+    bool b5 = isFlag(s, 5); // ошибка автонуля при включении
+    bool b6 = isFlag(s, 6); // перегрузка по весу
+    bool b7 = isFlag(s, 7); // ошибка при получении измерения (нет градуировки весов или она не правильная)
+    bool b8 = isFlag(s, 8); // весы недогружены
+    bool b9 = isFlag(s, 9); // ошибка: нет ответа от АЦП
 
-    if((isStateError(status) != isStateError(s)) && !isStateError(s) && (error == 0))
-        onParamChanged(EquipmentParam_WeightError, 0, "Ошибок нет");
+    EquipmentParam param = EquipmentParam_WeightValue;
+    int e = 0;
+    QString description = "Ошибок нет";
+    if(isStateError(s))
+    {
+        param = EquipmentParam_WeightError;
+        if(b5 && isFlag(status, 5) != b5)
+        {
+            e = 5003;
+            description = "Ошибка автонуля при включении";
+        }
+        if(b6 && isFlag(status, 6) != b6)
+        {
+            e = 5004;
+            description = "Перегрузка по весу";
+        }
+        if(b7 && isFlag(status, 7) != b7)
+        {
+            e = 5005;
+            description = "Ошибка при получении измерения";
+        }
+        if(b8 && isFlag(status, 8) != b8)
+        {
+            e = 5006;
+            description = "Весы недогружены";
+        }
+        if(b9 && isFlag(status, 9) != b9)
+        {
+            e = 5007;
+            description = "Ошибка: нет ответа от АЦП";
+        }
+    }
+    else
+        if(isStateError(status) && error == 0)
+            param = EquipmentParam_WeightError;
 
     status.weight = s.weight;
     status.tare = s.tare;
     status.state = s.state;
+    emit paramChanged(param, e, description);
 }
 
 void WeightManager::onErrorStatusChanged(int errorCode)
 {
     if(error != errorCode)
     {
-        if(errorCode != 0)
-            onParamChanged(EquipmentParam_WeightError, error, wm100->errorDescription(error));
-        else if(!isStateError(status))
-            onParamChanged(EquipmentParam_WeightError, 0, "Ошибок нет");
         error = errorCode;
+        QString description = error == 0? "Ошибок нет" : wm100->errorDescription(error);
+        emit paramChanged(EquipmentParam_WeightError, error, description);
     }
 }
 

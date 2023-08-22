@@ -15,7 +15,8 @@ Popup
     dim: false
     Material.theme: Material.Dark
     Material.background: Material.color(Material.Grey, Material.Shade800)
-    property int imageSize: height - Constants.margin * 2
+    property int imageSize: height - Constants.margin * 4 - Constants.buttonSize
+    property int printButtonSize: Constants.buttonSize * 2 + Constants.margin
     property bool isPiece: false
     property string productName: ""
     onOpened: app.onPopupOpened()
@@ -48,7 +49,6 @@ Popup
         {
             console.debug("@@@@@ productPanel onEnablePrint ", value)
             productPanelPrintButton.visible = value
-            productPanelPrintMessageRectangle.visible = !value
         }
     }
 
@@ -83,7 +83,7 @@ Popup
                 case Qt.Key_Escape: // Круглая стрелка
                     app.onProductPanelCloseClicked()
                     break
-                case Qt.Key_Q:
+                case Qt.Key_Q: // Поиск
                     app.onSwipeMainPage(2)
                     app.onProductPanelCloseClicked()
                     break;
@@ -95,6 +95,9 @@ Popup
                     break
                 case Qt.Key_F8: // Печать
                     app.onPrint()
+                    break
+                case Qt.Key_F10: // Промотка
+                    app.onRewind()
                     break
                 case Qt.Key_Up:
                     if (!productPanelList.atYBeginning) productPanelList.flick(0, Constants.flickVelocity)
@@ -116,23 +119,24 @@ Popup
             Layout.preferredWidth: productPanel.imageSize
             Layout.preferredHeight: productPanel.imageSize
             Layout.column: 0
-            Layout.row: 0
-            Layout.rowSpan: 3
-            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+            Layout.row: 1
+            Layout.rowSpan: 2
+            Layout.alignment: Qt.AlignCenter
             source: "../Images/image_dummy"
         }
 
         Rectangle
         {
             Layout.fillWidth: parent
-            Layout.column: 1
+            Layout.column: 0
             Layout.row: 0
-            Layout.columnSpan: 1
+            Layout.columnSpan: 2
             color: "transparent"
 
             CardTitleText
             {
                 color: Constants.colorWhite
+                font { pointSize: Constants.hugeFontSize; bold: true }
                 text: productName
             }
         }
@@ -208,7 +212,7 @@ Popup
             Layout.column: 2
             Layout.row: 1
             Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+            Layout.alignment: Qt.AlignCenter
             Material.background: Material.color(Material.BlueGrey, isPiece ? Material.Shade200 : Material.Shade700)
             text: isPiece ? qsTr("+ / -") : qsTr(" ")
             font { pointSize: Constants.hugeFontSize }
@@ -219,33 +223,15 @@ Popup
             }
         }
 
-        RoundIconButton
-        {
-            id: productPanelPrintButton
-            Layout.column: 2
-            Layout.row: 2
-            Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignRight | Qt.AlignBottom
-            width:  Constants.buttonSize * 2 + productPanelLayout.rowSpacing
-            height: Constants.buttonSize * 2 + productPanelLayout.rowSpacing
-            icon { width: Constants.maxIconSize; height: Constants.maxIconSize; source: "../Icons/print_black_48" }
-            Material.background: Constants.colorAuto
-            onClicked:
-            {
-                app.onUserAction(); // AppManager's slot
-                app.onPrint() // AppManager's slot
-            }
-        }
-
         Rectangle
         {
             id: productPanelPrintMessageRectangle
             Layout.column: 2
             Layout.row: 2
             Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignRight | Qt.AlignBottom
-            width: productPanelPrintButton.width
-            height: productPanelPrintButton.height
+            Layout.alignment: Qt.AlignCenter
+            Layout.preferredWidth:  printButtonSize
+            Layout.preferredHeight: printButtonSize
             radius: Constants.margin
             color: Constants.colorError
 
@@ -253,6 +239,24 @@ Popup
             {
                 id: productPanelPrintMessage
                 color: Constants.colorWhite
+            }
+        }
+
+        RoundIconButton
+        {
+            id: productPanelPrintButton
+            Layout.column: 2
+            Layout.row: 2
+            Layout.columnSpan: 2
+            Layout.alignment: Qt.AlignCenter
+            Layout.preferredWidth:  printButtonSize
+            Layout.preferredHeight: printButtonSize
+            icon { width: Constants.maxIconSize; height: Constants.maxIconSize; source: "../Icons/print_black_48" }
+            Material.background: Constants.colorAuto
+            onClicked:
+            {
+                app.onUserAction(); // AppManager's slot
+                app.onPrint() // AppManager's slot
             }
         }
     }
