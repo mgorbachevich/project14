@@ -23,6 +23,7 @@ public:
     bool isWeightFixed() { return isFlag(status, 0); }
     bool isZeroFlag() { return isFlag(status, 1); }
     bool isTareFlag() { return isFlag(status, 3); }
+    QString getErrorDescription(const int);
 
 private:
     bool isFlag(Wm100::channel_status, int);
@@ -35,7 +36,7 @@ private:
     Wm100::channel_status status = {0, 0.0, 0.0, 0};
 
 signals:
-    void paramChanged(const int, const int, const QString&);
+    void paramChanged(const int, const int);
 
 public slots:
     void onStatusChanged(Wm100::channel_status&);

@@ -21,6 +21,7 @@ public:
     bool isError() { return errorCode != 0 || isStateError(status); }
     bool isDemoMode() { return demoMode; }
     void feed();
+    QString getErrorDescription(const int);
 
 private:
     bool isFlag(uint16_t v, int shift) { return (v & (0x00000001 << shift)) != 0; }
@@ -35,7 +36,7 @@ private:
 
 signals:
     void printed(const DBRecord&);
-    void paramChanged(const int, const int, const QString&);
+    void paramChanged(const int, const int);
 
 public slots:
     void onStatusChanged(uint16_t);

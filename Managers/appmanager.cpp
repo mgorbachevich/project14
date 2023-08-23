@@ -739,10 +739,13 @@ void AppManager::runEquipment(const bool start)
             QString address = settings.getItemStringValue(SettingDBTable::SettingCode_WMAddress);
             QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_WMBaudrate)));
             QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_WMTimeout));
-            url1 = QString("serial://%1?baudrate=%20&timeout=%3").arg(address, boudrate, timeout);
+            url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
         }
         int e1 = weightManager->start(url1, demo1);
-        if(e1 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!").arg(e1));
+        if(e1 != 0)
+            showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").arg(
+                            QString::number(e1),
+                            weightManager->getErrorDescription(e1)));
 
         QString url2;
         bool demo2 = settings.getItemBoolValue(SettingDBTable::SettingCode_PrinterDemo);
@@ -756,7 +759,10 @@ void AppManager::runEquipment(const bool start)
             url2 = QString("serial://%1?baudrate=%20&timeout=%3").arg(address, boudrate, timeout);
         }
         int e2 = printManager->start(url2, demo2);
-        if(e2 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка модуля печати %1!").arg(e2));
+        if(e2 != 0)
+            showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").arg(
+                            QString::number(e2),
+                            printManager->getErrorDescription(e2)));
     }
     else
     {
@@ -827,24 +833,25 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
         resetProduct();
 }
 
-void AppManager::onEquipmentParamChanged(const int param, const int errorCode, const QString& errorDescription)
+void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 {
     // Изменился параметр оборудования
-    qDebug() << QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2 %3").
-                arg(QString::number(param), QString::number(errorCode), errorDescription);
+    qDebug() << QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(param, errorCode);
 
     switch (param)
     {
     case EquipmentParam_None:
         return;
     case EquipmentParam_WeightError:
-        emit log(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").
-                arg(QString::number(errorCode), errorDescription));
+        emit log(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").arg(
+                    QString::number(errorCode),
+                    weightManager->getErrorDescription(errorCode)));
         break;
     case EquipmentParam_PrintError:
-        emit log(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").
-                arg(QString::number(errorCode), errorDescription));
-        emit showPrinterMessage(errorDescription);
+        emit log(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").arg(
+                    QString::number(errorCode),
+                    printManager->getErrorDescription(errorCode)));
+        emit showPrinterMessage(printManager->getErrorDescription(errorCode));
         break;
     }
     updateWeightPanel();

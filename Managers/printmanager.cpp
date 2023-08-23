@@ -85,15 +85,29 @@ bool PrintManager::isStateError(uint16_t s)
     return isFlag(s, 0) || (isFlag(s, 1) && isFlag(s, 6)) || isFlag(s, 2) || isFlag(s, 3) || isFlag(s, 8);
 }
 
+QString PrintManager::getErrorDescription(const int e)
+{
+    switch(e)
+    {
+    case 0: return "Ошибок нет";
+    case 1003: return "Нет бумаги! Установите новый рулон!";
+    case 1004: return "Закройте головку принтера!";
+    case 1005: return "Снимите этикетку!";
+    case 1006: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
+    case 1008: return "Ошибка памяти принтера!";
+    }
+    return slpa == nullptr ? "" : slpa->errorDescription(e);
+}
+
 void PrintManager::onStatusChanged(uint16_t s)
 {
+    qDebug() << QString("@@@@@ PrintManager::onStatusChanged %1b").arg(s);
     if(demoMode)
     {
         status = 0;
-        emit paramChanged(EquipmentParam_PrintError, 0, NO_ERROR_DESCRIPTION_TEXT);
+        emit paramChanged(EquipmentParam_PrintError, 0);
         return;
     }
-
     bool b0 = isFlag(s, 0);
     bool b1 = isFlag(s, 1);
     bool b2 = isFlag(s, 2);
@@ -103,53 +117,28 @@ void PrintManager::onStatusChanged(uint16_t s)
 
     EquipmentParam param = EquipmentParam_None;
     int e = 0;
-    QString description = NO_ERROR_DESCRIPTION_TEXT;
     if(b0 || b1 || b2 || b3 || b6 || b8)
     {
         param = EquipmentParam_PrintError;
-        if(b0 && isFlag(status, 0) != b0)
-        {
-            e = 1003;
-            description = "Нет бумаги! Установите новый рулон!";
-        }
-        if(b1 && b6 && isFlag(status, 1) != b1)
-        {
-            e = 1005;
-            description = "Снимите этикетку!";
-        }
-        if(b2 && isFlag(status, 2) != b2)
-        {
-            e = 1006;
-            description = "Этикетка не спозиционирована! Нажмите клавишу промотки!";
-        }
-        if(b3 && isFlag(status, 3) != b3)
-        {
-            e = 1004;
-            description = "Закройте головку принтера!";
-        }
-        if(b8 && isFlag(status, 8) != b8)
-        {
-            e = 1008;
-            description = "Ошибка памяти принтера!";
-        }
+        if(b0 && isFlag(status, 0) != b0) e = 1003;
+        if(b1 && b6 && isFlag(status, 1) != b1) e = 1005;
+        if(b2 && isFlag(status, 2) != b2) e = 1006;
+        if(b3 && isFlag(status, 3) != b3) e = 1004;
+        if(b8 && isFlag(status, 8) != b8) e = 1008;
     }
-    else
-        if(isStateError(status) && errorCode == 0)
-            param = EquipmentParam_PrintError; // Ошибка исчезла
+    else if(isStateError(status) && errorCode == 0) param = EquipmentParam_PrintError; // Ошибка исчезла
 
     status = s;
-    emit paramChanged(param, e, description);
+    if(param != EquipmentParam_None) emit paramChanged(param, e);
 }
 
-void PrintManager::onErrorStatusChanged(int code)
+void PrintManager::onErrorStatusChanged(int e)
 {
-    if(demoMode) return;
-
-    if(errorCode != code)
+    qDebug() << "@@@@@ PrintManager::onErrorStatusChanged " << e;
+    if(!demoMode && errorCode != e)
     {
-        errorCode = code;
-        QString description = code == 0? NO_ERROR_DESCRIPTION_TEXT : slpa->errorDescription(code);
-        emit paramChanged(EquipmentParam_PrintError, code, description);
+        errorCode = e;
+        emit paramChanged(EquipmentParam_PrintError, e);
     }
 }
 

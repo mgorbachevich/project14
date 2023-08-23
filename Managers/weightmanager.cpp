@@ -52,6 +52,7 @@ void WeightManager::setWeightParam(const int param)
         break;
     case EquipmentParam_ZeroFlag:
         wm100->setZero();
+        wm100->setTareValue(0);
         break;
     default:
         break;
@@ -66,6 +67,20 @@ bool WeightManager::isFlag(Wm100::channel_status s, int shift)
 bool WeightManager::isStateError(Wm100::channel_status s)
 {
     return isFlag(s, 5) || isFlag(s, 6) || isFlag(s, 7) || isFlag(s, 8) || isFlag(s, 9);
+}
+
+QString WeightManager::getErrorDescription(const int e)
+{
+    switch(e)
+    {
+    case 0: return "Ошибок нет";
+    case 5003: return "Ошибка автонуля при включении";
+    case 5004: return "Перегрузка по весу";
+    case 5005: return "Ошибка при получении измерения";
+    case 5006: return "Весы недогружены";
+    case 5007: return "Ошибка: нет ответа от АЦП";
+    }
+    return wm100 == nullptr ? "" : wm100->errorDescription(e);
 }
 
 void WeightManager::onStatusChanged(Wm100::channel_status &s)
@@ -88,53 +103,30 @@ void WeightManager::onStatusChanged(Wm100::channel_status &s)
 
     EquipmentParam param = EquipmentParam_WeightValue;
     int e = 0;
-    QString description = NO_ERROR_DESCRIPTION_TEXT;
     if(b5 || b6 || b7 || b8 || b9) // Ошибка состояния
     {
         param = EquipmentParam_WeightError;
-        if(b5 && isFlag(status, 5) != b5)
-        {
-            e = 5003;
-            description = "Ошибка автонуля при включении";
-        }
-        if(b6 && isFlag(status, 6) != b6)
-        {
-            e = 5004;
-            description = "Перегрузка по весу";
-        }
-        if(b7 && isFlag(status, 7) != b7)
-        {
-            e = 5005;
-            description = "Ошибка при получении измерения";
-        }
-        if(b8 && isFlag(status, 8) != b8)
-        {
-            e = 5006;
-            description = "Весы недогружены";
-        }
-        if(b9 && isFlag(status, 9) != b9)
-        {
-            e = 5007;
-            description = "Ошибка: нет ответа от АЦП";
-        }
+        if(b5 && isFlag(status, 5) != b5) e = 5003;
+        if(b6 && isFlag(status, 6) != b6) e = 5004;
+        if(b7 && isFlag(status, 7) != b7) e = 5005;
+        if(b8 && isFlag(status, 8) != b8) e = 5006;
+        if(b9 && isFlag(status, 9) != b9) e = 5007;
     }
-    else
-        if(isStateError(status) && errorCode == 0)
-            param = EquipmentParam_WeightError; // Ошибка исчезла
+    else if(isStateError(status) && errorCode == 0) param = EquipmentParam_WeightError; // Ошибка исчезла
 
     status.weight = s.weight;
     status.tare = s.tare;
     status.state = s.state;
-    emit paramChanged(param, e, description);
+    emit paramChanged(param, e);
 }
 
-void WeightManager::onErrorStatusChanged(int code)
+void WeightManager::onErrorStatusChanged(int e)
 {
-    if(errorCode != code)
+    qDebug() << "@@@@@ WeightManager::onErrorStatusChanged " << e;
+    if(errorCode != e)
     {
-        errorCode = code;
-        QString description = code == 0? NO_ERROR_DESCRIPTION_TEXT : wm100->errorDescription(code);
-        emit paramChanged(EquipmentParam_WeightError, code, description);
+        errorCode = e;
+        emit paramChanged(EquipmentParam_WeightError, e);
     }
 }
 

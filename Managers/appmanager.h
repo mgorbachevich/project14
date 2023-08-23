@@ -124,7 +124,7 @@ public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
     void onDownloadFinished(const int);
-    void onEquipmentParamChanged(const int, const int, const QString&);
+    void onEquipmentParamChanged(const int, const int);
     void onLoadResult(const qint64, const QString&);
     void onLockClicked();
     void onMainPageChanged(const int);
