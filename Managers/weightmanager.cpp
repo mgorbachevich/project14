@@ -88,8 +88,8 @@ void WeightManager::onStatusChanged(Wm100::channel_status &s)
 
     EquipmentParam param = EquipmentParam_WeightValue;
     int e = 0;
-    QString description = "Ошибок нет";
-    if(isStateError(s))
+    QString description = NO_ERROR_DESCRIPTION_TEXT;
+    if(b5 || b6 || b7 || b8 || b9) // Ошибка состояния
     {
         param = EquipmentParam_WeightError;
         if(b5 && isFlag(status, 5) != b5)
@@ -119,8 +119,8 @@ void WeightManager::onStatusChanged(Wm100::channel_status &s)
         }
     }
     else
-        if(isStateError(status) && error == 0)
-            param = EquipmentParam_WeightError;
+        if(isStateError(status) && errorCode == 0)
+            param = EquipmentParam_WeightError; // Ошибка исчезла
 
     status.weight = s.weight;
     status.tare = s.tare;
@@ -128,13 +128,13 @@ void WeightManager::onStatusChanged(Wm100::channel_status &s)
     emit paramChanged(param, e, description);
 }
 
-void WeightManager::onErrorStatusChanged(int errorCode)
+void WeightManager::onErrorStatusChanged(int code)
 {
-    if(error != errorCode)
+    if(errorCode != code)
     {
-        error = errorCode;
-        QString description = error == 0? "Ошибок нет" : wm100->errorDescription(error);
-        emit paramChanged(EquipmentParam_WeightError, error, description);
+        errorCode = code;
+        QString description = code == 0? NO_ERROR_DESCRIPTION_TEXT : wm100->errorDescription(code);
+        emit paramChanged(EquipmentParam_WeightError, code, description);
     }
 }
 

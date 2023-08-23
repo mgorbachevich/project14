@@ -118,7 +118,7 @@ Rectangle
 
                 Image
                 {
-                    id: productPanelZeroIcon
+                    id: productPanelTareIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
@@ -127,7 +127,7 @@ Rectangle
 
                 Image
                 {
-                    id: productPanelTareIcon
+                    id: productPanelZeroIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize

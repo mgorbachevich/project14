@@ -14,7 +14,7 @@ public:
     int start(const QString&, const bool);
     void stop();
     QString version();
-    bool isError() { return error != 0 || isStateError(status); }
+    bool isError() { return errorCode != 0 || isStateError(status); }
     void setWeightParam(const int);
     double getWeight() { return status.weight; }
     int getPieces() { return pieces; }
@@ -31,7 +31,7 @@ private:
     Wm100* wm100 = nullptr;
     bool started = false;
     int pieces = 1;
-    int error = 0;
+    int errorCode = 0;
     Wm100::channel_status status = {0, 0.0, 0.0, 0};
 
 signals:

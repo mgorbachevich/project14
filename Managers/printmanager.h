@@ -18,7 +18,8 @@ public:
     void stop();
     QString version();
     void print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
-    bool isError() { return error != 0 || isStateError(status); }
+    bool isError() { return errorCode != 0 || isStateError(status); }
+    bool isDemoMode() { return demoMode; }
     void feed();
 
 private:
@@ -27,7 +28,7 @@ private:
 
     Slpa100u* slpa = nullptr;
     bool started = false;
-    int error = 0;
+    int errorCode = 0;
     uint16_t status = 0;
     QString message;
     bool demoMode = true;

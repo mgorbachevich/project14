@@ -827,11 +827,11 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
         resetProduct();
 }
 
-void AppManager::onEquipmentParamChanged(const int param, const int value, const QString& description)
+void AppManager::onEquipmentParamChanged(const int param, const int errorCode, const QString& errorDescription)
 {
     // Изменился параметр оборудования
-    qDebug() << QString("@@@@@ AppManager::onEquipmentParamChanged param=%1b value=%2 description=%3").
-                arg(QString::number(param), QString::number(value), description);
+    qDebug() << QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2 %3").
+                arg(QString::number(param), QString::number(errorCode), errorDescription);
 
     switch (param)
     {
@@ -839,12 +839,12 @@ void AppManager::onEquipmentParamChanged(const int param, const int value, const
         return;
     case EquipmentParam_WeightError:
         emit log(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").
-                arg(QString::number(value), description));
+                arg(QString::number(errorCode), errorDescription));
         break;
     case EquipmentParam_PrintError:
         emit log(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").
-                arg(QString::number(value), description));
-        emit showPrinterMessage(description);
+                arg(QString::number(errorCode), errorDescription));
+        emit showPrinterMessage(errorDescription);
         break;
     }
     updateWeightPanel();
@@ -852,7 +852,7 @@ void AppManager::onEquipmentParamChanged(const int param, const int value, const
 
 void AppManager::updateWeightPanel()
 {
-    // Обновить весовую панель (вес, цена...)
+    // Обновить весовую панель (вес, цена, флажки...)
 
     QString c0 = "#424242";
     QString c1 = "#fafafa";
@@ -894,6 +894,9 @@ void AppManager::updateWeightPanel()
     emit showWeightParam(EquipmentParam_AmountValue, a);
     emit showWeightParam(EquipmentParam_AmountColor, isAmount ? c1 : c0);
 
+    // Принтер
+    if(printManager->isDemoMode())
+        emit showPrinterMessage("Демо режим принтера");
     emit enablePrint(isAmount && !printManager->isError());
 }
 
