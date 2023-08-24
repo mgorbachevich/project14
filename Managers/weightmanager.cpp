@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QTimer>
 #include <QDateTime>
 #include "weightmanager.h"
 
@@ -52,7 +53,7 @@ void WeightManager::setWeightParam(const int param)
         break;
     case EquipmentParam_ZeroFlag:
         wm100->setZero();
-        wm100->setTareValue(0);
+        wm100->setTare();
         break;
     default:
         break;

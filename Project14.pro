@@ -128,6 +128,7 @@ RESOURCES += \
     Resources/LeagueGothic-Regular.otf \
     Icons/arrow_left_black_48.png \
     Icons/arrow_up_black_48.png \
+    Icons/auto_flag_48.png \
     Icons/close_black_48.png \
     Icons/error_flag_48.png \
     Icons/info_outline_black_48.png \

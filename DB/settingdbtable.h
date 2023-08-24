@@ -26,6 +26,11 @@ public:
         SettingCode_SearchCodeSymbols = 44,
         SettingCode_SearchBarcodeSymbols = 45,
         SettingCode_ShopName = 202,
+        SettingCode_PrintAutoWeight = 203,
+        SettingCode_PrintPaper = 208,
+        SettingCode_PrintAuto = 210,
+        SettingCode_PrintLabelFormat = 213,
+        SettingCode_PrintAutoPcs = 218,
         SettingCode_Logging = 606,
         SettingCode_LogDuration = 607,
         SettingCode_TCPPort = 1003,
@@ -50,12 +55,7 @@ public:
         SettingCode_PrinterAutoFeed = 42,
         SettingCode_PrinterBrightness = 211,
         SettingCode_PrintTitle = 201,
-        SettingCode_PrintPaper = 208,
-        SettingCode_PrintAuto = 210,
-        SettingCode_PrintAutoWeight = 203,
-        SettingCode_PrintAutoPcs = 218,
-        SettingCode_PrintLabelFormat = 213,
-        */
+          */
     };
 
     enum WMBaudrate

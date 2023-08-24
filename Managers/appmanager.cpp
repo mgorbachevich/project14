@@ -532,6 +532,7 @@ void AppManager::onWeightParamClicked(const int param)
 {
     qDebug() << "@@@@@ AppManager::onWeightParamClicked " << param;
     weightManager->setWeightParam(param);
+    updateWeightPanel();
 }
 
 void AppManager::onConfirmationClicked(const int selector)
@@ -866,15 +867,17 @@ void AppManager::updateWeightPanel()
     const bool isProduct = !currentProduct.empty();
     const bool isPiece = isProduct && ProductDBTable::isPiece(currentProduct);
     const bool is100g = isProduct && ProductDBTable::is100gBase(currentProduct);
-    const bool isError = weightManager->isError();
     const bool isFixed = weightManager->isWeightFixed();
-    const bool isTareFlag = weightManager->isTareFlag();
-    const bool isZeroFlag = weightManager->isZeroFlag();
-
-    // Флажки:
+    const bool isError = weightManager->isError();
+    const bool isZero = weightManager->isZeroFlag();
+    const bool isTare = weightManager->isTareFlag() && (int)(weightManager->getTare() * 1000) != 0;
+    const bool isAuto = isPiece ? settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAutoPcs) :
+                                  settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAuto);
+     // Флажки:
     emit showWeightParam(EquipmentParam_WeightError, Tools::boolToString(isError));
-    emit showWeightParam(EquipmentParam_ZeroFlag, Tools::boolToString(isZeroFlag));
-    emit showWeightParam(EquipmentParam_TareFlag, Tools::boolToString(isTareFlag));
+    emit showWeightParam(EquipmentParam_AutoPrint, Tools::boolToString(isAuto));
+    emit showWeightParam(EquipmentParam_ZeroFlag, Tools::boolToString(isZero));
+    emit showWeightParam(EquipmentParam_TareFlag, Tools::boolToString(isTare));
 
     // Загаловки:
     emit showWeightParam(EquipmentParam_WeightTitle, isPiece ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
@@ -905,6 +908,14 @@ void AppManager::updateWeightPanel()
     if(printManager->isDemoMode())
         emit showPrinterMessage("Демо режим принтера");
     emit enablePrint(isAmount && !printManager->isError());
+
+    qDebug() << QString("@@@@@ AppManager::updateWeightPanel %1 %2 %3 %4 %5 %6 %7 %8").arg(
+                    Tools::boolToString(isError),
+                    Tools::boolToString(isAuto),
+                    Tools::boolToString(isTare),
+                    Tools::boolToString(isZero),
+                    Tools::boolToString(isFixed),
+                    q, p, a);
 }
 
 
