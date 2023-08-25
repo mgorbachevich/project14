@@ -43,10 +43,10 @@ private:
     QString priceAsString(const DBRecord&);
     QString amountAsString(const DBRecord&);
     QString quantityAsString(const DBRecord&);
-    void showCurrentProduct();
+    void setProduct(const DBRecord&);
     void filteredSearch();
     void updateTablePanel(const bool);
-    void updateWeightPanel();
+    void updateStatus();
     void startAuthorization();
     void checkAuthorization(const DBRecordList&);
     void showUsers(const DBRecordList&);
@@ -55,8 +55,8 @@ private:
     void showMessage(const QString&, const QString&);
     void resetProduct();
     void runEquipment(const bool);
+    void print();
 
-    QQmlContext* context = nullptr;
     bool started = false;
     DataBase* db = nullptr;
     DBThread* dbThread = nullptr;
@@ -65,13 +65,18 @@ private:
     PrintManager* printManager = nullptr;
     Settings settings;
     DBRecord user;
-    DBRecord currentProduct;
+    AppInfo appInfo;
+    DBRecord product;
+
+    // UI:
+    QQmlContext* context = nullptr;
+    quint64 userActionTime = 0;
     int openedPopupCount = 0;
     int mainPageIndex = 0;
     int secret = 0;
-    AppInfo appInfo;
-    quint64 userActionTime = 0;
     bool authorizationOpened = false;
+
+    // Models:
     ProductPanelModel* productPanelModel;
     ShowcasePanelModel* showcasePanelModel;
     TablePanelModel* tablePanelModel;
@@ -85,7 +90,7 @@ private:
 signals:
     void authorizationSucceded();
     void download(const qint64, const QString&);
-    void enablePrint(const bool);
+    void enableManualPrint(const bool);
     void hideMessageBox();
     void transaction(const DBRecord&);
     void resetCurrentProduct();
@@ -132,7 +137,7 @@ public slots:
     void onPiecesInputClosed(const QString&);
     void onPopupClosed();
     void onPopupOpened();
-    void onPrint();
+    void onPrintClicked();
     void onPrinted(const DBRecord&);
     void onProductDescriptionClicked();
     void onProductPanelCloseClicked();
@@ -150,11 +155,12 @@ public slots:
     void onTableBackClicked();
     void onTableOptionsClicked();
     void onTableResultClicked(const int);
+    void onTareClicked();
     void onTimer();
     void onUserAction();
     void onViewLogClicked();
     void onWeightPanelClicked(const int);
-    void onWeightParamClicked(const int);
+    void onZeroClicked();
 };
 
 #endif // APPMANAGER_H

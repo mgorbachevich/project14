@@ -1,8 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.35"
-
 #define DB_EMULATION
 #define CHECK_AUTHORIZATION
 
@@ -51,8 +49,8 @@ enum LogError
 enum EquipmentParam
 {
     EquipmentParam_None = 0,
-    EquipmentParam_TareFlag = 1,
-    EquipmentParam_ZeroFlag = 2,
+    EquipmentParam_Tare = 1,
+    EquipmentParam_Zero = 2,
     EquipmentParam_TareValue = 3,
     EquipmentParam_WeightValue = 4,
     EquipmentParam_PriceValue = 5,

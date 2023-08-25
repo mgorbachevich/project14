@@ -22,6 +22,10 @@ public:
     bool isDemoMode() { return demoMode; }
     void feed();
     QString getErrorDescription(const int);
+    bool isManualPrintEnabled() const { return manualPrintEnabled; }
+    void setManualPrintEnabled(bool v) { manualPrintEnabled = v; }
+    bool isProductPrinted() const { return productPrinted; }
+    void resetProductPrinted() { productPrinted = false; }
 
 private:
     bool isFlag(uint16_t v, int shift) { return (v & (0x00000001 << shift)) != 0; }
@@ -33,6 +37,8 @@ private:
     uint16_t status = 0;
     QString message;
     bool demoMode = true;
+    bool manualPrintEnabled = false;
+    bool productPrinted = false;
 
 signals:
     void printed(const DBRecord&);

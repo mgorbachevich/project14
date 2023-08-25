@@ -75,7 +75,6 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
     context->setContextProperty("userNameModel", userNameModel);
     context->setContextProperty("viewLogPanelModel", viewLogPanelModel);
 
-    appInfo.appVersion = APP_VERSION;
     appInfo.dbVersion = db->version();
     appInfo.weightManagerVersion = weightManager->version();
     appInfo.printManagerVersion = printManager->version();
@@ -83,7 +82,7 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
     appInfo.ip = Tools::getNetParams().localHostIP;
 
     dbThread->start();
-    QTimer::singleShot(10, this, &AppManager::start);
+    QTimer::singleShot(100, this, &AppManager::start);
     onUserAction();
     timer->start(APP_TIMER_MSEC);
 }
@@ -110,53 +109,55 @@ void AppManager::onDownloadFinished(const int count)
     qDebug() << "@@@@@ AppManager::onDownloadFinished" << count;
     refreshAll();
     //showToast("Загрузка данных завершена", QString("Загружено записей: %1").arg(count));
-    if(!currentProduct.isEmpty())
-        emit selectFromDB(DataBase::GetCurrentProduct, currentProduct.at(ProductDBTable::Code).toString());
+    if(!product.isEmpty())
+        emit selectFromDB(DataBase::GetCurrentProduct, product.at(ProductDBTable::Code).toString());
 }
 
-QString AppManager::quantityAsString(const DBRecord& product)
+QString AppManager::quantityAsString(const DBRecord& productRecord)
 {
-    if(ProductDBTable::isPiece(product)) return QString("%1").arg(weightManager->getPieces());
+    if(ProductDBTable::isPiece(productRecord)) return QString("%1").arg(weightManager->getPieces());
     if(weightManager->isError()) return "";
     return QString("%1").arg(weightManager->getWeight(), 0, 'f', 3);
 }
 
-QString AppManager::priceAsString(const DBRecord& product)
+QString AppManager::priceAsString(const DBRecord& productRecord)
 {
     int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
-    return Tools::moneyToText(price(product), pp);
+    return Tools::moneyToText(price(productRecord), pp);
 }
 
-QString AppManager::amountAsString(const DBRecord& product)
+QString AppManager::amountAsString(const DBRecord& productRecord)
 {
     double q = 0;
-    if(ProductDBTable::isPiece(product))
+    if(ProductDBTable::isPiece(productRecord))
         q = weightManager->getPieces();
     else if(!weightManager->isError())
-        q = weightManager->getWeight() * (ProductDBTable::is100gBase(product) ? 10 : 1);
+        q = weightManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
     int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
-    return Tools::moneyToText(q * price(product), pp);
+    return Tools::moneyToText(q * price(productRecord), pp);
 }
 
-double AppManager::price(const DBRecord& product)
+double AppManager::price(const DBRecord& productRecord)
 {
     const int p = ProductDBTable::Price;
-    if (product.count() <= p)
+    if (productRecord.count() <= p)
         return 0;
     int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
-    return Tools::priceToDouble(product[p].toString(), pp);
+    return Tools::priceToDouble(productRecord[p].toString(), pp);
 }
 
-void AppManager::showCurrentProduct() // Вывод на экран панели выбранного продукта
+void AppManager::setProduct(const DBRecord& newProduct)
 {
-    QString productCode = currentProduct[ProductDBTable::Code].toString();
-    qDebug() << "@@@@@ AppManager::showCurrentProduct " << productCode;
-    productPanelModel->update(currentProduct, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
-    emit showProductPanel(currentProduct[ProductDBTable::Name].toString(), ProductDBTable::isPiece(currentProduct));
+    product = newProduct;
+    // printManager->resetProductPrinted();
+    QString productCode = product[ProductDBTable::Code].toString();
+    qDebug() << "@@@@@ AppManager::setProduct " << productCode;
+    productPanelModel->update(product, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
+    emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
     emit log(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
-    QString pictureCode = currentProduct[ProductDBTable::PictureCode].toString();
+    QString pictureCode = product[ProductDBTable::PictureCode].toString();
     emit selectFromDB(DataBase::GetImageByResourceCode, pictureCode);
-    updateWeightPanel();
+    updateStatus();
 
     if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
     {
@@ -168,7 +169,7 @@ void AppManager::showCurrentProduct() // Вывод на экран панели
 void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
-    emit selectFromDB(DataBase::GetMessageByResourceCode, currentProduct[ProductDBTable::MessageCode].toString());
+    emit selectFromDB(DataBase::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
 }
 
 void AppManager::onProductPanelCloseClicked()
@@ -374,7 +375,7 @@ void AppManager::onPiecesInputClosed(const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onPiecesInputClosed " << value;
     weightManager->setPieces(Tools::stringToInt(value));
-    updateWeightPanel();
+    updateStatus();
 }
 
 void AppManager::onPopupClosed()
@@ -502,7 +503,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         break;
 
     case DataBase::GetCurrentProduct:
-        if (!currentProduct.isEmpty() && !records.isEmpty() && !DBTable::isEqual(currentProduct, records.at(0)))
+        if (!product.isEmpty() && !records.isEmpty() && !DBTable::isEqual(product, records.at(0)))
         {
             // Сброс выбранного товара после загрузки:
             resetProduct();
@@ -528,11 +529,18 @@ void AppManager::onWeightPanelClicked(const int param)
     if(param == secret + 1 && ++secret == 3) onLockClicked();
 }
 
-void AppManager::onWeightParamClicked(const int param)
+void AppManager::onTareClicked()
 {
-    qDebug() << "@@@@@ AppManager::onWeightParamClicked " << param;
-    weightManager->setWeightParam(param);
-    updateWeightPanel();
+    qDebug() << "@@@@@ AppManager::onTareClicked ";
+    weightManager->setWeightParam(EquipmentParam_Tare);
+    updateStatus();
+}
+
+void AppManager::onZeroClicked()
+{
+    qDebug() << "@@@@@ AppManager::onZeroClicked ";
+    weightManager->setWeightParam(EquipmentParam_Zero);
+    updateStatus();
 }
 
 void AppManager::onConfirmationClicked(const int selector)
@@ -551,16 +559,13 @@ void AppManager::onTableResultClicked(const int index)
     qDebug() << "@@@@@ AppManager::onTableResultClicked " << index;
     if (index < tablePanelModel->productCount())
     {
-        DBRecord clickedProduct = tablePanelModel->productByIndex(index);
+        DBRecord& clickedProduct = tablePanelModel->productByIndex(index);
         if (ProductDBTable::isGroup(clickedProduct))
         {
             if (tablePanelModel->groupDown(clickedProduct)) updateTablePanel(false);
         }
         else
-        {
-            currentProduct = clickedProduct;
-            showCurrentProduct();
-        }
+            setProduct(clickedProduct);
     }
 }
 
@@ -594,15 +599,13 @@ void AppManager::onSettingGroupClicked(const int index)
 void AppManager::onSearchResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSearchResultClicked " << index;
-    currentProduct = searchPanelModel->productByIndex(index);
-    showCurrentProduct();
+    setProduct(searchPanelModel->productByIndex(index));
 }
 
 void AppManager::onShowcaseClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onShowcaseClicked " << index;
-    currentProduct = showcasePanelModel->productByIndex(index);
-    showCurrentProduct();
+    setProduct(showcasePanelModel->productByIndex(index));
 }
 
 void AppManager::onSwipeMainPage(const int page)
@@ -718,10 +721,10 @@ void AppManager::resetProduct()
     // Сбросить выбранный продукт
 
     qDebug() << "@@@@@ AppManager::resetProduct";
-    currentProduct.clear();
+    product.clear();
     weightManager->setPieces(Tools::stringToInt(1));
     emit resetCurrentProduct();
-    updateWeightPanel();
+    updateStatus();
 }
 
 void AppManager::runEquipment(const bool start)
@@ -808,17 +811,20 @@ void AppManager::showUsers(const DBRecordList& records)
     }
 }
 
-void AppManager::onPrint()
+void AppManager::print() // Печатаем этикетку
 {
-    // Печатаем этикетку
+    qDebug() << "@@@@@ AppManager::print ";
+    printManager->print(db, user,
+                        product,
+                        quantityAsString(product),
+                        priceAsString(product),
+                        amountAsString(product));
+}
 
-    qDebug() << "@@@@@ AppManager::onPrint ";
-    printManager->print(db,
-                        user,
-                        currentProduct,
-                        quantityAsString(currentProduct),
-                        priceAsString(currentProduct),
-                        amountAsString(currentProduct));
+void AppManager::onPrintClicked()
+{
+    qDebug() << "@@@@@ AppManager::onPrintClicked ";
+    print();
 }
 
 void AppManager::onPrinted(const DBRecord& newTransaction)
@@ -855,67 +861,75 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
         emit showPrinterMessage(printManager->getErrorDescription(errorCode));
         break;
     }
-    updateWeightPanel();
+    updateStatus();
 }
 
-void AppManager::updateWeightPanel()
+void AppManager::updateStatus()
 {
     // Обновить весовую панель (вес, цена, флажки...)
 
-    QString c0 = "#424242";
-    QString c1 = "#fafafa";
-    const bool isProduct = !currentProduct.empty();
-    const bool isPiece = isProduct && ProductDBTable::isPiece(currentProduct);
-    const bool is100g = isProduct && ProductDBTable::is100gBase(currentProduct);
+    QString passiveColor = "#424242";
+    QString activeColor = "#fafafa";
+    const bool isProduct = !product.empty();
+    const bool isPiece = isProduct && ProductDBTable::isPiece(product);
+    const bool is100g = isProduct && ProductDBTable::is100gBase(product);
+    const bool isAutoPrint = settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAuto) &&
+           (!isPiece || settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAutoPcs));
+    const bool isTare = weightManager->isTareFlag();
     const bool isFixed = weightManager->isWeightFixed();
     const bool isError = weightManager->isError();
     const bool isZero = weightManager->isZeroFlag();
-    const bool isTare = weightManager->isTareFlag() && (int)(weightManager->getTare() * 1000) != 0;
-    const bool isAuto = isPiece ? settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAutoPcs) :
-                                  settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAuto);
-     // Флажки:
+    if(isZero) printManager->resetProductPrinted();
+
+    // Флажки:
     emit showWeightParam(EquipmentParam_WeightError, Tools::boolToString(isError));
-    emit showWeightParam(EquipmentParam_AutoPrint, Tools::boolToString(isAuto));
-    emit showWeightParam(EquipmentParam_ZeroFlag, Tools::boolToString(isZero));
-    emit showWeightParam(EquipmentParam_TareFlag, Tools::boolToString(isTare));
+    emit showWeightParam(EquipmentParam_AutoPrint, Tools::boolToString(isAutoPrint));
+    emit showWeightParam(EquipmentParam_Zero, Tools::boolToString(isZero));
+    emit showWeightParam(EquipmentParam_Tare, Tools::boolToString(isTare));
 
     // Загаловки:
     emit showWeightParam(EquipmentParam_WeightTitle, isPiece ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
-    QString qt = "ЦЕНА, руб";
-    if (isPiece) qt += "/шт";
-    else if (is100g) qt += "/100г";
-    else if (!currentProduct.isEmpty()) qt += "/кг";
-    emit showWeightParam(EquipmentParam_PriceTitle, qt);
+    QString quantityTitle = "ЦЕНА, руб";
+    if (isPiece) quantityTitle += "/шт";
+    else if (is100g) quantityTitle += "/100г";
+    else if (!product.isEmpty()) quantityTitle += "/кг";
+    emit showWeightParam(EquipmentParam_PriceTitle, quantityTitle);
     emit showWeightParam(EquipmentParam_AmountTitle, "СТОИМОСТЬ, руб");
 
     // Вес/Штуки:
-    QString q = (isPiece || !isError) ? quantityAsString(currentProduct) : "-----";
-    emit showWeightParam(EquipmentParam_WeightValue, q);
-    emit showWeightParam(EquipmentParam_WeightColor, isPiece || isFixed ? c1 : c0);
+    QString quantity = (isPiece || !isError) ? quantityAsString(product) : "-----";
+    emit showWeightParam(EquipmentParam_WeightValue, quantity);
+    emit showWeightParam(EquipmentParam_WeightColor, isPiece || isFixed ? activeColor : passiveColor);
 
     // Цена:
-    QString p = priceAsString(currentProduct);
-    emit showWeightParam(EquipmentParam_PriceValue, p);
-    emit showWeightParam(EquipmentParam_PriceColor, isProduct ? c1 : c0);
+    QString price = priceAsString(product);
+    emit showWeightParam(EquipmentParam_PriceValue, price);
+    emit showWeightParam(EquipmentParam_PriceColor, isProduct ? activeColor : passiveColor);
 
     // Стоимость:
     const bool isAmount = isProduct && (isPiece || (!isError && isFixed));
-    QString a = amountAsString(currentProduct);
-    emit showWeightParam(EquipmentParam_AmountValue, a);
-    emit showWeightParam(EquipmentParam_AmountColor, isAmount ? c1 : c0);
+    QString amount = amountAsString(product);
+    emit showWeightParam(EquipmentParam_AmountValue, amount);
+    emit showWeightParam(EquipmentParam_AmountColor, isAmount ? activeColor : passiveColor);
 
-    // Принтер
+    // Принтер:
     if(printManager->isDemoMode())
         emit showPrinterMessage("Демо режим принтера");
-    emit enablePrint(isAmount && !printManager->isError());
+    bool isManualPrintEnabled = isAmount && !printManager->isError();
+    printManager->setManualPrintEnabled(isManualPrintEnabled);
+    emit enableManualPrint(isManualPrintEnabled);
 
-    qDebug() << QString("@@@@@ AppManager::updateWeightPanel %1 %2 %3 %4 %5 %6 %7 %8").arg(
+    // Автопечать:
+    if(isAutoPrint && isManualPrintEnabled && !printManager->isProductPrinted() && !isPiece) // todo
+        print();
+
+    qDebug() << QString("@@@@@ AppManager::updateStatus %1 %2 %3 %4 %5 %6 %7 %8").arg(
                     Tools::boolToString(isError),
-                    Tools::boolToString(isAuto),
+                    Tools::boolToString(isAutoPrint),
                     Tools::boolToString(isTare),
                     Tools::boolToString(isZero),
                     Tools::boolToString(isFixed),
-                    q, p, a);
+                    quantity, price, amount);
 }
 
 

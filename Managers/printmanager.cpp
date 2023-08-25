@@ -49,25 +49,28 @@ QString PrintManager::version()
 
 void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& product, const QString& quantity, const QString& price, const QString& amount)
 {
-    qDebug() << "@@@@@ PrintManager::onPrint";
-    if(!started) return;
-    int e = slpa->printTest(100);
-    if(e == 0)
+    qDebug() << "@@@@@ PrintManager::print";
+    if(started && manualPrintEnabled)
     {
-        TransactionDBTable* t = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
-        DBRecord r = t->createRecord(
-                user[UserDBTable::Code].toInt(),
-                Tools::stringToInt(product[ProductDBTable::Code]),
-                0, // todo номер этикетки
-                Tools::stringToDouble(quantity),
-                Tools::stringToInt(price),
-                Tools::stringToInt(amount));
-        emit printed(r);
-    }
-    else
-    {
-        //QString s = QString("Ошибка печати %1").arg(error);
-        //emit showMessageBox("Внимание!", s, true);
+        int e = slpa->printTest(100);
+        if(e == 0)
+        {
+            TransactionDBTable* t = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
+            DBRecord r = t->createRecord(
+                    user[UserDBTable::Code].toInt(),
+                    Tools::stringToInt(product[ProductDBTable::Code]),
+                    0, // todo номер этикетки
+                    Tools::stringToDouble(quantity),
+                    Tools::stringToInt(price),
+                    Tools::stringToInt(amount));
+            emit printed(r);
+        }
+        else
+        {
+            //QString s = QString("Ошибка печати %1").arg(error);
+            //emit showMessageBox("Внимание!", s, true);
+        }
+        productPrinted = true;
     }
 }
 

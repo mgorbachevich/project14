@@ -48,10 +48,10 @@ void WeightManager::setWeightParam(const int param)
     if (wm100 == nullptr || !started) return;
     switch (param)
     {
-    case EquipmentParam_TareFlag:
+    case EquipmentParam_Tare:
         wm100->setTare();
         break;
-    case EquipmentParam_ZeroFlag:
+    case EquipmentParam_Zero:
         wm100->setZero();
         wm100->setTare();
         break;

@@ -42,12 +42,12 @@ Popup
         }
     }
 
-    Connections // Slot for signal AppManager::enablePrint:
+    Connections // Slot for signal AppManager::enableManualPrint:
     {
         target: app
-        function onEnablePrint(value)
+        function onEnableManualPrint(value)
         {
-            console.debug("@@@@@ productPanel onEnablePrint ", value)
+            console.debug("@@@@@ productPanel onEnableManualPrint ", value)
             productPanelPrintButton.visible = value
         }
     }
@@ -88,13 +88,13 @@ Popup
                     app.onProductPanelCloseClicked()
                     break;
                 case Qt.Key_T: // >T<
-                    app.onWeightParamClicked(1)
+                    app.onTareClicked()
                     break
                 case Qt.Key_Z: // >0<
-                    app.onWeightParamClicked(0)
+                    app.onZeroClicked()
                     break
                 case Qt.Key_F8: // Печать
-                    app.onPrint()
+                    app.onPrintClicked()
                     break
                 case Qt.Key_F10: // Промотка
                     app.onRewind()
@@ -256,7 +256,7 @@ Popup
             onClicked:
             {
                 app.onUserAction(); // AppManager's slot
-                app.onPrint() // AppManager's slot
+                app.onPrintClicked() // AppManager's slot
             }
         }
     }

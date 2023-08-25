@@ -165,11 +165,11 @@ Rectangle
                         app.onLockClicked()
                         break;
                     case Qt.Key_T: // >T<
-                        app.onWeightParamClicked(1);
-                        break;
+                        app.onTareClicked()
+                        break
                     case Qt.Key_Z: // >0<
-                        app.onWeightParamClicked(0);
-                        break;
+                        app.onZeroClicked()
+                        break
                     case Qt.Key_Left:
                         app.onSwipeMainPage(1)
                         break;

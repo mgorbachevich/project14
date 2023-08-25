@@ -3,6 +3,8 @@
 
 #include <QString>
 
+#define APP_VERSION "1.36"
+
 class AppInfo
 {
 public:
@@ -13,7 +15,7 @@ public:
                 arg(appVersion, dbVersion, weightManagerVersion, printManagerVersion, netServerVersion, ip);
     }
 
-    QString appVersion = "";
+    QString appVersion = APP_VERSION;
     QString dbVersion = "";
     QString weightManagerVersion = "";
     QString printManagerVersion = "";
