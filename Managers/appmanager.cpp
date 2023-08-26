@@ -34,9 +34,15 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
     db = new DataBase(DB_FILENAME, settings, this);
     dbThread = new DBThread(db, this);
     netServer = new NetServer(this);
-    weightManager = new WeightManager(this);
-    printManager = new PrintManager(this);
+    weightManager = new WeightManager(this, WM_DEMO);
+    printManager = new PrintManager(this, PRINTER_DEMO);
     QTimer *timer = new QTimer(this);
+
+    appInfo.dbVersion = db->version();
+    appInfo.weightManagerVersion = weightManager->version();
+    appInfo.printManagerVersion = printManager->version();
+    appInfo.netServerVersion = netServer->version();
+    appInfo.ip = Tools::getNetParams().localHostIP;
 
     connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
     connect(this, &AppManager::start, db, &DataBase::onStart);
@@ -74,12 +80,6 @@ AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
     context->setContextProperty("viewLogPanelModel", viewLogPanelModel);
-
-    appInfo.dbVersion = db->version();
-    appInfo.weightManagerVersion = weightManager->version();
-    appInfo.printManagerVersion = printManager->version();
-    appInfo.netServerVersion = netServer->version();
-    appInfo.ip = Tools::getNetParams().localHostIP;
 
     dbThread->start();
     QTimer::singleShot(100, this, &AppManager::start);
@@ -732,12 +732,14 @@ void AppManager::runEquipment(const bool start)
     // Запустить/остановить оборудование
     if(start)
     {
+        QString demoMessage = "";
         netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
-
         QString url1;
-        bool demo1 = settings.getItemBoolValue(SettingDBTable::SettingCode_WMDemo);
-        if(demo1)
-            url1 = "demo://COM3?baudrate=115200&timeout=100"; // Demo
+        if(WM_DEMO)
+        {
+            url1 = "demo://COM3?baudrate=115200&timeout=100";
+            demoMessage += "\nДемо-режим весового модуля";
+        }
         else
         {
             QString address = settings.getItemStringValue(SettingDBTable::SettingCode_WMAddress);
@@ -745,28 +747,33 @@ void AppManager::runEquipment(const bool start)
             QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_WMTimeout));
             url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
         }
-        int e1 = weightManager->start(url1, demo1);
+        int e1 = weightManager->start(url1);
         if(e1 != 0)
             showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").arg(
                             QString::number(e1),
                             weightManager->getErrorDescription(e1)));
 
         QString url2;
-        bool demo2 = settings.getItemBoolValue(SettingDBTable::SettingCode_PrinterDemo);
-        if(demo2)
+        if(PRINTER_DEMO)
+        {
             url2 = "demo://COM3?baudrate=115200&timeout=100";
+            demoMessage += "\nДемо-режим принтера";
+        }
         else
         {
             QString address = settings.getItemStringValue(SettingDBTable::SettingCode_PrinterAddress);
             QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_PrinterBaudrate)));
             QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_PrinterTimeout));
-            url2 = QString("serial://%1?baudrate=%20&timeout=%3").arg(address, boudrate, timeout);
+            url2 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
         }
-        int e2 = printManager->start(url2, demo2);
+        int e2 = printManager->start(url2);
         if(e2 != 0)
             showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").arg(
                             QString::number(e2),
                             printManager->getErrorDescription(e2)));
+
+        if(!demoMessage.isEmpty())
+            showMessage("ВНИМАНИЕ!", demoMessage);
     }
     else
     {

@@ -6,19 +6,18 @@
 #include "tools.h"
 #include "database.h"
 
-PrintManager::PrintManager(QObject *parent): QObject(parent)
+PrintManager::PrintManager(QObject *parent, const bool demo): QObject(parent)
 {
-    qDebug() << "@@@@@ PrintManager::PrintManager";
+    qDebug() << "@@@@@ PrintManager::PrintManager " << demo;
+    demoMode = demo;
     slpa = new Slpa100u(this);
-    if(demoMode) errorCode = -1;
     connect(slpa, &Slpa100u::printerErrorChanged, this, &PrintManager::onErrorStatusChanged);
     connect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
 }
 
-int PrintManager::start(const QString& url, const bool demo)
+int PrintManager::start(const QString& url)
 {
-    qDebug() << "@@@@@ PrintManager::start";
-    demoMode = demo;
+    qDebug() << "@@@@@ PrintManager::start ";
     int error = 0;
     if (slpa != nullptr && !started)
     {
@@ -77,7 +76,7 @@ void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& pro
 void PrintManager::feed()
 {
     qDebug() << "@@@@@ PrintManager::feed";
-    if(!started) return;
+    if(!started || demoMode) return;
     slpa->feed();
     // int e = slpa->feed(); todo
 }
@@ -108,7 +107,6 @@ void PrintManager::onStatusChanged(uint16_t s)
     if(demoMode)
     {
         status = 0;
-        emit paramChanged(EquipmentParam_PrintError, 0);
         return;
     }
     bool b0 = isFlag(s, 0);

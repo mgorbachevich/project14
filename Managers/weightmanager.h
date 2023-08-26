@@ -3,15 +3,14 @@
 
 #include <QObject>
 #include "wm100.h"
-#include "constants.h"
 
 class WeightManager : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit WeightManager(QObject*);
-    int start(const QString&, const bool);
+    explicit WeightManager(QObject*, const bool);
+    int start(const QString&);
     void stop();
     QString version();
     bool isError() { return errorCode != 0 || isStateError(status); }
@@ -24,6 +23,7 @@ public:
     bool isZeroFlag() { return isFlag(status, 1); }
     bool isTareFlag() { return isFlag(status, 3); }
     QString getErrorDescription(const int);
+    bool isDemoMode() { return demoMode; }
 
 private:
     bool isFlag(Wm100::channel_status, int);
@@ -34,6 +34,7 @@ private:
     int pieces = 1;
     int errorCode = 0;
     Wm100::channel_status status = {0, 0.0, 0.0, 0};
+    bool demoMode = false;
 
 signals:
     void paramChanged(const int, const int);

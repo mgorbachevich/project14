@@ -35,15 +35,14 @@ public:
         SettingCode_LogDuration = 607,
         SettingCode_TCPPort = 1003,
         SettingCode_SearchType = 1004,
-        SettingCode_WMDemo = 1005,
+        //SettingCode_WMDemo = 1005,
         SettingCode_WMAddress = 1006,
         SettingCode_WMBaudrate = 1007,
         SettingCode_WMTimeout = 1008,
-        SettingCode_PrinterDemo = 1009,
+        //SettingCode_PrinterDemo = 1009,
         SettingCode_PrinterAddress = 1010,
         SettingCode_PrinterBaudrate = 1011,
         SettingCode_PrinterTimeout = 1012,
-        SettingCode_Max = 2000, // Max value
         /*
         SettingCode_Power = 17,
         SettingCode_Cursor = 10,
@@ -56,6 +55,7 @@ public:
         SettingCode_PrinterBrightness = 211,
         SettingCode_PrintTitle = 201,
           */
+        SettingCode_Max = 2000, // Max value
     };
 
     enum WMBaudrate

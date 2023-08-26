@@ -2,16 +2,18 @@
 #include <QTimer>
 #include <QDateTime>
 #include "weightmanager.h"
+#include "constants.h"
 
-WeightManager::WeightManager(QObject *parent): QObject(parent)
+WeightManager::WeightManager(QObject *parent, const bool demo): QObject(parent)
 {
-    qDebug() << "@@@@@ WeightManager::WeightManager";
+    qDebug() << "@@@@@ WeightManager::WeightManager " << demo;
+    demoMode = demo;
     wm100 = new Wm100(this);
     connect(wm100, &Wm100::weightStatusChanged, this, &WeightManager::onStatusChanged);
     connect(wm100, &Wm100::errorStatusChanged, this, &WeightManager::onErrorStatusChanged);
 }
 
-int WeightManager::start(const QString& url, const bool) // return error
+int WeightManager::start(const QString& url) // return error
 {
     qDebug() << "@@@@@ WeightManager::start url = " << url;
     int error = 0;

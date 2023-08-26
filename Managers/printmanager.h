@@ -13,8 +13,8 @@ class PrintManager : public QObject
     Q_OBJECT
 
 public:
-    explicit PrintManager(QObject*);
-    int start(const QString&, const bool demo);
+    explicit PrintManager(QObject*, const bool demo);
+    int start(const QString&);
     void stop();
     QString version();
     void print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
@@ -36,7 +36,7 @@ private:
     int errorCode = 0;
     uint16_t status = 0;
     QString message;
-    bool demoMode = true;
+    bool demoMode = false;
     bool manualPrintEnabled = false;
     bool productPrinted = false;
 

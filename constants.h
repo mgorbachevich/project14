@@ -14,6 +14,8 @@
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
+#define WM_DEMO false
+#define PRINTER_DEMO true
 
 #define NetReply QPair<qint64, QString>
 #define DBRecord QVariantList
