@@ -3,7 +3,7 @@
 
 #include <QString>
 
-#define APP_VERSION "1.37"
+#define APP_VERSION "1.38"
 
 class AppInfo
 {

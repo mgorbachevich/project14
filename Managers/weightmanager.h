@@ -31,7 +31,7 @@ private:
 
     Wm100* wm100 = nullptr;
     bool started = false;
-    int pieces = 1;
+    int pieces = 0;
     int errorCode = 0;
     Wm100::channel_status status = {0, 0.0, 0.0, 0};
     bool demoMode = false;

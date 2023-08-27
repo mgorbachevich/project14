@@ -68,6 +68,7 @@
                 "group_code":"0",
                 "barcode":"1234567890006",
                 "message_code":"106",
+                "unit_weight":"100000",
                 "picture_code":"6",
                 "price":"6666",
                 "name":"Арбуз"
