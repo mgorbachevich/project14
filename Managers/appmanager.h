@@ -35,9 +35,20 @@ public:
         Dialog_Authorization,
     };
 
-    explicit AppManager(QQmlContext*, QObject*);
+    explicit AppManager(QQmlContext*, QObject*, const QSize&);
     ~AppManager();
     double price(const DBRecord&);
+
+    // Экранные размеры:
+    Q_INVOKABLE int screenWidth() { return screenSize.width(); }
+    Q_INVOKABLE int screenHeight() { return screenSize.height(); }
+    Q_INVOKABLE int weightTitleFontSize() { return (int)(DEFAULT_WEIGHT_TITLE_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int weightValueFontSize() { return (int)(DEFAULT_WEIGHT_VALUE_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int largeFontSize() { return (int)(DEFAULT_LARGE_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int normalFontSize() { return (int)(DEFAULT_NORMAL_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int buttonSize() { return (int)(DEFAULT_BUTTON_SIZE * screenScale); }
+    Q_INVOKABLE int editWidth() { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }
+    Q_INVOKABLE int spacer() { return (int)(DEFAULT_SPACER * screenScale); }
 
 private:
     QString priceAsString(const DBRecord&);
@@ -75,17 +86,19 @@ private:
     int mainPageIndex = 0;
     int secret = 0;
     bool authorizationOpened = false;
+    QSize screenSize;
+    double screenScale = 0;
 
     // Models:
-    ProductPanelModel* productPanelModel;
-    ShowcasePanelModel* showcasePanelModel;
-    TablePanelModel* tablePanelModel;
-    SearchPanelModel* searchPanelModel;
-    SettingsPanelModel* settingsPanelModel;
-    SettingGroupsPanelModel* settingGroupsPanelModel;
-    SearchFilterModel* searchFilterModel;
-    UserNameModel* userNameModel;
-    ViewLogPanelModel* viewLogPanelModel;
+    ProductPanelModel* productPanelModel = nullptr;
+    ShowcasePanelModel* showcasePanelModel = nullptr;
+    TablePanelModel* tablePanelModel = nullptr;
+    SearchPanelModel* searchPanelModel = nullptr;
+    SettingsPanelModel* settingsPanelModel = nullptr;
+    SettingGroupsPanelModel* settingGroupsPanelModel = nullptr;
+    SearchFilterModel* searchFilterModel = nullptr;
+    UserNameModel* userNameModel = nullptr;
+    ViewLogPanelModel* viewLogPanelModel = nullptr;
 
 signals:
     void authorizationSucceded();

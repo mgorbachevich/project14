@@ -21,9 +21,9 @@ Popup
     GridLayout
     {
         anchors.fill: parent
-        anchors.margins: Constants.margin
-        columnSpacing: Constants.margin
-        rowSpacing: Constants.margin
+        anchors.margins: app.spacer()
+        columnSpacing: app.spacer()
+        rowSpacing: app.spacer()
         columns: 2
         rows: 2
 
@@ -60,14 +60,14 @@ Popup
             Layout.column: 0
             Layout.row: 0
             Layout.fillWidth: parent
-            Layout.preferredHeight: Constants.buttonSize
+            Layout.preferredHeight: app.buttonSize()
             color: Material.background
 
             Text
             {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                font { pointSize: Constants.normalFontSize }
+                font { pointSize: app.normalFontSize() }
                 color: Material.color(Material.Grey, Material.Shade600)
                 wrapMode: Text.WordWrap
                 text: qsTr("Лог")
@@ -106,7 +106,7 @@ Popup
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: Constants.margin
+                    width: app.spacer()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
@@ -114,8 +114,8 @@ Popup
                 model: viewLogPanelModel
                 delegate: Text
                 {
-                    leftPadding: Constants.margin
-                    font { pointSize: Constants.normalFontSize }
+                    leftPadding: app.spacer()
+                    font { pointSize: app.normalFontSize() }
                     color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value
                 }

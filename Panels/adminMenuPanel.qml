@@ -8,8 +8,8 @@ import RegisteredTypes
 Column
 {
     anchors.horizontalCenter: parent.horizontalCenter
-    topPadding: Constants.margin
-    spacing: Constants.margin
+    topPadding: app.spacer()
+    spacing: app.spacer()
 
     RoundIconButton
     {

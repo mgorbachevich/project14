@@ -10,11 +10,11 @@ Text
     anchors.fill: parent
     anchors.verticalCenter: parent.verticalCenter
     anchors.horizontalCenter: parent.horizontalCenter
-    anchors.leftMargin: Constants.margin
-    anchors.rightMargin: Constants.margin
+    anchors.leftMargin: app.spacer()
+    anchors.rightMargin: app.spacer()
     horizontalAlignment: Text.AlignHCenter
     verticalAlignment: Text.AlignVCenter
-    font { pointSize: Constants.normalFontSize }
+    font { pointSize: app.normalFontSize() }
     color: Material.color(Material.BlueGrey, Material.Shade900)
     wrapMode: Text.WordWrap
     text: ""

@@ -24,16 +24,16 @@ Popup
     Rectangle
     {
         anchors.fill: parent
-        radius: Constants.margin
+        radius: app.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
         color: Material.background
 
         GridLayout
         {
             anchors.fill: parent
-            anchors.margins: Constants.margin
-            columnSpacing: Constants.margin
-            rowSpacing: Constants.margin
+            anchors.margins: app.spacer()
+            columnSpacing: app.spacer()
+            rowSpacing: app.spacer()
             columns: 1
             rows: 3
 
@@ -63,7 +63,7 @@ Popup
                 Layout.column: 0
                 Layout.row: 0
                 Layout.fillWidth: parent
-                Layout.preferredHeight: Constants.buttonSize
+                Layout.preferredHeight: app.buttonSize()
                 color: "transparent"
 
                 CardTitleText
@@ -78,7 +78,7 @@ Popup
                 Layout.row: 1
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.bottomMargin: Constants.buttonSize / 2
+                Layout.bottomMargin: app.buttonSize() / 2
                 color: "transparent"
 
                 CardText
@@ -89,17 +89,17 @@ Popup
 
             Row
             {
-                spacing: Constants.margin * 4
-                Layout.preferredWidth: Constants.buttonSize * 3 + spacing
-                Layout.preferredHeight: Constants.buttonSize
+                spacing: app.spacer() * 4
+                Layout.preferredWidth: app.buttonSize() * 3 + spacing
+                Layout.preferredHeight: app.buttonSize()
                 Layout.column: 0
                 Layout.row: 2
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
 
                 RoundTextButton
                 {
-                    width: Constants.buttonSize * 3 / 2
-                    height: Constants.buttonSize
+                    width: app.buttonSize() * 3 / 2
+                    height: app.buttonSize()
                     text: qsTr(" ДА ")
                     onClicked:
                     {
@@ -111,8 +111,8 @@ Popup
 
                 RoundTextButton
                 {
-                    width: Constants.buttonSize * 3 / 2
-                    height: Constants.buttonSize
+                    width: app.buttonSize() * 3 / 2
+                    height: app.buttonSize()
                     text: qsTr("НЕТ")
                     onClicked:
                     {

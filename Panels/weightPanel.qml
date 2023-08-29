@@ -8,18 +8,19 @@ import RegisteredTypes
 Rectangle
 {
     id:  weightPanel
-    height: valueFontSize + titleFontSize + Constants.margin
-    Material.background: Material.color(Material.Grey, Material.Shade900)
-    color: Material.background
 
-    property int valueFontSize: 70
-    property int titleFontSize: 10
-    property int flagIconSize: (valueFontSize + titleFontSize) / 4
-    property int flagIconWidth: flagIconSize + Constants.margin
-    property int displayWidth: weightPanel.width - flagIconWidth - Constants.margin
+    property int valueFontSize: app.weightValueFontSize()
+    property int titleFontSize: app.weightTitleFontSize()
+    property int flagIconSize: (valueFontSize + titleFontSize + app.spacer()) / 4
+    property int flagIconWidth: flagIconSize + app.spacer()
+    property int displayWidth: weightPanel.width - flagIconWidth - app.spacer()
     property int weightWidth: displayWidth * 6 / (6 + 7 + 9)
     property int priceWidth: displayWidth * 7 / (6 + 7 + 9)
     property int amountWidth: displayWidth - weightWidth - priceWidth
+
+    height: valueFontSize + titleFontSize + app.spacer()
+    Material.background: Material.color(Material.Grey, Material.Shade900)
+    color: Material.background
 
     Connections // Slot for signal AppManager::showWeightParam:
     {

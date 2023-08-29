@@ -45,8 +45,8 @@ Popup
         Text
         {
             anchors.horizontalCenter: parent.horizontalCenter
-            topPadding: Constants.margin
-            font { pointSize: Constants.largeFontSize }
+            topPadding: app.spacer()
+            font { pointSize: app.largeFontSize() }
             color: Material.color(Material.BlueGrey, Material.Shade400)
             text: qsTr("Штрих ПРИНТ 6А")
         }
@@ -59,15 +59,15 @@ Popup
             Text
             {
                 anchors.horizontalCenter: parent.horizontalCenter
-                bottomPadding: Constants.margin
-                font { pointSize: Constants.largeFontSize }
+                bottomPadding: app.spacer()
+                font { pointSize: app.largeFontSize() }
                 color: Material.color(Material.BlueGrey, Material.Shade600)
                 text: qsTr("Авторизация")
             }
 
             Text
             {
-                font { pointSize: Constants.normalFontSize }
+                font { pointSize: app.normalFontSize() }
                 color: Material.color(Material.BlueGrey, Material.Shade600)
                 text: qsTr("Имя")
             }
@@ -75,15 +75,15 @@ Popup
             ComboBox
             {
                 id: loginComboBox
-                width: Constants.inputFieldWidth
+                width: app.editWidth()
                 editable: false
                 popup.modal: true
 
                 model: userNameModel
                 delegate: Text
                 {
-                    padding: Constants.margin
-                    font { pointSize: Constants.normalFontSize }
+                    padding: app.spacer()
+                    font { pointSize: app.normalFontSize() }
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     text: model.value // Roles::ValueRole
 
@@ -105,8 +105,8 @@ Popup
 
             Text
             {
-                topPadding: Constants.margin
-                font { pointSize: Constants.normalFontSize }
+                topPadding: app.spacer()
+                font { pointSize: app.normalFontSize() }
                 color: Material.color(Material.BlueGrey, Material.Shade600)
                 text: qsTr("Пароль")
             }
@@ -114,9 +114,9 @@ Popup
             TextField
             {
                 id: passwordTextField
-                width: Constants.inputFieldWidth
-                bottomPadding: Constants.margin * 2
-                font { pointSize: Constants.normalFontSize }
+                width: app.editWidth()
+                bottomPadding: app.spacer() * 2
+                font { pointSize: app.normalFontSize() }
                 Material.accent: Material.Orange
                 color: Material.color(Material.BlueGrey, Material.Shade900)
                 placeholderText: "?????"
@@ -177,9 +177,9 @@ Popup
             id: versionText
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
-            bottomPadding: Constants.margin
+            bottomPadding: app.spacer()
             color: Material.color(Material.BlueGrey, Material.Shade600)
-            font { pointSize: Constants.normalFontSize }
+            font { pointSize: app.normalFontSize() }
             text: versionValue
         }
     }

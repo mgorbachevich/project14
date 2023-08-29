@@ -7,9 +7,9 @@ import RegisteredTypes
 
 RoundButton
 {
-    width: Constants.buttonSize
-    height: Constants.buttonSize
-    radius: Constants.margin
+    width: app.buttonSize()
+    height: app.buttonSize()
+    radius: app.spacer()
     leftInset: 0
     topInset: 0
     rightInset: 0

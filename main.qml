@@ -19,7 +19,7 @@ ApplicationWindow
     property int popupWidth: mainWindow.width * 3 / 4
     property int popupHeight: mainWindow.height * 2 / 3
     property int popupX: (mainWindow.width - popupWidth) / 2
-    property int popupY: mainWindow.height / 4 + Constants.margin
+    property int popupY: mainWindow.height / 4 + app.spacer()
 
     Connections // Slot for signal AppManager::start:
     {
@@ -29,11 +29,8 @@ ApplicationWindow
             console.debug("@@@@@ mainWindow.onStart");
             if (Qt.platform.os === "android")
                 mainWindow.visibility = Window.FullScreen
-            else
-            {
-                mainWindow.width = Constants.mainWindowWidth
-                mainWindow.height = Constants.mainWindowHeight
-            }
+            mainWindow.width = app.screenWidth()
+            mainWindow.height = app.screenHeight()
         }
     }
 
@@ -64,7 +61,7 @@ ApplicationWindow
         function onShowAdminMenu(show)
         {
             console.debug("@@@@@ mainWindow.onShowAdminMenu");
-            adminMenuWidth = show? Constants.buttonSize + Constants.margin * 2 : 0
+            adminMenuWidth = show? app.buttonSize()() + app.spacer() * 2 : 0
             adminMenuPanel.visible = show
         }
     }

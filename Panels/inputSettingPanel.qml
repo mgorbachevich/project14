@@ -24,16 +24,16 @@ Popup
     Rectangle
     {
         anchors.fill: parent
-        radius: Constants.margin
+        radius: app.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
         color: Material.background
 
         GridLayout
         {
             anchors.fill: parent
-            anchors.margins: Constants.margin
-            columnSpacing: Constants.margin
-            rowSpacing: Constants.margin
+            anchors.margins: app.spacer()
+            columnSpacing: app.spacer()
+            rowSpacing: app.spacer()
             columns: 3
             rows: 2
 
@@ -42,8 +42,8 @@ Popup
                 Layout.column: 0
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-                Layout.preferredWidth: Constants.buttonSize
-                Layout.preferredHeight: Constants.buttonSize
+                Layout.preferredWidth: app.buttonSize()
+                Layout.preferredHeight: app.buttonSize()
                 color: "transparent"
             }
 
@@ -52,7 +52,7 @@ Popup
                 Layout.column: 1
                 Layout.row: 0
                 Layout.fillWidth: parent
-                Layout.preferredHeight: Constants.buttonSize
+                Layout.preferredHeight: app.buttonSize()
                 color: "transparent"
 
                 CardTitleText
@@ -82,7 +82,7 @@ Popup
                 Layout.columnSpan: 3
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.bottomMargin: Constants.buttonSize * 3 / 4
+                Layout.bottomMargin: app.buttonSize() * 3 / 4
                 color: "transparent"
 
                 TextField
@@ -90,8 +90,8 @@ Popup
                     id: inputSettingPanelText
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: Constants.inputFieldWidth
-                    font { pointSize: Constants.normalFontSize }
+                    width: app.editWidth()
+                    font { pointSize: app.normalFontSize() }
                     Material.accent: Material.Orange
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     focus: true

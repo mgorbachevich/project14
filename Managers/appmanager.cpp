@@ -26,10 +26,17 @@
 #include "weightmanager.h"
 #include "printmanager.h"
 
-AppManager::AppManager(QQmlContext* context, QObject *parent): QObject(parent)
+AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& screenSize): QObject(parent)
 {
-    qDebug() << "@@@@@ AppManager::AppManager";
+    qDebug() << "@@@@@ AppManager::AppManager " << screenSize.width() << screenSize.height();
     this->context = context;
+
+    // Размер экрана и масштабирование:
+    this->screenSize = screenSize;
+    double hk = ((double)screenSize.height()) / DEFAULT_SCREEN_HEIGHT;
+    double wk = ((double)screenSize.width()) / DEFAULT_SCREEN_WIDTH;
+    screenScale = wk < hk ? wk : hk;
+
     user = UserDBTable::defaultAdmin();
     db = new DataBase(DB_FILENAME, settings, this);
     dbThread = new DBThread(db, this);
@@ -116,8 +123,7 @@ void AppManager::onDownloadFinished(const int count)
 QString AppManager::quantityAsString(const DBRecord& productRecord)
 {
     if(ProductDBTable::isPiece(productRecord)) return QString("%1").arg(weightManager->getPieces());
-    if(weightManager->isError()) return "";
-    return QString("%1").arg(weightManager->getWeight(), 0, 'f', 3);
+    return weightManager->isError() ? "" : QString("%1").arg(weightManager->getWeight(), 0, 'f', 3);
 }
 
 QString AppManager::priceAsString(const DBRecord& productRecord)
@@ -564,8 +570,7 @@ void AppManager::onTableResultClicked(const int index)
         {
             if (tablePanelModel->groupDown(clickedProduct)) updateTablePanel(false);
         }
-        else
-            setProduct(clickedProduct);
+        else setProduct(clickedProduct);
     }
 }
 
@@ -907,16 +912,15 @@ void AppManager::updateStatus()
     emit showWeightParam(EquipmentParam_Tare, Tools::boolToString(isTare));
 
     // Загаловки:
-    emit showWeightParam(EquipmentParam_WeightTitle, isPiece ? "КОЛИЧЕСТВО, шт" : "МАССА, кг");
-    QString quantityTitle = "ЦЕНА, руб";
+    QString wt = isPiece ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
+    QString pt = "ЦЕНА, руб";
     if(isProduct)
     {
-        if (isPiece) quantityTitle += "/шт";
-        else
-            if(ProductDBTable::is100gBase(product)) quantityTitle += "/100г";
-            else quantityTitle += "/кг";
+        if (isPiece) pt += "/шт";
+        else pt += ProductDBTable::is100gBase(product) ? "/100г" : "/кг";
     }
-    emit showWeightParam(EquipmentParam_PriceTitle, quantityTitle);
+    emit showWeightParam(EquipmentParam_WeightTitle, wt);
+    emit showWeightParam(EquipmentParam_PriceTitle, pt);
     emit showWeightParam(EquipmentParam_AmountTitle, "СТОИМОСТЬ, руб");
 
     // Вес/Штуки:

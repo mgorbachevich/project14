@@ -22,8 +22,8 @@ Popup
     GridLayout
     {
         anchors.fill: parent
-        anchors.margins: Constants.margin
-        rowSpacing: Constants.margin
+        anchors.margins: app.spacer()
+        rowSpacing: app.spacer()
         columnSpacing: 0
         columns: 4
         rows: 2
@@ -51,8 +51,8 @@ Popup
             Layout.column: 0
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
+            Layout.preferredWidth: app.buttonSize()
+            Layout.preferredHeight: app.buttonSize()
             color: "transparent"
         }
 
@@ -62,14 +62,14 @@ Popup
             Layout.row: 0
             Layout.columnSpan: 2
             Layout.fillWidth: parent
-            Layout.preferredHeight: Constants.buttonSize
+            Layout.preferredHeight: app.buttonSize()
             color: "transparent"
 
             Text
             {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                font { pointSize: Constants.normalFontSize; family: 'Roboto'; styleName:'Bold' }
+                font { pointSize: app.normalFontSize(); styleName:'Bold' }
                 wrapMode: Text.WordWrap
                 text: qsTr("Настройки таблицы")
             }
@@ -80,8 +80,8 @@ Popup
             Layout.column: 3
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
+            Layout.preferredWidth: app.buttonSize()
+            Layout.preferredHeight: app.buttonSize()
             icon.source: "../Icons/close_black_48"
             leftInset: 0
             topInset: 0
@@ -100,33 +100,33 @@ Popup
             Layout.row: 1
             Layout.maximumWidth: tableOptionsPanel.width / 2
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            leftPadding: Constants.margin
-            rightPadding: Constants.margin
+            leftPadding: app.spacer()
+            rightPadding: app.spacer()
 
             Text
             {
-                height: Constants.margin * 3
-                leftPadding: Constants.margin
+                height: app.spacer() * 3
+                leftPadding: app.spacer()
                 text: qsTr("Сортировать")
             }
 
             RadioButton
             {
-                height: Constants.margin * 4
+                height: app.spacer() * 4
                 text: qsTr("По коду");
                 onClicked: app.onUserAction(); // AppManager's slot
             }
 
             RadioButton
             {
-                height: Constants.margin * 4
+                height: app.spacer() * 4
                 text: qsTr("По штрих-коду")
                 onClicked: app.onUserAction(); // AppManager's slot
             }
 
             RadioButton
             {
-                height: Constants.margin * 4
+                height: app.spacer() * 4
                 text: qsTr("По наименованию")
                 checked: true
                 onClicked: app.onUserAction(); // AppManager's slot
@@ -139,33 +139,33 @@ Popup
             Layout.row: 1
             Layout.maximumWidth: tableOptionsPanel.width / 2
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            leftPadding: Constants.margin
-            rightPadding: Constants.margin
+            leftPadding: app.spacer()
+            rightPadding: app.spacer()
 
             Text
             {
-                height: Constants.margin * 3
-                leftPadding: Constants.margin
+                height: app.spacer() * 3
+                leftPadding: app.spacer()
                 text: qsTr("Показывать")
             }
 
             CheckBox
             {
-                height: Constants.margin * 4
+                height: app.spacer() * 4
                 text: qsTr("Код")
                 onClicked: app.onUserAction(); // AppManager's slot
             }
 
             CheckBox
             {
-                height: Constants.margin * 4
+                height: app.spacer() * 4
                 text: qsTr("Штрих-код")
                 onClicked: app.onUserAction(); // AppManager's slot
             }
 
             CheckBox
             {
-                height: Constants.margin * 4
+                height: app.spacer() * 4
                 text: qsTr("Наименование")
                 checked: true
                 onClicked: app.onUserAction(); // AppManager's slot

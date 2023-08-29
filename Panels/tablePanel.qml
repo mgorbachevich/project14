@@ -80,12 +80,12 @@ Rectangle
     {
         id: tablePanelLayout
         anchors.fill: parent
-        anchors.leftMargin: Constants.margin
-        anchors.rightMargin: Constants.margin
-        anchors.topMargin: Constants.margin
-        anchors.bottomMargin: Constants.margin * 2
-        columnSpacing: Constants.margin
-        rowSpacing: Constants.margin
+        anchors.leftMargin: app.spacer()
+        anchors.rightMargin: app.spacer()
+        anchors.topMargin: app.spacer()
+        anchors.bottomMargin: app.spacer() * 2
+        columnSpacing: app.spacer()
+        rowSpacing: app.spacer()
         columns: 3
         rows: 2
 
@@ -109,7 +109,7 @@ Rectangle
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
-            font { pointSize: Constants.normalFontSize }
+            font { pointSize: app.normalFontSize() }
             wrapMode: Text.WordWrap
             color: Material.color(Material.BlueGrey, Material.Shade600)
             text: "/"
@@ -148,7 +148,7 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: Constants.margin
+                    width: app.spacer()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
@@ -157,8 +157,8 @@ Rectangle
                 delegate: Label
                 {
                     width: tablePanelResultList.width
-                    font { pointSize: Constants.normalFontSize }
-                    padding: Constants.margin
+                    font { pointSize: app.normalFontSize() }
+                    padding: app.spacer()
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     background: Rectangle
                     {

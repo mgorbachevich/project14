@@ -22,9 +22,9 @@ Popup
     GridLayout
     {
         anchors.fill: parent
-        anchors.margins: Constants.margin
-        columnSpacing: Constants.margin
-        rowSpacing: Constants.margin
+        anchors.margins: app.spacer()
+        columnSpacing: app.spacer()
+        rowSpacing: app.spacer()
         columns: 3
         rows: 2
 
@@ -57,8 +57,8 @@ Popup
         {
             Layout.column: 0
             Layout.row: 0
-            Layout.preferredWidth: Constants.buttonSize
-            Layout.preferredHeight: Constants.buttonSize
+            Layout.preferredWidth: app.buttonSize()
+            Layout.preferredHeight: app.buttonSize()
             color: "transparent"
         }
 
@@ -67,7 +67,7 @@ Popup
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
-            Layout.preferredHeight: Constants.buttonSize
+            Layout.preferredHeight: app.buttonSize()
             color: "transparent"
 
             CardTitleText
@@ -108,7 +108,7 @@ Popup
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: Constants.margin
+                    width: app.spacer()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
@@ -116,13 +116,13 @@ Popup
                 model: settingsPanelModel
                 delegate: Row
                 {
-                    padding: Constants.margin
-                    spacing: Constants.margin
+                    padding: app.spacer()
+                    spacing: app.spacer()
 
                     Text
                     {
-                        width: settingPanelList.width / 2 - Constants.margin * 4
-                        font { pointSize: Constants.normalFontSize }
+                        width: settingPanelList.width / 2 - app.spacer() * 4
+                        font { pointSize: app.normalFontSize() }
                         wrapMode: Text.WordWrap
                         text: model.first // Roles::FirstRole
 
@@ -140,7 +140,7 @@ Popup
                     Text
                     {
                         width: settingPanelList.width / 2
-                        font { pointSize: Constants.normalFontSize }
+                        font { pointSize: app.normalFontSize() }
                         wrapMode: Text.WordWrap
                         text: model.second // Roles::SecondRole
 

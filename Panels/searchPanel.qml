@@ -28,12 +28,12 @@ Rectangle
     {
         id: searchPanelLayout
         anchors.fill: parent
-        anchors.leftMargin: Constants.margin
-        anchors.rightMargin: Constants.margin
-        anchors.topMargin: Constants.margin
-        anchors.bottomMargin: Constants.margin * 2
-        columnSpacing: Constants.margin
-        rowSpacing: Constants.margin
+        anchors.leftMargin: app.spacer()
+        anchors.rightMargin: app.spacer()
+        anchors.topMargin: app.spacer()
+        anchors.bottomMargin: app.spacer() * 2
+        columnSpacing: app.spacer()
+        rowSpacing: app.spacer()
         columns: 3
         rows: 3
 
@@ -85,7 +85,7 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: Constants.margin
+                    width: app.spacer()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
@@ -93,9 +93,9 @@ Rectangle
                 model: searchPanelModel
                 delegate: Label
                 {
-                    padding: Constants.margin
+                    padding: app.spacer()
                     width: searchPanelResultListRectangle.width
-                    font { pointSize: Constants.normalFontSize }
+                    font { pointSize: Capp.normalFontSize() }
                     color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value // Roles::ValueRole
                     background: Rectangle
@@ -124,10 +124,10 @@ Rectangle
             Layout.row: 1
             Layout.columnSpan: 2
             Layout.preferredWidth: filterWidth
-            Layout.bottomMargin: Constants.margin
+            Layout.bottomMargin: app.spacer()
             Material.accent: Material.Orange
             color: Material.color(Material.Grey, Material.Shade900)
-            font { pointSize: Constants.normalFontSize }
+            font { pointSize: app.normalFontSize() }
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
             onTextEdited: app.onUserAction(); // AppManager's slot
@@ -210,7 +210,7 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: Constants.margin
+                    width: app.spacer()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
@@ -219,10 +219,10 @@ Rectangle
                 delegate: Label
                 {
                     width: searchPanelFilterList.width
-                    padding: Constants.margin
+                    padding: app.spacer()
                     font
                     {
-                        pointSize: Constants.normalFontSize;
+                        pointSize: app.normalFontSize();
                         styleName: searchPanelFilterList.currentIndex === index ? 'Bold' : 'Regular'
                     }
                     text: model.value // Roles::ValueRole

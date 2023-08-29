@@ -9,7 +9,7 @@ Rectangle
 {
     id:  showcasePanel
     color: Material.background
-    property int imageSize: (height - Constants.margin * 3 + 1) / 2
+    property int imageSize: (height - app.spacer() * 3 + 1) / 2
 
     focus: true
     Keys.onPressed: (event) =>
@@ -65,17 +65,17 @@ Rectangle
     {
         id: showcasePanelGrid
         anchors.fill: parent
-        anchors.rightMargin: Constants.margin
-        leftMargin: Constants.margin
-        topMargin: Constants.margin
-        bottomMargin: Constants.margin * 2
+        anchors.rightMargin: app.spacer()
+        leftMargin: app.spacer()
+        topMargin: app.spacer()
+        bottomMargin: app.spacer() * 2
         clip: true
-        cellWidth: showcasePanel.imageSize + Constants.margin
-        cellHeight: showcasePanel.imageSize + Constants.margin
+        cellWidth: showcasePanel.imageSize + app.spacer()
+        cellHeight: showcasePanel.imageSize + app.spacer()
 
         ScrollBar.vertical: ScrollBar
         {
-            width: Constants.margin
+            width: app.spacer()
             background: Rectangle { color: "transparent" }
             policy: ScrollBar.AlwaysOn
         }
