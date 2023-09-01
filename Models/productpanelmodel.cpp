@@ -46,13 +46,18 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
                 }
             }
             break;
+        case ProductDBTable::UnitWeight:
+            if(ProductDBTable::isPiece(product))
+                s += QString("%1 кг").arg(product.at(i).toDouble() / 1000000);
+            else
+                s = "";
+            break;
         case ProductDBTable::Name:
         case ProductDBTable::Name2:
         case ProductDBTable::Code2:
         case ProductDBTable::Price2:
         case ProductDBTable::DiscountCode:
         case ProductDBTable::GroupCode:
-        case ProductDBTable::UnitWeight:
         case ProductDBTable::LabelFormat:
         case ProductDBTable::LabelFormat2:
         case ProductDBTable::LabelFormat3:

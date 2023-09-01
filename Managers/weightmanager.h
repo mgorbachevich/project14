@@ -16,9 +16,7 @@ public:
     bool isError() { return errorCode != 0 || isStateError(status); }
     void setWeightParam(const int);
     double getWeight() { return status.weight; }
-    int getPieces() { return pieces; }
     double getTare() { return status.tare; }
-    void setPieces(const int v) { pieces = v; }
     bool isWeightFixed() { return isFlag(status, 0); }
     bool isZeroFlag() { return isFlag(status, 1); }
     bool isTareFlag() { return isFlag(status, 3); }
@@ -31,7 +29,6 @@ private:
 
     Wm100* wm100 = nullptr;
     bool started = false;
-    int pieces = 0;
     int errorCode = 0;
     Wm100::channel_status status = {0, 0.0, 0.0, 0};
     bool demoMode = false;

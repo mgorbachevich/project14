@@ -49,7 +49,7 @@ QString PrintManager::version()
 void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& product, const QString& quantity, const QString& price, const QString& amount)
 {
     qDebug() << "@@@@@ PrintManager::print";
-    if(started && manualPrintEnabled)
+    if(started)
     {
         int e = slpa->printTest(100);
         if(e == 0)
@@ -69,7 +69,6 @@ void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& pro
             //QString s = QString("Ошибка печати %1").arg(error);
             //emit showMessageBox("Внимание!", s, true);
         }
-        productPrinted = true;
     }
 }
 

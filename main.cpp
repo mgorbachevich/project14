@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QFontDatabase>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -10,7 +10,7 @@
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication application(argc, argv);
+    QApplication application(argc, argv);
     QQmlApplicationEngine engine;
 
     QFontDatabase::addApplicationFont(":/Resources/Roboto-Regular.ttf");

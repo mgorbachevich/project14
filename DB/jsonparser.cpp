@@ -74,7 +74,8 @@ QJsonValue JSONParser::prepare(const QString &json, bool *ok)
 
 int JSONParser::parseAllTables(DataBase* db, const QString& json, int* returnErrorCode, QString* returnDescription)
 {
-    qDebug() << "@@@@@ JSONParser::parseAllTables " << json;
+    qDebug() << "@@@@@ JSONParser::parseAllTables ";
+    //qDebug() << "@@@@@ JSONParser::parseAllTables " << json;
     db->saveLog(LogType_Error, LogSource_DB, "Загрузка");
 
     int recordCount = 0;

@@ -61,7 +61,7 @@ ApplicationWindow
         function onShowAdminMenu(show)
         {
             console.debug("@@@@@ mainWindow.onShowAdminMenu");
-            adminMenuWidth = show? app.buttonSize()() + app.spacer() * 2 : 0
+            adminMenuWidth = show? app.buttonSize() + app.spacer() * 2 : 0
             adminMenuPanel.visible = show
         }
     }

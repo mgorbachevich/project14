@@ -77,6 +77,7 @@ HEADERS += \
     Equipment/Wm100_Slpa100u/wm100.h \
     Managers/appinfo.h \
     Managers/appmanager.h \
+    Managers/printstatus.h \
     Managers/settings.h \
     Models/baselistmodel2.h \
     Models/searchfiltermodel.h \

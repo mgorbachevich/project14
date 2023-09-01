@@ -7,6 +7,7 @@
 #include "database.h"
 #include "settings.h"
 #include "appinfo.h"
+#include "printstatus.h"
 
 class DBThread;
 class ProductPanelModel;
@@ -76,8 +77,9 @@ private:
     PrintManager* printManager = nullptr;
     Settings settings;
     DBRecord user;
-    AppInfo appInfo;
     DBRecord product;
+    AppInfo appInfo;
+    PrintStatus printStatus;
 
     // UI:
     QQmlContext* context = nullptr;
