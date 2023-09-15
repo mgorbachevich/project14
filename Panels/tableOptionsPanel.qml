@@ -33,15 +33,14 @@ Popup
         {
             console.debug("@@@@@ tableOptionsPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
-            app.onUserAction(); // AppManager's slot
+            app.onUserAction();
             switch (event.key)
             {
-                case Qt.Key_Escape: // Круглая стрелка
-                case Qt.Key_Enter:
+                case Qt.Key_Escape: case Qt.Key_Enter: case Qt.Key_Return:
                     tableOptionsPanel.close()
                     break
                 default:
-                    app.onBeep();
+                    app.beep();
                     break
             }
         }
@@ -89,7 +88,7 @@ Popup
             bottomInset: 0
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 tableOptionsPanel.close()
             }
         }
@@ -114,14 +113,14 @@ Popup
             {
                 height: app.spacer() * 4
                 text: qsTr("По коду");
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
 
             RadioButton
             {
                 height: app.spacer() * 4
                 text: qsTr("По штрих-коду")
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
 
             RadioButton
@@ -129,7 +128,7 @@ Popup
                 height: app.spacer() * 4
                 text: qsTr("По наименованию")
                 checked: true
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
         }
 
@@ -153,14 +152,14 @@ Popup
             {
                 height: app.spacer() * 4
                 text: qsTr("Код")
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
 
             CheckBox
             {
                 height: app.spacer() * 4
                 text: qsTr("Штрих-код")
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
 
             CheckBox
@@ -168,7 +167,7 @@ Popup
                 height: app.spacer() * 4
                 text: qsTr("Наименование")
                 checked: true
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
         }
     }

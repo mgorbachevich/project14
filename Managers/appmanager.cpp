@@ -162,8 +162,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     emit log(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
     QString pictureCode = product[ProductDBTable::PictureCode].toString();
     emit selectFromDB(DataBase::GetImageByResourceCode, pictureCode);
-
-    printStatus.clear();
+    printStatus.onNewProduct();
     updateStatus();
 
     if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
@@ -186,7 +185,8 @@ void AppManager::onProductPanelCloseClicked()
 
 void AppManager::onProductPanelPiecesClicked()
 {
-    emit showPiecesInputBox(printStatus.pieces);
+    if(ProductDBTable::isPiece(product)) emit showPiecesInputBox(printStatus.pieces);
+    else beep();
 }
 
 void AppManager::onRewind() // Перемотка
@@ -272,6 +272,12 @@ void AppManager::onAdminSettingsClicked()
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
     emit log(LogType_Info, LogSource_Admin, "Просмотр настроек");
     emit showSettingGroupsPanel();
+}
+
+void AppManager::beep()
+{
+    qDebug() << "@@@@@ AppManager::beep";
+    QApplication::beep();
 }
 
 void AppManager::onLockClicked()
@@ -429,61 +435,21 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         emit settingsChanged();
         break;
 
+    case DataBase::GetAuthorizationUserByName:
+    // Получен результат поиска пользователя по введеному имени при авторизации:
+        checkAuthorization(records);
+        break;
+
     case DataBase::GetShowcaseProducts:
     // Обновление списка товаров экрана Showcase:
         showcasePanelModel->updateProducts(records);
         emit selectFromDBByList(DataBase::GetShowcaseResources, records);
         break;
 
-    case DataBase::GetShowcaseResources:
-     // Отображение картинок товаров экрана Showcase:
-    {
-        QStringList fileNames;
-        const int column = ResourceDBTable::Value;
-        for (int i = 0; i < records.count(); i++)
-        {
-            QString fileName = DUMMY_IMAGE_FILE;
-            if (records[i].count() > column)
-            {
-                fileName = records[i][column].toString();
-                // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
-            }
-            fileNames << fileName;
-        }
-        showcasePanelModel->updateImages(fileNames);
-        break;
-    }
-
-    case DataBase::GetAuthorizationUserByName:
-    // Получен результат поиска пользователя по введеному имени при авторизации:
-        checkAuthorization(records);
-        break;
-
-    case DataBase::GetImageByResourceCode:
-    // Отображение картинки выбранного товара:
-    {
-        QString fileName = DUMMY_IMAGE_FILE;
-        if (records.count() > 0)
-        {
-            const int column = ResourceDBTable::Value;
-            if (records[0].count() > column)
-            {
-                fileName = records[0][column].toString();
-                // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
-            }
-        }
-        emit showProductImage(fileName);
-        break;
-    }
-
     case DataBase::GetMessageByResourceCode:
     // Отображение сообщения (описания) выбранного товара:
-        if (!records.isEmpty())
-        {
-            const int messageValueColumn = ResourceDBTable::Value;
-            if (records[0].count() > messageValueColumn)
-                showMessage("Описание товара", records[0][messageValueColumn].toString());
-        }
+        if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
+            showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
         break;
 
     case DataBase::GetUserNames:
@@ -523,6 +489,37 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
             showToast("ВНИМАНИЕ!", "Выбранный товар изменен");
         }
         break;
+
+    case DataBase::GetShowcaseResources:
+     // Отображение картинок товаров экрана Showcase:
+    {
+        QStringList fileNames;
+        for (int i = 0; i < records.count(); i++)
+        {
+            QString fileName = DUMMY_IMAGE_FILE;
+            if (records[i].count() > ResourceDBTable::Value)
+            {
+                fileName = records[i][ResourceDBTable::Value].toString();
+                // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
+            }
+            fileNames << fileName;
+        }
+        showcasePanelModel->updateImages(fileNames);
+        break;
+    }
+
+    case DataBase::GetImageByResourceCode:
+    // Отображение картинки выбранного товара:
+    {
+        QString fileName = DUMMY_IMAGE_FILE;
+        if (records.count() > 0 && records[0].count() > ResourceDBTable::Value)
+        {
+            fileName = records[0][ResourceDBTable::Value].toString();
+            // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
+        }
+        emit showProductImage(fileName);
+        break;
+    }
 
     default:break;
     }
@@ -585,7 +582,7 @@ void AppManager::onTimer()
 {
     quint64 dt = Tools::currentDateTimeToInt() - userActionTime; // минуты
     quint64 bt = settings.getItemIntValue(SettingDBTable::SettingCode_Blocking); // минуты
-    qDebug() << "@@@@@ AppManager::onTimer " << dt << bt * 1000 * 60;
+    //qDebug() << "@@@@@ AppManager::onTimer " << dt << bt * 1000 * 60;
     if(!authorizationOpened && bt > 0 && bt * 1000 * 60 < dt)
         startAuthorization();
 }
@@ -622,6 +619,7 @@ void AppManager::onShowcaseClicked(const int index)
 
 void AppManager::onSwipeMainPage(const int page)
 {
+    qDebug() << "@@@@@ AppManager::onSwipeMainPage " << page;
     emit showMainPage(page);
 }
 
@@ -731,12 +729,10 @@ void AppManager::showMessage(const QString &title, const QString &text)
 void AppManager::resetProduct()
 {
     // Сбросить выбранный продукт
-
     qDebug() << "@@@@@ AppManager::resetProduct";
     product.clear();
+    printStatus.onResetProduct();
     emit resetCurrentProduct();
-
-    printStatus.clear();
     updateStatus();
 }
 
@@ -886,26 +882,28 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 
 void AppManager::updateStatus()
 {
-    const bool isZero = weightManager->isZeroFlag();
     const bool isProduct = !product.empty();
+    const bool isPieceProduct = isProduct && ProductDBTable::isPiece(product);
+    const int oldPieces = printStatus.pieces;
+    if(isPieceProduct && printStatus.pieces < 1) printStatus.pieces = 1;
+
+    const bool isZero = weightManager->isZeroFlag();
     const bool isTare = weightManager->isTareFlag();
     const bool isWeightError = weightManager->isError();
     const bool isPrintError = printManager->isError();
-    const bool isPieceProduct = isProduct && ProductDBTable::isPiece(product);
-    const bool isFixed = weightManager->isWeightFixed() && !isWeightError;
+    const bool isFixed = weightManager->isWeightFixed();
+
     const bool isAutoPrint = settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAuto) &&
            (!isPieceProduct || settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAutoPcs));
-    const double unitWeight = isProduct ? product[ProductDBTable::UnitWeight].toDouble() / 1000000 : 0; // Вес единицы, кг
     const QString passiveColor = "#424242";
     const QString activeColor = "#fafafa";
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
-    if(isZero)
-        if(!isPieceProduct || unitWeight != 0) printStatus.calculateMode = true;
+    if(isZero) printStatus.calculateMode = true;
 
     // Рисуем флажки:
+    emit showWeightParam(EquipmentParam_AutoPrint, QString::number(isAutoPrint ? AutoPrint_Enable : AutoPrint_None));
     emit showWeightParam(EquipmentParam_WeightError, Tools::boolToString(isWeightError));
-    emit showWeightParam(EquipmentParam_AutoPrint, Tools::boolToString(isAutoPrint));
     emit showWeightParam(EquipmentParam_Zero, Tools::boolToString(isZero));
     emit showWeightParam(EquipmentParam_Tare, Tools::boolToString(isTare));
 
@@ -921,17 +919,17 @@ void AppManager::updateStatus()
     emit showWeightParam(EquipmentParam_AmountTitle, "СТОИМОСТЬ, руб");
 
     // Рисуем количество (вес/штуки):
-    const QString quantity = !isWeightError || isPieceProduct ? quantityAsString(product) : "";
+    const QString quantity = isPieceProduct || !isWeightError ? quantityAsString(product) : "";
     emit showWeightParam(EquipmentParam_WeightValue, quantity);
-    emit showWeightParam(EquipmentParam_WeightColor, isFixed || isPieceProduct ? activeColor : passiveColor);
+    emit showWeightParam(EquipmentParam_WeightColor, isPieceProduct || (isFixed && !isWeightError) ? activeColor : passiveColor);
 
     // Рисуем цену:
-    const QString price = priceAsString(product);
+    const QString price = isProduct ? priceAsString(product) : "-----";
     emit showWeightParam(EquipmentParam_PriceValue, price);
     emit showWeightParam(EquipmentParam_PriceColor, isProduct ? activeColor : passiveColor);
 
     // Рисуем стоимость:
-    const bool isAmount = isPieceProduct || (isProduct && isFixed);
+    const bool isAmount = isPieceProduct || (isProduct && isFixed && !isWeightError);
     const QString amount = amountAsString(product);
     emit showWeightParam(EquipmentParam_AmountValue, amount);
     emit showWeightParam(EquipmentParam_AmountColor, isAmount ? activeColor : passiveColor);
@@ -940,54 +938,44 @@ void AppManager::updateStatus()
     if(printManager->isDemoMode()) emit showPrinterMessage("Демо режим принтера");
     printStatus.manualPrintEnabled = isAmount && !isPrintError;
     emit enableManualPrint(printStatus.manualPrintEnabled);
+    const bool isAutoPrintEnabled = isAutoPrint && printStatus.manualPrintEnabled;
 
     if(printStatus.calculateMode && isProduct)
     {
+        if(isWeightError || isFixed || weightManager->isDemoMode()) printStatus.calculateMode = false;
+
         if(!isPieceProduct) // Весовой товар
         {
-            if(isFixed)
+            if(isFixed && !isWeightError && isAutoPrintEnabled) // Автопечать
             {
-                printStatus.calculateMode = false;
-                if(isAutoPrint && printStatus.manualPrintEnabled) // Автопечать
+                const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
+                if(wg > 0)
                 {
-                    const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
-                    if(wg > 0)
-                    {
-                        if(wg >= settings.getItemIntValue(SettingDBTable::SettingCode_PrintAutoWeight))
-                            print();
-                        else
-                            showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
-                    }
+                    if(wg >= settings.getItemIntValue(SettingDBTable::SettingCode_PrintAutoWeight)) print();
+                    else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
                 }
             }
         }
-        else if(unitWeight > 0) // Штучный товар. Задан вес единицы
+        else // Штучный товар
         {
-            if(isFixed || isWeightError || weightManager->isDemoMode())
-                printStatus.calculateMode = false;
-            const int oldPieces = printStatus.pieces;
-            printStatus.pieces = 1;
-            if(isFixed)
+            const double unitWeight = product[ProductDBTable::UnitWeight].toDouble() / 1000000; // Вес единицы, кг
+            if(unitWeight > 0) // Задан вес единицы
             {
-                int newPieces = (int)(weightManager->getWeight() / unitWeight + 0.5); // Округление до ближайшего целого
-                printStatus.pieces = newPieces > 0 ? newPieces : 1;
-                if(isAutoPrint && printStatus.manualPrintEnabled) // Автопечать
-                    print();
+                if(isFixed && !isWeightError)
+                {
+                    int newPieces = (int)(weightManager->getWeight() / unitWeight + 0.5); // Округление до ближайшего целого
+                    printStatus.pieces = newPieces < 1 ? 1 : newPieces;
+                    if(isAutoPrintEnabled) print(); // Автопечать
+                }
             }
-            if(oldPieces != printStatus.pieces)
-                updateStatus();
-        }
-        else // Штучный товар. Не задан вес единицы
-        {
-            printStatus.calculateMode = false;
-            const int oldPieces = printStatus.pieces;
-            printStatus.pieces = 1;
-            if(isAutoPrint && printStatus.manualPrintEnabled) // Автопечать
-                print();
-            if(oldPieces != printStatus.pieces)
-                updateStatus();
+            else
+            {
+                printStatus.calculateMode = false;
+                if(isAutoPrintEnabled) print(); // Автопечать
+            }
         }
     }
+    if(isPieceProduct && oldPieces != printStatus.pieces) updateStatus();
 
     qDebug() << QString("@@@@@ AppManager::updateStatus %1 %2 %3 %4 %5 %6 %7").arg(
                     Tools::boolToString(isWeightError),

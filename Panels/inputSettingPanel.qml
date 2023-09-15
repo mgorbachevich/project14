@@ -69,8 +69,8 @@ Popup
                 icon.source: "../Icons/close_black_48"
                 onClicked:
                 {
-                    app.onUserAction(); // AppManager's slot
-                    app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text) // AppManager's slot
+                    app.onUserAction();
+                    app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text)
                     inputSettingPanel.close()
                 }
             }
@@ -101,35 +101,25 @@ Popup
                     {
                         console.debug("@@@@@ inputSettingPanelText Keys.onPressed ", JSON.stringify(event))
                         event.accepted = true;
-                        app.onUserAction(); // AppManager's slot
+                        app.onUserAction();
                         switch (event.key)
                         {
-                            case Qt.Key_0:
-                            case Qt.Key_1:
-                            case Qt.Key_2:
-                            case Qt.Key_3:
-                            case Qt.Key_4:
-                            case Qt.Key_5:
-                            case Qt.Key_6:
-                            case Qt.Key_7:
-                            case Qt.Key_8:
-                            case Qt.Key_9:
+                            case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:
+                            case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
                                 text += event.text
                                 break;
-                             case Qt.Key_Backspace:
-                             case Qt.Key_Delete:
-                             case Qt.Key_C:
+                            case Qt.Key_Backspace: case Qt.Key_Delete: case Qt.Key_C:
                                 text = text.substring(0, text.length - 1);
                                 break;
                             case Qt.Key_Escape:
                                 text = ""
                                 break;
-                            case Qt.Key_Enter:
+                            case Qt.Key_Enter: case Qt.Key_Return:
                                 app.onSettingInputClosed(settingItemCode, text)
                                 inputSettingPanel.close()
                                 break
                              default:
-                                app.onBeep();
+                                app.beep();
                                 break
                         }
                     }

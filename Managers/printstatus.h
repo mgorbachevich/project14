@@ -4,11 +4,12 @@
 class PrintStatus
 {
 public:
-    PrintStatus() { clear(); }
-    void clear() { manualPrintEnabled = false; calculateMode = true; pieces = 1; }
+    PrintStatus() {}
+    void onNewProduct() {}
+    void onResetProduct() { pieces = 1; }
 
     bool manualPrintEnabled = false;
-    bool calculateMode = true;
+    bool calculateMode = false;
     int pieces = 1;
 };
 

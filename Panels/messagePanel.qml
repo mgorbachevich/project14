@@ -47,7 +47,7 @@ Popup
             {
                 console.debug("@@@@@ messagePanel Keys.onPressed ", JSON.stringify(event))
                 event.accepted = true;
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 messagePanel.close()
             }
 
@@ -84,7 +84,7 @@ Popup
                 visible: buttonVisibility
                 onClicked:
                 {
-                    app.onUserAction(); // AppManager's slot
+                    app.onUserAction();
                     messagePanel.close()
                 }
             }

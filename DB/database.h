@@ -49,7 +49,7 @@ public:
 
     explicit DataBase(const QString&, Settings&, QObject*);
     ~DataBase() { db.close(); }
-    DBTable* getTableByName(const QString&);
+    DBTable* getTableByName(const QString&) const;
     void selectAll(DBTable*, DBRecordList&);
     bool removeAll(DBTable*);
     QString version();

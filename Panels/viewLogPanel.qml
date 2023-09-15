@@ -32,25 +32,25 @@ Popup
         {
             console.debug("@@@@@ viewLogPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
-            app.onUserAction(); // AppManager's slot
+            app.onUserAction();
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка
                     viewLogPanel.close()
                     break
-                case Qt.Key_Enter:
+                case Qt.Key_Enter: case Qt.Key_Return:
                     viewLogPanel.close()
                     break
                 case Qt.Key_Up:
                     if (!viewLogPanelList.atYBeginning) viewLogPanelList.flick(0, Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 case Qt.Key_Down:
                     if (!viewLogPanelList.atYEnd) viewLogPanelList.flick(0, -Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 default:
-                    app.onBeep();
+                    app.beep();
                     break
             }
         }
@@ -82,7 +82,7 @@ Popup
             icon.source: "../Icons/close_black_48"
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 viewLogPanel.close()
             }
         }
@@ -102,7 +102,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
-                onFlickStarted: app.onUserAction() // AppManager's slot
+                onFlickStarted: app.onUserAction()
 
                 ScrollBar.vertical: ScrollBar
                 {

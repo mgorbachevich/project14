@@ -17,8 +17,8 @@ Column
         icon.source: "../Icons/settings_black_48"
         onClicked:
         {
-            app.onUserAction(); // AppManager's slot
-            app.onAdminSettingsClicked() // AppManager's slot
+            app.onUserAction();
+            app.onAdminSettingsClicked()
         }
     }
 
@@ -28,8 +28,8 @@ Column
         icon.source: "../Icons/lock_black_48"
         onClicked:
         {
-            app.onUserAction(); // AppManager's slot
-            app.onLockClicked() // AppManager's slot
+            app.onUserAction();
+            app.onLockClicked()
         }
     }
 
@@ -39,8 +39,8 @@ Column
         icon.source: "../Icons/log_black_48"
         onClicked:
         {
-            app.onUserAction(); // AppManager's slot
-            app.onViewLogClicked() // AppManager's slot
+            app.onUserAction();
+            app.onViewLogClicked()
         }
     }
 }

@@ -60,8 +60,8 @@ Rectangle
             icon.source: "../Icons/settings_black_48"
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
-                app.onSearchOptionsClicked() // AppManager's slot
+                app.onUserAction();
+                app.onSearchOptionsClicked()
             }
         }
 
@@ -81,7 +81,7 @@ Rectangle
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
-                onFlickStarted: app.onUserAction() // AppManager's slot
+                onFlickStarted: app.onUserAction()
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -109,8 +109,8 @@ Rectangle
                         anchors.fill: parent
                         onClicked:
                         {
-                            app.onUserAction(); // AppManager's slot
-                            app.onSearchResultClicked(index) // AppManager's slot
+                            app.onUserAction();
+                            app.onSearchResultClicked(index)
                         }
                     }
                 }
@@ -130,36 +130,30 @@ Rectangle
             font { pointSize: app.normalFontSize() }
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
-            onTextEdited: app.onUserAction(); // AppManager's slot
-
+            onTextEdited: app.onUserAction();
             focus: true
             Keys.onPressed: (event) =>
             {
                 console.debug("@@@@@ searchPanelTextField Keys.onPressed ", JSON.stringify(event));
                 event.accepted = true;
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 switch (event.key)
                 {
-                    case Qt.Key_0:
-                    case Qt.Key_1:
-                    case Qt.Key_2:
-                    case Qt.Key_3:
-                    case Qt.Key_4:
-                    case Qt.Key_5:
-                    case Qt.Key_7:
-                    case Qt.Key_8:
-                    case Qt.Key_9:
+                    case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:
+                    case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
                         text += event.text
                         app.onSearchFilterEdited(text);
                         break;
-                    case Qt.Key_Backspace:
-                    case Qt.Key_Delete:
-                    case Qt.Key_C:
+                    case Qt.Key_Backspace: case Qt.Key_Delete: case Qt.Key_C:
                         text = text.substring(0, text.length - 1);
+                        app.onSearchFilterEdited(text);
                         break;
                     case Qt.Key_Escape:
                         text = ""
                         app.onSearchFilterEdited(text);
+                        break;
+                    case Qt.Key_Left:
+                        app.onSwipeMainPage(1)
                         break;
                     case Qt.Key_F9: // Ключ
                         app.onLockClicked()
@@ -170,19 +164,16 @@ Rectangle
                     case Qt.Key_Z: // >0<
                         app.onZeroClicked()
                         break
-                    case Qt.Key_Left:
-                        app.onSwipeMainPage(1)
-                        break;
                     case Qt.Key_Up:
                         if (!searchPanelResultList.atYBeginning) searchPanelResultList.flick(0, Constants.flickVelocity)
-                        else app.onBeep()
+                        else app.beep()
                         break;
                     case Qt.Key_Down:
                         if (!searchPanelResultList.atYEnd) searchPanelResultList.flick(0, -Constants.flickVelocity)
-                        else app.onBeep()
+                        else app.beep()
                         break;
                     default:
-                        app.onBeep();
+                        app.beep();
                         break;
                 }
             }
@@ -205,7 +196,7 @@ Rectangle
                 orientation: Qt.Vertical
                 clip: true
                 currentIndex: 0
-                onFlickStarted: app.onUserAction() // AppManager's slot
+                onFlickStarted: app.onUserAction()
                 //highlight: Rectangle { color: Material.color(Material.BlueGrey, Material.Shade100) }
 
                 ScrollBar.vertical: ScrollBar
@@ -238,9 +229,9 @@ Rectangle
                         anchors.fill: parent
                         onClicked:
                         {
-                            app.onUserAction(); // AppManager's slot
+                            app.onUserAction();
                             searchPanelFilterList.currentIndex = index
-                            app.onSearchFilterClicked(index) // AppManager's slot
+                            app.onSearchFilterClicked(index)
                         }
                     }
                 }

@@ -42,18 +42,18 @@ Popup
             {
                 console.debug("@@@@@ confirmationPanel Keys.onPressed ", JSON.stringify(event))
                 event.accepted = true;
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 switch (event.key)
                 {
                     case Qt.Key_Escape: // Круглая стрелка
                         confirmationPanel.close()
                         break
-                    case Qt.Key_Enter:
+                    case Qt.Key_Enter: case Qt.Key_Return:
                         app.onConfirmationClicked(dialogSelector)
                         confirmationPanel.close()
                         break
                     default:
-                        app.onBeep();
+                        app.beep();
                         break
                 }
             }
@@ -103,8 +103,8 @@ Popup
                     text: qsTr(" ДА ")
                     onClicked:
                     {
-                        app.onUserAction(); // AppManager's slot
-                        app.onConfirmationClicked(dialogSelector) // AppManager's slot
+                        app.onUserAction();
+                        app.onConfirmationClicked(dialogSelector)
                         confirmationPanel.close()
                     }
                  }
@@ -116,7 +116,7 @@ Popup
                     text: qsTr("НЕТ")
                     onClicked:
                     {
-                        app.onUserAction(); // AppManager's slot
+                        app.onUserAction();
                         confirmationPanel.close()
                     }
                 }

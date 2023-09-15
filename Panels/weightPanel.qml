@@ -74,7 +74,8 @@ Rectangle
             case 15: // PrintError
                 break
             case 16: // AutoPrint
-                if (value === 'true') productPanelAutoPrintIcon.source = "../Icons/auto_flag_48"
+                if (value === '1') productPanelAutoPrintIcon.source = "../Icons/auto_flag_green_48"
+                else if (value === '2') productPanelAutoPrintIcon.source = "../Icons/auto_flag_orange_48"
                 else productPanelAutoPrintIcon.source = "../Icons/empty_flag_48"
                 break
             }
@@ -165,8 +166,8 @@ Rectangle
                     anchors.fill: parent
                     onClicked:
                     {
-                        // app.onUserAction(); // AppManager's slot
-                        app.onWeightPanelClicked(1); // AppManager's slot
+                        // app.onUserAction();
+                        app.onWeightPanelClicked(1);
                     }
                 }
             }
@@ -200,8 +201,8 @@ Rectangle
                     anchors.fill: parent
                     onClicked:
                     {
-                        // app.onUserAction(); // AppManager's slot
-                        app.onWeightPanelClicked(2); // AppManager's slot
+                        // app.onUserAction();
+                        app.onWeightPanelClicked(2);
                     }
                 }
             }
@@ -235,8 +236,8 @@ Rectangle
                     anchors.fill: parent
                     onClicked:
                     {
-                        // app.onUserAction(); // AppManager's slot
-                        app.onWeightPanelClicked(3); // AppManager's slot
+                        // app.onUserAction();
+                        app.onWeightPanelClicked(3);
                     }
                 }
             }

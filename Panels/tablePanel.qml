@@ -14,7 +14,7 @@ Rectangle
     {
         console.debug("@@@@@ tablePanel Keys.onPressed ", JSON.stringify(event));
         event.accepted = true;
-        app.onUserAction(); // AppManager's slot
+        app.onUserAction();
         switch (event.key)
         {
             case Qt.Key_F9: // Ключ
@@ -35,14 +35,14 @@ Rectangle
                 break;
             case Qt.Key_Up:
                 if (!tablePanelResultList.atYBeginning) tablePanelResultList.flick(0, Constants.flickVelocity)
-                else app.onBeep()
+                else app.beep()
                 break;
             case Qt.Key_Down:
                 if (!tablePanelResultList.atYEnd) tablePanelResultList.flick(0, -Constants.flickVelocity)
-                else app.onBeep()
+                else app.beep()
                 break;
             default:
-                app.onBeep();
+                app.beep();
                 break;
         }
     }
@@ -98,8 +98,8 @@ Rectangle
             icon.source: "../Icons/empty_48"
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
-                app.onTableBackClicked() // AppManager's slot
+                app.onUserAction();
+                app.onTableBackClicked()
             }
         }
 
@@ -124,8 +124,8 @@ Rectangle
             icon.source: "../Icons/settings_black_48"
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
-                app.onTableOptionsClicked() // AppManager's slot
+                app.onUserAction();
+                app.onTableOptionsClicked()
             }
         }
 
@@ -144,7 +144,7 @@ Rectangle
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
-                onFlickStarted: app.onUserAction() // AppManager's slot
+                onFlickStarted: app.onUserAction()
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -172,8 +172,8 @@ Rectangle
                         anchors.fill: parent
                         onClicked:
                         {
-                            app.onUserAction(); // AppManager's slot
-                            app.onTableResultClicked(index) // AppManager's slot
+                            app.onUserAction();
+                            app.onTableResultClicked(index)
                         }
                     }
                 }

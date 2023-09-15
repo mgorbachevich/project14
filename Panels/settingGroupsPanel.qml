@@ -32,22 +32,22 @@ Popup
         {
             console.debug("@@@@@ settingGroupsPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
-            app.onUserAction(); // AppManager's slot
+            app.onUserAction();
             switch (event.key)
             {
                 case Qt.Key_Up:
                     if (!settingGroupsPanelList.atYBeginning) settingGroupsPanelList.flick(0, Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 case Qt.Key_Down:
                     if (!settingGroupsPanelList.atYEnd) settingGroupsPanelList.flick(0, -Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 case Qt.Key_Escape: // Круглая стрелка
                     settingGroupsPanel.close()
                     break
                 default:
-                    app.onBeep();
+                    app.beep();
                     break
             }
         }
@@ -83,7 +83,7 @@ Popup
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 settingGroupsPanel.close()
             }
         }
@@ -103,7 +103,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
-                onFlickStarted: app.onUserAction() // AppManager's slot
+                onFlickStarted: app.onUserAction()
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -129,8 +129,8 @@ Popup
                             anchors.fill: parent
                             onClicked:
                             {
-                                app.onUserAction(); // AppManager's slot
-                                app.onSettingGroupClicked(index) // AppManager's slot
+                                app.onUserAction();
+                                app.onSettingGroupClicked(index)
                             }
                         }
                     }

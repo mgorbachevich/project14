@@ -33,15 +33,14 @@ Popup
         {
             console.debug("@@@@@ sarchOptionsPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
-            app.onUserAction(); // AppManager's slot
+            app.onUserAction();
             switch (event.key)
             {
-                case Qt.Key_Escape: // Круглая стрелка
-                case Qt.Key_Enter:
+                case Qt.Key_Escape: case Qt.Key_Enter: case Qt.Key_Return:
                     sarchOptionsPanel.close()
                     break
                 default:
-                    app.onBeep();
+                    app.beep();
                     break
             }
         }
@@ -89,7 +88,7 @@ Popup
             bottomInset: 0
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 sarchOptionsPanel.close()
             }
         }
@@ -114,7 +113,7 @@ Popup
             {
                 height: app.spacer() * 4
                 text: qsTr("По фильтру");
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
 
             RadioButton
@@ -122,7 +121,7 @@ Popup
                 height: app.spacer() * 4
                 text: qsTr("По наименованию")
                 checked: true
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
         }
 
@@ -146,7 +145,7 @@ Popup
             {
                 height: app.spacer() * 4
                 text: qsTr("Фильтр")
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
 
             CheckBox
@@ -154,7 +153,7 @@ Popup
                 height: app.spacer() * 4
                 text: qsTr("Наименование")
                 checked: true
-                onClicked: app.onUserAction(); // AppManager's slot
+                onClicked: app.onUserAction();
             }
         }
     }

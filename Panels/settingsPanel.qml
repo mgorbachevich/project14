@@ -33,22 +33,22 @@ Popup
         {
             console.debug("@@@@@ settingPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
-            app.onUserAction(); // AppManager's slot
+            app.onUserAction();
             switch (event.key)
             {
                 case Qt.Key_Up:
                     if (!settingPanelList.atYBeginning) settingPanelList.flick(0, Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 case Qt.Key_Down:
                     if (!settingPanelList.atYEnd) settingPanelList.flick(0, -Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 case Qt.Key_Escape: // Круглая стрелка
                     settingPanel.close()
                     break
                 default:
-                    app.onBeep();
+                    app.beep();
                     break
             }
         }
@@ -84,7 +84,7 @@ Popup
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
+                app.onUserAction();
                 settingPanel.close()
             }
         }
@@ -104,7 +104,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
-                onFlickStarted: app.onUserAction() // AppManager's slot
+                onFlickStarted: app.onUserAction()
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -131,8 +131,8 @@ Popup
                             anchors.fill: parent
                             onClicked:
                             {
-                                app.onUserAction(); // AppManager's slot
-                                app.onSettingsItemClicked(index) // AppManager's slot
+                                app.onUserAction();
+                                app.onSettingsItemClicked(index)
                             }
                         }
                     }
@@ -149,8 +149,8 @@ Popup
                             anchors.fill: parent
                             onClicked:
                             {
-                                app.onUserAction(); // AppManager's slot
-                                app.onSettingsItemClicked(index) // AppManager's slot
+                                app.onUserAction();
+                                app.onSettingsItemClicked(index)
                             }
                         }
                     }

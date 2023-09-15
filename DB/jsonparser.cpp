@@ -49,7 +49,8 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json)
 
 QJsonValue JSONParser::prepare(const QString &json, bool *ok)
 {
-    qDebug() << "@@@@@ JSONParser::prepare " << json;
+    qDebug() << "@@@@@ JSONParser::prepare ";
+    //qDebug() << "@@@@@ JSONParser::prepare " << json;
 
     const QJsonObject jo = Tools::stringToJson(json);
     QJsonValue result = jo["result"];
@@ -92,6 +93,7 @@ int JSONParser::parseAllTables(DataBase* db, const QString& json, int* returnErr
         errorCount = 1;
         errorCode = LogError_WrongRequest;
         description = "Некорректный запрос";
+        qDebug() << "@@@@@ JSONParser::parseAllTables wrong request";
     }
     else
     {
@@ -107,24 +109,20 @@ int JSONParser::parseAllTables(DataBase* db, const QString& json, int* returnErr
                     DBRecord& rj = records[j];
                     if(db->insertRecord(ti, rj))
                     {
+                        QString s = QString("Запись загружена. Таблица: %1. Код: %2").arg(ti->name, rj.at(0).toString());
                         recordCount++;
-                        if (detailedLog)
-                        {
-                            QString s = QString("Запись загружена. Таблица: %1. Код: %2").arg(ti->name, rj.at(0).toString());
-                            db->saveLog(LogType_Warning, LogSource_DB, s);
-                        }
+                        if (detailedLog) db->saveLog(LogType_Warning, LogSource_DB, s);
+                        qDebug() << "@@@@@ JSONParser::parseAllTables " << s;
                     }
                     else
                     {
                         errorCount++;
                         errorCode = LogError_WrongRecord;
                         description = "Некорректная запись";
-                        if (detailedLog)
-                        {
-                            QString s = QString("Ошибка загрузки записи. Таблица: %1. Код: %2. Код ошибки: %3. Описание: %4").
-                                    arg(ti->name, rj.at(0).toString(), QString::number(errorCode), description);
-                            db->saveLog(LogType_Error, LogSource_DB, s);
-                        }
+                        QString s = QString("Ошибка загрузки записи. Таблица: %1. Код: %2. Код ошибки: %3. Описание: %4").
+                                arg(ti->name, rj.at(0).toString(), QString::number(errorCode), description);
+                        if (detailedLog) db->saveLog(LogType_Error, LogSource_DB, s);
+                        qDebug() << "@@@@@ JSONParser::parseAllTables " << s;
                     }
                 }
             }
@@ -133,7 +131,7 @@ int JSONParser::parseAllTables(DataBase* db, const QString& json, int* returnErr
     QString s = QString("Загрузка завершена. Записи: %2. Ошибки: %3. Описание: %4").
             arg(QString::number(recordCount), QString::number(errorCount), description);
     db->saveLog(LogType_Error, LogSource_DB, s);
-    qDebug() << "@@@@@ JSONParser::parseAllTables: result =" << recordCount;
+    qDebug() << "@@@@@ JSONParser::parseAllTables " << s;
 
     if(returnErrorCode != nullptr) *returnErrorCode = errorCode;
     if(returnDescription != nullptr) *returnDescription = description;

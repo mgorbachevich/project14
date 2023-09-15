@@ -16,16 +16,16 @@ public:
     explicit PrintManager(QObject*, const bool demo);
     int start(const QString&);
     void stop();
-    QString version();
+    QString version() const;
     void print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
-    bool isError() { return errorCode != 0 || isStateError(status); }
-    bool isDemoMode() { return demoMode; }
+    bool isError() const { return errorCode != 0 || isStateError(status); }
+    bool isDemoMode() const { return demoMode; }
     void feed();
-    QString getErrorDescription(const int);
+    QString getErrorDescription(const int) const;
 
 private:
-    bool isFlag(uint16_t v, int shift) { return (v & (0x00000001 << shift)) != 0; }
-    bool isStateError(uint16_t);
+    bool isFlag(uint16_t v, int shift) const { return (v & (0x00000001 << shift)) != 0; }
+    bool isStateError(uint16_t) const;
 
     Slpa100u* slpa = nullptr;
     bool started = false;

@@ -58,6 +58,13 @@ enum LogError
     LogError_RecordNotFound = 1104,
 };
 
+enum AutoPrint
+{
+    AutoPrint_None = 0,
+    AutoPrint_Enable = 1,
+    AutoPrint_Disable = 2,
+};
+
 enum EquipmentParam
 {
     EquipmentParam_None = 0,

@@ -77,7 +77,7 @@ Popup
         {
             console.debug("@@@@@ productPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
-            app.onUserAction(); // AppManager's slot
+            app.onUserAction();
             switch (event.key)
             {
                 case Qt.Key_Escape: // Круглая стрелка
@@ -101,14 +101,14 @@ Popup
                     break
                 case Qt.Key_Up:
                     if (!productPanelList.atYBeginning) productPanelList.flick(0, Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 case Qt.Key_Down:
                     if (!productPanelList.atYEnd) productPanelList.flick(0, -Constants.flickVelocity)
-                    else app.onBeep()
+                    else app.beep()
                     break;
                 default:
-                    app.onBeep();
+                    app.beep();
                     break
             }
         }
@@ -156,7 +156,7 @@ Popup
                 anchors.fill: parent
                 orientation: Qt.Vertical
                 clip: true
-                onFlickStarted: app.onUserAction() // AppManager's slot
+                onFlickStarted: app.onUserAction()
 
                 ScrollBar.vertical: ScrollBar
                 {
@@ -185,8 +185,8 @@ Popup
             icon.source: "../Icons/info_outline_black_48"
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
-                app.onProductDescriptionClicked() // AppManager's slot
+                app.onUserAction();
+                app.onProductDescriptionClicked()
             }
         }
 
@@ -199,8 +199,8 @@ Popup
             icon.source: "../Icons/close_black_48"
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
-                app.onProductPanelCloseClicked() // AppManager's slot
+                app.onUserAction();
+                app.onProductPanelCloseClicked()
             }
         }
 
@@ -218,8 +218,8 @@ Popup
             font { pointSize: app.largeFontSize() }
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
-                app.onProductPanelPiecesClicked() // AppManager's slot
+                app.onUserAction();
+                app.onProductPanelPiecesClicked()
             }
         }
 
@@ -255,8 +255,8 @@ Popup
             Material.background: Constants.colorAuto
             onClicked:
             {
-                app.onUserAction(); // AppManager's slot
-                app.onPrintClicked() // AppManager's slot
+                app.onUserAction();
+                app.onPrintClicked()
             }
         }
     }

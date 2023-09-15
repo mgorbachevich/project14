@@ -12,20 +12,20 @@ public:
     explicit WeightManager(QObject*, const bool);
     int start(const QString&);
     void stop();
-    QString version();
-    bool isError() { return errorCode != 0 || isStateError(status); }
+    QString version() const;
     void setWeightParam(const int);
-    double getWeight() { return status.weight; }
-    double getTare() { return status.tare; }
-    bool isWeightFixed() { return isFlag(status, 0); }
-    bool isZeroFlag() { return isFlag(status, 1); }
-    bool isTareFlag() { return isFlag(status, 3); }
-    QString getErrorDescription(const int);
-    bool isDemoMode() { return demoMode; }
+    double getWeight() const { return status.weight; }
+    double getTare() const { return status.tare; }
+    QString getErrorDescription(const int) const;
+    bool isError() const { return errorCode != 0 || isStateError(status); }
+    bool isWeightFixed() const { return isFlag(status, 0); }
+    bool isZeroFlag() const { return isFlag(status, 1); }
+    bool isTareFlag() const { return isFlag(status, 3); }
+    bool isDemoMode() const { return demoMode; }
 
 private:
-    bool isFlag(Wm100::channel_status, int);
-    bool isStateError(Wm100::channel_status);
+    bool isFlag(Wm100::channel_status, int) const;
+    bool isStateError(Wm100::channel_status) const;
 
     Wm100* wm100 = nullptr;
     bool started = false;

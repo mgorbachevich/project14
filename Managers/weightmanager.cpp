@@ -39,7 +39,7 @@ void WeightManager::stop()
     }
 }
 
-QString WeightManager::version()
+QString WeightManager::version() const
 {
     return "?";
 }
@@ -62,17 +62,17 @@ void WeightManager::setWeightParam(const int param)
     }
 }
 
-bool WeightManager::isFlag(Wm100::channel_status s, int shift)
+bool WeightManager::isFlag(Wm100::channel_status s, int shift) const
 {
     return (s.state & (0x00000001 << shift)) != 0;
 }
 
-bool WeightManager::isStateError(Wm100::channel_status s)
+bool WeightManager::isStateError(Wm100::channel_status s) const
 {
     return isFlag(s, 5) || isFlag(s, 6) || isFlag(s, 7) || isFlag(s, 8) || isFlag(s, 9);
 }
 
-QString WeightManager::getErrorDescription(const int e)
+QString WeightManager::getErrorDescription(const int e) const
 {
     switch(e)
     {

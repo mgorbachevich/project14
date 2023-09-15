@@ -41,7 +41,7 @@ void PrintManager::stop()
     }
 }
 
-QString PrintManager::version()
+QString PrintManager::version() const
 {
     return "?";
 }
@@ -80,13 +80,13 @@ void PrintManager::feed()
     // int e = slpa->feed(); todo
 }
 
-bool PrintManager::isStateError(uint16_t s)
+bool PrintManager::isStateError(uint16_t s) const
 {
     if(demoMode) return false;
     return isFlag(s, 0) || (isFlag(s, 1) && isFlag(s, 6)) || isFlag(s, 2) || isFlag(s, 3) || isFlag(s, 8);
 }
 
-QString PrintManager::getErrorDescription(const int e)
+QString PrintManager::getErrorDescription(const int e) const
 {
     switch(e)
     {

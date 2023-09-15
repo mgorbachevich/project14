@@ -3,6 +3,7 @@
 
 #include <QApplication>
 #include <QObject>
+#include <QKeyEvent>
 #include "constants.h"
 #include "database.h"
 #include "settings.h"
@@ -41,15 +42,47 @@ public:
     double price(const DBRecord&);
 
     // Экранные размеры:
-    Q_INVOKABLE int screenWidth() { return screenSize.width(); }
-    Q_INVOKABLE int screenHeight() { return screenSize.height(); }
-    Q_INVOKABLE int weightTitleFontSize() { return (int)(DEFAULT_WEIGHT_TITLE_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int weightValueFontSize() { return (int)(DEFAULT_WEIGHT_VALUE_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int largeFontSize() { return (int)(DEFAULT_LARGE_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int normalFontSize() { return (int)(DEFAULT_NORMAL_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int buttonSize() { return (int)(DEFAULT_BUTTON_SIZE * screenScale); }
-    Q_INVOKABLE int editWidth() { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }
-    Q_INVOKABLE int spacer() { return (int)(DEFAULT_SPACER * screenScale); }
+    Q_INVOKABLE int screenWidth() const { return screenSize.width(); }
+    Q_INVOKABLE int screenHeight() const { return screenSize.height(); }
+    Q_INVOKABLE int weightTitleFontSize() const { return (int)(DEFAULT_WEIGHT_TITLE_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int weightValueFontSize() const { return (int)(DEFAULT_WEIGHT_VALUE_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int largeFontSize() const { return (int)(DEFAULT_LARGE_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int normalFontSize() const { return (int)(DEFAULT_NORMAL_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int buttonSize() const { return (int)(DEFAULT_BUTTON_SIZE * screenScale); }
+    Q_INVOKABLE int editWidth() const { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }
+    Q_INVOKABLE int spacer() const { return (int)(DEFAULT_SPACER * screenScale); }
+
+    Q_INVOKABLE void beep();
+    Q_INVOKABLE void onAdminSettingsClicked();
+    Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
+    Q_INVOKABLE void onConfirmationClicked(const int);
+    Q_INVOKABLE void onLockClicked();
+    Q_INVOKABLE void onMainPageChanged(const int);
+    Q_INVOKABLE void onPiecesInputClosed(const QString&);
+    Q_INVOKABLE void onPopupClosed();
+    Q_INVOKABLE void onPopupOpened();
+    Q_INVOKABLE void onPrintClicked();
+    Q_INVOKABLE void onProductDescriptionClicked();
+    Q_INVOKABLE void onProductPanelCloseClicked();
+    Q_INVOKABLE void onProductPanelPiecesClicked();
+    Q_INVOKABLE void onRewind();
+    Q_INVOKABLE void onSearchFilterClicked(const int);
+    Q_INVOKABLE void onSearchFilterEdited(const QString&);
+    Q_INVOKABLE void onSearchOptionsClicked();
+    Q_INVOKABLE void onSearchResultClicked(const int);
+    Q_INVOKABLE void onSettingGroupClicked(const int);
+    Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
+    Q_INVOKABLE void onSettingsItemClicked(const int);
+    Q_INVOKABLE void onShowcaseClicked(const int);
+    Q_INVOKABLE void onSwipeMainPage(const int);
+    Q_INVOKABLE void onTableBackClicked();
+    Q_INVOKABLE void onTableOptionsClicked();
+    Q_INVOKABLE void onTableResultClicked(const int);
+    Q_INVOKABLE void onTareClicked();
+    Q_INVOKABLE void onUserAction();
+    Q_INVOKABLE void onViewLogClicked();
+    Q_INVOKABLE void onWeightPanelClicked(const int);
+    Q_INVOKABLE void onZeroClicked();
 
 private:
     QString priceAsString(const DBRecord&);
@@ -107,9 +140,8 @@ signals:
     void download(const qint64, const QString&);
     void enableManualPrint(const bool);
     void hideMessageBox();
-    void transaction(const DBRecord&);
-    void resetCurrentProduct();
     void log(const int, const int, const QString&);
+    void resetCurrentProduct();
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void setCurrentUser(const int userIndex, const QString& userName);
@@ -133,49 +165,19 @@ signals:
     void showViewLogPanel();
     void showWeightParam(const int, const QString&);
     void start();
+    void transaction(const DBRecord&);
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
     void upload(const qint64, const QString&, const QString&);
 
 public slots:
-    void onAdminSettingsClicked();
-    void onBeep() { QApplication::beep(); }
-    void onCheckAuthorizationClicked(const QString&, const QString&);
-    void onConfirmationClicked(const int);
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
     void onDownloadFinished(const int);
     void onEquipmentParamChanged(const int, const int);
     void onLoadResult(const qint64, const QString&);
-    void onLockClicked();
-    void onMainPageChanged(const int);
     void onNetRequest(const int, const NetReply&);
-    void onPiecesInputClosed(const QString&);
-    void onPopupClosed();
-    void onPopupOpened();
-    void onPrintClicked();
     void onPrinted(const DBRecord&);
-    void onProductDescriptionClicked();
-    void onProductPanelCloseClicked();
-    void onProductPanelPiecesClicked();
-    void onRewind();
-    void onSearchFilterClicked(const int);
-    void onSearchFilterEdited(const QString&);
-    void onSearchOptionsClicked();
-    void onSearchResultClicked(const int);
-    void onSettingGroupClicked(const int);
-    void onSettingInputClosed(const int, const QString&);
-    void onSettingsItemClicked(const int);
-    void onShowcaseClicked(const int);
-    void onSwipeMainPage(const int);
-    void onTableBackClicked();
-    void onTableOptionsClicked();
-    void onTableResultClicked(const int);
-    void onTareClicked();
     void onTimer();
-    void onUserAction();
-    void onViewLogClicked();
-    void onWeightPanelClicked(const int);
-    void onZeroClicked();
 };
 
 #endif // APPMANAGER_H

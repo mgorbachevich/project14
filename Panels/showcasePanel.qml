@@ -16,7 +16,7 @@ Rectangle
     {
         console.debug("@@@@@ showcasePanel Keys.onPressed ", JSON.stringify(event));
         event.accepted = true;
-        app.onUserAction(); // AppManager's slot
+        app.onUserAction();
         switch (event.key)
         {
             case Qt.Key_F9: // Ключ
@@ -36,14 +36,14 @@ Rectangle
                 break;
             case Qt.Key_Up:
                 if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, Constants.flickVelocity)
-                else app.onBeep()
+                else app.beep()
                 break;
             case Qt.Key_Down:
                 if (!showcasePanelGrid.atYEnd) showcasePanelGrid.flick(0, -Constants.flickVelocity)
-                else app.onBeep()
+                else app.beep()
                 break;
             default:
-                app.onBeep();
+                app.beep();
                 break;
         }
     }
@@ -91,8 +91,8 @@ Rectangle
                 anchors.fill: parent
                 onClicked:
                 {
-                    app.onUserAction(); // AppManager's slot
-                    app.onShowcaseClicked(index) // AppManager's slot
+                    app.onUserAction();
+                    app.onShowcaseClicked(index)
                 }
             }
         }

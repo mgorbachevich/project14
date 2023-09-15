@@ -16,8 +16,8 @@
 DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
 {
-    qDebug() << "@@@@@ DataBase::DataBase " << fileName;
     filePath = Tools::getDataFilePath(fileName);
+    qDebug() << "@@@@@ DataBase::DataBase " << filePath;
     tables.append(new ShowcaseDBTable(DBTABLENAME_SHOWCASE, this));
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
     tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
@@ -83,7 +83,7 @@ bool DataBase::open()
     return true;
 }
 
-DBTable *DataBase::getTableByName(const QString &name)
+DBTable *DataBase::getTableByName(const QString &name) const
 {
     //qDebug() << "@@@@@ DataBase::getTableByName: name =" << name;
     for (int i = 0; i < tables.size(); i++)
