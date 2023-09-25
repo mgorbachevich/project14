@@ -9,7 +9,7 @@ DBRecord TransactionDBTable::createRecord(const int userCode,
                                           const int cost)
 {
     DBRecord r = DBTable::createRecord();
-    r[TransactionDBTable::DateTime] = Tools::currentDateTimeToInt();
+    r[TransactionDBTable::DateTime] = Tools::currentDateTimeToUInt();
     r[TransactionDBTable::User] = userCode;
     r[TransactionDBTable::ItemCode] = itemCode;
     r[TransactionDBTable::LabelNumber] = labelNumber;

@@ -1,21 +1,22 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define DB_EMULATION
-#define CHECK_AUTHORIZATION
+//#define NET_SERVER_DEMO
 
-#define DATA_STORAGE_SUBDIR "ShtrihScale"
+#define DATA_STORAGE_SUBDIR "Downloads"
 #define DB_FILENAME "ShtrihScale.db"
 #define DB_HOSTNAME "ShtrihScaleDataBase"
-#define DUMMY_IMAGE_FILE "../Images/image_dummy.png"
+#define DUMMY_IMAGE_FILE_WITH_QML_PATH "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define DEFAULT_SETTING_GROUPS_FILE ":/Text/json_default_setting_groups.txt"
-#define SERVER_WAIT_FOR_REPLY_MSEC 20000
+#define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define WM_DEMO false
 #define PRINTER_DEMO true
+#define CLEAR_DB_ON_START false
+#define CHECK_AUTHORIZATION true
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -27,9 +28,9 @@
 #define DEFAULT_BUTTON_SIZE 48
 #define DEFAULT_EDIT_WIDTH 200
 
-#define NetReply QPair<qint64, QString>
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
+#define NetReplyPair QPair<quint64, QByteArray>
 
 enum LogType
 {
@@ -43,11 +44,11 @@ enum LogType
 
 enum LogSource
 {
-    LogSource_Print,
-    LogSource_Admin,
-    LogSource_User,
-    LogSource_DB,
-    LogSource_Weight,
+    LogSource_Print = 0,
+    LogSource_Admin = 1,
+    LogSource_User = 2,
+    LogSource_DB = 3,
+    LogSource_Weight = 4,
 };
 
 enum LogError
@@ -84,6 +85,12 @@ enum EquipmentParam
     EquipmentParam_WeightFixed = 14,
     EquipmentParam_PrintError = 15,
     EquipmentParam_AutoPrint = 16,
+};
+
+enum NetRequestType
+{
+    NetRequestType_GetData = 0,
+    NetRequestType_SetData = 1
 };
 
 #endif // CONSTANTS_H

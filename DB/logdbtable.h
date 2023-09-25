@@ -19,7 +19,8 @@ public:
     {
         qDebug() << "@@@@@ LogDBTable::LogDBTable";
 
-        addColumn("Дата, время", "date_time", "BIGINT PRIMARY KEY");
+        //addColumn("Дата, время", "date_time", "BIGINT PRIMARY KEY");
+        addColumn("Дата, время", "date_time", "UNSIGNED BIG INT PRIMARY KEY");
         addColumn("Тип",         "type",      "INT");
         addColumn("Источник",    "source",    "INT");
         addColumn("Сообщение",   "comment",   "TEXT");

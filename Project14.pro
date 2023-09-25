@@ -45,6 +45,7 @@ SOURCES += \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
     Net/netserver.cpp \
+    Net/requestparser.cpp \
     main.cpp \
     tools.cpp \
     Models/baselistmodel.cpp \
@@ -87,6 +88,7 @@ HEADERS += \
     Models/viewlogpanelmodel.h \
     Net/netparams.h \
     Net/netserver.h \
+    Net/requestparser.h \
     constants.h \
     tools.h \
     Models/baselistmodel.h \

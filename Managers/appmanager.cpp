@@ -19,12 +19,13 @@
 #include "viewlogpanelmodel.h"
 #include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
-#include "netserver.h"
 #include "dbthread.h"
 #include "tools.h"
 #include "appinfo.h"
 #include "weightmanager.h"
 #include "printmanager.h"
+#include "netserver.h"
+#include "requestparser.h"
 
 AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& screenSize): QObject(parent)
 {
@@ -293,91 +294,34 @@ void AppManager::onMainPageChanged(const int index)
     emit showMainPage(mainPageIndex);
 }
 
-void AppManager::onLoadResult(const qint64 requestId, const QString &json)
+void AppManager::onLoadResult(const quint64 requestId, const QString &json)
 {
     // БД завершила загрузку/выгрузку. Формируем ответ клиенту
-
     qDebug() << "@@@@@ AppManager::onLoadResult " << requestId << json;
-    netServer->addReply(NetReply(requestId, json));
+    netServer->sendReplyToClient(NetReplyPair(requestId, json.toUtf8()));
 }
 
-void AppManager::onNetRequest(const int requestType, const NetReply& p)
+void AppManager::onNetRequest(const int requestType, const NetReplyPair& p)
 {
     // Получен запрос от клиета на загрузку/выгрузку. Формируем запрос в БД
 
-    const qint64 requestId = p.first;
-    const QString& query = p.second;
-    qDebug() << (QString("@@@@@ AppManager::onNetRequest: request = \n%1, %2").arg(QString::number(requestId), query));
+    const quint64 requestId = p.first;
+    qDebug() << (QString("@@@@@ AppManager::onNetRequest: request = \n%1").arg(QString::number(requestId)));
     if (netServer == nullptr)
     {
         qDebug() << "@@@@@ AppManager::onNetRequest: server == null";
         return;
     }
+    RequestParser parser;
+    parser.parse(requestType, p.second);
     switch(requestType)
     {
-    case NetServer::GET: // Upload
-    {
-        // Parse list of codes to upload:
-        qDebug() << "@@@@@ AppManager::onNetRequest: GET";
-        QString codeList = "";
-        QString source = "";
-        DBTable* table = nullptr;
-        const QString s1 = "source=";
-        const QString s2 = "codes=";
-        const QString s3 = "code=";
-        int p1 = query.indexOf(s1);
-        int p2 = query.indexOf("&");
-        bool ok = p1 >= 0 && p2 > p1 && (query.contains(s2) || query.contains(s3));
-        if(ok)
-        {
-            p1 += s1.length();
-            source = query.mid(p1, p2 - p1); // table name
-            qDebug() << "@@@@@ AppManager::onNetRequest: source =" << source;
-            table = db->getTableByName(source);
-            ok = table != nullptr;
-        }
-        if(ok)
-        {
-            if (query.contains(s2))
-            {
-                int p3 = query.indexOf("[") + 1;
-                int p4 = query.indexOf("]");
-                codeList = query.mid(p3, p4 - p3);
-            }
-            else if (query.contains(s3))
-            {
-                int p3 = query.indexOf(s3);
-                int p4 = query.length();
-                p3 += s3.length();
-                codeList = query.mid(p3, p4 - p3);
-            }
-            else ok = false;
-        }
-        if(ok)
-            emit upload(requestId, source, codeList);
-        else
-            qDebug() << "@@@@@ AppManager::onNetRequest: bad GET request";
-        // reply = "{\"result\":\"0\",\"description\":\"ошибок нет\",\"data\":{\"products\":[]}}";
+    case NetRequestType_GetData:
+        emit upload(requestId, parser.getTableName(), parser.getCodeList());
         break;
-    }
-
-    case NetServer::POST: // Download
-    {
-        qDebug() << "@@@@@ AppManager::onNetRequest: POST";
-        int p1 = query.indexOf("{");
-        int p2 = query.lastIndexOf("}") + 1;
-        if (p1 >= 0 && p2 > p1)
-        {
-            QString json = query.mid(p1, p2 - p1);
-            qDebug() << "@@@@@ AppManager::onNetRequest: json =" << json;
-            emit download(requestId, json);
-        }
-        else
-            qDebug() << "@@@@@ AppManager::onNetRequest: bad POST request";
-        //reply = "{\"result\":\"0\",\"description\":\"ошибок нет\"}";
+    case NetRequestType_SetData:
+        emit download(requestId, parser.getText(), parser.getFileName(), parser.getFileData());
         break;
-    }
-
     default:
         qDebug() << QString("@@@@@ AppManager::onNetRequest: ERROR unknown requst type");
         break;
@@ -429,7 +373,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     {
     case DataBase::GetSettings:
     // Обновление настроек:
-        settings.updateAllItems(records);
+        if(!records.isEmpty()) settings.updateAllItems(records);
         settingsPanelModel->update(settings);
         if(started) runEquipment(true);
         emit settingsChanged();
@@ -442,8 +386,11 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetShowcaseProducts:
     // Обновление списка товаров экрана Showcase:
-        showcasePanelModel->updateProducts(records);
-        emit selectFromDBByList(DataBase::GetShowcaseResources, records);
+        if(!records.isEmpty())
+        {
+            showcasePanelModel->updateProducts(records);
+            emit selectFromDBByList(DataBase::GetShowcaseResources, records);
+        }
         break;
 
     case DataBase::GetMessageByResourceCode:
@@ -459,12 +406,12 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetLog:
     // Отображение лога:
-        viewLogPanelModel->update(records);
+        if(!records.isEmpty()) viewLogPanelModel->update(records);
         break;
 
     case DataBase::GetProductsByGroupCodeIncludeGroups:
     // Отображение товаров выбранной группы:
-        tablePanelModel->update(records);
+        if(!records.isEmpty())  tablePanelModel->update(records);
         break;
 
     case DataBase::GetProductsByFilteredCode:
@@ -494,35 +441,30 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
      // Отображение картинок товаров экрана Showcase:
     {
         QStringList fileNames;
-        for (int i = 0; i < records.count(); i++)
-        {
-            QString fileName = DUMMY_IMAGE_FILE;
-            if (records[i].count() > ResourceDBTable::Value)
-            {
-                fileName = records[i][ResourceDBTable::Value].toString();
-                // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
-            }
-            fileNames << fileName;
-        }
+        for (int i = 0; i < records.count(); i++) fileNames << getImageFileWithQmlPath(records[i]);
         showcasePanelModel->updateImages(fileNames);
         break;
     }
 
     case DataBase::GetImageByResourceCode:
     // Отображение картинки выбранного товара:
-    {
-        QString fileName = DUMMY_IMAGE_FILE;
-        if (records.count() > 0 && records[0].count() > ResourceDBTable::Value)
-        {
-            fileName = records[0][ResourceDBTable::Value].toString();
-            // if (!Tools::fileExists(fileName)) fileName = DUMMY_IMAGE_FILE; // todo
-        }
-        emit showProductImage(fileName);
+        emit showProductImage(records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_WITH_QML_PATH);
         break;
-    }
 
     default:break;
     }
+}
+
+QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
+{
+    QString path = DUMMY_IMAGE_FILE_WITH_QML_PATH;
+    if (r.count() > ResourceDBTable::Value)
+    {
+        QString fileName = r[ResourceDBTable::Value].toString();
+        if(Tools::fileExistsInAppPath(Tools::appFilePath(DATA_STORAGE_SUBDIR, fileName)))
+            path = Tools::qmlFilePath(DATA_STORAGE_SUBDIR, fileName);
+    }
+    return path;
 }
 
 void AppManager::onViewLogClicked()
@@ -580,7 +522,7 @@ void AppManager::onTableResultClicked(const int index)
 
 void AppManager::onTimer()
 {
-    quint64 dt = Tools::currentDateTimeToInt() - userActionTime; // минуты
+    quint64 dt = Tools::currentDateTimeToUInt() - userActionTime; // минуты
     quint64 bt = settings.getItemIntValue(SettingDBTable::SettingCode_Blocking); // минуты
     //qDebug() << "@@@@@ AppManager::onTimer " << dt << bt * 1000 * 60;
     if(!authorizationOpened && bt > 0 && bt * 1000 * 60 < dt)
@@ -662,28 +604,29 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
     QString error = "";
     QString login = user[UserDBTable::Name].toString();
     QString password = user[UserDBTable::Password].toString();
+    bool isDefaultAdmin = dbUsers.isEmpty();
 
-#ifdef CHECK_AUTHORIZATION
-    if (dbUsers.isEmpty())
-        error = "Неизвестный пользователь";
+    if(CHECK_AUTHORIZATION)
+    {
+        if (!isDefaultAdmin)
+        {
+            if (login != dbUsers[0][UserDBTable::Name].toString() || password != dbUsers[0][UserDBTable::Password])
+            {
+                error = "Неверные имя пользователя или пароль";
+                qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
+                showMessage(title, error);
+                emit log(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
+                return;
+            }
+            user.clear();
+            user.append(dbUsers[0]);
+        }
+    }
     else
     {
-        if (login != dbUsers[0][UserDBTable::Name].toString() || password != dbUsers[0][UserDBTable::Password])
-            error = "Неверные имя пользователя или пароль";
+        user = UserDBTable::defaultAdmin();
+        login = user[UserDBTable::Name].toString();
     }
-    if(!error.isEmpty())
-    {
-        qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
-        showMessage(title, error);
-        emit log(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
-        return;
-    }
-    user.clear();
-    user.append(dbUsers[0]);
-#else
-    user = UserDBTable::defaultAdmin();
-    login = user[UserDBTable::Name].toString();
-#endif
 
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
     QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
@@ -795,7 +738,7 @@ void AppManager::runEquipment(const bool start)
 void AppManager::onUserAction()
 {
     qDebug() << "@@@@@ AppManager::onUserAction";
-    userActionTime = Tools::currentDateTimeToInt();
+    userActionTime = Tools::currentDateTimeToUInt();
     secret = 0;
 }
 

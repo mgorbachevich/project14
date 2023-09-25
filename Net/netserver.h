@@ -13,33 +13,28 @@
 #include <QSslKey>
 #endif
 
-#define SERVER_VERSION "1.0"
+#define SERVER_VERSION "1.1"
 
 class NetServer : public QObject
 {
     Q_OBJECT
 
 public:
-    enum RequestType
-    {
-        GET,
-        POST
-    };
     explicit NetServer(QObject *parent = nullptr);
     ~NetServer() { stop(); }
     void start(const int);
     void stop();
-    void addReply(const NetReply&);
     QString version() { return SERVER_VERSION; }
+    void sendReplyToClient(const NetReplyPair&);
 
 protected:
-    QHttpServerResponse waitForReplyAndMakeResponse(qint64);
+    QHttpServerResponse waitAndMakeResponse(quint64);
 
     QHttpServer* server = nullptr;
-    QList<NetReply> replies;
+    QList<NetReplyPair> replies;
 
 signals:
-    void netRequest(const int, const NetReply&);
+    void netRequest(const int, const NetReplyPair&);
 };
 
 #endif // NETSERVER_H

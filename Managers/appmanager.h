@@ -101,6 +101,7 @@ private:
     void resetProduct();
     void runEquipment(const bool);
     void print();
+    QString getImageFileWithQmlPath(const DBRecord&);
 
     bool started = false;
     DataBase* db = nullptr;
@@ -137,7 +138,7 @@ private:
 
 signals:
     void authorizationSucceded();
-    void download(const qint64, const QString&);
+    void download(const quint64, const QByteArray&, const QByteArray&, const QByteArray&);
     void enableManualPrint(const bool);
     void hideMessageBox();
     void log(const int, const int, const QString&);
@@ -167,17 +168,17 @@ signals:
     void start();
     void transaction(const DBRecord&);
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
-    void upload(const qint64, const QString&, const QString&);
+    void upload(const quint64, const QByteArray&, const QByteArray&);
 
 public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
     void onDownloadFinished(const int);
     void onEquipmentParamChanged(const int, const int);
-    void onLoadResult(const qint64, const QString&);
-    void onNetRequest(const int, const NetReply&);
+    void onLoadResult(const quint64, const QString&);
     void onPrinted(const DBRecord&);
     void onTimer();
+    void onNetRequest(const int, const NetReplyPair&);
 };
 
 #endif // APPMANAGER_H

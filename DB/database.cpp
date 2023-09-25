@@ -16,7 +16,7 @@
 DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
 {
-    filePath = Tools::getDataFilePath(fileName);
+    filePath = Tools::dataFilePath(fileName);
     qDebug() << "@@@@@ DataBase::DataBase " << filePath;
     tables.append(new ShowcaseDBTable(DBTABLENAME_SHOWCASE, this));
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
@@ -36,9 +36,7 @@ DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *p
 void DataBase::onStart()
 {
     qDebug() << "@@@@@ DataBase::start";
-#ifdef DB_EMULATION
-    QFile(filePath).remove();
-#endif
+    if(CLEAR_DB_ON_START) QFile(filePath).remove();
 
     bool ok = true;
     if (QFile(filePath).exists())
@@ -57,13 +55,15 @@ void DataBase::onStart()
 
     if (opened && ok)
     {
+#ifdef NET_SERVER_DEMO
         JSONParser parser;
+        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_pictures.txt"));
         parser.parseAllTables(this, Tools::readTextFile(":/Text/json_settings.txt"));
         parser.parseAllTables(this, Tools::readTextFile(":/Text/json_products.txt"));
         parser.parseAllTables(this, Tools::readTextFile(":/Text/json_users.txt"));
         parser.parseAllTables(this, Tools::readTextFile(":/Text/json_showcase.txt"));
-        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_pictures.txt"));
         parser.parseAllTables(this, Tools::readTextFile(":/Text/json_messages.txt"));
+#endif
         emit started();
     }
     //return ok && opened;
@@ -245,10 +245,10 @@ void DataBase::removeOldLogRecords()
     if (!opened) return;
     qDebug() << "@@@@@ DataBase::removeOldLogRecords";
     DBTable* t = getTableByName(DBTABLENAME_LOG);
-    qint64 logDuration = settings.getItemIntValue(SettingDBTable::SettingCode_LogDuration);
+    quint64 logDuration = settings.getItemIntValue(SettingDBTable::SettingCode_LogDuration);
     if(t != nullptr && logDuration > 0) // Remove old records
     {
-        qint64 first = Tools::currentDateTimeToInt() - logDuration * 24 * 60 * 60 * 1000;
+        quint64 first = Tools::currentDateTimeToUInt() - logDuration * 24 * 60 * 60 * 1000;
         QString sql = QString("DELETE FROM %1 WHERE %2 < '%3'").
             arg(t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
         QSqlQuery q;
@@ -310,8 +310,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     // Запрос картинки из ресурсов по коду ресурса:
     {
         DBRecord r;
-        selectById(getTableByName(DBTABLENAME_PICTURES), param, r);
-        resultRecords.append(r);
+        if(selectById(getTableByName(DBTABLENAME_PICTURES), param, r))
+            resultRecords.append(r);
         break;
     }
 
@@ -320,8 +320,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     // todo
     {
         DBRecord r;
-        selectById(getTableByName(DBTABLENAME_MESSAGES), param, r);
-        resultRecords.append(r);
+        if(selectById(getTableByName(DBTABLENAME_MESSAGES), param, r))
+            resultRecords.append(r);
         break;
     }
 
@@ -392,8 +392,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     case Selector::GetCurrentProduct:
     {
         DBRecord r;
-        selectById(getTableByName(DBTABLENAME_PRODUCTS), param, r);
-        resultRecords.append(r);
+        if(selectById(getTableByName(DBTABLENAME_PRODUCTS), param, r))
+            resultRecords.append(r);
         break;
     }
 
@@ -418,8 +418,8 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
         {
             QString imageCode = param[i][ProductDBTable::PictureCode].toString();
             DBRecord r;
-            selectById(getTableByName(DBTABLENAME_PICTURES), imageCode, r);
-            resultRecords.append(r);
+            if(selectById(getTableByName(DBTABLENAME_PICTURES), imageCode, r))
+                resultRecords.append(r);
         }
         break;
     }
@@ -456,7 +456,7 @@ void DataBase::onLog(const int type, const int source, const QString &comment)
     saveLog(type, source, comment);
 }
 
-void DataBase::onUpload(const qint64 requestId, const QString &tableName, const QString &codeList)
+void DataBase::onUpload(const quint64 requestId, const QByteArray& tableName, const QByteArray& codeList)
 {
     // Выгрузка из таблицы по списку кодов
 
@@ -470,9 +470,8 @@ void DataBase::onUpload(const qint64 requestId, const QString &tableName, const 
     int logging = settings.getItemIntValue(SettingDBTable::SettingCode_Logging);
     bool detailedLog = logging >= LogType_Info;
     DBRecordList records;
-
     DBTable* t = getTableByName(tableName);
-    QStringList codes = codeList.split(QLatin1Char(',')); // Коды товаров через запятую
+    QStringList codes = QString(codeList).split(','); // Коды товаров через запятую
 
     if(t == nullptr)
     {
@@ -516,8 +515,8 @@ void DataBase::onUpload(const qint64 requestId, const QString &tableName, const 
                 description = "Запись не найдена";
                 if (detailedLog)
                 {
-                    QString s = QString("Ошибка выгрузки записи. Таблица: %1. Код: %2. Код ошибки: %3. Описание: %4").
-                            arg(tableName, r.at(0).toString(), QString::number(errorCode), description);
+                    QString s = QString("Ошибка выгрузки записи. Таблица: %1. Код ошибки: %2. Описание: %3").
+                            arg(tableName, QString::number(errorCode), description);
                     saveLog(LogType_Error, LogSource_DB, s);
                 }
             }
@@ -534,15 +533,44 @@ void DataBase::onUpload(const qint64 requestId, const QString &tableName, const 
     emit loadResult(requestId, resultJson);
 }
 
-void DataBase::onDownload(const qint64 requestId, const QString &json)
+void DataBase::onDownload(const quint64 requestId, const QByteArray& json, const QByteArray& fileName, const QByteArray& fileData)
 {
     // Загрузка в БД
 
-    qDebug() << "@@@@@ DataBase::onDownload:" << requestId << json;
-    int result; // For reply
-    QString description; // For reply
+    bool singlePartRequest = !json.isEmpty() && fileName.isEmpty() && fileData.isEmpty();
+    bool multiPartRequest = !fileName.isEmpty() && !fileData.isEmpty();
     JSONParser parser;
-    int n = parser.parseAllTables(this, json, &result, &description);
+    int n = 0;
+    int result = 0;
+    QString description;
+
+    if(singlePartRequest)
+    {
+        qDebug() << "@@@@@ DataBase::onDownload SinglePart requestId = " << requestId;
+        qDebug() << "@@@@@ DataBase::onDownload SinglePart json = " << json;
+        n += parser.parseAllTables(this, json, &result, &description);
+    }
+    if(multiPartRequest)
+    {
+        qDebug() << "@@@@@ DataBase::onDownload MultiPart requestId = " << requestId;
+        if(!json.isEmpty())
+        {
+            qDebug() << "@@@@@ DataBase::onDownload MultiPart json = " << json;
+            n += parser.parseAllTables(this, json, &result, &description);
+        }
+
+        QString filePath = Tools::appFilePath(DATA_STORAGE_SUBDIR, fileName);
+        if(Tools::writeBinaryFile(filePath, fileData))
+        {
+            qDebug() << "@@@@@ DataBase::onDownload MultiPart fileName = " << fileName;
+            n++;
+        }
+        else
+        {
+            qDebug() << "@@@@@ DataBase::onDownload MultiPart Write File ERROR " << fileName;
+            if(result == 0) result = -1;
+        }
+    }
     QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\"}").
             arg(QString::number(result), description);
     qDebug() << "@@@@@ DataBase::onDownload: result" << requestId << resultJson;

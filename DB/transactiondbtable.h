@@ -24,7 +24,8 @@ public:
     {
         qDebug() << "@@@@@ TransactionDBTable::TransactionDBTable";
 
-        addColumn("Дата, время",      "date_time",    "BIGINT PRIMARY KEY");
+        //addColumn("Дата, время",      "date_time",    "BIGINT PRIMARY KEY");
+        addColumn("Дата, время",      "date_time",    "UNSIGNED BIG INT PRIMARY KEY");
         addColumn("Код пользователя", "user",         "INT");
         addColumn("Код товара",       "item_code",    "INT");
         addColumn("Номер этикетки",   "label_number", "INT");

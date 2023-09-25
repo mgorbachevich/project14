@@ -77,8 +77,8 @@ signals:
     void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void started();
     void downloadFinished(const int);
-    void downloadResult(const qint64, const QString&);
-    void loadResult(const qint64, const QString&);
+    void downloadResult(const quint64, const QString&);
+    void loadResult(const quint64, const QString&);
 
 public slots:
     void onStart();
@@ -87,8 +87,8 @@ public slots:
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);
     void onTransaction(const DBRecord&);
     void onLog(const int, const int, const QString&);
-    void onUpload(const qint64, const QString&, const QString&);
-    void onDownload(const qint64, const QString&);
+    void onUpload(const quint64, const QByteArray&, const QByteArray&);
+    void onDownload(const quint64, const QByteArray&, const QByteArray&, const QByteArray&);
 };
 
 #endif // DATABASE_H

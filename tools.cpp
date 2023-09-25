@@ -15,18 +15,16 @@ QDir Tools::getDataStorageDir()
     return dir;
 }
 
-bool Tools::fileExists(const QString &fileName)
+bool Tools::fileExistsInAppPath(const QString &fileAppPath)
 {
-    qDebug() << "@@@@@ Tools::fileExists " << fileName;
-
-    return true; // todo
-   // return QFileInfo::exists(fileName);
+    bool ok = QFileInfo::exists(fileAppPath) && QFileInfo(fileAppPath).isFile();
+    qDebug() << "@@@@@ Tools::fileExistsInAppPath " << fileAppPath << ok;
+    return ok;
 }
 
 QString Tools::readTextFile(const QString &fileName)
 {
     qDebug() << "@@@@@ Tools::readTextFile " << fileName;
-
     QFile f(fileName);
     if (!f.open(QFile::ReadOnly | QFile::Text))
         return "";
@@ -111,3 +109,67 @@ void Tools::memoryCheck()
 #endif
 }
 */
+
+bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
+{
+    qDebug() << "@@@@@ Tools::writeBinaryFile name =" << filePath;
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly))
+    {
+        file.write(data);
+        file.close();
+        qDebug() << "@@@@@ Tools::writeBinaryFile OK";
+        return true;
+    }
+    qDebug() << "@@@@@ Tools::writeBinaryFile ERROR";
+    return false;
+}
+
+QByteArray Tools::readBinaryFile(const QString& filePath)
+{
+    qDebug() << "@@@@@ Tools::readBinaryFile name =" << filePath;
+    QByteArray a;
+    QFile file(filePath);
+    if (file.open(QIODevice::ReadOnly))
+    {
+        a = file.readAll();
+        file.close();
+        qDebug() << "@@@@@ Tools::writeBinaryFile OK";
+    }
+    else
+        qDebug() << "@@@@@ Tools::writeBinaryFile ERROR";
+    return a;
+}
+
+QString Tools::qmlFilePath(const QString& subDir, const QString& filePath)
+{
+    if(filePath.isEmpty()) return "";
+    QString path = "file:" + subDir + "/" + filePath;
+    path.replace(":/", ":").replace("//", "/");
+    qDebug() << "@@@@@ Tools::qmlFilePath path" << path;
+    return path;
+}
+
+QString Tools::appFilePath(const QString& subDir, const QString& filePath)
+{
+    qDebug() << "@@@@@ Tools::dataFilePath";
+    if(filePath.isEmpty()) return "";
+
+    const QStringList dirs = QString(subDir + "/" + filePath).split("/");
+    QDir dir;
+    QString path = app->applicationDirPath();
+    for(int i = 0; i < dirs.size() - 1; i++)
+    {
+        if(!dirs.at(i).isEmpty())
+        {
+            path += "/" + dirs.at(i);
+            if(!dir.exists(path)) qDebug() << "@@@@@ Tools::dataFilePath mkdir " << dir.mkdir(path) << path;
+        }
+    }
+    path += "/" + dirs.last(); // file name
+    qDebug() << "@@@@@ Tools::dataFilePath filePath" << filePath;
+    qDebug() << "@@@@@ Tools::dataFilePath path" << path;
+    return path;
+}
+
+
