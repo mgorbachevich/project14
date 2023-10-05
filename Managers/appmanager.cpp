@@ -59,12 +59,13 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
-    connect(this, &AppManager::download, db, &DataBase::onDownload);
-    connect(this, &AppManager::upload, db, &DataBase::onUpload);
+    connect(this, &AppManager::downloadDBData, db, &DataBase::onDownloadDBData);
+    connect(this, &AppManager::uploadDBData, db, &DataBase::onUploadDBData);
+    connect(this, &AppManager::deleteDBData, db, &DataBase::onDeleteDBData);
     connect(db, &DataBase::started, this, &AppManager::onDBStarted);
     connect(db, &DataBase::loadResult, this, &AppManager::onLoadResult, Qt::DirectConnection);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
-    connect(db, &DataBase::downloadFinished, this, &AppManager::onDownloadFinished);
+    connect(db, &DataBase::updateDBFinished, this, &AppManager::onUpdateDBFinished);
     connect(netServer, &NetServer::netRequest, this, &AppManager::onNetRequest);
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
@@ -112,13 +113,12 @@ void AppManager::onDBStarted()
     //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
 }
 
-void AppManager::onDownloadFinished(const int count)
+void AppManager::onUpdateDBFinished(const int count)
 {
-    qDebug() << "@@@@@ AppManager::onDownloadFinished" << count;
+    qDebug() << "@@@@@ AppManager::onUpdateDBFinished" << count;
     refreshAll();
-    //showToast("Загрузка данных завершена", QString("Загружено записей: %1").arg(count));
     if(!product.isEmpty())
-        emit selectFromDB(DataBase::GetCurrentProduct, product.at(ProductDBTable::Code).toString());
+        emit selectFromDB(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
 }
 
 QString AppManager::quantityAsString(const DBRecord& productRecord)
@@ -316,11 +316,14 @@ void AppManager::onNetRequest(const int requestType, const NetReplyPair& p)
     parser.parse(requestType, p.second);
     switch(requestType)
     {
+    case NetRequestType_DeleteData:
+        emit deleteDBData(requestId, parser.getTableName(), parser.getCodeList());
+        break;
     case NetRequestType_GetData:
-        emit upload(requestId, parser.getTableName(), parser.getCodeList());
+        emit uploadDBData(requestId, parser.getTableName(), parser.getCodeList());
         break;
     case NetRequestType_SetData:
-        emit download(requestId, parser.getText(), parser.getFileName(), parser.getFileData());
+        emit downloadDBData(requestId, parser.getText(), parser.getFileName(), parser.getFileData());
         break;
     default:
         qDebug() << QString("@@@@@ AppManager::onNetRequest: ERROR unknown requst type");
@@ -386,11 +389,8 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetShowcaseProducts:
     // Обновление списка товаров экрана Showcase:
-        if(!records.isEmpty())
-        {
-            showcasePanelModel->updateProducts(records);
-            emit selectFromDBByList(DataBase::GetShowcaseResources, records);
-        }
+        showcasePanelModel->updateProducts(records);
+        emit selectFromDBByList(DataBase::GetShowcaseResources, records);
         break;
 
     case DataBase::GetMessageByResourceCode:
@@ -411,7 +411,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetProductsByGroupCodeIncludeGroups:
     // Отображение товаров выбранной группы:
-        if(!records.isEmpty())  tablePanelModel->update(records);
+        tablePanelModel->update(records);
         break;
 
     case DataBase::GetProductsByFilteredCode:
@@ -428,12 +428,13 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         emit selectFromDB(DataBase::GetSettings, "");
         break;
 
-    case DataBase::GetCurrentProduct:
-        if (!product.isEmpty() && !records.isEmpty() && !DBTable::isEqual(product, records.at(0)))
+    case DataBase::RefreshCurrentProduct:
+        // Сброс выбранного товара после изменений в БД:
+        resetProduct();
+        if (!records.isEmpty() && !records.at(0).isEmpty())
         {
-            // Сброс выбранного товара после загрузки:
-            resetProduct();
-            showToast("ВНИМАНИЕ!", "Выбранный товар изменен");
+            //showToast("ВНИМАНИЕ!", "Выбранный товар изменен");
+            setProduct(records.at(0));
         }
         break;
 

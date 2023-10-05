@@ -38,12 +38,12 @@ public:
         GetProductsByFilteredBarcode,
         //GetProductsByFilteredBarcodeIncludeGroups,
         GetItemsByCodes,
-        GetCurrentProduct,
         GetUserNames,
         GetAuthorizationUserByName,
         GetSettingsItemByCode,
         GetSettings,
         GetLog,
+        RefreshCurrentProduct,
         ReplaceSettingsItem,
     };
 
@@ -67,8 +67,9 @@ protected:
     bool executeSQL(const QString&);
     bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
     bool selectById(DBTable*, const QString&, DBRecord&);
-    bool removeRecord(DBTable*, const DBRecord&);
+    bool removeRecord(DBTable*, const QString&);
     void removeOldLogRecords();
+    //int getRecordCount(DBTable*);
 
     bool opened = false;
     QSqlDatabase db;
@@ -76,7 +77,7 @@ protected:
 signals:
     void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void started();
-    void downloadFinished(const int);
+    void updateDBFinished(const int);
     void downloadResult(const quint64, const QString&);
     void loadResult(const quint64, const QString&);
 
@@ -87,8 +88,9 @@ public slots:
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);
     void onTransaction(const DBRecord&);
     void onLog(const int, const int, const QString&);
-    void onUpload(const quint64, const QByteArray&, const QByteArray&);
-    void onDownload(const quint64, const QByteArray&, const QByteArray&, const QByteArray&);
+    void onUploadDBData(const quint64, const QByteArray&, const QByteArray&);
+    void onDeleteDBData(const quint64, const QByteArray&, const QByteArray&);
+    void onDownloadDBData(const quint64, const QByteArray&, const QByteArray&, const QByteArray&);
 };
 
 #endif // DATABASE_H

@@ -29,6 +29,14 @@ void NetServer::start(const int port)
     else
     {
         qDebug() << "@@@@@ NetServer::start: listening...";
+        server->route("/deleteData", [this] (const QHttpServerRequest &request)
+        {
+            QByteArray ba = request.query().toString().toUtf8();
+            //qDebug() << QString("@@@@@ NetServer::start: query \n%1\n").arg(ba);
+            const quint64 requestId = Tools::currentDateTimeToUInt();
+            emit netRequest(NetRequestType_DeleteData, NetReplyPair(requestId, ba));
+            return waitAndMakeResponse(requestId);
+        });
         server->route("/getData", [this] (const QHttpServerRequest &request)
         {
             QByteArray ba = request.query().toString().toUtf8();

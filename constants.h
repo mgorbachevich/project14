@@ -90,7 +90,8 @@ enum EquipmentParam
 enum NetRequestType
 {
     NetRequestType_GetData = 0,
-    NetRequestType_SetData = 1
+    NetRequestType_SetData = 1,
+    NetRequestType_DeleteData = 2,
 };
 
 #endif // CONSTANTS_H

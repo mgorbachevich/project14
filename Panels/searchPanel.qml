@@ -95,7 +95,7 @@ Rectangle
                 {
                     padding: app.spacer()
                     width: searchPanelResultListRectangle.width
-                    font { pointSize: Capp.normalFontSize() }
+                    font { pointSize: app.normalFontSize() }
                     color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value // Roles::ValueRole
                     background: Rectangle

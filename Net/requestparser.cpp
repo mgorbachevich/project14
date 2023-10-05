@@ -18,39 +18,61 @@ bool RequestParser::parseText(const QByteArray& request)
 bool RequestParser::parseGetDataRequest(const QByteArray &request)
 {
     // Parse list of codes to upload:
-    qDebug() << "@@@@@ RequestParser::parseGetDataRequest";
+    qDebug() << "@@@@@ RequestParser::parseGetDataRequest " << QString(request);
 
     const QByteArray s1 = "source=";
-    const QByteArray s2 = "codes=";
-    const QByteArray s3 = "code=";
     int p1 = request.indexOf(s1);
-    int p2 = request.indexOf("&");
-    if(p1 >= 0 && p2 > p1 && (request.contains(s2) || request.contains(s3)))
+    if(p1 >= 0)
     {
-        p1 += s1.length();
-        fileName = request.mid(p1, p2 - p1);
-        qDebug() << "@@@@@ AppManager::parseGetDataRequest: table name =" << fileName;
-        if (request.contains(s2))
+        int p2 = request.indexOf("&");
+        if(p2 < 0)
         {
-            int p3 = request.indexOf("[") + 1;
-            int p4 = request.indexOf("]");
-            fileData = request.mid(p3, p4 - p3);
+            int p2 = request.length();
+            qDebug() << "@@@@@ AppManager::parseGetDataRequest: p1, p2 =" << p1 << p2;
+            if(p2 > p1)
+            {
+                p1 += s1.length();
+                fileName = request.mid(p1, p2 - p1);
+                qDebug() << "@@@@@ AppManager::parseGetDataRequest: table name =" << fileName;
+            }
         }
-        else if (request.contains(s3))
+        else
         {
-            int p3 = request.indexOf(s3);
-            int p4 = request.length();
-            p3 += s3.length();
-            fileData = request.mid(p3, p4 - p3);
+            const QByteArray s2 = "codes=";
+            const QByteArray s3 = "code=";
+            if(p2 > p1 && (request.contains(s2) || request.contains(s3)))
+            {
+                p1 += s1.length();
+                fileName = request.mid(p1, p2 - p1);
+                qDebug() << "@@@@@ AppManager::parseGetDataRequest: table name =" << fileName;
+                if (request.contains(s2))
+                {
+                    int p3 = request.indexOf("[") + 1;
+                    int p4 = request.indexOf("]");
+                    fileData = request.mid(p3, p4 - p3);
+                }
+                else if (request.contains(s3))
+                {
+                    int p3 = request.indexOf(s3);
+                    int p4 = request.length();
+                    p3 += s3.length();
+                    fileData = request.mid(p3, p4 - p3);
+                }
+            }
         }
     }
-    if(fileData.isEmpty() || fileName.isEmpty())
+    if(fileName.isEmpty())
     {
         qDebug() << "@@@@@ AppManager::parseGetDataRequest ERROR";
         return false;
     }
     //qDebug() << "@@@@@ AppManager::parseGetDataRequest: code list =" << fileData;
     return true;
+}
+
+bool RequestParser::parseDeleteDataRequest(const QByteArray &request)
+{
+    return parseGetDataRequest(request);
 }
 
 bool RequestParser::parseSetDataRequest(const QByteArray &request)
@@ -111,10 +133,14 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
 
 bool RequestParser::parse(const int requestType, const QByteArray& request)
 {
+    qDebug() << "@@@@@ RequestParser::parse  requestType =" << requestType;
     clear();
     bool ok = false;
     switch(requestType)
     {
+    case NetRequestType_DeleteData:
+        ok = parseDeleteDataRequest(request);
+        break;
     case NetRequestType_GetData:
         ok = parseGetDataRequest(request);
         break;

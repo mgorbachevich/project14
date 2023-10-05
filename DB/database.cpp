@@ -122,6 +122,25 @@ bool DataBase::executeSQL(const QString& sql)
     }
     return true;
 }
+/*
+int DataBase::getRecordCount(DBTable *table)
+{
+    if (!opened || table == nullptr) return false;
+    qDebug() << "@@@@@ DataBase::getRecordCount: tableName =" << table->name;
+    QSqlQuery q;
+    QString sql = QString("SELECT COUNT(*) FROM %1").arg(table->name);
+    if (!q.exec(sql))
+    {
+        qDebug() << "@@@@@ DataBase::getRecordCount ERROR: " << q.lastError().text();
+        //saveLog(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql, log);
+        return 0;
+    }
+    q.first();
+    int result = q.value(0).toInt();
+    qDebug() << "@@@@@ DataBase::getRecordCount =" << result;
+    return result;
+}
+*/
 
 bool DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList& resultRecords)
 {
@@ -171,24 +190,25 @@ void DataBase::selectAll(DBTable *table, DBRecordList& resultRecords)
     }
 }
 
-bool DataBase::removeAll(DBTable* table)
-{
-    qDebug() << "@@@@@ DataBase::removeAll: table =" << table->name;
-    QString sql = QString("DELETE FROM %1").arg(table->name);
-    return executeSQL(sql);
-}
-
 QString DataBase::version()
 {
     return DB_VERSION;
 }
 
-bool DataBase::removeRecord(DBTable* table, const DBRecord& record)
+bool DataBase::removeAll(DBTable* table)
+{
+    qDebug() << "@@@@@ DataBase::removeAll: table =" << table->name;
+    QString sql = QString("DELETE FROM %1").arg(table->name);
+    bool ok = executeSQL(sql);
+    return ok;
+}
+
+bool DataBase::removeRecord(DBTable* table, const QString& code)
 {
     if (!opened) return false;
     qDebug() << "@@@@@ DataBase::removeRecord: table name =" << table->name;
     QString sql = QString("DELETE FROM %1 WHERE %2 = '%3'").
-            arg(table->name, table->columnName(0), record[0].toString());
+            arg(table->name, table->columnName(0), code);
     return executeSQL(sql);
 }
 
@@ -208,7 +228,7 @@ bool DataBase::insertRecord(DBTable *table, const DBRecord& record)
     DBRecord r;
     if (selectById(table, checkedRecord.at(0).toString(), r))
     {
-        removeRecord(table, r);
+        removeRecord(table, r.at(0).toString());
     }
     sql = "INSERT INTO " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
@@ -389,7 +409,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         break;
     }
 
-    case Selector::GetCurrentProduct:
+    case Selector::RefreshCurrentProduct:
     {
         DBRecord r;
         if(selectById(getTableByName(DBTABLENAME_PRODUCTS), param, r))
@@ -456,11 +476,79 @@ void DataBase::onLog(const int type, const int source, const QString &comment)
     saveLog(type, source, comment);
 }
 
-void DataBase::onUpload(const quint64 requestId, const QByteArray& tableName, const QByteArray& codeList)
+void DataBase::onDeleteDBData(const quint64 requestId, const QByteArray& tableName, const QByteArray& codeList)
+{
+    // Удаление из таблицы по списку кодов
+
+    qDebug() << "@@@@@ DataBase::onDeleteDBData" << requestId << tableName << codeList;
+    saveLog(LogType_Error, LogSource_DB, QString(" Удаление. Таблица: %1").arg(tableName));
+
+    int errorCount = 0;
+    int errorCode = 0;
+    QString description = "Ошибок нет";
+    int logging = settings.getItemIntValue(SettingDBTable::SettingCode_Logging);
+    bool detailedLog = logging >= LogType_Info;
+    DBTable* t = getTableByName(tableName);
+    QStringList codes = QString(codeList).split(','); // Коды товаров через запятую
+
+    if(t == nullptr)
+    {
+        errorCount = 1;
+        errorCode = LogError_UnknownTable;
+        description = "Неизвестная таблица";
+    }
+    else if (codes.isEmpty() || codes[0].isEmpty()) // Delete all records
+    {
+        if(removeAll(t) && detailedLog)
+        {
+            QString s = QString("Удалены все записи таблицы %1").arg(tableName);
+            saveLog(LogType_Warning, LogSource_DB, s);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < codes.count(); i++)
+        {
+            if(removeRecord(t, codes[i]))
+            {
+                if (detailedLog)
+                {
+                    QString s = QString("Запись удалена. Таблица: %1. Код: %2").arg(tableName, codes[i]);
+                    saveLog(LogType_Warning, LogSource_DB, s);
+                }
+            }
+            else
+            {
+                errorCount++;
+                errorCode = LogError_RecordNotFound;
+                description = "Запись не найдена";
+                if (detailedLog)
+                {
+                    QString s = QString("Ошибка выгрузки записи. Таблица: %1. Код ошибки: %2. Описание: %3").
+                            arg(tableName, QString::number(errorCode), description);
+                    saveLog(LogType_Error, LogSource_DB, s);
+                }
+            }
+        }
+    }
+
+    QString s = QString("Удаление завершено. Таблица: %1. Ошибки: %2. Описание: %3").
+            arg(tableName, QString::number(errorCount), description);
+    saveLog(LogType_Error, LogSource_DB, s);
+
+    DBRecordList records;
+    QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
+            arg(QString::number(errorCode), description, tableName, DBTable::toJsonString(t, records));
+    qDebug() << "@@@@@ DataBase::onDeleteDBData: result" << requestId << resultJson;
+    emit loadResult(requestId, resultJson);
+    emit updateDBFinished(0);
+}
+
+void DataBase::onUploadDBData(const quint64 requestId, const QByteArray& tableName, const QByteArray& codeList)
 {
     // Выгрузка из таблицы по списку кодов
 
-    qDebug() << "@@@@@ DataBase::onUpload" << requestId << tableName << codeList;
+    qDebug() << "@@@@@ DataBase::onUploadDBData" << requestId << tableName << codeList;
     saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1").arg(tableName));
 
     int recordCount = 0;
@@ -529,11 +617,11 @@ void DataBase::onUpload(const quint64 requestId, const QByteArray& tableName, co
 
     QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
             arg(QString::number(errorCode), description, tableName, DBTable::toJsonString(t, records));
-    qDebug() << "@@@@@ DataBase::onUpload: result" << requestId << resultJson;
+    qDebug() << "@@@@@ DataBase::onUploadDBData: result" << requestId << resultJson;
     emit loadResult(requestId, resultJson);
 }
 
-void DataBase::onDownload(const quint64 requestId, const QByteArray& json, const QByteArray& fileName, const QByteArray& fileData)
+void DataBase::onDownloadDBData(const quint64 requestId, const QByteArray& json, const QByteArray& fileName, const QByteArray& fileData)
 {
     // Загрузка в БД
 
@@ -546,36 +634,36 @@ void DataBase::onDownload(const quint64 requestId, const QByteArray& json, const
 
     if(singlePartRequest)
     {
-        qDebug() << "@@@@@ DataBase::onDownload SinglePart requestId = " << requestId;
-        qDebug() << "@@@@@ DataBase::onDownload SinglePart json = " << json;
+        qDebug() << "@@@@@ DataBase::onDownloadDBData SinglePart requestId = " << requestId;
+        qDebug() << "@@@@@ DataBase::onDownloadDBData SinglePart json = " << json;
         n += parser.parseAllTables(this, json, &result, &description);
     }
     if(multiPartRequest)
     {
-        qDebug() << "@@@@@ DataBase::onDownload MultiPart requestId = " << requestId;
+        qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart requestId = " << requestId;
         if(!json.isEmpty())
         {
-            qDebug() << "@@@@@ DataBase::onDownload MultiPart json = " << json;
+            qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart json = " << json;
             n += parser.parseAllTables(this, json, &result, &description);
         }
 
         QString filePath = Tools::appFilePath(DATA_STORAGE_SUBDIR, fileName);
         if(Tools::writeBinaryFile(filePath, fileData))
         {
-            qDebug() << "@@@@@ DataBase::onDownload MultiPart fileName = " << fileName;
+            qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart fileName = " << fileName;
             n++;
         }
         else
         {
-            qDebug() << "@@@@@ DataBase::onDownload MultiPart Write File ERROR " << fileName;
+            qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart Write File ERROR " << fileName;
             if(result == 0) result = -1;
         }
     }
     QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\"}").
             arg(QString::number(result), description);
-    qDebug() << "@@@@@ DataBase::onDownload: result" << requestId << resultJson;
+    qDebug() << "@@@@@ DataBase::onDownloadDBData: result" << requestId << resultJson;
     emit loadResult(requestId, resultJson);
-    emit downloadFinished(n);
+    emit updateDBFinished(n);
 }
 
 

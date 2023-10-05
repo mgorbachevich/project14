@@ -18,6 +18,7 @@ public:
 private:
     bool parseText(const QByteArray&);
     bool parseGetDataRequest(const QByteArray&);
+    bool parseDeleteDataRequest(const QByteArray&);
     bool parseSetDataRequest(const QByteArray&);
     void clear() { text.clear(); fileName.clear(); fileData.clear(); }
 
