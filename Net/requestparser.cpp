@@ -80,11 +80,16 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
     qDebug() << "@@@@@ RequestParser::parseSetDataRequest";
 
     // Singlepart:
-    if(request.indexOf("{") == 0) return parseText(request);
+    if(request.indexOf("{") == 0)
+    {
+        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Singlepart";
+        return parseText(request);
+    }
 
     // Multipart:
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Multipart";
     QByteArray boundary = request.mid(0, request.indexOf("\r\n"));
-    //qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Multipart request boundary =" << QString(boundary);
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary =" << QString(boundary);
     QList<int> boundaryIndeces;
     int bi = 0;
     boundaryIndeces.append(bi);
@@ -93,9 +98,11 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
         bi = request.indexOf(QByteArrayView(boundary), bi + boundary.size() + 2);
         if(bi >= 0) boundaryIndeces.append(bi);
     }
-    //qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary indices =" << boundaryIndeces;
-    if(boundaryIndeces.count() != 3) return false;
-    for(int i = 0; i < 2; i++)
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary indices =" << boundaryIndeces;
+    const int partCount = boundaryIndeces.count() - 1;
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Part count =" << partCount;
+    int result = 0;
+    for(int i = 0; i < partCount; i++)
     {
         const int i1 = boundaryIndeces[i] + boundary.size() + 2;
         const int i2 = request.indexOf("\r\n", i1) + 2;
@@ -103,12 +110,16 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
         QByteArrayList headers;
         headers.append(request.mid(i1, i2 - i1 - 2));
         headers.append(request.mid(i2, i3 - i2 - 2));
-        for(int j = 0; j < 2; j++)
+        for(int j = 0; j < headers.count(); j++)
         {
-            //qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Header =" << headers[j];
+            qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Header =" << headers[j];
             if(headers[j].contains("\"value\""))
+            {
                 parseText(request.mid(i3 + 2, boundaryIndeces[i + 1] - i3 - 2));
-            if(headers[j].contains("\"file1\"")) // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
+                if(!text.isEmpty()) result++;
+                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text lenght =" << text.length();
+            }
+            else if(headers[j].contains("\"file1\"")) // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
             {
                 const int j1 = headers[j].indexOf("filename");
                 if(j1 < 0) continue;
@@ -123,12 +134,13 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
                 fileName = headers[j].mid(j2 + 1, j3 - j2 - 1); // Должно получиться Images/image.png
                 fileData = request.mid(i3 + 2, boundaryIndeces[i + 1] - i3 - 4);
                 //qDebug() << "@@@@@ RequestParser::parseSetDataRequest indeces =" << j1 << j2 << j3 << j4 << j5;
-                qDebug() << "@@@@@ RequestParser::parseSetDataRequest file name =" << QString(fileName);
-                //qDebug() << "@@@@@ RequestParser::parseSetDataRequest data =" << fileData;
+                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. File name =" << QString(fileName);
+                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. File data length =" << fileData.length();
+                if(!fileData.isEmpty() && !fileName.isEmpty()) result++;
             }
         }
     }
-    return !text.isEmpty() && !fileData.isEmpty() && !fileName.isEmpty();
+    return partCount > 0 && result == partCount;
 }
 
 bool RequestParser::parse(const int requestType, const QByteArray& request)

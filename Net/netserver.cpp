@@ -32,7 +32,7 @@ void NetServer::start(const int port)
         server->route("/deleteData", [this] (const QHttpServerRequest &request)
         {
             QByteArray ba = request.query().toString().toUtf8();
-            //qDebug() << QString("@@@@@ NetServer::start: query \n%1\n").arg(ba);
+            qDebug() << QString("@@@@@ NetServer::start: query length = %1\n").arg(ba.length());
             const quint64 requestId = Tools::currentDateTimeToUInt();
             emit netRequest(NetRequestType_DeleteData, NetReplyPair(requestId, ba));
             return waitAndMakeResponse(requestId);
@@ -40,7 +40,7 @@ void NetServer::start(const int port)
         server->route("/getData", [this] (const QHttpServerRequest &request)
         {
             QByteArray ba = request.query().toString().toUtf8();
-            //qDebug() << QString("@@@@@ NetServer::start: query \n%1\n").arg(ba);
+            qDebug() << QString("@@@@@ NetServer::start: query length = %1\n").arg(ba.length());
             const quint64 requestId = Tools::currentDateTimeToUInt();
             emit netRequest(NetRequestType_GetData, NetReplyPair(requestId, ba));
             return waitAndMakeResponse(requestId);
@@ -48,7 +48,7 @@ void NetServer::start(const int port)
         server->route("/setData", [this] (const QHttpServerRequest &request)
         {
             QByteArray ba = request.body();
-            //qDebug() << QString("@@@@@ NetServer::start: body \n%1\n").arg(ba);
+            qDebug() << QString("@@@@@ NetServer::start: body length = %1\n").arg(ba.length());
             const quint64 requestId = Tools::currentDateTimeToUInt();
             emit netRequest(NetRequestType_SetData, NetReplyPair(requestId, ba));
             return waitAndMakeResponse(requestId);

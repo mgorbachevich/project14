@@ -625,8 +625,15 @@ void DataBase::onDownloadDBData(const quint64 requestId, const QByteArray& json,
 {
     // Загрузка в БД
 
-    bool singlePartRequest = !json.isEmpty() && fileName.isEmpty() && fileData.isEmpty();
-    bool multiPartRequest = !fileName.isEmpty() && !fileData.isEmpty();
+    qDebug() << "@@@@@ DataBase::onDownloadDBData requestId = " << requestId;
+    qDebug() << "@@@@@ DataBase::onDownloadDBData json length = " << json.length();
+    qDebug() << "@@@@@ DataBase::onDownloadDBData fileName = " << fileName;
+    qDebug() << "@@@@@ DataBase::onDownloadDBData fileData length = " << fileData.length();
+
+    //bool singlePartRequest = !json.isEmpty() && fileName.isEmpty() && fileData.isEmpty();
+    //bool multiPartRequest = !fileName.isEmpty() && !fileData.isEmpty();
+    bool singlePartRequest = false;
+    bool multiPartRequest = true;
     JSONParser parser;
     int n = 0;
     int result = 0;
@@ -634,29 +641,24 @@ void DataBase::onDownloadDBData(const quint64 requestId, const QByteArray& json,
 
     if(singlePartRequest)
     {
-        qDebug() << "@@@@@ DataBase::onDownloadDBData SinglePart requestId = " << requestId;
-        qDebug() << "@@@@@ DataBase::onDownloadDBData SinglePart json = " << json;
+        qDebug() << "@@@@@ DataBase::onDownloadDBData SinglePart";
         n += parser.parseAllTables(this, json, &result, &description);
     }
     if(multiPartRequest)
     {
-        qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart requestId = " << requestId;
+        qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart";
         if(!json.isEmpty())
-        {
-            qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart json = " << json;
             n += parser.parseAllTables(this, json, &result, &description);
-        }
-
-        QString filePath = Tools::appFilePath(DATA_STORAGE_SUBDIR, fileName);
-        if(Tools::writeBinaryFile(filePath, fileData))
+        if(!fileName.isEmpty() && !fileData.isEmpty())
         {
-            qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart fileName = " << fileName;
-            n++;
-        }
-        else
-        {
-            qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart Write File ERROR " << fileName;
-            if(result == 0) result = -1;
+            QString filePath = Tools::appFilePath(DATA_STORAGE_SUBDIR, fileName);
+            qDebug() << "@@@@@ DataBase::onDownloadDBData filePath = " << filePath;
+            if(Tools::writeBinaryFile(filePath, fileData)) n++;
+            else
+            {
+                qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart Write File ERROR " << fileName;
+                if(result == 0) result = -1;
+            }
         }
     }
     QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\"}").
