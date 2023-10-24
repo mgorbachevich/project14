@@ -1,4 +1,4 @@
-QT += quick sql widgets core gui httpserver serialport
+QT += quick sql widgets core gui httpserver serialport core5compat network
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -10,13 +10,15 @@ android: include(Android/android_openssl-master/openssl.pri)
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
 
+DEFINES += ZINT_NO_PNG
+
 INCLUDEPATH += \
     DB \
     Net \
     Managers \
     Models \
     Settings \
-    Equipment/Wm100_Slpa100u \
+    Equipment/Wm100_Slpa100u_2 \
 
 SOURCES += \
     DB/database.cpp \
@@ -28,14 +30,71 @@ SOURCES += \
     DB/settingdbtable.cpp \
     DB/transactiondbtable.cpp \
     DB/userdbtable.cpp \
-    Equipment/Wm100_Slpa100u/IO/iobase.cpp \
-    Equipment/Wm100_Slpa100u/IO/iocom.cpp \
-    Equipment/Wm100_Slpa100u/Slpa100u.cpp \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocol.cpp \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocolCom.cpp \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocolDemo.cpp \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocolUsb.cpp \
-    Equipment/Wm100_Slpa100u/wm100.cpp \
+    Equipment/Wm100_Slpa100u_2/IO/RequestSender.cpp \
+    Equipment/Wm100_Slpa100u_2/IO/iobase.cpp \
+    Equipment/Wm100_Slpa100u_2/IO/iocom.cpp \
+    Equipment/Wm100_Slpa100u_2/IO/iohttp.cpp \
+    Equipment/Wm100_Slpa100u_2/IO/request.cpp \
+    Equipment/Wm100_Slpa100u_2/Label/backend/2of5.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/auspost.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/aztec.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/bc412.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/bmp.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/codablock.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code1.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code128.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code16k.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code49.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/common.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/composite.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/dllversion.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/dmatrix.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/dotcode.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/eci.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/emf.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/general_field.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gif.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gridmtx.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gs1.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/hanxin.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/imail.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/large.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/library.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/mailmark.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/maxicode.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/medical.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/output.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/pcx.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/plessey.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/png.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/postal.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/ps.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/qr.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/raster.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/reedsol.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/rss.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/svg.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/telepen.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/tif.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/ultra.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/upcean.c \
+    Equipment/Wm100_Slpa100u_2/Label/backend/vector.c \
+    Equipment/Wm100_Slpa100u_2/Label/labelcreator.cpp \
+    Equipment/Wm100_Slpa100u_2/Label/labelobject.cpp \
+    Equipment/Wm100_Slpa100u_2/Label/qzint.cpp \
+    Equipment/Wm100_Slpa100u_2/Slpa100u.cpp \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocol.cpp \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolCom.cpp \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolDemo.cpp \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolHttp.cpp \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolUsb.cpp \
+    Equipment/Wm100_Slpa100u_2/Wm100Protocol.cpp \
+    Equipment/Wm100_Slpa100u_2/Wm100ProtocolCom.cpp \
+    Equipment/Wm100_Slpa100u_2/Wm100ProtocolDemo.cpp \
+    Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.cpp \
+    Equipment/Wm100_Slpa100u_2/wm100.cpp \
     Managers/appmanager.cpp \
     Managers/settings.cpp \
     Models/baselistmodel2.cpp \
@@ -57,6 +116,9 @@ SOURCES += \
     Managers/weightmanager.cpp \
 
 HEADERS += \
+    DB/productdbtable.h \
+    DB/dbtable.h \
+    DB/dbtablecolumn.h \
     DB/database.h \
     DB/jsonparser.h \
     DB/labelformatdbtable.h \
@@ -68,19 +130,84 @@ HEADERS += \
     DB/dbthread.h \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
-    Equipment/Wm100_Slpa100u/IO/iobase.h \
-    Equipment/Wm100_Slpa100u/IO/iocom.h \
-    Equipment/Wm100_Slpa100u/Slpa100u.h \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocol.h \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocolCom.h \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocolDemo.h \
-    Equipment/Wm100_Slpa100u/Slpa100uProtocolUsb.h \
-    Equipment/Wm100_Slpa100u/wm100.h \
+    Equipment/Wm100_Slpa100u_2/IO/RequestSender.h \
+    Equipment/Wm100_Slpa100u_2/IO/iobase.h \
+    Equipment/Wm100_Slpa100u_2/IO/iocom.h \
+    Equipment/Wm100_Slpa100u_2/IO/iohttp.h \
+    Equipment/Wm100_Slpa100u_2/IO/request.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/aztec.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/big5.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/bmp.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/channel_precalcs.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code1.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code128.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/code49.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/common.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/composite.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/dmatrix.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/dmatrix_trace.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/eci.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/eci_sb.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/emf.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/normal_ttf.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/normal_woff2.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/upcean_ttf.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/upcean_woff2.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gb18030.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gb2312.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gbk.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/general_field.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gridmtx.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gs1.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/gs1_lint.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/hanxin.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/iso3166.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/iso4217.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/ksx1001.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/large.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/maxicode.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/output.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/pcx.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417_tabs.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417_trace.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/qr.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/raster_font.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/reedsol.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/reedsol_logs.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/rss.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/sjis.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/tif.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/tif_lzw.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/zfiletypes.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/zint.h \
+    Equipment/Wm100_Slpa100u_2/Label/backend/zintconfig.h \
+    Equipment/Wm100_Slpa100u_2/Label/labelcreator.h \
+    Equipment/Wm100_Slpa100u_2/Label/labelobject.h \
+    Equipment/Wm100_Slpa100u_2/Label/qzint.h \
+    Equipment/Wm100_Slpa100u_2/Slpa100u.h \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocol.h \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolCom.h \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolDemo.h \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolHttp.h \
+    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolUsb.h \
+    Equipment/Wm100_Slpa100u_2/Wm100Protocol.h \
+    Equipment/Wm100_Slpa100u_2/Wm100ProtocolCom.h \
+    Equipment/Wm100_Slpa100u_2/Wm100ProtocolDemo.h \
+    Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.h \
+    Equipment/Wm100_Slpa100u_2/wm100.h \
+    Managers/printmanager.h \
+    Managers/weightmanager.h \
     Managers/appinfo.h \
     Managers/appmanager.h \
     Managers/printstatus.h \
     Managers/settings.h \
     Models/baselistmodel2.h \
+    Models/baselistmodel.h \
+    Models/productpanelmodel.h \
+    Models/searchpanelmodel.h \
+    Models/showcasepanelmodel.h \
+    Models/tablepanelmodel.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
     Models/settinggroupspanelmodel.h \
@@ -91,16 +218,6 @@ HEADERS += \
     Net/requestparser.h \
     constants.h \
     tools.h \
-    Models/baselistmodel.h \
-    Models/productpanelmodel.h \
-    Models/searchpanelmodel.h \
-    Models/showcasepanelmodel.h \
-    Models/tablepanelmodel.h \
-    DB/productdbtable.h \
-    DB/dbtable.h \
-    DB/dbtablecolumn.h \
-    Managers/printmanager.h \
-    Managers/weightmanager.h \
 
 RESOURCES += \
     constants.js \

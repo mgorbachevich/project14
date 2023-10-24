@@ -46,7 +46,8 @@ QString PrintManager::version() const
     return "?";
 }
 
-void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& product, const QString& quantity, const QString& price, const QString& amount)
+void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& product,
+                         const QString& quantity, const QString& price, const QString& amount)
 {
     qDebug() << "@@@@@ PrintManager::print";
     if(started)

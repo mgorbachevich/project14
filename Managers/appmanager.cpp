@@ -695,10 +695,13 @@ void AppManager::runEquipment(const bool start)
         }
         else
         {
+            url1 = "http://127.0.0.1:51233";
+            /*
             QString address = settings.getItemStringValue(SettingDBTable::SettingCode_WMAddress);
             QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_WMBaudrate)));
             QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_WMTimeout));
             url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
+            */
         }
         int e1 = weightManager->start(url1);
         if(e1 != 0)
