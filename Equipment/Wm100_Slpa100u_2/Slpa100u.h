@@ -29,6 +29,7 @@ public:
     int setPaper(Slpa100uProtocol::papertype value);
     int setSensor(bool value);
     int getOffset(int *value);
+    int getPrinterVersion();
 
 private:
     Slpa100uProtocol *protocol = nullptr;

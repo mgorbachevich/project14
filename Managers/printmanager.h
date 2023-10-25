@@ -3,21 +3,23 @@
 
 #include <QObject>
 #include <QVariant>
-#include "Slpa100u.h"
 #include "constants.h"
+#include "settings.h"
 
 class DataBase;
+class Slpa100u;
+class LabelCreator;
 
 class PrintManager : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit PrintManager(QObject*, const bool demo);
+    explicit PrintManager(QObject*, DataBase*, Settings&, const bool);
     int start(const QString&);
     void stop();
     QString version() const;
-    void print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
+    void print(const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
     bool isError() const { return errorCode != 0 || isStateError(status); }
     bool isDemoMode() const { return demoMode; }
     void feed();
@@ -28,11 +30,14 @@ private:
     bool isStateError(uint16_t) const;
 
     Slpa100u* slpa = nullptr;
+    LabelCreator* labelCreator = nullptr;
     bool started = false;
     int errorCode = 0;
     uint16_t status = 0;
     QString message;
-    bool demoMode = false;
+    const bool demoMode;
+    DataBase* db;
+    Settings& settings;
 
 signals:
     void printed(const DBRecord&);

@@ -1,7 +1,7 @@
 #include "transactiondbtable.h"
-#include "tools.h"
 
-DBRecord TransactionDBTable::createRecord(const int userCode,
+DBRecord TransactionDBTable::createRecord(const qint64 dateTime,
+                                          const int userCode,
                                           const int itemCode,
                                           const int labelNumber,
                                           const double weight,
@@ -9,7 +9,7 @@ DBRecord TransactionDBTable::createRecord(const int userCode,
                                           const int cost)
 {
     DBRecord r = DBTable::createRecord();
-    r[TransactionDBTable::DateTime] = Tools::currentDateTimeToUInt();
+    r[TransactionDBTable::DateTime] = dateTime;
     r[TransactionDBTable::User] = userCode;
     r[TransactionDBTable::ItemCode] = itemCode;
     r[TransactionDBTable::LabelNumber] = labelNumber;

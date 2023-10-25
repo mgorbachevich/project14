@@ -43,7 +43,7 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     dbThread = new DBThread(db, this);
     netServer = new NetServer(this);
     weightManager = new WeightManager(this, WM_DEMO);
-    printManager = new PrintManager(this, PRINTER_DEMO);
+    printManager = new PrintManager(this, db, settings, PRINTER_DEMO);
     QTimer *timer = new QTimer(this);
 
     appInfo.dbVersion = db->version();
@@ -693,27 +693,28 @@ void AppManager::runEquipment(const bool start)
             url1 = "demo://COM3?baudrate=115200&timeout=100";
             demoMessage += "\nДемо-режим весового модуля";
         }
-        else
+        else if(WM_HTTP)
         {
             url1 = "http://127.0.0.1:51233";
-            /*
+        }
+        else
+        {
             QString address = settings.getItemStringValue(SettingDBTable::SettingCode_WMAddress);
             QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_WMBaudrate)));
             QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_WMTimeout));
             url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
-            */
         }
         int e1 = weightManager->start(url1);
-        if(e1 != 0)
-            showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").arg(
-                            QString::number(e1),
-                            weightManager->getErrorDescription(e1)));
 
         QString url2;
         if(PRINTER_DEMO)
         {
             url2 = "demo://COM3?baudrate=115200&timeout=100";
             demoMessage += "\nДемо-режим принтера";
+        }
+        else if(PRINTER_HTTP)
+        {
+            url2 = "http://127.0.0.1:51232";
         }
         else
         {
@@ -723,13 +724,12 @@ void AppManager::runEquipment(const bool start)
             url2 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
         }
         int e2 = printManager->start(url2);
-        if(e2 != 0)
-            showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").arg(
-                            QString::number(e2),
-                            printManager->getErrorDescription(e2)));
 
-        if(!demoMessage.isEmpty())
-            showMessage("ВНИМАНИЕ!", demoMessage);
+        if(e1 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").arg(
+                                    QString::number(e1), weightManager->getErrorDescription(e1)));
+        if(e2 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").arg(
+                                    QString::number(e2), printManager->getErrorDescription(e2)));
+        if(!demoMessage.isEmpty()) showMessage("ВНИМАНИЕ!", demoMessage);
     }
     else
     {
@@ -777,7 +777,7 @@ void AppManager::showUsers(const DBRecordList& records)
 void AppManager::print() // Печатаем этикетку
 {
     qDebug() << "@@@@@ AppManager::print ";
-    printManager->print(db, user, product, quantityAsString(product), priceAsString(product), amountAsString(product));
+    printManager->print(user, product, quantityAsString(product), priceAsString(product), amountAsString(product));
 }
 
 void AppManager::onPrintClicked()

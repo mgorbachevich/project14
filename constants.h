@@ -13,10 +13,12 @@
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
-#define WM_DEMO false
-#define PRINTER_DEMO true
 #define CLEAR_DB_ON_START false
 #define CHECK_AUTHORIZATION true
+#define WM_DEMO false
+#define PRINTER_DEMO false
+#define WM_HTTP true
+#define PRINTER_HTTP true
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320

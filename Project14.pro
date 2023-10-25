@@ -242,10 +242,24 @@ RESOURCES += \
     Panels/tableOptionsPanel.qml \
     Panels/viewLogPanel.qml \
     Panels/weightPanel.qml \
-    Resources/Roboto-Regular.ttf \
-    Resources/Roboto-Bold.ttf \
-    Resources/Roboto-Italic.ttf \
-    Resources/LeagueGothic-Regular.otf \
+    Fonts/LeagueGothic-CondensedRegular.otf \
+    Fonts/LeagueGothic-Regular.otf \
+    Fonts/Roboto-Bold.ttf \
+    Fonts/Roboto-Condensed.ttf \
+    Fonts/Roboto-Italic.ttf \
+    Fonts/Roboto-Regular.ttf \
+    Fonts/arial.ttf \
+    Fonts/arialbd.ttf \
+    Fonts/arialbi.ttf \
+    Fonts/ariali.ttf \
+    Fonts/arialn.ttf \
+    Fonts/arialnb.ttf \
+    Fonts/arialnbi.ttf \
+    Fonts/arialni.ttf \
+    Fonts/ariblk.ttf \
+    Fonts/impact.ttf \
+    Fonts/sserifer.fon \
+    Fonts/times.ttf \
     Icons/arrow_left_black_48.png \
     Icons/arrow_up_black_48.png \
     Icons/auto_flag_green_48.png \
@@ -287,11 +301,36 @@ RESOURCES += \
     Text/json_showcase.txt \
     Text/json_pictures.txt \
     Text/json_messages.txt \
+    Labels/60x30.dat/0.bmp \
+    Labels/60x30.dat/60x30.par \
+    Labels/60x30.dat/description \
+    Labels/60x30.dat/print.dat \
+    Labels/60x30.dat/strings \
+    Labels/60x30.lpr \
+    Labels/60x40.dat/0.bmp \
+    Labels/60x40.dat/60x40.par \
+    Labels/60x40.dat/description \
+    Labels/60x40.dat/print.dat \
+    Labels/60x40.dat/strings \
+    Labels/60x40.lpr \
+    Labels/60x50.dat/0.bmp \
+    Labels/60x50.dat/60x50.par \
+    Labels/60x50.dat/description \
+    Labels/60x50.dat/print.dat \
+    Labels/60x50.dat/strings \
+    Labels/60x50.lpr \
+    Labels/60x60.dat/0.bmp \
+    Labels/60x60.dat/60x60.par \
+    Labels/60x60.dat/description \
+    Labels/60x60.dat/print.dat \
+    Labels/60x60.dat/strings \
+    Labels/60x60.lpr \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
 
-DISTFILES +=
+DISTFILES += \
+
 
 
 

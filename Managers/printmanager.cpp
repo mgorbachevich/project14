@@ -5,12 +5,15 @@
 #include "productdbtable.h"
 #include "tools.h"
 #include "database.h"
+#include "Slpa100u.h"
+#include "Label/labelcreator.h"
 
-PrintManager::PrintManager(QObject *parent, const bool demo): QObject(parent)
+PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& globalSettings, const bool demo):
+    QObject(parent), demoMode(demo), db(dataBase), settings(globalSettings)
 {
     qDebug() << "@@@@@ PrintManager::PrintManager " << demo;
-    demoMode = demo;
     slpa = new Slpa100u(this);
+    labelCreator = new LabelCreator(this);
     connect(slpa, &Slpa100u::printerErrorChanged, this, &PrintManager::onErrorStatusChanged);
     connect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
 }
@@ -18,15 +21,15 @@ PrintManager::PrintManager(QObject *parent, const bool demo): QObject(parent)
 int PrintManager::start(const QString& url)
 {
     qDebug() << "@@@@@ PrintManager::start ";
-    int error = 0;
-    if (slpa != nullptr && !started)
+    int e = 0;
+    if (slpa != nullptr && labelCreator != nullptr && !started)
     {
-        error = slpa->connectDevice(url);
-        started = (error == 0);
+        e = slpa->connectDevice(url);
+        started = (e == 0);
         if(started) slpa->startPolling(200);
-        qDebug() << "@@@@@ PrintManager::start error = " << error;
+        qDebug() << "@@@@@ PrintManager::start error = " << e;
     }
-    return error;
+    return e;
 }
 
 void PrintManager::stop()
@@ -43,34 +46,7 @@ void PrintManager::stop()
 
 QString PrintManager::version() const
 {
-    return "?";
-}
-
-void PrintManager::print(DataBase* db, const DBRecord& user, const DBRecord& product,
-                         const QString& quantity, const QString& price, const QString& amount)
-{
-    qDebug() << "@@@@@ PrintManager::print";
-    if(started)
-    {
-        int e = slpa->printTest(100);
-        if(e == 0)
-        {
-            TransactionDBTable* t = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
-            DBRecord r = t->createRecord(
-                    user[UserDBTable::Code].toInt(),
-                    Tools::stringToInt(product[ProductDBTable::Code]),
-                    0, // todo номер этикетки
-                    Tools::stringToDouble(quantity),
-                    Tools::stringToInt(price),
-                    Tools::stringToInt(amount));
-            emit printed(r);
-        }
-        else
-        {
-            //QString s = QString("Ошибка печати %1").arg(error);
-            //emit showMessageBox("Внимание!", s, true);
-        }
-    }
+    return (slpa != nullptr) ? QString::number(slpa->getPrinterVersion()) : "?";
 }
 
 void PrintManager::feed()
@@ -140,6 +116,71 @@ void PrintManager::onErrorStatusChanged(int e)
     {
         errorCode = e;
         emit paramChanged(EquipmentParam_PrintError, e);
+    }
+}
+
+void PrintManager::print(const DBRecord& user, const DBRecord& product,
+                         const QString& quantity, const QString& price, const QString& amount)
+{
+    qDebug() << "@@@@@ PrintManager::print";
+    if(started)
+    {
+        quint64 dateTime = Tools::currentDateTimeToUInt();
+        int labelNumber = 0; // todo
+        int e = 0;
+        if(demoMode) e = slpa->printTest(100);
+        else
+        {
+            e = labelCreator->loadLabel(":/Labels/60x40.lpr"); // todo
+            if (e == 0)
+            {
+                PrintData pd;
+                pd.weight = quantity;
+                pd.price = price;
+                pd.cost = amount;
+                pd.tare = product[ProductDBTable::Tare].toString();
+                pd.barcode = product[ProductDBTable::Barcode].toString();
+                pd.itemcode = product[ProductDBTable::Code].toString();
+                pd.name = product[ProductDBTable::Name].toString();
+                pd.shelflife = product[ProductDBTable::Shelflife].toString();
+                pd.validity = ""; // todo
+                pd.price2 = product[ProductDBTable::Price2].toString();
+                pd.certificate = product[ProductDBTable::Certificate].toString();
+                pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
+                pd.shop = settings.getItemStringValue(SettingDBTable::SettingCode_ShopName);
+                pd.operatorcode = user[UserDBTable::Code].toString();
+                pd.operatorname = user[UserDBTable::Name].toString();
+                pd.date = Tools::dateFromUInt(dateTime);
+                pd.time = Tools::timeFromUInt(dateTime);
+                pd.labelnumber = QString::number(labelNumber);
+                pd.scalesnumber = settings.getItemStringValue(SettingDBTable::SettingCode_ScalesNumber),
+                pd.picturefile = ""; // todo
+                pd.textfile = ""; // todo
+
+                QImage p = labelCreator->createImage(pd);
+                e = slpa->print(p);
+            }
+        }
+        if(e == 0)
+        {
+            TransactionDBTable* t = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
+            DBRecord r = t->createRecord(
+                        dateTime,
+                        user[UserDBTable::Code].toInt(),
+                        Tools::stringToInt(product[ProductDBTable::Code]),
+                        labelNumber,
+                        Tools::stringToDouble(quantity),
+                        Tools::stringToInt(price),
+                        Tools::stringToInt(amount));
+            emit printed(r);
+        }
+        /*
+        else
+        {
+            QString s = QString("Ошибка печати %1").arg(error);
+            emit showMessageBox("Внимание!", s, true);
+        }
+        */
     }
 }
 

@@ -50,6 +50,7 @@ public:
     explicit DataBase(const QString&, Settings&, QObject*);
     ~DataBase() { db.close(); }
     DBTable* getTableByName(const QString&) const;
+    QString getProductMessageById(const QString&);
     void selectAll(DBTable*, DBRecordList&);
     bool removeAll(DBTable*);
     QString version();
@@ -67,6 +68,7 @@ protected:
     bool executeSQL(const QString&);
     bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
     bool selectById(DBTable*, const QString&, DBRecord&);
+    bool selectById(const QString&, const QString&, DBRecord&);
     bool removeRecord(DBTable*, const QString&);
     void removeOldLogRecords();
     //int getRecordCount(DBTable*);

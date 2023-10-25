@@ -36,7 +36,7 @@ public:
         addColumn("Стоимость 2",      "cost2",        "INT");
     }
     int columnCount() { return Columns::COLUMN_COUNT; }
-    DBRecord createRecord(const int, const int, const int, const double, const int, const int);
+    DBRecord createRecord(const qint64, const int, const int, const int, const double, const int, const int);
 };
 
 #endif // TRANSACTIONDBTABLE_H

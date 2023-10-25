@@ -3,8 +3,7 @@
 QVariantList DBTable::createRecord()
 {
     DBRecord r;
-    for (int i = 0; i < columnCount(); i++)
-        r << QVariant("");
+    for (int i = 0; i < columnCount(); i++) r << QVariant("");
     return r;
 }
 
@@ -29,10 +28,7 @@ bool DBTable::isEqual(const DBRecord& r1, const DBRecord& r2)
 {
     if (r1.count() == r2.count())
     {
-        for (int i = 0; i < r1.count(); i++)
-        {
-            if (r1[i] != r2[i]) return false;
-        }
+        for (int i = 0; i < r1.count(); i++) if (r1[i] != r2[i]) return false;
         return true;
     }
     return false;

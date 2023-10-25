@@ -94,6 +94,14 @@ DBTable *DataBase::getTableByName(const QString &name) const
     return nullptr;
 }
 
+QString DataBase::getProductMessageById(const QString& id)
+{
+    DBRecord r;
+    if(selectById(DBTABLENAME_MESSAGES, id, r) && r.count() > ResourceDBTable::Value)
+        return r[ResourceDBTable::Value].toString();
+    return "";
+}
+
 bool DataBase::createTable(DBTable* table)
 {
     if (!opened) return false;
@@ -170,11 +178,17 @@ bool DataBase::selectById(DBTable* table, const QString& id, DBRecord& resultRec
 {
     qDebug() << "@@@@@ DataBase::selectById " << id;
     resultRecord.clear();
+    if(table == nullptr) return false;
     QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").arg(table->name, table->columnName(0), id);
     DBRecordList records;
     if(!executeSelectSQL(table, sql, records)) return false;
     if(records.count() > 0) resultRecord.append(records.at(0));
     return true;
+}
+
+bool DataBase::selectById(const QString& tableName, const QString& id, DBRecord& resultRecord)
+{
+    return selectById(getTableByName(tableName), id, resultRecord);
 }
 
 void DataBase::selectAll(DBTable *table, DBRecordList& resultRecords)
@@ -226,10 +240,7 @@ bool DataBase::insertRecord(DBTable *table, const DBRecord& record)
 
     QString sql;
     DBRecord r;
-    if (selectById(table, checkedRecord.at(0).toString(), r))
-    {
-        removeRecord(table, r.at(0).toString());
-    }
+    if (selectById(table, checkedRecord.at(0).toString(), r)) removeRecord(table, r.at(0).toString());
     sql = "INSERT INTO " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
     {
@@ -330,8 +341,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     // Запрос картинки из ресурсов по коду ресурса:
     {
         DBRecord r;
-        if(selectById(getTableByName(DBTABLENAME_PICTURES), param, r))
-            resultRecords.append(r);
+        if(selectById(DBTABLENAME_PICTURES, param, r)) resultRecords.append(r);
         break;
     }
 
@@ -340,8 +350,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     // todo
     {
         DBRecord r;
-        if(selectById(getTableByName(DBTABLENAME_MESSAGES), param, r))
-            resultRecords.append(r);
+        if(selectById(DBTABLENAME_MESSAGES, param, r)) resultRecords.append(r);
         break;
     }
 
@@ -412,8 +421,7 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     case Selector::RefreshCurrentProduct:
     {
         DBRecord r;
-        if(selectById(getTableByName(DBTABLENAME_PRODUCTS), param, r))
-            resultRecords.append(r);
+        if(selectById(DBTABLENAME_PRODUCTS, param, r)) resultRecords.append(r);
         break;
     }
 
@@ -438,8 +446,7 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
         {
             QString imageCode = param[i][ProductDBTable::PictureCode].toString();
             DBRecord r;
-            if(selectById(getTableByName(DBTABLENAME_PICTURES), imageCode, r))
-                resultRecords.append(r);
+            if(selectById(DBTABLENAME_PICTURES, imageCode, r)) resultRecords.append(r);
         }
         break;
     }

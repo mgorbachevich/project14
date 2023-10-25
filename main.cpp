@@ -13,10 +13,26 @@ int main(int argc, char *argv[])
     QApplication application(argc, argv);
     QQmlApplicationEngine engine;
 
-    QFontDatabase::addApplicationFont(":/Resources/Roboto-Regular.ttf");
-    QFontDatabase::addApplicationFont(":/Resources/Roboto-Bold.ttf");
-    QFontDatabase::addApplicationFont(":/Resources/Roboto-Italic.ttf");
-    QFontDatabase::addApplicationFont(":/Resources/LeagueGothic-Regular.otf");
+    // GUI fonts:
+    //QFontDatabase::addApplicationFont(":/Fonts/LeagueGothic-CondensedRegular.otf");
+    QFontDatabase::addApplicationFont(":/Fonts/LeagueGothic-Regular.otf");
+    QFontDatabase::addApplicationFont(":/Fonts/Roboto-Bold.ttf");
+    //QFontDatabase::addApplicationFont(":/Fonts/Roboto-Condensed.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/Roboto-Italic.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/Roboto-Regular.ttf");
+    // Label fonts:
+    QFontDatabase::addApplicationFont(":/Fonts/arial.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/arialbd.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/arialbi.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/ariali.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/arialn.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/arialnb.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/arialnbi.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/arialni.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/ariblk.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/impact.ttf");
+    QFontDatabase::addApplicationFont(":/Fonts/sserifer.fon");
+    QFontDatabase::addApplicationFont(":/Fonts/times.ttf");
     //qDebug() <<  "@@@@@ main font families: " << QFontDatabase::families();
 
     QSize screenSize = QSize(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
