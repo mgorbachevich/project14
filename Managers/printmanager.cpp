@@ -60,7 +60,13 @@ void PrintManager::feed()
 bool PrintManager::isStateError(uint16_t s) const
 {
     if(demoMode) return false;
-    return isFlag(s, 0) || (isFlag(s, 1) && isFlag(s, 6)) || isFlag(s, 2) || isFlag(s, 3) || isFlag(s, 8);
+    bool b0 = isFlag(s, 0);
+    bool b1 = isFlag(s, 1);
+    bool b2 = isFlag(s, 2);
+    bool b3 = isFlag(s, 3);
+    bool b6 = isFlag(s, 6);
+    bool b8 = isFlag(s, 8);
+    return !b0 || !b2 || b3 || b8 || (b1 && b6);
 }
 
 QString PrintManager::getErrorDescription(const int e) const
@@ -94,14 +100,14 @@ void PrintManager::onStatusChanged(uint16_t s)
 
     EquipmentParam param = EquipmentParam_None;
     int e = 0;
-    if(b0 || b1 || b2 || b3 || b6 || b8)
+    if(!b0 || b1 || !b2 || b3 || b6 || b8)
     {
         param = EquipmentParam_PrintError;
-        if(b0 && isFlag(status, 0) != b0) e = 1003;
-        if(b1 && b6 && isFlag(status, 1) != b1) e = 1005;
-        if(b2 && isFlag(status, 2) != b2) e = 1006;
+        if(!b0 && isFlag(status, 0) != b0) e = 1003;
+        if(!b2 && isFlag(status, 2) != b2) e = 1006;
         if(b3 && isFlag(status, 3) != b3) e = 1004;
         if(b8 && isFlag(status, 8) != b8) e = 1008;
+        if(b1 && b6 && isFlag(status, 1) != b1) e = 1005;
     }
     else if(isStateError(status) && errorCode == 0) param = EquipmentParam_PrintError; // Ошибка исчезла
 
