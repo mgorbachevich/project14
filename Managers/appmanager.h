@@ -141,7 +141,7 @@ signals:
     void deleteDBData(const quint64, const QByteArray&, const QByteArray&);
     void downloadDBData(const quint64, const QByteArray&, const QByteArray&, const QByteArray&);
     void enableManualPrint(const bool);
-    void hideMessageBox();
+    void hideToast();
     void log(const int, const int, const QString&);
     void resetCurrentProduct();
     void selectFromDB(const DataBase::Selector, const QString&);

@@ -449,8 +449,12 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetImageByResourceCode:
     // Отображение картинки выбранного товара:
-        emit showProductImage(records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_WITH_QML_PATH);
+    {
+        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_WITH_QML_PATH;
+        emit showProductImage(imagePath);
+        showMessage("Image file path", imagePath);
         break;
+    }
 
     default:break;
     }
@@ -662,7 +666,7 @@ void AppManager::refreshAll()
 void AppManager::showToast(const QString &title, const QString &text, const int delaySec)
 {
     emit showMessageBox(title, text, false);
-    QTimer::singleShot(delaySec * 1000, this, &AppManager::hideMessageBox);
+    QTimer::singleShot(delaySec * 1000, this, &AppManager::hideToast);
 }
 
 void AppManager::showMessage(const QString &title, const QString &text)

@@ -116,9 +116,10 @@ bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly))
     {
-        file.write(data);
+        quint64 n1 = file.write(data);
+        quint64 n2 = file.size();
+        qDebug() << QString("@@@@@ Tools::writeBinaryFile OK %1 %2").arg(QString::number(n1), QString::number(n2));
         file.close();
-        qDebug() << "@@@@@ Tools::writeBinaryFile OK";
         return true;
     }
     qDebug() << "@@@@@ Tools::writeBinaryFile ERROR";
@@ -152,7 +153,7 @@ QString Tools::qmlFilePath(const QString& subDir, const QString& filePath)
 
 QString Tools::appFilePath(const QString& subDir, const QString& filePath)
 {
-    qDebug() << "@@@@@ Tools::dataFilePath";
+    qDebug() << "@@@@@ Tools::appFilePath";
     if(filePath.isEmpty()) return "";
 
     const QStringList dirs = QString(subDir + "/" + filePath).split("/");
@@ -163,12 +164,12 @@ QString Tools::appFilePath(const QString& subDir, const QString& filePath)
         if(!dirs.at(i).isEmpty())
         {
             path += "/" + dirs.at(i);
-            if(!dir.exists(path)) qDebug() << "@@@@@ Tools::dataFilePath mkdir " << dir.mkdir(path) << path;
+            if(!dir.exists(path)) qDebug() << "@@@@@ Tools::appFilePath mkdir " << dir.mkdir(path) << path;
         }
     }
     path += "/" + dirs.last(); // file name
-    qDebug() << "@@@@@ Tools::dataFilePath filePath" << filePath;
-    qDebug() << "@@@@@ Tools::dataFilePath path" << path;
+    qDebug() << "@@@@@ Tools::appFilePath filePath" << filePath;
+    qDebug() << "@@@@@ Tools::appFilePath path" << path;
     return path;
 }
 

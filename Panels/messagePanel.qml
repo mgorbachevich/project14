@@ -21,10 +21,10 @@ Popup
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
-    Connections // Slot for signal AppManager::hideMessageBox
+    Connections // Slot for signal AppManager::hideToast
     {
         target: app
-        function onHideMessageBox() { messagePanel.close() }
+        function onHideToast() { messagePanel.close() }
     }
 
     Rectangle
