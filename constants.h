@@ -13,7 +13,9 @@
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
-#define CLEAR_DB_ON_START false
+#define EOL "\r\n"
+
+#define CLEAR_DB_ON_START true
 #define CHECK_AUTHORIZATION true
 #define WM_DEMO false
 #define PRINTER_DEMO true
@@ -32,7 +34,7 @@
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
-#define NetReplyPair QPair<quint64, QByteArray>
+#define StringPair QPair<QString, QString>
 
 enum LogType
 {
@@ -89,11 +91,11 @@ enum EquipmentParam
     EquipmentParam_AutoPrint = 16,
 };
 
-enum NetRequestType
+enum NetRequest
 {
-    NetRequestType_GetData = 0,
-    NetRequestType_SetData = 1,
-    NetRequestType_DeleteData = 2,
+    NetRequest_Get,
+    NetRequest_Set,
+    NetRequest_Delete,
 };
 
 #endif // CONSTANTS_H

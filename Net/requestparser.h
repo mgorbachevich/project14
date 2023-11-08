@@ -4,27 +4,18 @@
 #include <QByteArray>
 #include <constants.h>
 
+class DataBase;
+
 class RequestParser
 {
 public:
-    RequestParser() {}
-    bool parse(const int, const QByteArray&);
-    QByteArray getText() { return text; }
-    QByteArray getFileName() { return fileName; }
-    QByteArray getFileData() { return fileData; }
-    QByteArray getTableName() { return fileName; }
-    QByteArray getCodeList() { return fileData; }
+    static QString parseGetDataRequest(const NetRequest, DataBase*, const QByteArray&);
+    static QString parseSetDataRequest(DataBase*, const QByteArray&);
+    static QString makeResultJson(const int, const QString&, const QString&, const QString&);
 
 private:
-    bool parseText(const QByteArray&);
-    bool parseGetDataRequest(const QByteArray&);
-    bool parseDeleteDataRequest(const QByteArray&);
-    bool parseSetDataRequest(const QByteArray&);
-    void clear() { text.clear(); fileName.clear(); fileData.clear(); }
-
-    QByteArray text;
-    QByteArray fileName;
-    QByteArray fileData;
+    static QString parseJson(const QByteArray&);
+    static QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
 };
 
 #endif // REQUESTPARSER_H

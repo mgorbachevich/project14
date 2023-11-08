@@ -9,8 +9,10 @@ public:
     enum Columns
     {
         Code = 0,
-        Hash,
         Value,
+        Hash,
+        Field,
+        Source,
         COLUMN_COUNT
     };
 
@@ -18,9 +20,11 @@ public:
     {
         qDebug() << "@@@@@ ResourceDBTable::ResourceDBTable";
 
-        addColumn("Код",      "code",  "INT PRIMARY KEY");
-        addColumn("Хэш",      "hash",  "TEXT");
-        addColumn("Значение", "value", "TEXT");
+        addColumn("Код",      "code",   "INT PRIMARY KEY");
+        addColumn("Значение", "value",  "TEXT");
+        addColumn("Хэш",      "hash",   "TEXT");
+        addColumn("Поле",     "field",  "TEXT");
+        addColumn("Источник", "source", "TEXT");
     }
     int columnCount() { return Columns::COLUMN_COUNT; }
 };

@@ -4,7 +4,7 @@
 #include <QObject>
 #include "settings.h"
 
-#define DB_VERSION "1.0"
+#define DB_VERSION "1.1"
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
 #define DBTABLENAME_LABELFORMATS "labels"
@@ -56,6 +56,10 @@ public:
     QString version();
     void saveLog(const int, const int, const QString&);
     bool insertRecord(DBTable*, const DBRecord&);
+    QString uploadRecords(const QString&, const QString&);
+    QString deleteRecords(const QString&, const QString&);
+    //QString downloadRecords(const QString&, const QString&, const QByteArray&);
+    void downloadRecords(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
 
     QString filePath;
     Settings& settings;
@@ -71,6 +75,7 @@ protected:
     bool selectById(const QString&, const QString&, DBRecord&);
     bool removeRecord(DBTable*, const QString&);
     void removeOldLogRecords();
+    void downloadTableRecords(DBTable*, DBRecordList&, int&, int&);
     //int getRecordCount(DBTable*);
 
     bool opened = false;
@@ -79,9 +84,7 @@ protected:
 signals:
     void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void started();
-    void updateDBFinished(const int);
-    void downloadResult(const quint64, const QString&);
-    void loadResult(const quint64, const QString&);
+    void updateDBFinished(const QString&);
 
 public slots:
     void onStart();
@@ -90,9 +93,6 @@ public slots:
     void onUpdateRecord(const DataBase::Selector, const DBRecord&);
     void onTransaction(const DBRecord&);
     void onLog(const int, const int, const QString&);
-    void onUploadDBData(const quint64, const QByteArray&, const QByteArray&);
-    void onDeleteDBData(const quint64, const QByteArray&, const QByteArray&);
-    void onDownloadDBData(const quint64, const QByteArray&, const QByteArray&, const QByteArray&);
 };
 
 #endif // DATABASE_H

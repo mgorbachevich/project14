@@ -1,25 +1,28 @@
 #include <QDebug>
 #include <QByteArrayView>
+#include <QHash>
 #include "requestparser.h"
+#include "database.h"
+#include "jsonparser.h"
+#include "resourcedbtable.h"
+#include "tools.h"
 
-bool RequestParser::parseText(const QByteArray& request)
+QString RequestParser::parseJson(const QByteArray& request)
 {
-    qDebug() << "@@@@@ RequestParser::parseText";
+    qDebug() << "@@@@@ RequestParser::parseJson";
+    QByteArray text;
     const int i1 = request.indexOf("{");
     const int i2 = request.lastIndexOf("}");
-    if (i2 > i1)
-    {
-        text = request.mid(i1, i2 - i1 + 1);
-        //qDebug() << "@@@@@ RequestParser::parseText " << QString(text);
-    }
-    return !text.isEmpty();
+    if (i2 > i1) text = request.mid(i1, i2 - i1 + 1);
+    return QString(text);
 }
 
-bool RequestParser::parseGetDataRequest(const QByteArray &request)
+QString RequestParser::parseGetDataRequest(const NetRequest requestType, DataBase* db, const QByteArray &request)
 {
     // Parse list of codes to upload:
     qDebug() << "@@@@@ RequestParser::parseGetDataRequest " << QString(request);
-
+    QByteArray tableName;
+    QByteArray codeList;
     const QByteArray s1 = "source=";
     int p1 = request.indexOf(s1);
     if(p1 >= 0)
@@ -32,8 +35,8 @@ bool RequestParser::parseGetDataRequest(const QByteArray &request)
             if(p2 > p1)
             {
                 p1 += s1.length();
-                fileName = request.mid(p1, p2 - p1);
-                qDebug() << "@@@@@ AppManager::parseGetDataRequest: table name =" << fileName;
+                tableName = request.mid(p1, p2 - p1);
+                qDebug() << "@@@@@ AppManager::parseGetDataRequest: table name =" << tableName;
             }
         }
         else
@@ -43,38 +46,34 @@ bool RequestParser::parseGetDataRequest(const QByteArray &request)
             if(p2 > p1 && (request.contains(s2) || request.contains(s3)))
             {
                 p1 += s1.length();
-                fileName = request.mid(p1, p2 - p1);
-                qDebug() << "@@@@@ AppManager::parseGetDataRequest: table name =" << fileName;
+                tableName = request.mid(p1, p2 - p1);
+                qDebug() << "@@@@@ AppManager::parseGetDataRequest: table name =" << tableName;
                 if (request.contains(s2))
                 {
                     int p3 = request.indexOf("[") + 1;
                     int p4 = request.indexOf("]");
-                    fileData = request.mid(p3, p4 - p3);
+                    codeList = request.mid(p3, p4 - p3);
                 }
                 else if (request.contains(s3))
                 {
                     int p3 = request.indexOf(s3);
                     int p4 = request.length();
                     p3 += s3.length();
-                    fileData = request.mid(p3, p4 - p3);
+                    codeList = request.mid(p3, p4 - p3);
                 }
             }
         }
     }
-    if(fileName.isEmpty())
+    switch(requestType)
     {
-        qDebug() << "@@@@@ AppManager::parseGetDataRequest ERROR";
-        return false;
+    case NetRequest_Delete: return db->deleteRecords(tableName, codeList);
+    case NetRequest_Get:    return db->uploadRecords(tableName, codeList);
+    default: break;
     }
-    //qDebug() << "@@@@@ AppManager::parseGetDataRequest: code list =" << fileData;
-    return true;
+    return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
 }
 
-bool RequestParser::parseDeleteDataRequest(const QByteArray &request)
-{
-    return parseGetDataRequest(request);
-}
-
+/*
 bool RequestParser::parseSetDataRequest(const QByteArray &request)
 {
     qDebug() << "@@@@@ RequestParser::parseSetDataRequest";
@@ -85,10 +84,9 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
         qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Singlepart";
         return parseText(request);
     }
-
     // Multipart:
     qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Multipart";
-    QByteArray boundary = request.mid(0, request.indexOf("\r\n"));
+    QByteArray boundary = request.mid(0, request.indexOf(EOL));
     qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary =" << QString(boundary);
     QList<int> boundaryIndeces;
     int bi = 0;
@@ -105,8 +103,8 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
     for(int i = 0; i < partCount; i++)
     {
         const int i1 = boundaryIndeces[i] + boundary.size() + 2;
-        const int i2 = request.indexOf("\r\n", i1) + 2;
-        const int i3 = request.indexOf("\r\n", i2) + 2;
+        const int i2 = request.indexOf(EOL, i1) + 2;
+        const int i3 = request.indexOf(EOL, i2) + 2;
         QByteArrayList headers;
         headers.append(request.mid(i1, i2 - i1 - 2));
         headers.append(request.mid(i2, i3 - i2 - 2));
@@ -117,6 +115,7 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
             {
                 parseText(request.mid(i3 + 2, boundaryIndeces[i + 1] - i3 - 2));
                 if(!text.isEmpty()) result++;
+                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text =" << text;
                 qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text lenght =" << text.length();
             }
             else if(headers[j].contains("\"file1\"")) // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
@@ -142,24 +141,160 @@ bool RequestParser::parseSetDataRequest(const QByteArray &request)
     }
     return partCount > 0 && result == partCount;
 }
+*/
 
-bool RequestParser::parse(const int requestType, const QByteArray& request)
+QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &request)
 {
-    qDebug() << "@@@@@ RequestParser::parse  requestType =" << requestType;
-    clear();
-    bool ok = false;
-    switch(requestType)
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest";
+    //qDebug() << "@@@@@ RequestParser::parseSetDataRequest = " << request;
+    int successCount = 0;
+    int errorCount = 0;
+    int errorCode = 0;
+
+    // Singlepart:
+    if(request.indexOf("{") == 0)
     {
-    case NetRequestType_DeleteData:
-        ok = parseDeleteDataRequest(request);
-        break;
-    case NetRequestType_GetData:
-        ok = parseGetDataRequest(request);
-        break;
-    case NetRequestType_SetData:
-        ok = parseSetDataRequest(request);
-        break;
+        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Singlepart";
+        return makeResultJson(LogError_WrongRequest, "Неверный запрос", "", "");
+        //return db->downloadRecords(parseText(request), "", "");
     }
-    if(!ok) clear();
-    return ok;
+
+    // Multipart:
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Multipart";
+    QByteArray boundary = request.mid(0, request.indexOf(EOL));
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary =" << QString(boundary);
+    QList<int> boundaryIndeces;
+    int bi = 0;
+    while(bi >= 0)
+    {
+        boundaryIndeces.append(bi);
+        bi = request.indexOf(QByteArrayView(boundary), bi + boundary.size() + 2);
+    }
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary indices =" << boundaryIndeces;
+    const int partCount = boundaryIndeces.count() - 1;
+    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Part count =" << partCount;
+    QHash<DBTable*, DBRecordList> downloadedRecords;
+    for(int partIndex = 0; partIndex < partCount; partIndex++)
+    {
+        // Считаю что хедеров не больше 2:
+        QByteArrayList headers;
+        const int d = QByteArray(EOL).length();
+        const int i1 = boundaryIndeces[partIndex] + boundary.size() + d;
+        const int i2 = request.indexOf(EOL, i1) + d;
+        const int i3 = request.indexOf(EOL, i2) + d;
+        headers.append(request.mid(i1, i2 - i1 - d));
+        headers.append(request.mid(i2, i3 - i2 - d));
+        if(partIndex == 0) // Value
+        {
+            for(int hi = 0; hi < headers.count(); hi++)
+            {
+                QByteArray& header = headers[hi];
+                qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Part %1, header %2 = %3").
+                        arg(QString::number(partIndex), QString::number(hi), header);
+
+                // Content-Disposition: form-data; name="value"
+                QByteArray nameItemValue = parseHeaderItem(header, "name");
+                if(nameItemValue == "value")
+                {
+                    QString text = parseJson(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
+                    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text =" << text;
+                    if(!text.isEmpty())
+                    {
+                        for (int ti = 0; ti < db->tables.size(); ti++)
+                        {
+                            DBTable* table = db->tables[ti];
+                            if(table == nullptr) continue;
+                            DBRecordList tableRecords = JSONParser::parseTable(table, text);
+                            if(tableRecords.count() == 0) continue;
+                            qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Table %1, records %2").
+                                    arg(table->name, QString::number(tableRecords.count()));
+                            downloadedRecords.insert(table, tableRecords);
+                        }
+                    }
+                    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Record count =" << downloadedRecords.count();
+                }
+            }
+        }
+        else // Resources
+        {
+            for(int hi = 0; hi < headers.count(); hi++)
+            {
+                QByteArray& header = headers[hi];
+                qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Part %1, header %2 = %3").
+                        arg(QString::number(partIndex), QString::number(hi), header);
+                QList tables = downloadedRecords.keys();
+                for (DBTable* table : tables)
+                {
+                    const int fieldIndex = table->columnIndex("field");
+                    if(fieldIndex < 0) continue;
+                    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Table " << table->name;
+                    DBRecordList tableRecords = downloadedRecords.value(table);
+                    for(int ri = 0; ri < tableRecords.count(); ri++)
+                    {
+                        DBRecord& record = tableRecords[ri];
+                        // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
+                        QByteArray nameItemValue = parseHeaderItem(header, "name");
+                        if(nameItemValue != record[fieldIndex].toString().toUtf8()) continue;
+                        QByteArray fileNameItemValue = parseHeaderItem(header, "filename");
+                        QString source = QString(fileNameItemValue);
+
+                        // New resource file name (tableName/recordCode.extension):
+                        const int dotIndex = source.lastIndexOf(".");
+                        QString extension =  dotIndex < 0 ? "" : source.mid(dotIndex + 1, source.length());
+                        QString localFilePath = QString("%1/%2.%3").arg(table->name, record[0].toString(), extension);
+                        //qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Record =" << DBTable::toJsonString(table, record);
+
+                        // Write data file:
+                        QByteArray fileData = request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d * 2);
+                        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. File data length =" << fileData.length();
+                        QString fullFilePath = Tools::appFilePath(DATA_STORAGE_SUBDIR, localFilePath);
+                        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Full file path = " << fullFilePath;
+                        if(Tools::writeBinaryFile(fullFilePath, fileData))
+                        {
+                            successCount++;
+                            record[ResourceDBTable::Source] = source;
+                            record[ResourceDBTable::Value] = localFilePath;
+                        }
+                        else
+                        {
+                            errorCount++;
+                            errorCode = LogError_WrongRecord;
+                            record[ResourceDBTable::Source] = "";
+                            record[ResourceDBTable::Value] = "";
+                            qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Write file ERROR";
+                        }
+                    }
+                    downloadedRecords.remove(table);
+                    downloadedRecords.insert(table, tableRecords);
+                }
+            }
+        }
+    }
+    db->downloadRecords(downloadedRecords, successCount, errorCount);
+    QString description = QString("Загружено записей %1 из %2").
+            arg(QString::number(successCount), QString::number(successCount + errorCount));
+    return makeResultJson(errorCode, description, "", "");
 }
+
+QString RequestParser::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QString& data)
+{
+    if(tableName.isEmpty() || data.isEmpty())
+        return QString("{\"result\":\"%1\",\"description\":\"%2\"}").
+                arg(QString::number(errorCode), description);
+    else
+        return QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
+            arg(QString::number(errorCode), description, tableName, data);
+}
+
+QByteArray RequestParser::parseHeaderItem(const QByteArray& header, const QByteArray& item, const QByteArray& title)
+{
+    if(!header.contains(title) || !header.contains(item)) return "";
+    const int i1 = header.indexOf(item);
+    if(i1 < 0) return "";
+    const int i2 = header.indexOf("\"", i1);
+    if(i2 < 0) return "";
+    const int i3 = header.indexOf("\"", i2 + 1);
+    if(i3 <= i2) return "";
+    return header.mid(i2 + 1, i3 - i2 - 1);
+}
+

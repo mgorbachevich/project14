@@ -70,9 +70,8 @@ QString Settings::getCurrentGroupName()
 
 void Settings::createGroups(SettingGroupDBTable* table)
 {
-    JSONParser parser;
     groups.clear();
-    groups.append(parser.parseTable(table, Tools::readTextFile(DEFAULT_SETTING_GROUPS_FILE)));
+    groups.append(JSONParser::parseTable(table, Tools::readTextFile(DEFAULT_SETTING_GROUPS_FILE)));
 }
 
 void Settings::updateAllItems(const DBRecordList& records)

@@ -74,11 +74,8 @@ const DBRecordList SettingDBTable::checkList(const DBRecordList& records)
     }
 
     // Добавление недостающих значений по умолчанию:
-    JSONParser parser;
-    DBRecordList defaultRecords = parser.parseTable(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    for(int i = 0; i < SettingCode_Max; i++)
-        checkDefault(i, defaultRecords, result);
-
+    DBRecordList defaultRecords = JSONParser::parseTable(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
+    for(int i = 0; i < SettingCode_Max; i++) checkDefault(i, defaultRecords, result);
     return result;
 }
 

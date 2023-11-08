@@ -25,7 +25,6 @@
 #include "weightmanager.h"
 #include "printmanager.h"
 #include "netserver.h"
-#include "requestparser.h"
 
 AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& screenSize): QObject(parent)
 {
@@ -41,11 +40,12 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     user = UserDBTable::defaultAdmin();
     db = new DataBase(DB_FILENAME, settings, this);
     dbThread = new DBThread(db, this);
-    netServer = new NetServer(this);
+    netServer = new NetServer(this, db);
     weightManager = new WeightManager(this, WM_DEMO);
     printManager = new PrintManager(this, db, settings, PRINTER_DEMO);
     QTimer *timer = new QTimer(this);
 
+    appInfo.appVersion = APP_VERSION;
     appInfo.dbVersion = db->version();
     appInfo.weightManagerVersion = weightManager->version();
     appInfo.printManagerVersion = printManager->version();
@@ -59,14 +59,9 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     connect(this, &AppManager::selectFromDB, db, &DataBase::onSelect);
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
-    connect(this, &AppManager::downloadDBData, db, &DataBase::onDownloadDBData);
-    connect(this, &AppManager::uploadDBData, db, &DataBase::onUploadDBData);
-    connect(this, &AppManager::deleteDBData, db, &DataBase::onDeleteDBData);
     connect(db, &DataBase::started, this, &AppManager::onDBStarted);
-    connect(db, &DataBase::loadResult, this, &AppManager::onLoadResult, Qt::DirectConnection);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
     connect(db, &DataBase::updateDBFinished, this, &AppManager::onUpdateDBFinished);
-    connect(netServer, &NetServer::netRequest, this, &AppManager::onNetRequest);
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
     connect(printManager, &PrintManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
@@ -113,9 +108,9 @@ void AppManager::onDBStarted()
     //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
 }
 
-void AppManager::onUpdateDBFinished(const int count)
+void AppManager::onUpdateDBFinished(const QString& comment)
 {
-    qDebug() << "@@@@@ AppManager::onUpdateDBFinished" << count;
+    qDebug() << "@@@@@ AppManager::onUpdateDBFinished " << comment;
     refreshAll();
     if(!product.isEmpty())
         emit selectFromDB(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
@@ -294,43 +289,6 @@ void AppManager::onMainPageChanged(const int index)
     emit showMainPage(mainPageIndex);
 }
 
-void AppManager::onLoadResult(const quint64 requestId, const QString &json)
-{
-    // БД завершила загрузку/выгрузку. Формируем ответ клиенту
-    qDebug() << "@@@@@ AppManager::onLoadResult " << requestId << json;
-    netServer->sendReplyToClient(NetReplyPair(requestId, json.toUtf8()));
-}
-
-void AppManager::onNetRequest(const int requestType, const NetReplyPair& p)
-{
-    // Получен запрос от клиета на загрузку/выгрузку. Формируем запрос в БД
-
-    const quint64 requestId = p.first;
-    qDebug() << (QString("@@@@@ AppManager::onNetRequest: request = \n%1").arg(QString::number(requestId)));
-    if (netServer == nullptr)
-    {
-        qDebug() << "@@@@@ AppManager::onNetRequest: server == null";
-        return;
-    }
-    RequestParser parser;
-    parser.parse(requestType, p.second);
-    switch(requestType)
-    {
-    case NetRequestType_DeleteData:
-        emit deleteDBData(requestId, parser.getTableName(), parser.getCodeList());
-        break;
-    case NetRequestType_GetData:
-        emit uploadDBData(requestId, parser.getTableName(), parser.getCodeList());
-        break;
-    case NetRequestType_SetData:
-        emit downloadDBData(requestId, parser.getText(), parser.getFileName(), parser.getFileData());
-        break;
-    default:
-        qDebug() << QString("@@@@@ AppManager::onNetRequest: ERROR unknown requst type");
-        break;
-    }
-}
-
 void AppManager::onPiecesInputClosed(const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onPiecesInputClosed " << value;
@@ -452,7 +410,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     {
         QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_WITH_QML_PATH;
         emit showProductImage(imagePath);
-        showMessage("Image file path", imagePath);
+        //showMessage("Image file path", imagePath);
         break;
     }
 

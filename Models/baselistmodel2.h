@@ -1,10 +1,8 @@
 #ifndef BASELISTMODEL2_H
 #define BASELISTMODEL2_H
 
-#include <QPair>
 #include <QAbstractListModel>
-
-#define StringPair QPair<QString, QString>
+#include "constants.h"
 
 class AppManager;
 

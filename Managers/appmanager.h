@@ -138,8 +138,6 @@ private:
 
 signals:
     void authorizationSucceded();
-    void deleteDBData(const quint64, const QByteArray&, const QByteArray&);
-    void downloadDBData(const quint64, const QByteArray&, const QByteArray&, const QByteArray&);
     void enableManualPrint(const bool);
     void hideToast();
     void log(const int, const int, const QString&);
@@ -169,17 +167,14 @@ signals:
     void start();
     void transaction(const DBRecord&);
     void updateDBRecord(const DataBase::Selector, const DBRecord&);
-    void uploadDBData(const quint64, const QByteArray&, const QByteArray&);
 
 public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
-    void onUpdateDBFinished(const int);
+    void onUpdateDBFinished(const QString&);
     void onEquipmentParamChanged(const int, const int);
-    void onLoadResult(const quint64, const QString&);
     void onPrinted(const DBRecord&);
     void onTimer();
-    void onNetRequest(const int, const NetReplyPair&);
 };
 
 #endif // APPMANAGER_H

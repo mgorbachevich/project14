@@ -6,7 +6,8 @@
 class DBTableColumn
 {
 public:
-    DBTableColumn(const QString& title, const QString& name, const QString& type) : title(title), name(name), type(type) {}
+    DBTableColumn(const QString& title, const QString& name, const QString& type) :
+        title(title), name(name), type(type) {}
 
     QString title;
     QString name;

@@ -34,6 +34,12 @@ bool DBTable::isEqual(const DBRecord& r1, const DBRecord& r2)
     return false;
 }
 
+int DBTable::columnIndex(const QString& columnName)
+{
+    for(int i = 0; i < columns.size(); i++) if(columns[i].name == columnName) return i;
+    return -1;
+}
+
 const DBRecordList DBTable::checkList(const DBRecordList &records)
 {
     qDebug() << "@@@@@ DBTable::checkList: table =" << name;
@@ -72,6 +78,21 @@ QString DBTable::toJsonString(DBTable *table, const DBRecordList &records)
         }
     }
     return "[" + json + "]";
+}
+
+QString DBTable::columnTitle(const int index) const
+{
+    return (index < columns.count() && index >= 0) ? columns[index].title : "";
+}
+
+QString DBTable::columnName(const int index) const
+{
+    return (index < columns.count() && index >= 0) ? columns[index].name : "";
+}
+
+QString DBTable::columnType(const int index) const
+{
+    return (index < columns.count() && index >= 0) ? columns[index].type : "";
 }
 
 

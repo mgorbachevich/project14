@@ -12,6 +12,8 @@
 #include "tools.h"
 #include "constants.h"
 #include "jsonparser.h"
+#include "requestparser.h"
+
 
 DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
@@ -56,13 +58,12 @@ void DataBase::onStart()
     if (opened && ok)
     {
 #ifdef NET_SERVER_DEMO
-        JSONParser parser;
-        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_pictures.txt"));
-        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_settings.txt"));
-        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_products.txt"));
-        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_users.txt"));
-        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_showcase.txt"));
-        parser.parseAllTables(this, Tools::readTextFile(":/Text/json_messages.txt"));
+        JSONParser::parseAndSaveAllTables(this, Tools::readTextFile(":/Text/json_pictures.txt"));
+        JSONParser::parseAndSaveAllTables(this, Tools::readTextFile(":/Text/json_settings.txt"));
+        JSONParser::parseAndSaveAllTables(this, Tools::readTextFile(":/Text/json_products.txt"));
+        JSONParser::parseAndSaveAllTables(this, Tools::readTextFile(":/Text/json_users.txt"));
+        JSONParser::parseAndSaveAllTables(this, Tools::readTextFile(":/Text/json_showcase.txt"));
+        JSONParser::parseAndSaveAllTables(this, Tools::readTextFile(":/Text/json_messages.txt"));
 #endif
         emit started();
     }
@@ -483,11 +484,11 @@ void DataBase::onLog(const int type, const int source, const QString &comment)
     saveLog(type, source, comment);
 }
 
-void DataBase::onDeleteDBData(const quint64 requestId, const QByteArray& tableName, const QByteArray& codeList)
+QString DataBase::deleteRecords(const QString& tableName, const QString& codeList)
 {
     // Удаление из таблицы по списку кодов
 
-    qDebug() << "@@@@@ DataBase::onDeleteDBData" << requestId << tableName << codeList;
+    qDebug() << "@@@@@ DataBase::deleteRecords" << tableName << codeList;
     saveLog(LogType_Error, LogSource_DB, QString(" Удаление. Таблица: %1").arg(tableName));
 
     int errorCount = 0;
@@ -496,7 +497,7 @@ void DataBase::onDeleteDBData(const quint64 requestId, const QByteArray& tableNa
     int logging = settings.getItemIntValue(SettingDBTable::SettingCode_Logging);
     bool detailedLog = logging >= LogType_Info;
     DBTable* t = getTableByName(tableName);
-    QStringList codes = QString(codeList).split(','); // Коды товаров через запятую
+    QStringList codes = codeList.split(','); // Коды товаров через запятую
 
     if(t == nullptr)
     {
@@ -542,31 +543,28 @@ void DataBase::onDeleteDBData(const quint64 requestId, const QByteArray& tableNa
     QString s = QString("Удаление завершено. Таблица: %1. Ошибки: %2. Описание: %3").
             arg(tableName, QString::number(errorCount), description);
     saveLog(LogType_Error, LogSource_DB, s);
-
     DBRecordList records;
-    QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
-            arg(QString::number(errorCode), description, tableName, DBTable::toJsonString(t, records));
-    qDebug() << "@@@@@ DataBase::onDeleteDBData: result" << requestId << resultJson;
-    emit loadResult(requestId, resultJson);
-    emit updateDBFinished(0);
+    QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
+    qDebug() << "@@@@@ DataBase::deleteRecords: result" << resultJson;
+    emit updateDBFinished("Delete Records");
+    return resultJson;
 }
 
-void DataBase::onUploadDBData(const quint64 requestId, const QByteArray& tableName, const QByteArray& codeList)
+QString DataBase::uploadRecords(const QString& tableName, const QString& codeList)
 {
     // Выгрузка из таблицы по списку кодов
 
-    qDebug() << "@@@@@ DataBase::onUploadDBData" << requestId << tableName << codeList;
+    qDebug() << "@@@@@ DataBase::uploadRecords" << tableName << codeList;
     saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1").arg(tableName));
 
     int recordCount = 0;
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = settings.getItemIntValue(SettingDBTable::SettingCode_Logging);
-    bool detailedLog = logging >= LogType_Info;
+    bool detailedLog = settings.getItemIntValue(SettingDBTable::SettingCode_Logging) >= LogType_Info;
     DBRecordList records;
     DBTable* t = getTableByName(tableName);
-    QStringList codes = QString(codeList).split(','); // Коды товаров через запятую
+    QStringList codes = codeList.split(','); // Коды товаров через запятую
 
     if(t == nullptr)
     {
@@ -621,59 +619,89 @@ void DataBase::onUploadDBData(const quint64 requestId, const QByteArray& tableNa
     QString s = QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
             arg(tableName, QString::number(recordCount), QString::number(errorCount), description);
     saveLog(LogType_Error, LogSource_DB, s);
-
-    QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
-            arg(QString::number(errorCode), description, tableName, DBTable::toJsonString(t, records));
-    qDebug() << "@@@@@ DataBase::onUploadDBData: result" << requestId << resultJson;
-    emit loadResult(requestId, resultJson);
+    QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
+    qDebug() << "@@@@@ DataBase::uploadRecords: result" << resultJson;
+    return resultJson;
 }
-
-void DataBase::onDownloadDBData(const quint64 requestId, const QByteArray& json, const QByteArray& fileName, const QByteArray& fileData)
+/*
+QString DataBase::downloadRecords(const QString& json, const QString& fileName, const QByteArray& fileData)
 {
     // Загрузка в БД
 
-    qDebug() << "@@@@@ DataBase::onDownloadDBData requestId = " << requestId;
-    qDebug() << "@@@@@ DataBase::onDownloadDBData json length = " << json.length();
-    qDebug() << "@@@@@ DataBase::onDownloadDBData fileName = " << fileName;
-    qDebug() << "@@@@@ DataBase::onDownloadDBData fileData length = " << fileData.length();
+    qDebug() << "@@@@@ DataBase::downloadRecords json length = " << json.length();
+    qDebug() << "@@@@@ DataBase::downloadRecords fileName = " << fileName;
+    qDebug() << "@@@@@ DataBase::downloadRecords fileData length = " << fileData.length();
 
-    //bool singlePartRequest = !json.isEmpty() && fileName.isEmpty() && fileData.isEmpty();
     //bool multiPartRequest = !fileName.isEmpty() && !fileData.isEmpty();
-    bool singlePartRequest = false;
+    bool singlePartRequest = fileName.isEmpty() && fileData.isEmpty();
     bool multiPartRequest = true;
     JSONParser parser;
-    int n = 0;
     int result = 0;
     QString description;
 
     if(singlePartRequest)
     {
-        qDebug() << "@@@@@ DataBase::onDownloadDBData SinglePart";
-        n += parser.parseAllTables(this, json, &result, &description);
+        qDebug() << "@@@@@ DataBase::downloadRecords SinglePart";
+        parser.parseAndSaveAllTables(this, json, &result, &description);
     }
     if(multiPartRequest)
     {
-        qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart";
-        if(!json.isEmpty())
-            n += parser.parseAllTables(this, json, &result, &description);
+        qDebug() << "@@@@@ DataBase::downloadRecords MultiPart";
+        if(!json.isEmpty()) parser.parseAndSaveAllTables(this, json, &result, &description);
         if(!fileName.isEmpty() && !fileData.isEmpty())
         {
             QString filePath = Tools::appFilePath(DATA_STORAGE_SUBDIR, fileName);
-            qDebug() << "@@@@@ DataBase::onDownloadDBData filePath = " << filePath;
+            qDebug() << "@@@@@ DataBase::downloadRecords filePath = " << filePath;
             if(Tools::writeBinaryFile(filePath, fileData)) n++;
             else
             {
-                qDebug() << "@@@@@ DataBase::onDownloadDBData MultiPart Write File ERROR " << fileName;
+                qDebug() << "@@@@@ DataBase::downloadRecords MultiPart Write File ERROR " << fileName;
                 if(result == 0) result = -1;
             }
         }
     }
-    QString resultJson = QString("{\"result\":\"%1\",\"description\":\"%2\"}").
-            arg(QString::number(result), description);
-    qDebug() << "@@@@@ DataBase::onDownloadDBData: result" << requestId << resultJson;
-    emit loadResult(requestId, resultJson);
-    emit updateDBFinished(n);
+    QString resultJson = RequestParser::makeResultJson(result, description, "", "");
+    qDebug() << "@@@@@ DataBase::downloadRecords: result" << resultJson;
+    emit updateDBFinished("Download Records");
+    return resultJson;
+}
+*/
+
+void DataBase::downloadTableRecords(DBTable* table, DBRecordList& records, int& successCount, int& errorCount)
+{
+    qDebug() << "@@@@@ DataBase::downloadTableRecords";
+    bool detailedLog = settings.getItemIntValue(SettingDBTable::SettingCode_Logging) >= LogType_Info;
+    for(int i = 0; i < records.count(); i++)
+    {
+        DBRecord& r = records[i];
+        QString code = r.count() > 0 ? r.at(0).toString() : "";
+        QString s;
+        if(code.isEmpty() || !insertRecord(table, r))
+        {
+            errorCount++;
+            s = QString("Ошибка загрузки записи. Таблица: %1. Код: %2. Код ошибки: %3. Описание: Некорректная запись").
+                    arg(table->name, code, QString::number(LogError_WrongRecord));
+            if (detailedLog) saveLog(LogType_Error, LogSource_DB, s);
+        }
+        else
+        {
+            successCount++;
+            s = QString("Запись загружена. Таблица: %1. Код: %2").arg(table->name, code);
+            if (detailedLog) saveLog(LogType_Warning, LogSource_DB, s);
+        }
+        qDebug() << "@@@@@ DataBase::downloadTableRecords " << s;
+    }
 }
 
-
+void DataBase::downloadRecords(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount)
+{
+    qDebug() << "@@@@@ DataBase::downloadRecords";
+    QList tables = records.keys();
+    for (DBTable* table : tables)
+    {
+        DBRecordList tableRecords = records.value(table);
+        downloadTableRecords(table, tableRecords, successCount, errorCount);
+    }
+    emit updateDBFinished("Download Records");
+}
 

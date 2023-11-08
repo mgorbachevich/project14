@@ -1,9 +1,10 @@
 #include <QDebug>
 #include <QtConcurrent/QtConcurrent>
 #include "netserver.h"
-#include "tools.h"
+#include "requestparser.h"
+#include "database.h"
 
-NetServer::NetServer(QObject *parent): QObject{parent}
+NetServer::NetServer(QObject *parent, DataBase* dataBase): QObject{parent}, db(dataBase)
 {
     qDebug() << "@@@@@ NetServer::NetServer";
 }
@@ -32,65 +33,30 @@ void NetServer::start(const int port)
         server->route("/deleteData", [this] (const QHttpServerRequest &request)
         {
             QByteArray ba = request.query().toString().toUtf8();
-            qDebug() << QString("@@@@@ NetServer::start: query length = %1\n").arg(ba.length());
-            const quint64 requestId = Tools::currentDateTimeToUInt();
-            emit netRequest(NetRequestType_DeleteData, NetReplyPair(requestId, ba));
-            return waitAndMakeResponse(requestId);
+            qDebug() << QString("@@@@@ NetServer::start: deleteData length = %1\n").arg(ba.length());
+            QString response = RequestParser::parseGetDataRequest(NetRequest_Delete, db, ba);
+            qDebug() << QString("@@@@@ NetServer::start: deleteData response = %1\n").arg(response);
+            return QHttpServerResponse(response);
         });
         server->route("/getData", [this] (const QHttpServerRequest &request)
         {
             QByteArray ba = request.query().toString().toUtf8();
-            qDebug() << QString("@@@@@ NetServer::start: query length = %1\n").arg(ba.length());
-            const quint64 requestId = Tools::currentDateTimeToUInt();
-            emit netRequest(NetRequestType_GetData, NetReplyPair(requestId, ba));
-            return waitAndMakeResponse(requestId);
+            qDebug() << QString("@@@@@ NetServer::start: getData length = %1\n").arg(ba.length());
+            QString response = RequestParser::parseGetDataRequest(NetRequest_Get, db, ba);
+            qDebug() << QString("@@@@@ NetServer::start: getData response = %1\n").arg(response);
+            return QHttpServerResponse(response);
         });
         server->route("/setData", [this] (const QHttpServerRequest &request)
         {
             QByteArray ba = request.body();
-            qDebug() << QString("@@@@@ NetServer::start: body length = %1\n").arg(ba.length());
-            const quint64 requestId = Tools::currentDateTimeToUInt();
-            emit netRequest(NetRequestType_SetData, NetReplyPair(requestId, ba));
-            return waitAndMakeResponse(requestId);
+            qDebug() << QString("@@@@@ NetServer::start: setData length = %1\n").arg(ba.length());
+            QString response = RequestParser::parseSetDataRequest(db, ba);
+            qDebug() << QString("@@@@@ NetServer::start: setData response = %1\n").arg(response);
+            return QHttpServerResponse(response);
         });
     }
 }
 
-void NetServer::sendReplyToClient(const NetReplyPair& p)
-{
-    replies.append(p);
-}
-
-QHttpServerResponse NetServer::waitAndMakeResponse(quint64 requestId)
-{
-    quint64 now = Tools::currentDateTimeToUInt();
-    bool done = false;
-    QString response;
-    while (!done)  // Ожидание ответа
-    {
-        for (int i = 0; !done && i < replies.count(); i++)
-        {
-            if(replies[i].first == requestId)
-            {
-                response = replies[i].second;
-                replies.removeAt(i);
-                done = true;
-            }
-        }
-        if (!done)
-        {
-            if(Tools::currentDateTimeToUInt() < now + SERVER_WAIT_FOR_REPLY_MSEC)
-                QThread::msleep(SERVER_WAIT_FOR_REPLY_SLEEP_MSEC);
-            else
-            {
-                qDebug() << QString("@@@@@ NetServer::waitAndMakeResponse TIMEOUT");
-                done = true; // Время ожидания истекло! todo
-            }
-        }
-    }
-    qDebug() << QString("@@@@@ NetServer::waitAndMakeResponse: %1 \n%2\n").arg(QString::number(requestId), response);
-    return QHttpServerResponse(response);
-}
 
 
 

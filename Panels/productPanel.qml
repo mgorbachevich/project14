@@ -122,6 +122,7 @@ Popup
             Layout.row: 1
             Layout.rowSpan: 2
             Layout.alignment: Qt.AlignCenter
+            fillMode: Image.PreserveAspectFit
             source: "../Images/image_dummy"
         }
 

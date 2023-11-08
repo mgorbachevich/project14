@@ -85,6 +85,7 @@ Rectangle
         {
             width: showcasePanel.imageSize
             height: showcasePanel.imageSize
+            fillMode: Image.PreserveAspectFit
             source: model.value  // Roles::ValueRole
             MouseArea
             {
