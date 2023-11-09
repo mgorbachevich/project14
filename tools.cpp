@@ -5,29 +5,12 @@
 #include <QProcess>
 #include <QNetworkInterface>
 #include "tools.h"
-#include "constants.h"
-
-QDir Tools::getDataStorageDir()
-{
-    QDir dir;
-    QString s = QStandardPaths::writableLocation(QStandardPaths::MoviesLocation) + "/" + DATA_STORAGE_SUBDIR;
-    if(!dir.exists(s)) dir.mkdir(s);
-    return dir;
-}
-
-bool Tools::fileExistsInAppPath(const QString &fileAppPath)
-{
-    bool ok = QFileInfo::exists(fileAppPath) && QFileInfo(fileAppPath).isFile();
-    qDebug() << "@@@@@ Tools::fileExistsInAppPath " << fileAppPath << ok;
-    return ok;
-}
 
 QString Tools::readTextFile(const QString &fileName)
 {
     qDebug() << "@@@@@ Tools::readTextFile " << fileName;
     QFile f(fileName);
-    if (!f.open(QFile::ReadOnly | QFile::Text))
-        return "";
+    if (!f.open(QFile::ReadOnly | QFile::Text)) return "";
     QTextStream in(&f);
     return in.readAll();
 }
@@ -47,27 +30,49 @@ int Tools::stringToInt(const QString &s, const int defaultValue)
 {
     bool ok;
     int v = s.toInt(&ok);
-    if (!ok)
-        return defaultValue;
-    return v;
+    return ok ? v : defaultValue;
 }
 
 double Tools::stringToDouble(const QString &s, const double defaultValue)
 {
     bool ok;
     double v = s.toDouble(&ok);
-    if (!ok)
-        return defaultValue;
-    return v;
+    return ok ? v : defaultValue;
 }
 
 double Tools::priceToDouble(const QString &dbPrice, const int pointPosition)
 {
     double v = dbPrice.toDouble();
-    for (int i = 0; i < pointPosition; i++)
-        v /= 10;
+    for (int i = 0; i < pointPosition; i++) v /= 10;
     return v;
 }
+
+/*
+void Tools::memoryCheck()
+{
+#ifdef Q_OS_MAC
+    QProcess p;
+    p.start("sysctl", QStringList() << "kern.version" << "hw.physmem");
+    p.waitForFinished();
+    QString system_info = p.readAllStandardOutput();
+    qDebug() << "@@@@@ Tools::memoryCheck " << system_info;
+    p.close();
+#endif
+}
+
+QString Tools::dataFilePath(const QString& fileName)
+{
+    return getDataStorageDir().filePath(fileName);
+}
+
+QDir Tools::getDataStorageDir()
+{
+    QDir dir;
+    QString s = QStandardPaths::writableLocation(QStandardPaths::MoviesLocation) + "/" + DATA_STORAGE_SUBDIR;
+    if(!dir.exists(s)) dir.mkdir(s);
+    return dir;
+}
+*/
 
 NetParams Tools::getNetParams()
 {
@@ -95,20 +100,6 @@ NetParams Tools::getNetParams()
     qDebug() << "@@@@@ Tools::getNetParams " << np.localHostName << np.localMacAddress << np.localHostIP << np.localNetMask;
     return np;
 }
-
-/*
-void Tools::memoryCheck()
-{
-#ifdef Q_OS_MAC
-    QProcess p;
-    p.start("sysctl", QStringList() << "kern.version" << "hw.physmem");
-    p.waitForFinished();
-    QString system_info = p.readAllStandardOutput();
-    qDebug() << "@@@@@ Tools::memoryCheck " << system_info;
-    p.close();
-#endif
-}
-*/
 
 bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
 {
@@ -142,6 +133,13 @@ QByteArray Tools::readBinaryFile(const QString& filePath)
     return a;
 }
 
+bool Tools::fileExistsInAppPath(const QString &fileAppPath)
+{
+    bool ok = QFileInfo::exists(fileAppPath) && QFileInfo(fileAppPath).isFile();
+    qDebug() << "@@@@@ Tools::fileExistsInAppPath " << fileAppPath << ok;
+    return ok;
+}
+
 QString Tools::qmlFilePath(const QString& subDir, const QString& filePath)
 {
     if(filePath.isEmpty()) return "";
@@ -151,12 +149,12 @@ QString Tools::qmlFilePath(const QString& subDir, const QString& filePath)
     return path;
 }
 
-QString Tools::appFilePath(const QString& subDir, const QString& filePath)
+QString Tools::appFilePath(const QString& subDir, const QString& localFilePath)
 {
     qDebug() << "@@@@@ Tools::appFilePath";
-    if(filePath.isEmpty()) return "";
+    if(localFilePath.isEmpty()) return "";
 
-    const QStringList dirs = QString(subDir + "/" + filePath).split("/");
+    const QStringList dirs = QString(subDir + "/" + localFilePath).split("/");
     QDir dir;
     QString path = app->applicationDirPath();
     for(int i = 0; i < dirs.size() - 1; i++)
@@ -168,7 +166,7 @@ QString Tools::appFilePath(const QString& subDir, const QString& filePath)
         }
     }
     path += "/" + dirs.last(); // file name
-    qDebug() << "@@@@@ Tools::appFilePath filePath" << filePath;
+    qDebug() << "@@@@@ Tools::appFilePath local file path" << localFilePath;
     qDebug() << "@@@@@ Tools::appFilePath path" << path;
     return path;
 }

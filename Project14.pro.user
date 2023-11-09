@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 9.0.0, 2023-11-08T22:39:45. -->
+<!-- Written by QtCreator 9.0.0, 2023-11-09T21:54:56. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -8,7 +8,7 @@
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
-  <value type="qlonglong">0</value>
+  <value type="qlonglong">1</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.EditorSettings</variable>
@@ -477,6 +477,7 @@
     <valuelist type="QVariantList" key="CustomOutputParsers"/>
     <value type="int" key="PE.EnvironmentAspect.Base">0</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Project14</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.AndroidRunConfiguration:/Users/mikhailgorbachevich/Desktop/Shtrih/QtProjects/Project14/Project14.pro</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/Users/mikhailgorbachevich/Desktop/Shtrih/QtProjects/Project14/Project14.pro</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>

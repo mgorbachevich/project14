@@ -18,7 +18,8 @@
 DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
 {
-    filePath = Tools::dataFilePath(fileName);
+    //filePath = Tools::dataFilePath(fileName);
+    filePath = Tools::appFilePath("", fileName);
     qDebug() << "@@@@@ DataBase::DataBase " << filePath;
     tables.append(new ShowcaseDBTable(DBTABLENAME_SHOWCASE, this));
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));

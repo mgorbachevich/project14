@@ -15,7 +15,7 @@
 #define WAIT_SECRET_MSEC 5000
 #define EOL "\r\n"
 
-#define CLEAR_DB_ON_START true
+#define CLEAR_DB_ON_START false
 #define CHECK_AUTHORIZATION true
 #define WM_DEMO false
 #define PRINTER_DEMO true
