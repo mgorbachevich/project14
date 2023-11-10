@@ -11,15 +11,13 @@
 #include "logdbtable.h"
 #include "tools.h"
 #include "constants.h"
-#include "jsonparser.h"
 #include "requestparser.h"
 
 
 DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
 {
-    //filePath = Tools::dataFilePath(fileName);
-    filePath = Tools::appFilePath("", fileName);
+    filePath = Tools::dataBaseFilePath(fileName);
     qDebug() << "@@@@@ DataBase::DataBase " << filePath;
     tables.append(new ShowcaseDBTable(DBTABLENAME_SHOWCASE, this));
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
@@ -53,7 +51,7 @@ void DataBase::onStart()
     if (!opened || !ok)
     {
         qDebug() << "@@@@@ DataBase::onStart ERROR";
-        //emit showMessageBox("ВНИМАНИЕ!", "Ошибка при открытии базы данных", true);
+        emit showMessage("ВНИМАНИЕ!", "Ошибка при открытии базы данных");
     }
 
     if (opened && ok)

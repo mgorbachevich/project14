@@ -247,7 +247,7 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
                         // Write data file:
                         QByteArray fileData = request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d * 2);
                         qDebug() << "@@@@@ RequestParser::parseSetDataRequest. File data length =" << fileData.length();
-                        QString fullFilePath = Tools::appFilePath(DATA_STORAGE_SUBDIR, localFilePath);
+                        QString fullFilePath = Tools::downloadFilePath(localFilePath);
                         qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Full file path = " << fullFilePath;
                         if(Tools::writeBinaryFile(fullFilePath, fileData))
                         {

@@ -97,7 +97,6 @@ private:
     void showUsers(const DBRecordList&);
     void refreshAll();
     void showToast(const QString&, const QString&, const int delaySec = 5);
-    void showMessage(const QString&, const QString&);
     void resetProduct();
     void runEquipment(const bool);
     void print();
@@ -175,6 +174,7 @@ public slots:
     void onEquipmentParamChanged(const int, const int);
     void onPrinted(const DBRecord&);
     void onTimer();
+    void onShowMessage(const QString &title, const QString &text) { emit showMessageBox(title, text, true); }
 };
 
 #endif // APPMANAGER_H

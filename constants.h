@@ -3,10 +3,10 @@
 
 //#define NET_SERVER_DEMO
 
-#define DATA_STORAGE_SUBDIR "Downloads"
+#define DOWNLOAD_SUBDIR "Downloads"
 #define DB_FILENAME "ShtrihScale.db"
 #define DB_HOSTNAME "ShtrihScaleDataBase"
-#define DUMMY_IMAGE_FILE_WITH_QML_PATH "../Images/image_dummy.png"
+#define DUMMY_IMAGE_FILE_QML_PATH "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define DEFAULT_SETTING_GROUPS_FILE ":/Text/json_default_setting_groups.txt"
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000

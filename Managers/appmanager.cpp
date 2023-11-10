@@ -60,6 +60,7 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     connect(this, &AppManager::selectFromDBByList, db, &DataBase::onSelectByList);
     connect(this, &AppManager::updateDBRecord, db, &DataBase::onUpdateRecord);
     connect(db, &DataBase::started, this, &AppManager::onDBStarted);
+    connect(db, &DataBase::showMessage, this, &AppManager::onShowMessage);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
     connect(db, &DataBase::updateDBFinished, this, &AppManager::onUpdateDBFinished);
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
@@ -296,7 +297,7 @@ void AppManager::onPiecesInputClosed(const QString &value)
     if(v < 1)
     {
         v = 1;
-        showMessage("ВНИМАНИЕ!", "Количество не должно быть меньше 1");
+        emit showMessageBox("ВНИМАНИЕ!", "Количество не должно быть меньше 1", true);
     }
     printStatus.pieces = v;
     updateStatus();
@@ -326,7 +327,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     qDebug() << "@@@@@ AppManager::onDBRequestResult " << selector;
     if (!ok)
     {
-        showMessage("ВНИМАНИЕ!", "Ошибка базы данных!");
+        emit showMessageBox("ВНИМАНИЕ!", "Ошибка базы данных!", true);
         return;
     }
 
@@ -354,7 +355,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     case DataBase::GetMessageByResourceCode:
     // Отображение сообщения (описания) выбранного товара:
         if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
-            showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
+            emit showMessageBox("Описание товара", records[0][ResourceDBTable::Value].toString(), true);
         break;
 
     case DataBase::GetUserNames:
@@ -408,7 +409,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     case DataBase::GetImageByResourceCode:
     // Отображение картинки выбранного товара:
     {
-        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_WITH_QML_PATH;
+        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_QML_PATH;
         emit showProductImage(imagePath);
         //showMessage("Image file path", imagePath);
         break;
@@ -420,12 +421,13 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
 QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
 {
-    QString path = DUMMY_IMAGE_FILE_WITH_QML_PATH;
-    if (r.count() > ResourceDBTable::Value)
+    QString path = DUMMY_IMAGE_FILE_QML_PATH;
+    const int i = ResourceDBTable::Value;
+    if (r.count() > i)
     {
-        QString fileName = r[ResourceDBTable::Value].toString();
-        if(Tools::fileExistsInAppPath(Tools::appFilePath(DATA_STORAGE_SUBDIR, fileName)))
-            path = Tools::qmlFilePath(DATA_STORAGE_SUBDIR, fileName);
+        QString localFilePath = r[i].toString();
+        if(Tools::isFileExistInDownloadPath(localFilePath))
+            path = Tools::qmlDownloadFilePath(localFilePath);
     }
     return path;
 }
@@ -543,7 +545,9 @@ void AppManager::startAuthorization()
     qDebug() << "@@@@@ AppManager::startAuthorization";
     started = false;
     runEquipment(false);
-    emit showAuthorizationPanel(appInfo.all());
+    QString info = appInfo.all();
+    qDebug() << "@@@@@ AppManager::startAuthorization " << info;
+    emit showAuthorizationPanel(info);
     authorizationOpened = true;
     emit log(LogType_Warning, LogSource_User, "Авторизация");
     emit selectFromDB(DataBase::GetUserNames, "");
@@ -577,7 +581,7 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
             {
                 error = "Неверные имя пользователя или пароль";
                 qDebug() << "@@@@@ AppManager::checkAuthorization ERROR";
-                showMessage(title, error);
+                emit showMessageBox(title, error, true);
                 emit log(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
                 return;
             }
@@ -625,11 +629,6 @@ void AppManager::showToast(const QString &title, const QString &text, const int 
 {
     emit showMessageBox(title, text, false);
     QTimer::singleShot(delaySec * 1000, this, &AppManager::hideToast);
-}
-
-void AppManager::showMessage(const QString &title, const QString &text)
-{
-    emit showMessageBox(title, text, true);
 }
 
 void AppManager::resetProduct()
@@ -687,11 +686,11 @@ void AppManager::runEquipment(const bool start)
         }
         int e2 = printManager->start(url2);
 
-        if(e1 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").arg(
-                                    QString::number(e1), weightManager->getErrorDescription(e1)));
-        if(e2 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").arg(
-                                    QString::number(e2), printManager->getErrorDescription(e2)));
-        if(!demoMessage.isEmpty()) showMessage("ВНИМАНИЕ!", demoMessage);
+        if(e1 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
+                                        arg(QString::number(e1), weightManager->getErrorDescription(e1)), true);
+        if(e2 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
+                                        arg(QString::number(e2), printManager->getErrorDescription(e2)), true);
+        if(!demoMessage.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", demoMessage, true);
     }
     else
     {

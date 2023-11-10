@@ -85,6 +85,7 @@ signals:
     void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void started();
     void updateDBFinished(const QString&);
+    void showMessage(const QString&, const QString&);
 
 public slots:
     void onStart();

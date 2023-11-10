@@ -28,14 +28,15 @@ public:
     //static void memoryCheck();
     static bool writeBinaryFile(const QString&, const QByteArray& data);
     static QByteArray readBinaryFile(const QString&);
-
-    //static QString dataFilePath(const QString&);
-    //static QDir getDataStorageDir();
-    static bool fileExistsInAppPath(const QString&);
-    static QString appFilePath(const QString&, const QString&); // Read/Write
-    static QString qmlFilePath(const QString&, const QString&); // Read only
+    static bool isFileExistInDownloadPath(const QString&);
+    static QString qmlDownloadFilePath(const QString&); // Read only
+    static QString dataBaseFilePath(const QString&);
+    static QString downloadFilePath(const QString&);
 
 private:
+    static QString makeFullPath(const QString&, const QString&, const QString&);
+    static QString rootDir();
+
     static QApplication* app;
 };
 
