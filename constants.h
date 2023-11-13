@@ -18,7 +18,7 @@
 #define CLEAR_DB_ON_START false
 #define CHECK_AUTHORIZATION true
 #define WM_DEMO false
-#define PRINTER_DEMO true
+#define PRINTER_DEMO false
 #define WM_HTTP true
 #define PRINTER_HTTP true
 

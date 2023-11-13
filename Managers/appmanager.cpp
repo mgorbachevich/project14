@@ -427,7 +427,7 @@ QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
     {
         QString localFilePath = r[i].toString();
         if(Tools::isFileExistInDownloadPath(localFilePath))
-            path = Tools::qmlDownloadFilePath(localFilePath);
+            path = Tools::qmlFilePath(localFilePath);
     }
     return path;
 }

@@ -121,13 +121,13 @@ QByteArray Tools::readBinaryFile(const QString& path)
     return a;
 }
 
-QString Tools::makeFullPath(const QString& rootDir, const QString& subDir, const QString& localFilePath)
+QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
 {
     qDebug() << "@@@@@ Tools::makeFullPath";
-    if(localFilePath.isEmpty()) return "";
-    const QStringList dirs = QString(subDir + "/" + localFilePath).split("/");
+    if(localPath.isEmpty()) return "";
+    const QStringList dirs = QString(subDir + "/" + localPath).split("/");
     QDir dir;
-    QString path = rootDir;
+    QString path = rootDir();
     for(int i = 0; i < dirs.size() - 1; i++)
     {
         if(dirs.at(i).isEmpty()) continue;
@@ -135,14 +135,14 @@ QString Tools::makeFullPath(const QString& rootDir, const QString& subDir, const
         if(!dir.exists(path)) qDebug() << "@@@@@ Tools::makeFullPath mkdir " << dir.mkdir(path) << path;
     }
     path += "/" + dirs.last(); // file name
-    qDebug() << "@@@@@ Tools::makeFullPath local file path" << localFilePath;
-    qDebug() << "@@@@@ Tools::makeFullPath full path" << path;
+    qDebug() << "@@@@@ Tools::makeFullPath local path " << localPath;
+    qDebug() << "@@@@@ Tools::makeFullPath full path " << path;
     return path;
 }
 
-bool Tools::isFileExistInDownloadPath(const QString &localFilePath)
+bool Tools::isFileExistInDownloadPath(const QString &localPath)
 {
-    QString path = downloadFilePath(localFilePath);
+    QString path = downloadFilePath(localPath);
     bool ok = false;
     if (QFileInfo::exists(path) && QFileInfo(path).isFile())
     {
@@ -153,41 +153,37 @@ bool Tools::isFileExistInDownloadPath(const QString &localFilePath)
             ok = true;
         }
     }
-    qDebug() << "@@@@@ Tools::isFileExistInDownloadPath " << localFilePath << ok;
+    qDebug() << "@@@@@ Tools::isFileExistInDownloadPath " << localPath << ok;
     return ok;
 }
 
-QString Tools::qmlDownloadFilePath(const QString& localFilePath)
+QString Tools::qmlFilePath(const QString& localPath)
 {
-    QString path = QString("file:%1/%2").arg(DOWNLOAD_SUBDIR, localFilePath).replace(":/", ":").replace("//", "/");
-    qDebug() << "@@@@@ Tools::qmlDownloadFilePath " << path;
-    return localFilePath.isEmpty() ? "" : path;
+#ifdef Q_OS_ANDROID
+    QString path = QString("file:%1/%2").arg(DOWNLOAD_SUBDIR, localPath).replace(":/", ":").replace("//", "/");
+#else
+    QString path = QString("file:///%1").arg(downloadFilePath(localPath));
+#endif
+    //qDebug() << "@@@@@ Tools::qmlFilePath " << path;
+    return localPath.isEmpty() ? "" : path;
 }
 
-QString Tools::dataBaseFilePath(const QString& localFilePath)
+QString Tools::dataBaseFilePath(const QString& localPath)
 {
-    return makeFullPath(rootDir(), "", localFilePath);
+    return makeFullPath("", localPath);
 }
 
-QString Tools::downloadFilePath(const QString& localFilePath)
+QString Tools::downloadFilePath(const QString& localPath)
 {
-    return makeFullPath(rootDir(), DOWNLOAD_SUBDIR, localFilePath);
+    return makeFullPath(DOWNLOAD_SUBDIR, localPath);
 }
 
 QString Tools::rootDir()
 {
     // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
-    // return QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
-    // return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    // return app->applicationDirPath();
 #ifdef Q_OS_ANDROID
     return QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+#else
+    return app->applicationDirPath(); // Returns the directory that contains the application executable.
 #endif
-#ifdef Q_OS_WINDOWS
-    return app->applicationDirPath();
-#endif
-#ifdef Q_OS_MACOS
-    return app->applicationDirPath();
-#endif
-    return "";
 }

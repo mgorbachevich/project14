@@ -29,12 +29,12 @@ public:
     static bool writeBinaryFile(const QString&, const QByteArray& data);
     static QByteArray readBinaryFile(const QString&);
     static bool isFileExistInDownloadPath(const QString&);
-    static QString qmlDownloadFilePath(const QString&); // Read only
+    static QString qmlFilePath(const QString&); // Read only
     static QString dataBaseFilePath(const QString&);
     static QString downloadFilePath(const QString&);
 
 private:
-    static QString makeFullPath(const QString&, const QString&, const QString&);
+    static QString makeFullPath(const QString&, const QString&);
     static QString rootDir();
 
     static QApplication* app;

@@ -3,7 +3,6 @@
 #include <QDateTime>
 #include "weightmanager.h"
 #include "constants.h"
-#include "tools.h"
 
 WeightManager::WeightManager(QObject *parent, const bool demo): QObject(parent)
 {
