@@ -80,12 +80,8 @@ Rectangle
     {
         id: tablePanelLayout
         anchors.fill: parent
-        anchors.leftMargin: app.spacer()
-        anchors.rightMargin: app.spacer()
-        anchors.topMargin: app.spacer()
-        anchors.bottomMargin: app.spacer() * 2
-        columnSpacing: app.spacer()
-        rowSpacing: app.spacer()
+        columnSpacing: app.spacer() / 2
+        rowSpacing: 0
         columns: 3
         rows: 2
 
@@ -115,27 +111,14 @@ Rectangle
             text: "/"
         }
 
-        RoundIconButton
-        {
-            id: tablePanelOptionsButton
-            Layout.column: 2
-            Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            icon.source: "../Icons/settings_black_48"
-            onClicked:
-            {
-                app.onUserAction();
-                app.onTableOptionsClicked()
-            }
-        }
-
         Rectangle
         {
             Layout.column: 0
             Layout.row: 1
-            Layout.columnSpan: 3
+            Layout.columnSpan: tablePanelLayout.columns
             Layout.fillWidth: parent
             Layout.fillHeight: parent
+            Layout.rightMargin: app.spacer() / 2
             color: Material.background
 
             ListView
@@ -148,7 +131,7 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.spacer()
+                    width: app.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }

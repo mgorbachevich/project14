@@ -7,13 +7,14 @@ import RegisteredTypes
 
 RoundButton
 {
-    horizontalPadding: app.spacer() * 2
     height: app.buttonSize()
     radius: app.spacer()
-    leftInset: 0
-    topInset: 0
-    rightInset: 0
-    bottomInset: 0
+    leftInset: app.spacer() / 4
+    topInset: app.spacer() / 4
+    rightInset: app.spacer() / 4
+    bottomInset: app.spacer() / 4
+    horizontalPadding: app.spacer() * 2
+    verticalPadding: app.spacer() / 4
     Material.background: Material.color(Material.BlueGrey, Material.Shade200)
     Material.foreground: Material.color(Material.BlueGrey, Material.Shade900)
     font { pointSize: app.normalFontSize() }

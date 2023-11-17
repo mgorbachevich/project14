@@ -25,6 +25,7 @@
 #include "weightmanager.h"
 #include "printmanager.h"
 #include "netserver.h"
+#include "keyemitter.h"
 
 AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& screenSize): QObject(parent)
 {
@@ -45,6 +46,11 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     printManager = new PrintManager(this, db, settings, PRINTER_DEMO);
     QTimer *timer = new QTimer(this);
 
+    // Virtual Keyboard:
+    KeyEmitter* keyEmitter = new KeyEmitter(this);
+    context->setContextProperty("keyEmitter", keyEmitter);
+
+    // Versions:
     appInfo.appVersion = APP_VERSION;
     appInfo.dbVersion = db->version();
     appInfo.weightManagerVersion = weightManager->version();
@@ -222,11 +228,6 @@ void AppManager::onSearchFilterEdited(const QString& value)
     filteredSearch();
 }
 
-void AppManager::onSearchOptionsClicked()
-{
-    emit showSearchOptions();
-}
-
 void AppManager::onSearchFilterClicked(const int index)
 {
     // Изменилось поле поиска (код, штрих-код...)
@@ -242,11 +243,6 @@ void AppManager::onTableBackClicked()
 
     qDebug() << "@@@@@ AppManager::onTableBackClicked";
     if (tablePanelModel->groupUp()) updateTablePanel(false);
-}
-
-void AppManager::onTableOptionsClicked()
-{
-    emit showTableOptions();
 }
 
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)

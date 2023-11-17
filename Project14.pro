@@ -96,6 +96,7 @@ SOURCES += \
     Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.cpp \
     Equipment/Wm100_Slpa100u_2/wm100.cpp \
     Managers/appmanager.cpp \
+    Managers/keyemitter.cpp \
     Managers/settings.cpp \
     Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
@@ -196,6 +197,7 @@ HEADERS += \
     Equipment/Wm100_Slpa100u_2/Wm100ProtocolDemo.h \
     Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.h \
     Equipment/Wm100_Slpa100u_2/wm100.h \
+    Managers/keyemitter.h \
     Managers/printmanager.h \
     Managers/weightmanager.h \
     Managers/appmanager.h \
@@ -227,20 +229,22 @@ RESOURCES += \
     Panels/CardText.qml \
     Panels/CardTitleText.qml \
     Panels/confirmationPanel.qml \
+    Panels/EmptyButton.qml \
     Panels/inputPiecesPanel.qml \
     Panels/inputSettingPanel.qml \
+    Panels/KeyboardIconButton.qml \
+    Panels/KeyboardTextButton.qml \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
     Panels/RoundIconButton.qml \
     Panels/RoundTextButton.qml \
     Panels/searchPanel.qml \
-    Panels/searchOptionsPanel.qml \
     Panels/settingsPanel.qml \
     Panels/settingGroupsPanel.qml \
     Panels/showcasePanel.qml \
     Panels/tablePanel.qml \
-    Panels/tableOptionsPanel.qml \
     Panels/viewLogPanel.qml \
+    Panels/VirtualKeyboard.qml \
     Panels/weightPanel.qml \
     Fonts/LeagueGothic-CondensedRegular.otf \
     Fonts/LeagueGothic-Regular.otf \
@@ -264,12 +268,15 @@ RESOURCES += \
     Icons/arrow_up_black_48.png \
     Icons/auto_flag_green_48.png \
     Icons/auto_flag_orange_48.png \
+    Icons/backspace_black_48.png \
     Icons/close_black_48.png \
     Icons/error_flag_48.png \
     Icons/info_outline_black_48.png \
+    Icons/keyboard_black_48.png \
     Icons/lock_black_48.png \
     Icons/log_black_48.png \
     Icons/menu_black_48.png \
+    Icons/ok_outline_black_48.png \
     Icons/print_black_48.png \
     Icons/red_48.png \
     Icons/settings_black_48.png \
@@ -313,8 +320,6 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
-
-DISTFILES += \
 
 
 

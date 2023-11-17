@@ -28,12 +28,13 @@ Popup
 
         GridLayout
         {
+            id: inputPiecesPanelLayout
             anchors.fill: parent
             anchors.margins: app.spacer()
             columnSpacing: app.spacer()
             rowSpacing: app.spacer()
-            columns: 3
-            rows: 3
+            //columns: 3
+            //rows: 4
 
             Rectangle
             {
@@ -63,6 +64,8 @@ Popup
             {
                 Layout.column: 2
                 Layout.row: 0
+                Layout.topMargin: app.spacer()
+                Layout.rightMargin: app.spacer()
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close_black_48"
                 onClicked:
@@ -119,7 +122,7 @@ Popup
                                 app.beep();
                                 break
                         }
-                        if (parseInt(text) < 1 || text == "") text = 1
+                        if (parseInt(text) < 0) text = ""
                     }
                 }
             }
@@ -130,6 +133,7 @@ Popup
                 Layout.row: 2
                 Layout.preferredWidth: app.buttonSize() * 2 + spacing
                 Layout.preferredHeight: app.buttonSize()
+                Layout.bottomMargin: app.spacer()
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                 spacing: app.spacer() * 4
 
@@ -142,7 +146,7 @@ Popup
                     {
                         app.onUserAction();
                         inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) - 1
-                        if (parseInt(inputPiecesPanelText.text) < 1) inputPiecesPanelText.text = 1
+                        if (parseInt(inputPiecesPanelText.text) < 0) inputPiecesPanelText.text = 0
                         inputPiecesPanelText.focus = true
                     }
                 }
@@ -160,6 +164,19 @@ Popup
                     }
                 }
             }
+
+            /*
+            VirtualKeyboard
+            {
+                compact: true
+                visible: true
+                Layout.column: 0
+                Layout.row: 3
+                Layout.columnSpan: inputPiecesPanelLayout.columns
+                Layout.alignment: Qt.AlignBottom
+                width: app.screenWidth()
+            }
+            */
         }
     }
 }

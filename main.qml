@@ -17,9 +17,9 @@ ApplicationWindow
     property int pageIndicatorHeight: 16
     property int adminMenuWidth: 0
     property int popupWidth: mainWindow.width * 3 / 4
-    property int popupHeight: mainWindow.height * 2 / 3
+    property int popupHeight: mainWindow.height * 3 / 4
     property int popupX: (mainWindow.width - popupWidth) / 2
-    property int popupY: mainWindow.height / 4 + app.spacer()
+    property int popupY: (mainWindow.height - popupHeight) / 2
 
     Connections // Slot for signal AppManager::start:
     {
@@ -61,7 +61,7 @@ ApplicationWindow
         function onShowAdminMenu(show)
         {
             console.debug("@@@@@ mainWindow.onShowAdminMenu");
-            adminMenuWidth = show? app.buttonSize() + app.spacer() * 2 : 0
+            adminMenuWidth = show ? app.buttonSize() + app.spacer() : 0
             adminMenuPanel.visible = show
         }
     }
@@ -74,7 +74,7 @@ ApplicationWindow
             console.debug("@@@@@ mainWindow.onShowSettingInputBox ", code, " ", name, " ", value);
             Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
             {
-                x: popupX, y: popupY, width: popupWidth, height: popupHeight,
+                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height,
                 titleText: name, inputText: value, settingItemCode: code
             }).open()
         }
@@ -88,28 +88,6 @@ ApplicationWindow
             console.debug("@@@@@ mainWindow.onShowPiecesInputBox ", value);
             Qt.createComponent("Panels/inputPiecesPanel.qml").createObject(mainWindow,
             { x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value }).open()
-        }
-    }
-
-    Connections // Slot for signal AppManager::showTableOptions:
-    {
-        target: app
-        function onShowTableOptions()
-        {
-            console.debug("@@@@@ mainWindow.onShowTableOptions");
-            Qt.createComponent("Panels/tableOptionsPanel.qml").createObject(mainWindow,
-            { x: popupX, y: popupY, width: popupWidth, height: popupHeight }).open()
-         }
-    }
-
-    Connections // Slot for signal AppManager::showSearchOptions:
-    {
-        target: app
-        function onShowSearchOptions()
-        {
-            console.debug("@@@@@ mainWindow.onShowSearchOptions");
-            Qt.createComponent("Panels/searchOptionsPanel.qml").createObject(mainWindow,
-            { x: popupX, y: popupY, width: popupWidth, height: popupHeight }).open()
         }
     }
 

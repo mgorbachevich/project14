@@ -50,6 +50,7 @@ public:
     Q_INVOKABLE int normalFontSize() const { return (int)(DEFAULT_NORMAL_FONT_SIZE * screenScale); }
     Q_INVOKABLE int buttonSize() const { return (int)(DEFAULT_BUTTON_SIZE * screenScale); }
     Q_INVOKABLE int editWidth() const { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }
+    Q_INVOKABLE int scrollBarWidth() const { return (int)(DEFAULT_SPACER * screenScale) / 2; }
     Q_INVOKABLE int spacer() const { return (int)(DEFAULT_SPACER * screenScale); }
 
     Q_INVOKABLE void beep();
@@ -68,7 +69,6 @@ public:
     Q_INVOKABLE void onRewind();
     Q_INVOKABLE void onSearchFilterClicked(const int);
     Q_INVOKABLE void onSearchFilterEdited(const QString&);
-    Q_INVOKABLE void onSearchOptionsClicked();
     Q_INVOKABLE void onSearchResultClicked(const int);
     Q_INVOKABLE void onSettingGroupClicked(const int);
     Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
@@ -76,7 +76,6 @@ public:
     Q_INVOKABLE void onShowcaseClicked(const int);
     Q_INVOKABLE void onSwipeMainPage(const int);
     Q_INVOKABLE void onTableBackClicked();
-    Q_INVOKABLE void onTableOptionsClicked();
     Q_INVOKABLE void onTableResultClicked(const int);
     Q_INVOKABLE void onTareClicked();
     Q_INVOKABLE void onUserAction();
@@ -139,6 +138,7 @@ signals:
     void authorizationSucceded();
     void enableManualPrint(const bool);
     void hideToast();
+    void enterChar(const QChar);
     void log(const int, const int, const QString&);
     void resetCurrentProduct();
     void selectFromDB(const DataBase::Selector, const QString&);
@@ -155,11 +155,9 @@ signals:
     void showPrinterMessage(const QString&);
     void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);
-    void showSearchOptions();
     void showSettingGroupsPanel();
     void showSettingInputBox(const int, const QString&, const QString&);
     void showSettingsPanel(const QString&);
-    void showTableOptions();
     void showTablePanelTitle(const QString&);
     void showViewLogPanel();
     void showWeightParam(const int, const QString&);

@@ -7,7 +7,7 @@ import RegisteredTypes
 
 Rectangle
 {
-    id:  searchPanel
+    id: searchPanel
     color: Material.background
     property int filterWidth: width * 0.25
 
@@ -28,14 +28,10 @@ Rectangle
     {
         id: searchPanelLayout
         anchors.fill: parent
-        anchors.leftMargin: app.spacer()
-        anchors.rightMargin: app.spacer()
-        anchors.topMargin: app.spacer()
-        anchors.bottomMargin: app.spacer() * 2
-        columnSpacing: app.spacer()
-        rowSpacing: app.spacer()
-        columns: 3
-        rows: 3
+        columnSpacing: app.spacer() / 2
+        rowSpacing: 0
+        //columns: 3
+        //rows: 4
 
         Rectangle
         {
@@ -51,19 +47,26 @@ Rectangle
             }
         }
 
-        RoundIconButton
+        EmptyButton
         {
-            id: searchPanelOptionsButton
             Layout.column: 2
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            icon.source: "../Icons/settings_black_48"
+        }
+        /*
+        RoundIconButton
+        {
+            Layout.column: 2
+            Layout.row: 0
+            Layout.alignment: Qt.AlignTop | Qt.AlignRight
+            icon.source: "../Icons/keyboard_black_48"
             onClicked:
             {
                 app.onUserAction();
-                app.onSearchOptionsClicked()
+                searchPanelKeyboard.visible = !searchPanelKeyboard.visible
             }
         }
+        */
 
         Rectangle
         {
@@ -85,7 +88,7 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.spacer()
+                    width: app.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
@@ -124,7 +127,6 @@ Rectangle
             Layout.row: 1
             Layout.columnSpan: 2
             Layout.preferredWidth: filterWidth
-            Layout.bottomMargin: app.spacer()
             Material.accent: Material.Orange
             color: Material.color(Material.Grey, Material.Shade900)
             font { pointSize: app.normalFontSize() }
@@ -184,6 +186,7 @@ Rectangle
             Layout.column: 1
             Layout.row: 2
             Layout.columnSpan: 2
+            Layout.rightMargin: app.spacer() / 2
             Layout.preferredWidth: filterWidth
             Layout.fillHeight: parent
             Layout.alignment: Qt.AlignTop
@@ -201,7 +204,7 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.spacer()
+                    width: app.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
@@ -210,7 +213,7 @@ Rectangle
                 delegate: Label
                 {
                     width: searchPanelFilterList.width
-                    padding: app.spacer()
+                    padding: app.spacer() / 2
                     font
                     {
                         pointSize: app.normalFontSize();
@@ -237,5 +240,18 @@ Rectangle
                 }
             }
         }
+        /*
+        VirtualKeyboard
+        {
+            id: searchPanelKeyboard
+            compact: true
+            visible: false
+            Layout.column: 0
+            Layout.row: 3
+            Layout.columnSpan: searchPanelLayout.columns
+            Layout.fillWidth: parent
+            Layout.alignment: Qt.AlignBottom
+        }
+        */
     }
 }

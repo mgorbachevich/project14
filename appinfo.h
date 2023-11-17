@@ -3,7 +3,7 @@
 
 #include <QString>
 
-#define APP_VERSION "1.57"
+#define APP_VERSION "1.59"
 
 class AppInfo
 {
@@ -11,7 +11,7 @@ public:
     AppInfo() {}
     QString all()
     {
-        return QString("Приложение %1. БД %2. ВМ %3. Принтер %4. Сервер %5. IP %6").
+        return QString("Штрих ПРИНТ 6А %1. БД %2. ВМ %3. Принтер %4. Сервер %5. IP %6").
                 arg(appVersion, dbVersion, weightManagerVersion, printManagerVersion, netServerVersion, ip);
     }
 

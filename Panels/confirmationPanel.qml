@@ -91,7 +91,6 @@ Popup
             {
                 spacing: app.spacer() * 4
                 Layout.preferredWidth: app.buttonSize() * 3 + spacing
-                Layout.preferredHeight: app.buttonSize()
                 Layout.column: 0
                 Layout.row: 2
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
@@ -99,7 +98,6 @@ Popup
                 RoundTextButton
                 {
                     width: app.buttonSize() * 3 / 2
-                    height: app.buttonSize()
                     text: qsTr(" ДА ")
                     onClicked:
                     {
@@ -112,7 +110,6 @@ Popup
                 RoundTextButton
                 {
                     width: app.buttonSize() * 3 / 2
-                    height: app.buttonSize()
                     text: qsTr("НЕТ")
                     onClicked:
                     {

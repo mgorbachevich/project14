@@ -10,10 +10,12 @@ RoundButton
     width: app.buttonSize()
     height: app.buttonSize()
     radius: app.spacer()
-    leftInset: 0
-    topInset: 0
-    rightInset: 0
-    bottomInset: 0
+    leftInset: app.spacer() / 4
+    topInset: app.spacer() / 4
+    rightInset: app.spacer() / 4
+    bottomInset: app.spacer() / 4
+    horizontalPadding: app.spacer() / 4
+    verticalPadding: app.spacer() / 4
     flat: true
     icon.source: "../Icons/empty_48"
     Material.background: Material.color(Material.BlueGrey, Material.Shade200)
