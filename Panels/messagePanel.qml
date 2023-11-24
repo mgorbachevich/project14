@@ -30,16 +30,14 @@ Popup
     Rectangle
     {
         anchors.fill: parent
-        radius: app.spacer()
+        radius: screenManager.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
         color: Material.background
 
         GridLayout
         {
             anchors.fill: parent
-            anchors.margins: app.spacer()
-            columnSpacing: app.spacer()
-            rowSpacing: app.spacer()
+            anchors.margins: screenManager.spacer()
             columns: 3
             rows: 2
             focus: true
@@ -51,14 +49,11 @@ Popup
                 messagePanel.close()
             }
 
-            Rectangle
+            EmptyButton
             {
                 Layout.column: 0
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-                Layout.preferredWidth: app.buttonSize()
-                Layout.preferredHeight: app.buttonSize()
-                color: "transparent"
             }
 
             Rectangle
@@ -66,13 +61,10 @@ Popup
                 Layout.column: 1
                 Layout.row: 0
                 Layout.fillWidth: parent
-                Layout.preferredHeight: app.buttonSize()
+                Layout.preferredHeight: screenManager.buttonSize()
                 color: "transparent"
 
-                CardTitleText
-                {
-                    text: titleText
-                }
+                CardTitleText { text: titleText }
             }
 
             RoundIconButton
@@ -96,13 +88,10 @@ Popup
                 Layout.columnSpan: 3
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.bottomMargin: app.buttonSize() * 3 / 4
+                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
                 color: "transparent"
 
-                CardText
-                {
-                    text: messageText
-                }
+                CardText { text: messageText }
             }
         }
     }

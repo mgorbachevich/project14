@@ -9,7 +9,6 @@
 #define DBTABLENAME_PRODUCTS "products"
 #define DBTABLENAME_LABELFORMATS "labels"
 #define DBTABLENAME_SETTINGS "settings"
-#define DBTABLENAME_SETTINGGROUPS "settinggroups"
 #define DBTABLENAME_TRANSACTIONS "transactions"
 #define DBTABLENAME_MESSAGES "messages"
 #define DBTABLENAME_MESSAGEFILES "messagefiles"

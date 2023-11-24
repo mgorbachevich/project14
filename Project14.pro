@@ -97,11 +97,11 @@ SOURCES += \
     Equipment/Wm100_Slpa100u_2/wm100.cpp \
     Managers/appmanager.cpp \
     Managers/keyemitter.cpp \
+    Managers/screenmanager.cpp \
     Managers/settings.cpp \
     Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
-    Models/settinggroupspanelmodel.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
     Net/netserver.cpp \
@@ -117,6 +117,10 @@ SOURCES += \
     Managers/weightmanager.cpp \
 
 HEADERS += \
+    Managers/screenmanager.h \
+    constants.h \
+    tools.h \
+    appinfo.h \
     DB/productdbtable.h \
     DB/dbtable.h \
     DB/dbtablecolumn.h \
@@ -126,7 +130,6 @@ HEADERS += \
     DB/logdbtable.h \
     DB/resourcedbtable.h \
     DB/settingdbtable.h \
-    DB/settinggroupdbtable.h \
     DB/showcasedbtable.h \
     DB/dbthread.h \
     DB/transactiondbtable.h \
@@ -211,19 +214,17 @@ HEADERS += \
     Models/tablepanelmodel.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
-    Models/settinggroupspanelmodel.h \
     Models/usernamemodel.h \
     Models/viewlogpanelmodel.h \
     Net/netparams.h \
     Net/netserver.h \
     Net/requestparser.h \
-    constants.h \
-    tools.h \
-    appinfo.h \
 
 RESOURCES += \
     constants.js \
     main.qml \
+    Panels/KeyboardButton.qml \
+    Panels/KeyboardCharButton.qml \
     Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
     Panels/CardText.qml \
@@ -233,18 +234,18 @@ RESOURCES += \
     Panels/inputPiecesPanel.qml \
     Panels/inputSettingPanel.qml \
     Panels/KeyboardIconButton.qml \
-    Panels/KeyboardTextButton.qml \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
     Panels/RoundIconButton.qml \
     Panels/RoundTextButton.qml \
     Panels/searchPanel.qml \
     Panels/settingsPanel.qml \
-    Panels/settingGroupsPanel.qml \
     Panels/showcasePanel.qml \
     Panels/tablePanel.qml \
     Panels/viewLogPanel.qml \
-    Panels/VirtualKeyboard.qml \
+    Panels/VirtualKeyboardNumeric.qml \
+    Panels/VirtualKeyboardCyrillic.qml \
+    Panels/VirtualKeyboardLatin.qml \
     Panels/weightPanel.qml \
     Fonts/LeagueGothic-CondensedRegular.otf \
     Fonts/LeagueGothic-Regular.otf \
@@ -285,7 +286,6 @@ RESOURCES += \
     Icons/empty_48.png \
     Icons/empty_flag_48.png \
     Images/image_dummy.png \
-    Text/json_default_setting_groups.txt \
     Text/json_default_settings.txt \
     Text/json_settings.txt \
     Text/json_products.txt \
@@ -320,6 +320,7 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
+
 
 
 

@@ -26,11 +26,10 @@ ApplicationWindow
         target: app
         function onStart()
         {
-            console.debug("@@@@@ mainWindow.onStart");
-            if (Qt.platform.os === "android")
-                mainWindow.visibility = Window.FullScreen
-            mainWindow.width = app.screenWidth()
-            mainWindow.height = app.screenHeight()
+            console.debug("@@@@@ mainWindow.onStart ", screenManager.screenWidth(), screenManager.screenHeight());
+            if (Qt.platform.os === "android") mainWindow.visibility = Window.FullScreen
+            mainWindow.width = screenManager.screenWidth()
+            mainWindow.height = screenManager.screenHeight()
         }
     }
 
@@ -61,7 +60,7 @@ ApplicationWindow
         function onShowAdminMenu(show)
         {
             console.debug("@@@@@ mainWindow.onShowAdminMenu");
-            adminMenuWidth = show ? app.buttonSize() + app.spacer() : 0
+            adminMenuWidth = show ? screenManager.buttonSize() + screenManager.spacer() : 0
             adminMenuPanel.visible = show
         }
     }
@@ -130,17 +129,6 @@ ApplicationWindow
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
                 messageText: messageText, dialogSelector: selector
             }).open()
-        }
-    }
-
-    Connections // Slot for signal AppManager::showSettingGroupsPanel:
-    {
-        target: app
-        function onShowSettingGroupsPanel()
-        {
-            console.debug("@@@@@ mainWindow.onShowSettingGroupsPanel");
-            Qt.createComponent("Panels/settingGroupsPanel.qml").createObject(mainWindow,
-            { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height }).open()
         }
     }
 

@@ -8,7 +8,7 @@ import RegisteredTypes
 Popup
 {
     id: authorizationPanel
-    padding : 0
+    padding: screenManager.spacer()
     closePolicy: Popup.NoAutoClose
     focus: true
     modal: true
@@ -51,10 +51,9 @@ Popup
             id: versionText
             Layout.column: 0
             Layout.row: 0
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.topMargin: app.spacer()
+            Layout.alignment: Qt.AlignHCenter
             color: Material.color(Material.BlueGrey, Material.Shade600)
-            font { pointSize: app.normalFontSize() }
+            font { pointSize: screenManager.normalFontSize() }
             text: versionValue
         }
 
@@ -62,9 +61,9 @@ Popup
         {
             Layout.column: 0
             Layout.row: 1
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.topMargin: app.spacer()
-            font { pointSize: app.largeFontSize() }
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: screenManager.spacer()
+            font { pointSize: screenManager.largeFontSize() }
             color: Material.color(Material.BlueGrey, Material.Shade900)
             text: qsTr("Авторизация")
         }
@@ -73,9 +72,9 @@ Popup
         {
             Layout.column: 0
             Layout.row: 2
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.topMargin: app.spacer() / 2
-            font { pointSize: app.normalFontSize() }
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: screenManager.spacer()
+            font { pointSize: screenManager.normalFontSize() }
             color: Material.color(Material.BlueGrey, Material.Shade600)
             text: qsTr("Пользователь")
         }
@@ -85,16 +84,16 @@ Popup
             id: loginComboBox
             Layout.column: 0
             Layout.row: 3
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.preferredWidth: app.editWidth()
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: screenManager.editWidth()
             editable: false
             popup.modal: true
 
             model: userNameModel
             delegate: Text
             {
-                padding: app.spacer()
-                font { pointSize: app.normalFontSize() }
+                padding: screenManager.spacer()
+                font { pointSize: screenManager.normalFontSize() }
                 color: Material.color(Material.BlueGrey, Material.Shade900)
                 text: model.value // Roles::ValueRole
 
@@ -118,9 +117,9 @@ Popup
         {
             Layout.column: 0
             Layout.row: 4
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.topMargin: app.spacer() / 2
-            font { pointSize: app.normalFontSize() }
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: screenManager.spacer()
+            font { pointSize: screenManager.normalFontSize() }
             color: Material.color(Material.BlueGrey, Material.Shade600)
             text: qsTr("Пароль")
         }
@@ -131,8 +130,8 @@ Popup
             Layout.column: 0
             Layout.row: 5
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.preferredWidth: app.editWidth()
-            font { pointSize: app.normalFontSize() }
+            Layout.preferredWidth: screenManager.editWidth()
+            font { pointSize: screenManager.normalFontSize() }
             Material.accent: Material.Orange
             color: Material.color(Material.BlueGrey, Material.Shade900)
             placeholderText: "?????"
@@ -169,27 +168,11 @@ Popup
         {
             Layout.column: 0
             Layout.row: 6
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.topMargin: app.spacer()
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: screenManager.spacer() * 2
             text: qsTr("ПРОДОЛЖИТЬ")
-            onClicked:
-            {
-                app.onUserAction();
-                app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text)
-            }
+            onClicked: app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text)
         }
-        /*
-        VirtualKeyboard
-        {
-            compact: true
-            visible: true
-            Layout.column: 0
-            Layout.row: 7
-            Layout.columnSpan: authorizationPanelLayout.columns
-            Layout.alignment: Qt.AlignBottom
-            Layout.topMargin: app.spacer()
-        }
-        */
     }
 }
 

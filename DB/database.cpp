@@ -4,7 +4,6 @@
 #include "productdbtable.h"
 #include "labelformatdbtable.h"
 #include "settingdbtable.h"
-#include "settinggroupdbtable.h"
 #include "transactiondbtable.h"
 #include "resourcedbtable.h"
 #include "userdbtable.h"
@@ -23,7 +22,6 @@ DataBase::DataBase(const QString& fileName, Settings& globalSettings, QObject *p
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
     tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
     tables.append(new SettingDBTable(DBTABLENAME_SETTINGS, this));
-    tables.append(new SettingGroupDBTable(DBTABLENAME_SETTINGGROUPS, this));
     tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, this));
     tables.append(new UserDBTable(DBTABLENAME_USERS, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGES, this));
@@ -435,7 +433,7 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
-    qDebug() << "@@@@@ DataBase::onSelectByList: selector =" << selector;
+    qDebug() << "@@@@@ DataBase::onSelectByList: selector =" << selector << param.count();
     DBRecordList resultRecords;
     switch(selector)
     {
@@ -446,7 +444,8 @@ void DataBase::onSelectByList(const DataBase::Selector selector, const DBRecordL
         {
             QString imageCode = param[i][ProductDBTable::PictureCode].toString();
             DBRecord r;
-            if(selectById(DBTABLENAME_PICTURES, imageCode, r)) resultRecords.append(r);
+            selectById(DBTABLENAME_PICTURES, imageCode, r);
+            resultRecords.append(r);
         }
         break;
     }

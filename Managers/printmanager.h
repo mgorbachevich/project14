@@ -21,7 +21,7 @@ public:
     QString version() const;
     void print(const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
     bool isError() const { return errorCode != 0 || isStateError(status); }
-    bool isDemoMode() const { return demoMode; }
+    bool isDemoMode() const { return slpa == nullptr; }
     void feed();
     QString getErrorDescription(const int) const;
 
@@ -35,7 +35,6 @@ private:
     int errorCode = 0;
     uint16_t status = 0;
     QString message;
-    const bool demoMode;
     DataBase* db;
     Settings& settings;
 

@@ -8,13 +8,15 @@ class SettingDBTable: public DBTable
 public:
     enum Columns
     {
-        Code = 0, // enum
+        Code = 0, // enum SettingCode
+        Type, // enum SettingType
+        GroupCode, // enum SettingCode
         Name,
         Value,
         COLUMN_COUNT
     };
 
-    enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt, json_default_setting_groups.txt!
+    enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt!
     {
         SettingCode_None = 0,
         SettingCode_ScalesNumber = 1,
@@ -55,7 +57,13 @@ public:
         SettingCode_PrinterBrightness = 211,
         SettingCode_PrintTitle = 201,
           */
-        SettingCode_Max = 2000, // Max value
+        SettingCode_Max = 9999, // Max value
+    };
+
+    enum SettingType
+    {
+        SettingType_Item = 0,
+        SettingType_Group = 1,
     };
 
     enum WMBaudrate

@@ -37,21 +37,9 @@ public:
         Dialog_Authorization,
     };
 
-    explicit AppManager(QQmlContext*, QObject*, const QSize&);
+    explicit AppManager(QQmlContext*, const QSize&, QObject*);
     ~AppManager();
     double price(const DBRecord&);
-
-    // Экранные размеры:
-    Q_INVOKABLE int screenWidth() const { return screenSize.width(); }
-    Q_INVOKABLE int screenHeight() const { return screenSize.height(); }
-    Q_INVOKABLE int weightTitleFontSize() const { return (int)(DEFAULT_WEIGHT_TITLE_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int weightValueFontSize() const { return (int)(DEFAULT_WEIGHT_VALUE_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int largeFontSize() const { return (int)(DEFAULT_LARGE_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int normalFontSize() const { return (int)(DEFAULT_NORMAL_FONT_SIZE * screenScale); }
-    Q_INVOKABLE int buttonSize() const { return (int)(DEFAULT_BUTTON_SIZE * screenScale); }
-    Q_INVOKABLE int editWidth() const { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }
-    Q_INVOKABLE int scrollBarWidth() const { return (int)(DEFAULT_SPACER * screenScale) / 2; }
-    Q_INVOKABLE int spacer() const { return (int)(DEFAULT_SPACER * screenScale); }
 
     Q_INVOKABLE void beep();
     Q_INVOKABLE void onAdminSettingsClicked();
@@ -70,9 +58,9 @@ public:
     Q_INVOKABLE void onSearchFilterClicked(const int);
     Q_INVOKABLE void onSearchFilterEdited(const QString&);
     Q_INVOKABLE void onSearchResultClicked(const int);
-    Q_INVOKABLE void onSettingGroupClicked(const int);
     Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
     Q_INVOKABLE void onSettingsItemClicked(const int);
+    Q_INVOKABLE void onSettingsPanelCloseClicked();
     Q_INVOKABLE void onShowcaseClicked(const int);
     Q_INVOKABLE void onSwipeMainPage(const int);
     Q_INVOKABLE void onTableBackClicked();
@@ -80,6 +68,7 @@ public:
     Q_INVOKABLE void onTareClicked();
     Q_INVOKABLE void onUserAction();
     Q_INVOKABLE void onViewLogClicked();
+    Q_INVOKABLE void onVirtualKeyboardSet(const int);
     Q_INVOKABLE void onWeightPanelClicked(const int);
     Q_INVOKABLE void onZeroClicked();
 
@@ -120,8 +109,6 @@ private:
     int mainPageIndex = 0;
     int secret = 0;
     bool authorizationOpened = false;
-    QSize screenSize;
-    double screenScale = 0;
 
     // Models:
     ProductPanelModel* productPanelModel = nullptr;
@@ -136,14 +123,14 @@ private:
 
 signals:
     void authorizationSucceded();
+    void closeSettings();
     void enableManualPrint(const bool);
     void hideToast();
-    void enterChar(const QChar);
     void log(const int, const int, const QString&);
     void resetCurrentProduct();
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
-    void setCurrentUser(const int userIndex, const QString& userName);
+    void setCurrentUser(const int, const QString&);
     void settingsChanged();
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
@@ -155,11 +142,11 @@ signals:
     void showPrinterMessage(const QString&);
     void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);
-    void showSettingGroupsPanel();
     void showSettingInputBox(const int, const QString&, const QString&);
     void showSettingsPanel(const QString&);
     void showTablePanelTitle(const QString&);
     void showViewLogPanel();
+    void showVirtualKeyboard(const int);
     void showWeightParam(const int, const QString&);
     void start();
     void transaction(const DBRecord&);
@@ -173,6 +160,8 @@ public slots:
     void onPrinted(const DBRecord&);
     void onTimer();
     void onShowMessage(const QString &title, const QString &text) { emit showMessageBox(title, text, true); }
+    void onEnterChar(const QChar) { onUserAction(); }
+    void onEnterKey(const Qt::Key) { onUserAction(); }
 };
 
 #endif // APPMANAGER_H

@@ -15,8 +15,8 @@ Popup
     dim: false
     Material.theme: Material.Dark
     Material.background: Material.color(Material.Grey, Material.Shade800)
-    property int imageSize: height - app.spacer() * 4 - app.buttonSize()
-    property int printButtonSize: app.buttonSize() * 2 + app.spacer()
+    property int imageSize: height - screenManager.spacer() * 4 - screenManager.buttonSize()
+    property int printButtonSize: screenManager.buttonSize() * 2 + screenManager.spacer()
     property bool isPiece: false
     property string productName: ""
     onOpened: app.onPopupOpened()
@@ -66,9 +66,9 @@ Popup
     {
         id: productPanelLayout
         anchors.fill: parent
-        anchors.margins: app.spacer()
-        columnSpacing: app.spacer()
-        rowSpacing: app.spacer()
+        anchors.margins: screenManager.spacer()
+        columnSpacing: screenManager.spacer()
+        rowSpacing: screenManager.spacer()
         columns: 4
         rows: 3
 
@@ -137,7 +137,7 @@ Popup
             CardTitleText
             {
                 color: Constants.colorWhite
-                font { pointSize: app.largeFontSize(); bold: true }
+                font { pointSize: screenManager.largeFontSize(); bold: true }
                 text: productName
             }
         }
@@ -161,16 +161,16 @@ Popup
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.spacer()
+                    width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AlwaysOn
+                    policy: ScrollBar.AsNeeded
                 }
 
                 model: productPanelModel
                 delegate: Text
                 {
-                    leftPadding: app.spacer()
-                    font { pointSize: app.normalFontSize(); family: "Roboto" }
+                    leftPadding: screenManager.spacer()
+                    font { pointSize: screenManager.normalFontSize(); family: "Roboto" }
                     color: Material.color(Material.BlueGrey, Material.Shade50)
                     text: model.value // Roles::ValueRole
                 }
@@ -184,11 +184,7 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
             icon.source: "../Icons/info_outline_black_48"
-            onClicked:
-            {
-                app.onUserAction();
-                app.onProductDescriptionClicked()
-            }
+            onClicked: app.onProductDescriptionClicked()
         }
 
         RoundIconButton
@@ -198,30 +194,22 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             icon.source: "../Icons/close_black_48"
-            onClicked:
-            {
-                app.onUserAction();
-                app.onProductPanelCloseClicked()
-            }
+            onClicked: app.onProductPanelCloseClicked()
         }
 
         RoundTextButton
         {
             id: productPanelPiecesButton
-            Layout.preferredWidth: app.buttonSize() * 2 + app.spacer()
-            Layout.preferredHeight: app.buttonSize()
+            Layout.preferredWidth: screenManager.buttonSize() * 2 + screenManager.spacer()
+            Layout.preferredHeight: screenManager.buttonSize()
             Layout.column: 2
             Layout.row: 1
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignTop
             Material.background: Material.color(Material.BlueGrey, isPiece ? Material.Shade200 : Material.Shade700)
             text: isPiece ? qsTr("+ / -") : qsTr(" ")
-            font { pointSize: app.largeFontSize() }
-            onClicked:
-            {
-                app.onUserAction();
-                app.onProductPanelPiecesClicked()
-            }
+            font { pointSize: screenManager.largeFontSize() }
+            onClicked: app.onProductPanelPiecesClicked()
         }
 
         Rectangle
@@ -233,7 +221,7 @@ Popup
             Layout.alignment: Qt.AlignBottom
             Layout.preferredWidth:  printButtonSize
             Layout.preferredHeight: printButtonSize
-            radius: app.spacer()
+            radius: screenManager.spacer()
             color: Constants.colorError
 
             CardText
@@ -252,13 +240,9 @@ Popup
             Layout.alignment: Qt.AlignBottom
             Layout.preferredWidth:  printButtonSize
             Layout.preferredHeight: printButtonSize
-            icon { width: app.buttonSize(); height: app.buttonSize(); source: "../Icons/print_black_48" }
+            icon { width: screenManager.buttonSize(); height: screenManager.buttonSize(); source: "../Icons/print_black_48" }
             Material.background: Constants.colorAuto
-            onClicked:
-            {
-                app.onUserAction();
-                app.onPrintClicked()
-            }
+            onClicked: app.onPrintClicked()
         }
     }
 }

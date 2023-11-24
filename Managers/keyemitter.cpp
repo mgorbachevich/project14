@@ -2,10 +2,10 @@
 
 void KeyEmitter::emitKey(Qt::Key k)
 {
-    appManager->onUserAction();
     QObject* receiver = QGuiApplication::focusObject();
     if(receiver != nullptr)
     {
+        emit enterKey(k);
         QKeyEvent pressEvent = QKeyEvent(QEvent::KeyPress, k, Qt::NoModifier, QKeySequence(k).toString());
         QKeyEvent releaseEvent = QKeyEvent(QEvent::KeyRelease, k, Qt::NoModifier);
         QCoreApplication::sendEvent(receiver, &pressEvent);
@@ -13,8 +13,9 @@ void KeyEmitter::emitKey(Qt::Key k)
     }
 }
 
-void KeyEmitter::emitChar(QChar c)
+void KeyEmitter::emitChar(QChar v)
 {
-    appManager->onUserAction();
-    emit appManager->enterChar(c);
+    QObject* receiver = QGuiApplication::focusObject();
+    if(receiver != nullptr) emit enterChar(v);
 }
+

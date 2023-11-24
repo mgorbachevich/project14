@@ -5,7 +5,6 @@
 #include <QThread>
 #include <QSslSocket>
 #include "appmanager.h"
-#include "settinggroupdbtable.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
 #include "transactiondbtable.h"
@@ -17,7 +16,6 @@
 #include "searchpanelmodel.h"
 #include "settingspanelmodel.h"
 #include "viewlogpanelmodel.h"
-#include "settinggroupspanelmodel.h"
 #include "searchfiltermodel.h"
 #include "dbthread.h"
 #include "tools.h"
@@ -25,18 +23,19 @@
 #include "weightmanager.h"
 #include "printmanager.h"
 #include "netserver.h"
+#include "screenmanager.h"
 #include "keyemitter.h"
 
-AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& screenSize): QObject(parent)
+AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject *parent):
+    QObject(parent), context(qmlContext)
 {
-    qDebug() << "@@@@@ AppManager::AppManager " << screenSize.width() << screenSize.height();
-    this->context = context;
+    qDebug() << "@@@@@ AppManager::AppManager";
 
-    // Размер экрана и масштабирование:
-    this->screenSize = screenSize;
-    double hk = ((double)screenSize.height()) / DEFAULT_SCREEN_HEIGHT;
-    double wk = ((double)screenSize.width()) / DEFAULT_SCREEN_WIDTH;
-    screenScale = wk < hk ? wk : hk;
+    ScreenManager* screenManager = new ScreenManager(screenSize);
+    context->setContextProperty("screenManager", screenManager);
+
+    KeyEmitter* keyEmitter = new KeyEmitter(this);
+    context->setContextProperty("keyEmitter", keyEmitter);
 
     user = UserDBTable::defaultAdmin();
     db = new DataBase(DB_FILENAME, settings, this);
@@ -45,10 +44,6 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     weightManager = new WeightManager(this, WM_DEMO);
     printManager = new PrintManager(this, db, settings, PRINTER_DEMO);
     QTimer *timer = new QTimer(this);
-
-    // Virtual Keyboard:
-    KeyEmitter* keyEmitter = new KeyEmitter(this);
-    context->setContextProperty("keyEmitter", keyEmitter);
 
     // Versions:
     appInfo.appVersion = APP_VERSION;
@@ -72,12 +67,13 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
     connect(printManager, &PrintManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
+    connect(keyEmitter, &KeyEmitter::enterChar, this, &AppManager::onEnterChar);
+    connect(keyEmitter, &KeyEmitter::enterKey, this, &AppManager::onEnterKey);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel(this);
     tablePanelModel = new TablePanelModel(this);
     settingsPanelModel = new SettingsPanelModel(this);
-    settingGroupsPanelModel = new SettingGroupsPanelModel(this);
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
@@ -86,7 +82,6 @@ AppManager::AppManager(QQmlContext* context, QObject *parent, const QSize& scree
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
     context->setContextProperty("settingsPanelModel", settingsPanelModel);
-    context->setContextProperty("settingGroupsPanelModel", settingGroupsPanelModel);
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
@@ -108,8 +103,7 @@ void AppManager::onDBStarted()
     //showToast("", "Инициализация");
     qDebug() << "@@@@@ AppManager::onDBStarted";
     onUserAction();
-    settings.createGroups((SettingGroupDBTable*)db->getTableByName(DBTABLENAME_SETTINGGROUPS));
-    settingGroupsPanelModel->update(settings);
+    settingsPanelModel->update(settings);
     startAuthorization();
     emit selectFromDB(DataBase::GetSettings, "");
     //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
@@ -149,8 +143,7 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
 double AppManager::price(const DBRecord& productRecord)
 {
     const int p = ProductDBTable::Price;
-    if (productRecord.count() <= p)
-        return 0;
+    if (productRecord.count() <= p) return 0;
     int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
     return Tools::priceToDouble(productRecord[p].toString(), pp);
 }
@@ -178,16 +171,19 @@ void AppManager::setProduct(const DBRecord& newProduct)
 void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
+    onUserAction();
     emit selectFromDB(DataBase::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
 }
 
 void AppManager::onProductPanelCloseClicked()
 {
+    onUserAction();
     resetProduct();
 }
 
 void AppManager::onProductPanelPiecesClicked()
 {
+    onUserAction();
     if(ProductDBTable::isPiece(product)) emit showPiecesInputBox(printStatus.pieces);
     else beep();
 }
@@ -195,6 +191,7 @@ void AppManager::onProductPanelPiecesClicked()
 void AppManager::onRewind() // Перемотка
 {
     qDebug() << "@@@@@ AppManager::onRewind ";
+    onUserAction();
     printManager->feed();
 }
 
@@ -233,6 +230,7 @@ void AppManager::onSearchFilterClicked(const int index)
     // Изменилось поле поиска (код, штрих-код...)
 
     qDebug() << "@@@@@ AppManager::onSearchFilterClicked " << index;
+    onUserAction();
     searchFilterModel->index = (SearchFilterModel::FilterIndex)index;
     filteredSearch();
 }
@@ -242,6 +240,7 @@ void AppManager::onTableBackClicked()
     // Переход вверх по иерархическому дереву групп товаров
 
     qDebug() << "@@@@@ AppManager::onTableBackClicked";
+    onUserAction();
     if (tablePanelModel->groupUp()) updateTablePanel(false);
 }
 
@@ -263,8 +262,10 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
 void AppManager::onAdminSettingsClicked()
 {
     qDebug() << "@@@@@ AppManager::onAdminSettingsClicked";
+    onUserAction();
     emit log(LogType_Info, LogSource_Admin, "Просмотр настроек");
-    emit showSettingGroupsPanel();
+    settingsPanelModel->update(settings);
+    emit showSettingsPanel(settings.getCurrentGroupName());
 }
 
 void AppManager::beep()
@@ -276,6 +277,7 @@ void AppManager::beep()
 void AppManager::onLockClicked()
 {
     qDebug() << "@@@@@ AppManager::onLockClicked";
+    onUserAction();
     emit showConfirmationBox(DialogSelector::Dialog_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
@@ -289,6 +291,7 @@ void AppManager::onMainPageChanged(const int index)
 void AppManager::onPiecesInputClosed(const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onPiecesInputClosed " << value;
+    onUserAction();
     int v = Tools::stringToInt(value);
     if(v < 1)
     {
@@ -396,8 +399,14 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     case DataBase::GetShowcaseResources:
      // Отображение картинок товаров экрана Showcase:
     {
+        qDebug() << "@@@@@ AppManager::onDBRequestResult GetShowcaseResources" << records.count();
         QStringList fileNames;
-        for (int i = 0; i < records.count(); i++) fileNames << getImageFileWithQmlPath(records[i]);
+        for (int i = 0; i < records.count(); i++)
+        {
+            QString s = getImageFileWithQmlPath(records[i]);
+            qDebug() << "@@@@@ AppManager::onDBRequestResult GetShowcaseResources" << s;
+            fileNames.append(s);
+        }
         showcasePanelModel->updateImages(fileNames);
         break;
     }
@@ -431,8 +440,16 @@ QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
 void AppManager::onViewLogClicked()
 {
     emit log(LogType_Info, LogSource_Admin, "Просмотр лога");
+    onUserAction();
     emit selectFromDB(DataBase::GetLog, "");
     emit showViewLogPanel();
+}
+
+void AppManager::onVirtualKeyboardSet(const int v)
+{
+    qDebug() << "@@@@@ AppManager::onVirtualKeyboardSet " << v;
+    onUserAction();
+    emit showVirtualKeyboard(v);
 }
 
 void AppManager::onWeightPanelClicked(const int param)
@@ -445,6 +462,7 @@ void AppManager::onWeightPanelClicked(const int param)
 void AppManager::onTareClicked()
 {
     qDebug() << "@@@@@ AppManager::onTareClicked ";
+    onUserAction();
     weightManager->setWeightParam(EquipmentParam_Tare);
     updateStatus();
 }
@@ -452,6 +470,7 @@ void AppManager::onTareClicked()
 void AppManager::onZeroClicked()
 {
     qDebug() << "@@@@@ AppManager::onZeroClicked ";
+    onUserAction();
     weightManager->setWeightParam(EquipmentParam_Zero);
     updateStatus();
 }
@@ -459,6 +478,7 @@ void AppManager::onZeroClicked()
 void AppManager::onConfirmationClicked(const int selector)
 {
     qDebug() << "@@@@@ AppManager::onConfirmationClicked " << selector;
+    onUserAction();
     switch (selector)
     {
     case DialogSelector::Dialog_Authorization:
@@ -470,6 +490,7 @@ void AppManager::onConfirmationClicked(const int selector)
 void AppManager::onTableResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onTableResultClicked " << index;
+    onUserAction();
     if (index < tablePanelModel->productCount())
     {
         DBRecord& clickedProduct = tablePanelModel->productByIndex(index);
@@ -493,30 +514,50 @@ void AppManager::onTimer()
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
-    DBRecord* r =  settings.getItemByIndexInGroup(index);
-    if (r != nullptr && !r->empty())
+    onUserAction();
+    DBRecord* r =  settings.getItemByIndexInCurrentGroup(index);
+    if(r == nullptr  || r->empty()) return;
+    if(settings.isGroup(*r))
+    {
+        settings.currentGroupCode = r->at(0).toInt();
+        settingsPanelModel->update(settings);
+        emit showSettingsPanel(settings.getCurrentGroupName());
+    }
+    else
         emit showSettingInputBox((r->at(SettingDBTable::Code)).toInt(),
                                  (r->at(SettingDBTable::Name)).toString(),
                                  (r->at(SettingDBTable::Value)).toString());
 }
 
-void AppManager::onSettingGroupClicked(const int index)
+void AppManager::onSettingsPanelCloseClicked()
 {
-    qDebug() << "@@@@@ AppManager::onSettingGroupClicked " << index;
-    settings.currentGroupIndex = index;
-    settingsPanelModel->update(settings);
-    emit showSettingsPanel(settings.getCurrentGroupName());
+    qDebug() << "@@@@@ AppManager::onSettingsPanelCloseClicked " << settings.currentGroupCode;
+    onUserAction();
+    if(settings.currentGroupCode != 0)
+    {
+        DBRecord* r =  settings.getItemByCode(settings.currentGroupCode);
+        if(r != nullptr && !r->empty() && settings.isGroup(*r))
+        {
+            settings.currentGroupCode = r->at(SettingDBTable::GroupCode).toInt();
+            settingsPanelModel->update(settings);
+            emit showSettingsPanel(settings.getCurrentGroupName());
+            return;
+        }
+    }
+    emit closeSettings();
 }
 
 void AppManager::onSearchResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSearchResultClicked " << index;
+    onUserAction();
     setProduct(searchPanelModel->productByIndex(index));
 }
 
 void AppManager::onShowcaseClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onShowcaseClicked " << index;
+    onUserAction();
     setProduct(showcasePanelModel->productByIndex(index));
 }
 
@@ -551,6 +592,7 @@ void AppManager::startAuthorization()
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
 {
+    onUserAction();
     QString normalizedLogin = UserDBTable::fromAdminName(login);
     qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
     user[UserDBTable::Name] = normalizedLogin;
@@ -662,7 +704,6 @@ void AppManager::runEquipment(const bool start)
             url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
         }
         int e1 = weightManager->start(url1);
-
         QString url2;
         if(PRINTER_DEMO)
         {
@@ -740,6 +781,7 @@ void AppManager::print() // Печатаем этикетку
 void AppManager::onPrintClicked()
 {
     qDebug() << "@@@@@ AppManager::onPrintClicked ";
+    onUserAction();
     if(printStatus.manualPrintEnabled)
     {
         printStatus.calculateMode = false;

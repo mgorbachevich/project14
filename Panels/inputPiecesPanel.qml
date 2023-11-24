@@ -22,7 +22,7 @@ Popup
     Rectangle
     {
         anchors.fill: parent
-        radius: app.spacer()
+        radius: screenManager.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
         color: Material.background
 
@@ -30,20 +30,17 @@ Popup
         {
             id: inputPiecesPanelLayout
             anchors.fill: parent
-            anchors.margins: app.spacer()
-            columnSpacing: app.spacer()
-            rowSpacing: app.spacer()
-            //columns: 3
-            //rows: 4
+            anchors.margins: screenManager.spacer()
+            columnSpacing: 0
+            rowSpacing: 0
+            columns: 3
+            rows: 4
 
-            Rectangle
+            EmptyButton
             {
                 Layout.column: 0
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-                Layout.preferredWidth: app.buttonSize()
-                Layout.preferredHeight: app.buttonSize()
-                color: "transparent"
             }
 
             Rectangle
@@ -51,26 +48,20 @@ Popup
                 Layout.column: 1
                 Layout.row: 0
                 Layout.fillWidth: parent
-                Layout.preferredHeight: app.buttonSize()
+                Layout.alignment: Qt.AlignCenter
                 color: "transparent"
 
-                CardTitleText
-                {
-                    text: "Количество товара"
-                }
+                CardTitleText { text: "Количество товара" }
             }
 
             RoundIconButton
             {
                 Layout.column: 2
                 Layout.row: 0
-                Layout.topMargin: app.spacer()
-                Layout.rightMargin: app.spacer()
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close_black_48"
                 onClicked:
                 {
-                    app.onUserAction();
                     app.onPiecesInputClosed(inputPiecesPanelText.text)
                     inputPiecesPanel.close()
                 }
@@ -78,12 +69,10 @@ Popup
 
             Rectangle
             {
-                Layout.column: 0
+                Layout.column: 1
                 Layout.row: 1
-                Layout.columnSpan: 3
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.bottomMargin: app.buttonSize() / 2
                 color: "transparent"
 
                 TextField
@@ -91,8 +80,8 @@ Popup
                     id: inputPiecesPanelText
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: app.editWidth() / 4
-                    font { pointSize: app.normalFontSize() }
+                    width: screenManager.editWidth() / 4
+                    font { pointSize: screenManager.normalFontSize() }
                     Material.accent: Material.Orange
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     focus: true
@@ -131,16 +120,16 @@ Popup
             {
                 Layout.column: 1
                 Layout.row: 2
-                Layout.preferredWidth: app.buttonSize() * 2 + spacing
-                Layout.preferredHeight: app.buttonSize()
-                Layout.bottomMargin: app.spacer()
+                Layout.preferredWidth: screenManager.buttonSize() * 2 + spacing
+                Layout.preferredHeight: screenManager.buttonSize()
+                Layout.bottomMargin: screenManager.spacer()
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                spacing: app.spacer() * 4
+                spacing: screenManager.spacer() * 4
 
                 RoundTextButton
                 {
-                    width: app.buttonSize()
-                    font { pointSize: app.largeFontSize() }
+                    width: screenManager.buttonSize()
+                    font { pointSize: screenManager.largeFontSize() }
                     text: qsTr("-")
                     onClicked:
                     {
@@ -153,8 +142,8 @@ Popup
 
                 RoundTextButton
                 {
-                    width: app.buttonSize()
-                    font { pointSize: app.largeFontSize() }
+                    width: screenManager.buttonSize()
+                    font { pointSize: screenManager.largeFontSize() }
                     text: qsTr("+")
                     onClicked:
                     {
@@ -164,19 +153,6 @@ Popup
                     }
                 }
             }
-
-            /*
-            VirtualKeyboard
-            {
-                compact: true
-                visible: true
-                Layout.column: 0
-                Layout.row: 3
-                Layout.columnSpan: inputPiecesPanelLayout.columns
-                Layout.alignment: Qt.AlignBottom
-                width: app.screenWidth()
-            }
-            */
         }
     }
 }

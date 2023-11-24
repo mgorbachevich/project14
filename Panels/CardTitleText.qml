@@ -7,6 +7,5 @@ import RegisteredTypes
 
 CardText
 {
-    color: Material.color(Material.BlueGrey, Material.Shade600)
-    font { pointSize: app.largeFontSize() }
+    font { pointSize: screenManager.largeFontSize() }
 }

@@ -9,4 +9,9 @@ RoundIconButton
 {
     Material.background: "transparent"
     Material.foreground: "transparent"
+    background: Rectangle
+    {
+        radius: screenManager.spacer()
+        color: "transparent"
+    }
 }

@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     screenSize = QSize(r.width() > r.height() ? r.width() : r.height(),
                        r.width() <= r.height() ? r.width() : r.height());
 #endif
-    AppManager* appManager = new AppManager(engine.rootContext(), &application, screenSize);
+    AppManager* appManager = new AppManager(engine.rootContext(), screenSize, &application);
     qmlRegisterUncreatableType<BaseListModel>("RegisteredTypes", 1, 0, "BaseListModel", "");
     engine.rootContext()->setContextProperty("app", appManager);
 

@@ -21,7 +21,7 @@ public:
     bool isWeightFixed() const { return isFlag(status, 0); }
     bool isZeroFlag() const { return isFlag(status, 1); }
     bool isTareFlag() const { return isFlag(status, 3); }
-    bool isDemoMode() const { return demoMode; }
+    bool isDemoMode() const { return wm100 == nullptr; }
 
 private:
     bool isFlag(Wm100Protocol::channel_status, int) const;
@@ -31,7 +31,6 @@ private:
     bool started = false;
     int errorCode = 0;
     Wm100Protocol::channel_status status = {0, 0.0, 0.0, 0};
-    bool demoMode = false;
 
 signals:
     void paramChanged(const int, const int);

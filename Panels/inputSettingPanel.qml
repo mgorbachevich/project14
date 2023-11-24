@@ -9,6 +9,7 @@ Popup
 {
     id: inputSettingPanel
     padding : 0
+    margins: 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
     focus: true
@@ -18,12 +19,13 @@ Popup
     property string titleText: "Title"
     property string inputText: "Input"
     property int settingItemCode: 0
+    property int virtualKeyboardSet: 2
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
-    Connections // Slot for signal AppManager::enterChar
+    Connections // Slot for signal KeyEmitter::enterChar
     {
-        target: app
+        target: keyEmitter
         function onEnterChar(value)
         {
             console.debug("@@@@@ inputSettingPanel onEnterChar ", value)
@@ -31,45 +33,45 @@ Popup
         }
     }
 
+    Connections // Slot for signal AppManager::showVirtualKeyboard
+    {
+        target: app
+        function onShowVirtualKeyboard(value)
+        {
+            console.debug("@@@@@ inputSettingPanel onShowVirtualKeyboard ", value)
+            virtualKeyboardSet = value
+        }
+    }
+
     GridLayout
     {
-        id: inputSettingPanelLayout
         anchors.fill: parent
-        columnSpacing: app.spacer()
-        rowSpacing: app.spacer()
+        anchors.margins: screenManager.spacer()
         columns: 3
-        //rows: 3
+        rows: 3
 
-        Rectangle
+        EmptyButton
         {
             Layout.column: 0
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.preferredWidth: app.buttonSize()
-            Layout.preferredHeight: app.buttonSize()
-            color: "transparent"
         }
 
         Rectangle
         {
             Layout.column: 1
             Layout.row: 0
+            Layout.alignment: Qt.AlignCenter
             Layout.fillWidth: parent
-            Layout.preferredHeight: app.buttonSize()
             color: "transparent"
 
-            CardTitleText
-            {
-                text: titleText
-            }
+            CardTitleText { text: titleText }
         }
 
         RoundIconButton
         {
             Layout.column: 2
             Layout.row: 0
-            Layout.topMargin: app.spacer()
-            Layout.rightMargin: app.spacer()
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
             icon.source: "../Icons/close_black_48"
             onClicked:
@@ -82,12 +84,11 @@ Popup
 
         Rectangle
         {
-            Layout.column: 0
+            Layout.column: 1
             Layout.row: 1
-            Layout.columnSpan: inputSettingPanelLayout.columns
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            Layout.bottomMargin: app.buttonSize() * 3 / 4
+            Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
             color: "transparent"
 
             TextField
@@ -95,8 +96,8 @@ Popup
                 id: inputSettingPanelText
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: app.editWidth()
-                font { pointSize: app.normalFontSize() }
+                width: screenManager.editWidth()
+                font { pointSize: screenManager.normalFontSize() }
                 Material.accent: Material.Orange
                 color: Material.color(Material.BlueGrey, Material.Shade900)
                 focus: true
@@ -131,14 +132,16 @@ Popup
             }
         }
 
-        VirtualKeyboard
+        Loader
         {
-            visible: true
-            Layout.column: 0
+            Layout.column: 1
             Layout.row: 2
-            Layout.columnSpan: inputSettingPanelLayout.columns
-            Layout.alignment: Qt.AlignBottom
-            width: app.screenWidth()
+            Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
+            Layout.fillWidth: parent
+            focus: false
+            source: virtualKeyboardSet === 0 ? "VirtualKeyboardLatin.qml" :
+                    virtualKeyboardSet === 1 ? "VirtualKeyboardCyrillic.qml" :
+                                               "VirtualKeyboardNumeric.qml"
         }
     }
 }

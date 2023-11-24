@@ -16,13 +16,14 @@ class KeyEmitter : public QObject
     Q_OBJECT
 
 public:
-    KeyEmitter(AppManager* app, QObject* parent = nullptr) : QObject(parent), appManager(app) {}
+    KeyEmitter(QObject* parent = nullptr) : QObject(parent) {}
 
     Q_INVOKABLE void emitKey(Qt::Key);
     Q_INVOKABLE void emitChar(QChar);
 
-private:
-    AppManager* appManager;
+signals:
+    void enterChar(const QChar v);
+    void enterKey(const Qt::Key);
 };
 
 #endif // KEYEMITTER_H

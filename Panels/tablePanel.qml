@@ -80,8 +80,7 @@ Rectangle
     {
         id: tablePanelLayout
         anchors.fill: parent
-        columnSpacing: app.spacer() / 2
-        rowSpacing: 0
+        columnSpacing: screenManager.spacer() / 2
         columns: 3
         rows: 2
 
@@ -92,11 +91,7 @@ Rectangle
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             icon.source: "../Icons/empty_48"
-            onClicked:
-            {
-                app.onUserAction();
-                app.onTableBackClicked()
-            }
+            onClicked: app.onTableBackClicked()
         }
 
         Text
@@ -105,7 +100,7 @@ Rectangle
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
-            font { pointSize: app.normalFontSize() }
+            font { pointSize: screenManager.normalFontSize() }
             wrapMode: Text.WordWrap
             color: Material.color(Material.BlueGrey, Material.Shade600)
             text: "/"
@@ -118,7 +113,7 @@ Rectangle
             Layout.columnSpan: tablePanelLayout.columns
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            Layout.rightMargin: app.spacer() / 2
+            Layout.rightMargin: screenManager.spacer() / 2
             color: Material.background
 
             ListView
@@ -131,17 +126,17 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.scrollBarWidth()
+                    width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AlwaysOn
+                    policy: ScrollBar.AsNeeded
                 }
 
                 model: tablePanelModel
                 delegate: Label
                 {
                     width: tablePanelResultList.width
-                    font { pointSize: app.normalFontSize() }
-                    padding: app.spacer()
+                    font { pointSize: screenManager.normalFontSize() }
+                    padding: screenManager.spacer()
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     background: Rectangle
                     {
@@ -149,15 +144,10 @@ Rectangle
                                                  Material.color(Material.Grey, Material.Shade200)
                     }
                     text: model.value // Roles::ValueRole
-
                     MouseArea
                     {
                         anchors.fill: parent
-                        onClicked:
-                        {
-                            app.onUserAction();
-                            app.onTableResultClicked(index)
-                        }
+                        onClicked: app.onTableResultClicked(index)
                     }
                 }
             }

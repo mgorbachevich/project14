@@ -15,12 +15,12 @@
 #define WAIT_SECRET_MSEC 5000
 #define EOL "\r\n"
 
-#define CLEAR_DB_ON_START false
-#define CHECK_AUTHORIZATION true
-#define WM_DEMO false
-#define PRINTER_DEMO false
+#define WM_DEMO true
+#define PRINTER_DEMO true
 #define WM_HTTP true
 #define PRINTER_HTTP true
+#define CLEAR_DB_ON_START true
+#define CHECK_AUTHORIZATION true
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -96,6 +96,13 @@ enum NetRequest
     NetRequest_Get,
     NetRequest_Set,
     NetRequest_Delete,
+};
+
+enum VirtualKeyboardSet
+{
+    VirtualKeyboardSet_Latin = 0,
+    VirtualKeyboardSet_Cyrillic = 1,
+    VirtualKeyboardSet_Numeric = 2,
 };
 
 #endif // CONSTANTS_H

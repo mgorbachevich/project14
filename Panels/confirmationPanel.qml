@@ -24,16 +24,16 @@ Popup
     Rectangle
     {
         anchors.fill: parent
-        radius: app.spacer()
+        radius: screenManager.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
         color: Material.background
 
         GridLayout
         {
             anchors.fill: parent
-            anchors.margins: app.spacer()
-            columnSpacing: app.spacer()
-            rowSpacing: app.spacer()
+            anchors.margins: screenManager.spacer()
+            columnSpacing: 0
+            rowSpacing: 0
             columns: 1
             rows: 3
 
@@ -63,13 +63,10 @@ Popup
                 Layout.column: 0
                 Layout.row: 0
                 Layout.fillWidth: parent
-                Layout.preferredHeight: app.buttonSize()
+                Layout.preferredHeight: screenManager.buttonSize()
                 color: "transparent"
 
-                CardTitleText
-                {
-                    text: titleText
-                }
+                CardTitleText { text: titleText }
             }
 
             Rectangle
@@ -78,30 +75,26 @@ Popup
                 Layout.row: 1
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.bottomMargin: app.buttonSize() / 2
+                Layout.bottomMargin: screenManager.buttonSize() / 2
                 color: "transparent"
 
-                CardText
-                {
-                    text: messageText
-                }
+                CardText { text: messageText }
             }
 
             Row
             {
-                spacing: app.spacer() * 4
-                Layout.preferredWidth: app.buttonSize() * 3 + spacing
+                spacing: screenManager.spacer() * 4
+                Layout.preferredWidth: screenManager.buttonSize() * 3 + spacing
                 Layout.column: 0
                 Layout.row: 2
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
 
                 RoundTextButton
                 {
-                    width: app.buttonSize() * 3 / 2
-                    text: qsTr(" ДА ")
+                    width: screenManager.buttonSize() * 3 / 2
+                    text: qsTr("ДА")
                     onClicked:
                     {
-                        app.onUserAction();
                         app.onConfirmationClicked(dialogSelector)
                         confirmationPanel.close()
                     }
@@ -109,7 +102,7 @@ Popup
 
                 RoundTextButton
                 {
-                    width: app.buttonSize() * 3 / 2
+                    width: screenManager.buttonSize() * 3 / 2
                     text: qsTr("НЕТ")
                     onClicked:
                     {

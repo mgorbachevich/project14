@@ -7,16 +7,17 @@ import RegisteredTypes
 
 RoundButton
 {
-    height: app.buttonSize()
-    radius: app.spacer()
-    leftInset: app.spacer() / 4
-    topInset: app.spacer() / 4
-    rightInset: app.spacer() / 4
-    bottomInset: app.spacer() / 4
-    horizontalPadding: app.spacer() * 2
-    verticalPadding: app.spacer() / 4
+    height: screenManager.buttonSize()
+    Layout.preferredHeight: screenManager.buttonSize()
+    radius: screenManager.spacer()
+    leftInset: screenManager.spacer() / 4
+    topInset: screenManager.spacer() / 4
+    rightInset: screenManager.spacer() / 4
+    bottomInset: screenManager.spacer() / 4
+    horizontalPadding: screenManager.spacer() * 2
+    verticalPadding: screenManager.spacer() / 4
     Material.background: Material.color(Material.BlueGrey, Material.Shade200)
     Material.foreground: Material.color(Material.BlueGrey, Material.Shade900)
-    font { pointSize: app.normalFontSize() }
+    font { pointSize: screenManager.normalFontSize() }
     flat: true
 }

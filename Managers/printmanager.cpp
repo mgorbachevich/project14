@@ -9,13 +9,16 @@
 #include "Label/labelcreator.h"
 
 PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& globalSettings, const bool demo):
-    QObject(parent), demoMode(demo), db(dataBase), settings(globalSettings)
+    QObject(parent), db(dataBase), settings(globalSettings)
 {
     qDebug() << "@@@@@ PrintManager::PrintManager " << demo;
-    slpa = new Slpa100u(this);
-    labelCreator = new LabelCreator(this);
-    connect(slpa, &Slpa100u::printerErrorChanged, this, &PrintManager::onErrorStatusChanged);
-    connect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
+    if(!demo)
+    {
+        slpa = new Slpa100u(this);
+        labelCreator = new LabelCreator(this);
+        connect(slpa, &Slpa100u::printerErrorChanged, this, &PrintManager::onErrorStatusChanged);
+        connect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
+    }
 }
 
 int PrintManager::start(const QString& url)
@@ -52,14 +55,14 @@ QString PrintManager::version() const
 void PrintManager::feed()
 {
     qDebug() << "@@@@@ PrintManager::feed";
-    if(!started || demoMode) return;
+    if(!started || slpa == nullptr) return;
     slpa->feed();
     // int e = slpa->feed(); todo
 }
 
 bool PrintManager::isStateError(uint16_t s) const
 {
-    if(demoMode) return false;
+    if(slpa == nullptr) return false;
     bool b0 = isFlag(s, 0);
     bool b1 = isFlag(s, 1);
     bool b2 = isFlag(s, 2);
@@ -86,11 +89,12 @@ QString PrintManager::getErrorDescription(const int e) const
 void PrintManager::onStatusChanged(uint16_t s)
 {
     qDebug() << QString("@@@@@ PrintManager::onStatusChanged %1b").arg(s);
-    if(demoMode)
+    if(slpa == nullptr)
     {
         status = 0;
         return;
     }
+
     bool b0 = isFlag(s, 0);
     bool b1 = isFlag(s, 1);
     bool b2 = isFlag(s, 2);
@@ -118,7 +122,7 @@ void PrintManager::onStatusChanged(uint16_t s)
 void PrintManager::onErrorStatusChanged(int e)
 {
     qDebug() << "@@@@@ PrintManager::onErrorStatusChanged " << e;
-    if(!demoMode && errorCode != e)
+    if(slpa != nullptr && errorCode != e)
     {
         errorCode = e;
         emit paramChanged(EquipmentParam_PrintError, e);
@@ -129,65 +133,61 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
                          const QString& quantity, const QString& price, const QString& amount)
 {
     qDebug() << "@@@@@ PrintManager::print";
-    if(started)
-    {
-        quint64 dateTime = Tools::currentDateTimeToUInt();
-        int labelNumber = 0; // todo
-        int e = 0;
-        if(demoMode) e = slpa->printTest(100);
-        else
-        {
-            e = labelCreator->loadLabel(":/Labels/60x40.lpr"); // todo
-            if (e == 0)
-            {
-                PrintData pd;
-                pd.weight = quantity;
-                pd.price = price;
-                pd.cost = amount;
-                pd.tare = product[ProductDBTable::Tare].toString();
-                pd.barcode = product[ProductDBTable::Barcode].toString();
-                pd.itemcode = product[ProductDBTable::Code].toString();
-                pd.name = product[ProductDBTable::Name].toString();
-                pd.shelflife = product[ProductDBTable::Shelflife].toString();
-                pd.validity = ""; // todo
-                pd.price2 = product[ProductDBTable::Price2].toString();
-                pd.certificate = product[ProductDBTable::Certificate].toString();
-                pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
-                pd.shop = settings.getItemStringValue(SettingDBTable::SettingCode_ShopName);
-                pd.operatorcode = user[UserDBTable::Code].toString();
-                pd.operatorname = user[UserDBTable::Name].toString();
-                pd.date = Tools::dateFromUInt(dateTime);
-                pd.time = Tools::timeFromUInt(dateTime);
-                pd.labelnumber = QString::number(labelNumber);
-                pd.scalesnumber = settings.getItemStringValue(SettingDBTable::SettingCode_ScalesNumber),
-                pd.picturefile = ""; // todo
-                pd.textfile = ""; // todo
+    if(!started || slpa == nullptr) return;
 
-                QImage p = labelCreator->createImage(pd);
-                e = slpa->print(p);
-            }
-        }
-        if(e == 0)
-        {
-            TransactionDBTable* t = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
-            DBRecord r = t->createRecord(
-                        dateTime,
-                        user[UserDBTable::Code].toInt(),
-                        Tools::stringToInt(product[ProductDBTable::Code]),
-                        labelNumber,
-                        Tools::stringToDouble(quantity),
-                        Tools::stringToInt(price),
-                        Tools::stringToInt(amount));
-            emit printed(r);
-        }
-        /*
-        else
-        {
-            QString s = QString("Ошибка печати %1").arg(error);
-            emit showMessageBox("Внимание!", s, true);
-        }
-        */
+    quint64 dateTime = Tools::currentDateTimeToUInt();
+    int labelNumber = 0; // todo
+    int e = labelCreator->loadLabel(":/Labels/60x40.lpr"); // todo
+    //int e = slpa->printTest(100);
+    if (e == 0)
+    {
+        PrintData pd;
+        pd.weight = quantity;
+        pd.price = price;
+        pd.cost = amount;
+        pd.tare = product[ProductDBTable::Tare].toString();
+        pd.barcode = product[ProductDBTable::Barcode].toString();
+        pd.itemcode = product[ProductDBTable::Code].toString();
+        pd.name = product[ProductDBTable::Name].toString();
+        pd.shelflife = product[ProductDBTable::Shelflife].toString();
+        pd.validity = ""; // todo
+        pd.price2 = product[ProductDBTable::Price2].toString();
+        pd.certificate = product[ProductDBTable::Certificate].toString();
+        pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
+        pd.shop = settings.getItemStringValue(SettingDBTable::SettingCode_ShopName);
+        pd.operatorcode = user[UserDBTable::Code].toString();
+        pd.operatorname = user[UserDBTable::Name].toString();
+        pd.date = Tools::dateFromUInt(dateTime);
+        pd.time = Tools::timeFromUInt(dateTime);
+        pd.labelnumber = QString::number(labelNumber);
+        pd.scalesnumber = settings.getItemStringValue(SettingDBTable::SettingCode_ScalesNumber),
+        pd.picturefile = ""; // todo
+        pd.textfile = ""; // todo
+
+        QImage p = labelCreator->createImage(pd);
+        e = slpa->print(p);
     }
+    if(e == 0)
+    {
+        TransactionDBTable* t = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
+        DBRecord r = t->createRecord(
+                    dateTime,
+                    user[UserDBTable::Code].toInt(),
+                    Tools::stringToInt(product[ProductDBTable::Code]),
+                    labelNumber,
+                    Tools::stringToDouble(quantity),
+                    Tools::stringToInt(price),
+                    Tools::stringToInt(amount));
+        emit printed(r);
+    }
+    /*
+    else
+    {
+        QString s = QString("Ошибка печати %1").arg(error);
+        emit showMessageBox("Внимание!", s, true);
+    }
+    */
 }
+
 
 

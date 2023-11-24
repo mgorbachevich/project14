@@ -3,32 +3,26 @@
 
 #include <QVariantList>
 #include "settingdbtable.h"
-#include "settinggroupdbtable.h"
 #include "constants.h"
 
 class Settings
 {
 public:
     Settings() {}
-    DBRecord* getItemByIndex(const int index) { return getByIndex(items, index); }
-    DBRecord* getItemByCode(const int);
-    DBRecord* getGroupByIndex(const int index) { return getByIndex(groups, index); }
-    DBRecord* getItemByIndexInGroup(const int);
     int getItemIntValue(const SettingDBTable::SettingCode);
     bool getItemBoolValue(const SettingDBTable::SettingCode);
-    QString getCurrentGroupName();
     QString getItemStringValue(const SettingDBTable::SettingCode);
+    DBRecord* getItemByCode(const int);
+    DBRecord* getItemByIndex(const int);
+    DBRecord* getItemByIndexInCurrentGroup(const int);
     QList<int> getCurrentGroupItemCodes();
-    void createGroups(SettingGroupDBTable*);
+    DBRecordList getCurrentGroupItems();
+    bool isGroup(const DBRecord&);
+    QString getCurrentGroupName();
     void updateAllItems(const DBRecordList&);
 
     DBRecordList items;
-    DBRecordList groups;
-    int currentGroupIndex = 0;
-
-private:
-    DBRecord* getByIndex(DBRecordList&, const int);
-
+    int currentGroupCode = 0;
 };
 
 #endif // SETTINGS_H

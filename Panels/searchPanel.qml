@@ -28,31 +28,36 @@ Rectangle
     {
         id: searchPanelLayout
         anchors.fill: parent
-        columnSpacing: app.spacer() / 2
+        columnSpacing: screenManager.spacer() / 2
         rowSpacing: 0
-        //columns: 3
-        //rows: 4
+        columns: 4
+        rows: 4
+
+        EmptyButton
+        {
+            Layout.column: 0
+            Layout.row: 0
+            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+        }
 
         Rectangle
         {
-            Layout.column: 0
+            Layout.column: 1
             Layout.row: 0
             Layout.columnSpan: 2
             Layout.fillWidth: parent
             color: "transparent"
 
-            CardTitleText
-            {
-                text: qsTr("Поиск товаров")
-            }
+            CardTitleText { text: qsTr("Поиск товаров") }
         }
 
         EmptyButton
         {
-            Layout.column: 2
+            Layout.column: 3
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
         }
+
         /*
         RoundIconButton
         {
@@ -74,6 +79,7 @@ Rectangle
             Layout.column: 0
             Layout.row: 1
             Layout.rowSpan: 2
+            Layout.columnSpan: 2
             Layout.fillWidth: parent
             Layout.fillHeight: parent
             color: "transparent"
@@ -88,17 +94,17 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.scrollBarWidth()
+                    width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AlwaysOn
+                    policy: ScrollBar.AsNeeded
                 }
 
                 model: searchPanelModel
                 delegate: Label
                 {
-                    padding: app.spacer()
+                    padding: screenManager.spacer()
                     width: searchPanelResultListRectangle.width
-                    font { pointSize: app.normalFontSize() }
+                    font { pointSize: screenManager.normalFontSize() }
                     color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value // Roles::ValueRole
                     background: Rectangle
@@ -106,15 +112,10 @@ Rectangle
                         color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
                                                  Material.color(Material.Grey, Material.Shade200)
                     }
-
                     MouseArea
                     {
                         anchors.fill: parent
-                        onClicked:
-                        {
-                            app.onUserAction();
-                            app.onSearchResultClicked(index)
-                        }
+                        onClicked: app.onSearchResultClicked(index)
                     }
                 }
             }
@@ -123,13 +124,13 @@ Rectangle
         TextField
         {
             id: searchPanelTextField
-            Layout.column: 1
+            Layout.column: 2
             Layout.row: 1
             Layout.columnSpan: 2
             Layout.preferredWidth: filterWidth
             Material.accent: Material.Orange
             color: Material.color(Material.Grey, Material.Shade900)
-            font { pointSize: app.normalFontSize() }
+            font { pointSize: screenManager.normalFontSize() }
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
             onTextEdited: app.onUserAction();
@@ -183,10 +184,10 @@ Rectangle
 
         Rectangle
         {
-            Layout.column: 1
+            Layout.column: 2
             Layout.row: 2
             Layout.columnSpan: 2
-            Layout.rightMargin: app.spacer() / 2
+            Layout.rightMargin: screenManager.spacer() / 2
             Layout.preferredWidth: filterWidth
             Layout.fillHeight: parent
             Layout.alignment: Qt.AlignTop
@@ -204,19 +205,19 @@ Rectangle
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.scrollBarWidth()
+                    width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AlwaysOn
+                    policy: ScrollBar.AsNeeded
                 }
 
                 model: searchFilterModel
                 delegate: Label
                 {
                     width: searchPanelFilterList.width
-                    padding: app.spacer() / 2
+                    padding: screenManager.spacer() / 2
                     font
                     {
-                        pointSize: app.normalFontSize();
+                        pointSize: screenManager.normalFontSize();
                         styleName: searchPanelFilterList.currentIndex === index ? 'Bold' : 'Regular'
                     }
                     text: model.value // Roles::ValueRole
@@ -226,13 +227,11 @@ Rectangle
                         color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
                                                  Material.color(Material.Grey, Material.Shade200)
                     }
-
                     MouseArea
                     {
                         anchors.fill: parent
                         onClicked:
                         {
-                            app.onUserAction();
                             searchPanelFilterList.currentIndex = index
                             app.onSearchFilterClicked(index)
                         }
@@ -240,18 +239,5 @@ Rectangle
                 }
             }
         }
-        /*
-        VirtualKeyboard
-        {
-            id: searchPanelKeyboard
-            compact: true
-            visible: false
-            Layout.column: 0
-            Layout.row: 3
-            Layout.columnSpan: searchPanelLayout.columns
-            Layout.fillWidth: parent
-            Layout.alignment: Qt.AlignBottom
-        }
-        */
     }
 }

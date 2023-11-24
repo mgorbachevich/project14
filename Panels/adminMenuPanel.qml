@@ -8,39 +8,26 @@ import RegisteredTypes
 Column
 {
     anchors.horizontalCenter: parent.horizontalCenter
-    padding: app.spacer() / 2
-    spacing: app.spacer() / 4
+    spacing: screenManager.spacer() / 4
 
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
         icon.source: "../Icons/settings_black_48"
-        onClicked:
-        {
-            app.onUserAction();
-            app.onAdminSettingsClicked()
-        }
+        onClicked: app.onAdminSettingsClicked()
     }
 
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
         icon.source: "../Icons/lock_black_48"
-        onClicked:
-        {
-            app.onUserAction();
-            app.onLockClicked()
-        }
+        onClicked: app.onLockClicked()
     }
 
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
         icon.source: "../Icons/log_black_48"
-        onClicked:
-        {
-            app.onUserAction();
-            app.onViewLogClicked()
-        }
+        onClicked: app.onViewLogClicked()
     }
 }

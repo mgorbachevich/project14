@@ -9,7 +9,7 @@ Rectangle
 {
     id:  showcasePanel
     color: Material.background
-    property int imageSize: (height - app.spacer() * 3 / 2 + 1) / 2
+    property int imageSize: (height - screenManager.spacer() * 3 / 2 + 1) / 2
 
     focus: true
     Keys.onPressed: (event) =>
@@ -65,19 +65,19 @@ Rectangle
     {
         id: showcasePanelGrid
         anchors.fill: parent
-        anchors.rightMargin: app.spacer() / 2
-        anchors.leftMargin: app.spacer() / 2
-        anchors.topMargin: app.spacer() / 2
-        anchors.bottomMargin: app.spacer() / 2
+        anchors.rightMargin: screenManager.spacer() / 2
+        anchors.leftMargin: screenManager.spacer() / 2
+        anchors.topMargin: screenManager.spacer() / 2
+        anchors.bottomMargin: screenManager.spacer() / 2
         clip: true
-        cellWidth: showcasePanel.imageSize + app.spacer() / 2
-        cellHeight: showcasePanel.imageSize + app.spacer() / 2
+        cellWidth: showcasePanel.imageSize + screenManager.spacer() / 2
+        cellHeight: showcasePanel.imageSize + screenManager.spacer() / 2
 
         ScrollBar.vertical: ScrollBar
         {
-            width: app.scrollBarWidth()
+            width: screenManager.scrollBarWidth()
             background: Rectangle { color: "transparent" }
-            policy: ScrollBar.AlwaysOn
+            policy: ScrollBar.AsNeeded
         }
 
         model: showcasePanelModel
@@ -90,11 +90,7 @@ Rectangle
             MouseArea
             {
                 anchors.fill: parent
-                onClicked:
-                {
-                    app.onUserAction();
-                    app.onShowcaseClicked(index)
-                }
+                onClicked: app.onShowcaseClicked(index)
             }
         }
     }

@@ -2,14 +2,14 @@
 
 void ShowcasePanelModel::updateProducts(const DBRecordList& newProducts)
 {
-    qDebug() << "@@@@@ ShowcasePanelModel::updateProducts";
+    qDebug() << "@@@@@ ShowcasePanelModel::updateProducts " << newProducts.count();
     products.clear();
     products.append(newProducts);
 }
 
 void ShowcasePanelModel::updateImages(const QStringList& images)
 {
-    qDebug() << "@@@@@ ShowcasePanelModel::updateImages";
+    qDebug() << "@@@@@ ShowcasePanelModel::updateImages " << images.count();
     setStringList(images);
 }
 

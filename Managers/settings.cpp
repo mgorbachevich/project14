@@ -1,53 +1,10 @@
 #include "settings.h"
 #include "tools.h"
-#include "jsonparser.h"
-
-DBRecord* Settings::getItemByCode(const int code)
-{
-    bool ok = false;
-    for (int i = 0; i < items.count(); i++)
-    {
-        DBRecord& ri = items[i];
-        if (ri[SettingDBTable::Code].toInt(&ok) == code && ok)
-            return &ri;
-    }
-    return nullptr;
-}
-
-DBRecord *Settings::getItemByIndexInGroup(const int indexInGroup)
-{
-    QList<int> currentGroupItemCodes = getCurrentGroupItemCodes();
-    int j = 0;
-    for (int i = 0; i < currentGroupItemCodes.count(); i++)
-    {
-        DBRecord* ri = getItemByCode(currentGroupItemCodes[i]);
-        if(ri != nullptr)
-        {
-            if (j == indexInGroup)
-                return ri;
-            j++;
-        }
-    }
-    return nullptr;
-}
 
 QString Settings::getItemStringValue(const SettingDBTable::SettingCode code)
 {
     DBRecord* r = getItemByCode(code);
     return r != nullptr ? (r->at(SettingDBTable::Value)).toString() : "";
-}
-
-QList<int> Settings::getCurrentGroupItemCodes()
-{
-    QList<int> codes;
-    DBRecord* group = getGroupByIndex(currentGroupIndex);
-    if(group != nullptr)
-    {
-        QStringList sl = group->at(SettingGroupDBTable::Items).toString().split(',');
-        for (int i = 0; i < sl.count(); i++)
-            codes.append(Tools::stringToInt(sl[i]));
-    }
-    return codes;
 }
 
 int Settings::getItemIntValue(const SettingDBTable::SettingCode code)
@@ -60,18 +17,69 @@ bool Settings::getItemBoolValue(const SettingDBTable::SettingCode code)
     return getItemIntValue(code) != 0;
 }
 
-QString Settings::getCurrentGroupName()
+DBRecord* Settings::getItemByCode(const int code)
 {
-    DBRecord* r = getGroupByIndex(currentGroupIndex);
-    if (r != nullptr)
-        return r->at(SettingGroupDBTable::Name).toString();
-    return "";
+    bool ok = false;
+    for (int i = 0; i < items.count(); i++)
+    {
+        DBRecord& ri = items[i];
+        if (ri[SettingDBTable::Code].toInt(&ok) == code && ok) return &ri;
+    }
+    return nullptr;
 }
 
-void Settings::createGroups(SettingGroupDBTable* table)
+DBRecord* Settings::getItemByIndex(const int index)
 {
-    groups.clear();
-    groups.append(JSONParser::parseTable(table, Tools::readTextFile(DEFAULT_SETTING_GROUPS_FILE)));
+    return (index >= 0 && index < items.count()) ? &items[index] : nullptr;
+}
+
+DBRecord *Settings::getItemByIndexInCurrentGroup(const int indexInGroup)
+{
+    QList<int> currentGroupItemCodes = getCurrentGroupItemCodes();
+    int ii = 0;
+    for (int i = 0; i < currentGroupItemCodes.count(); i++)
+    {
+        DBRecord* ri = getItemByCode(currentGroupItemCodes[i]);
+        if (ii == indexInGroup) return ri;
+        ii++;
+    }
+    return nullptr;
+}
+
+QList<int> Settings::getCurrentGroupItemCodes()
+{
+    QList<int> codes;
+    for (int i = 0; i < items.count(); i++)
+    {
+        DBRecord& item = items[i];
+        int groupCode = item[SettingDBTable::GroupCode].toInt();
+        if (groupCode == currentGroupCode) codes.append(item[SettingDBTable::Code].toInt());
+    }
+    qDebug() << "@@@@@ SettingsPanelModel::getCurrentGroupItemCodes " << codes;
+    return codes;
+}
+
+DBRecordList Settings::getCurrentGroupItems()
+{
+    DBRecordList items;
+    for (int i = 0; i < items.count(); i++)
+    {
+        DBRecord& item = items[i];
+        int groupCode = item[SettingDBTable::GroupCode].toInt();
+        if (groupCode == currentGroupCode) items.append(item);
+    }
+    return items;
+}
+
+bool Settings::isGroup(const DBRecord& r)
+{
+    return r.count() >= SettingDBTable::Type && r[SettingDBTable::Type].toInt() == SettingDBTable::SettingType_Group;
+}
+
+QString Settings::getCurrentGroupName()
+{
+    DBRecord* r = getItemByCode(currentGroupCode);
+    return (r != nullptr && r->count() >= SettingDBTable::Name)? r->at(SettingDBTable::Name).toString() : "Настройки";
 }
 
 void Settings::updateAllItems(const DBRecordList& records)
@@ -80,7 +88,4 @@ void Settings::updateAllItems(const DBRecordList& records)
     items.append(records);
 }
 
-DBRecord *Settings::getByIndex(DBRecordList& records, const int index)
-{
-    return (index >= 0 && index < records.count()) ? &records[index] : nullptr;
-}
+

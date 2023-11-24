@@ -5,4 +5,7 @@ import QtQuick.Layouts
 import "../constants.js" as Constants
 import RegisteredTypes
 
-RoundIconButton {}
+RoundIconButton
+{
+    focusPolicy: Qt.NoFocus
+}

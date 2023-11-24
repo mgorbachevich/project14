@@ -9,16 +9,16 @@ Rectangle
 {
     id:  weightPanel
 
-    property int valueFontSize: app.weightValueFontSize()
-    property int titleFontSize: app.weightTitleFontSize()
-    property int flagIconSize: (valueFontSize + titleFontSize + app.spacer()) / 4
-    property int flagIconWidth: flagIconSize + app.spacer()
-    property int displayWidth: weightPanel.width - flagIconWidth - app.spacer()
+    property int valueFontSize: screenManager.weightValueFontSize()
+    property int titleFontSize: screenManager.weightTitleFontSize()
+    property int flagIconSize: (valueFontSize + titleFontSize + screenManager.spacer()) / 4
+    property int flagIconWidth: flagIconSize + screenManager.spacer()
+    property int displayWidth: weightPanel.width - flagIconWidth - screenManager.spacer()
     property int weightWidth: displayWidth * 6 / (6 + 7 + 9)
     property int priceWidth: displayWidth * 7 / (6 + 7 + 9)
     property int amountWidth: displayWidth - weightWidth - priceWidth
 
-    height: valueFontSize + titleFontSize + app.spacer()
+    height: valueFontSize + titleFontSize + screenManager.spacer()
     Material.background: Material.color(Material.Grey, Material.Shade900)
     color: Material.background
 
@@ -164,11 +164,7 @@ Rectangle
                 MouseArea
                 {
                     anchors.fill: parent
-                    onClicked:
-                    {
-                        // app.onUserAction();
-                        app.onWeightPanelClicked(1);
-                    }
+                    onClicked: app.onWeightPanelClicked(1);
                 }
             }
         }
@@ -199,11 +195,7 @@ Rectangle
                 MouseArea
                 {
                     anchors.fill: parent
-                    onClicked:
-                    {
-                        // app.onUserAction();
-                        app.onWeightPanelClicked(2);
-                    }
+                    onClicked: app.onWeightPanelClicked(2);
                 }
             }
         }
@@ -234,11 +226,7 @@ Rectangle
                 MouseArea
                 {
                     anchors.fill: parent
-                    onClicked:
-                    {
-                        // app.onUserAction();
-                        app.onWeightPanelClicked(3);
-                    }
+                    onClicked: app.onWeightPanelClicked(3);
                 }
             }
         }

@@ -19,16 +19,22 @@ Popup
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
+    Connections // Slot for signal AppManager::closeSettings
+    {
+        target: app
+        function onCloseSettings() { settingPanel.close() }
+    }
+
     GridLayout
     {
         anchors.fill: parent
-        anchors.margins: app.spacer()
-        columnSpacing: app.spacer()
-        rowSpacing: app.spacer()
+        anchors.margins: screenManager.spacer()
+        columnSpacing: 0
+        rowSpacing: 0
         columns: 3
         rows: 2
-
         focus: true
+
         Keys.onPressed: (event) =>
         {
             console.debug("@@@@@ settingPanel Keys.onPressed ", JSON.stringify(event))
@@ -53,13 +59,11 @@ Popup
             }
         }
 
-        Rectangle
+        EmptyButton
         {
             Layout.column: 0
             Layout.row: 0
-            Layout.preferredWidth: app.buttonSize()
-            Layout.preferredHeight: app.buttonSize()
-            color: "transparent"
+            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
         }
 
         Rectangle
@@ -67,13 +71,9 @@ Popup
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
-            Layout.preferredHeight: app.buttonSize()
             color: "transparent"
 
-            CardTitleText
-            {
-                text: panelTitle
-            }
+            CardTitleText { text: panelTitle }
         }
 
         RoundIconButton
@@ -82,11 +82,7 @@ Popup
             Layout.row: 0
             icon.source: "../Icons/close_black_48"
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-            onClicked:
-            {
-                app.onUserAction();
-                settingPanel.close()
-            }
+            onClicked: app.onSettingsPanelCloseClicked()
         }
 
         Rectangle
@@ -96,6 +92,7 @@ Popup
             Layout.columnSpan: 3
             Layout.fillWidth: parent
             Layout.fillHeight: parent
+            Layout.rightMargin: screenManager.spacer() / 2
             color: Material.color(Material.Grey, Material.Shade50)
 
             ListView
@@ -108,50 +105,51 @@ Popup
 
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: app.spacer()
+                    width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AlwaysOn
+                    policy: ScrollBar.AsNeeded
                 }
 
                 model: settingsPanelModel
                 delegate: Row
                 {
-                    padding: app.spacer()
-                    spacing: app.spacer()
-
-                    Text
+                    Label
                     {
-                        width: settingPanelList.width / 2 - app.spacer() * 4
-                        font { pointSize: app.normalFontSize() }
+                        width: settingPanelList.width * 2 / 3
+                        padding: screenManager.spacer()
+                        font { pointSize: screenManager.normalFontSize() }
                         wrapMode: Text.WordWrap
                         text: model.first // Roles::FirstRole
 
+                        background: Rectangle
+                        {
+                            color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
+                                                     Material.color(Material.Grey, Material.Shade200)
+                        }
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked:
-                            {
-                                app.onUserAction();
-                                app.onSettingsItemClicked(index)
-                            }
+                            onClicked: app.onSettingsItemClicked(index)
                         }
                     }
 
-                    Text
+                    Label
                     {
-                        width: settingPanelList.width / 2
-                        font { pointSize: app.normalFontSize() }
+                        width: settingPanelList.width / 3
+                        font { pointSize: screenManager.normalFontSize() }
+                        padding: screenManager.spacer()
                         wrapMode: Text.WordWrap
                         text: model.second // Roles::SecondRole
 
+                        background: Rectangle
+                        {
+                            color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
+                                                     Material.color(Material.Grey, Material.Shade200)
+                        }
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked:
-                            {
-                                app.onUserAction();
-                                app.onSettingsItemClicked(index)
-                            }
+                            onClicked: app.onSettingsItemClicked(index)
                         }
                     }
                 }

@@ -7,10 +7,12 @@
 WeightManager::WeightManager(QObject *parent, const bool demo): QObject(parent)
 {
     qDebug() << "@@@@@ WeightManager::WeightManager " << demo;
-    demoMode = demo;
-    wm100 = new Wm100(this);
-    connect(wm100, &Wm100::weightStatusChanged, this, &WeightManager::onStatusChanged);
-    connect(wm100, &Wm100::errorStatusChanged, this, &WeightManager::onErrorStatusChanged);
+    if(!demo)
+    {
+        wm100 = new Wm100(this);
+        connect(wm100, &Wm100::weightStatusChanged, this, &WeightManager::onStatusChanged);
+        connect(wm100, &Wm100::errorStatusChanged, this, &WeightManager::onErrorStatusChanged);
+    }
 }
 
 int WeightManager::start(const QString& url) // return error
@@ -46,7 +48,7 @@ QString WeightManager::version() const
         Wm100Protocol::device_metrics dm;
         if(wm100->getDeviceMetrics(&dm) >= 0) return QString::number(dm.protocol_version);
     }
-    return "?";
+    return "DEMO";
 }
 
 void WeightManager::setWeightParam(const int param)
