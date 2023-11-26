@@ -86,7 +86,8 @@ private:
     void refreshAll();
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void resetProduct();
-    void runEquipment(const bool);
+    void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void stopEquipment();
     void print();
     QString getImageFileWithQmlPath(const DBRecord&);
 
@@ -131,7 +132,6 @@ signals:
     void selectFromDB(const DataBase::Selector, const QString&);
     void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void setCurrentUser(const int, const QString&);
-    void settingsChanged();
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);

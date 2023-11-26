@@ -1,6 +1,7 @@
 #include "settingdbtable.h"
 #include "tools.h"
 #include "jsonparser.h"
+#include "database.h"
 
 SettingDBTable::SettingDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
@@ -25,29 +26,29 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
         case 0:
             ok = false;
             break;
-        case SettingCode_ScalesNumber:
+        case Settings::SettingCode_ScalesNumber:
             ok = value > 0 && value <= 999999;
             break;
-        case SettingCode_PointPosition:
+        case Settings::SettingCode_PointPosition:
             ok = value >= 0 && value <= 3;
             break;
-        case SettingCode_ProductReset:
-            ok = value >= ProductReset_None && value <= ProductReset_Time;
+        case Settings::SettingCode_ProductReset:
+            ok = value >= Settings::ProductReset_None && value <= Settings::ProductReset_Time;
             break;
-        case SettingCode_ProductResetTime:
+        case Settings::SettingCode_ProductResetTime:
             ok = value >= 0;
             break;
-        case SettingCode_SearchType:
+        case Settings::SettingCode_SearchType:
             ok = value >= 0 && value <= 1;
             break;
-        case SettingCode_Logging:
+        case Settings::SettingCode_Logging:
             ok = value >= 0 && value <= 5;
             break;
-        case SettingCode_SearchCodeSymbols:
-        case SettingCode_SearchBarcodeSymbols:
+        case Settings::SettingCode_SearchCodeSymbols:
+        case Settings::SettingCode_SearchBarcodeSymbols:
             ok = value >= 0 && value <= 9;
             break;
-        case SettingCode_WMBaudrate:
+        case Settings::SettingCode_WMBaudrate:
             ok = value >= 0 && value <= 6;
             break;
         default: break; // Без проверки
@@ -61,7 +62,7 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
     return result;
 }
 
-const DBRecordList SettingDBTable::checkList(const DBRecordList& records)
+const DBRecordList SettingDBTable::checkList(DataBase* db, const DBRecordList& records)
 {
     qDebug() << "@@@@@ SettingDBTable::checkList";
     DBRecordList result;
@@ -70,44 +71,31 @@ const DBRecordList SettingDBTable::checkList(const DBRecordList& records)
     for (int i = 0; i < records.count(); i++)
     {
         DBRecord r = checkRecord(records[i]);
-        if (!r.isEmpty())
-            result.append(r);
+        if (!r.isEmpty()) result.append(r);
     }
 
     // Добавление недостающих значений по умолчанию:
     DBRecordList defaultRecords = JSONParser::parseTable(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    for(int i = 0; i < SettingCode_Max; i++) checkDefault(i, defaultRecords, result);
+    for(int i = 0; i < Settings::SettingCode_Max; i++) checkAndSaveDefaultRecord(db, i, defaultRecords, result);
     return result;
 }
 
-int SettingDBTable::getBoudrate(const int code)
+void SettingDBTable::checkAndSaveDefaultRecord(DataBase* db, const int code, const DBRecordList& defaults, DBRecordList& results)
 {
-    switch (code)
+    for (int i = 0; i < results.count(); i++)
     {
-    case SettingDBTable::WMBaudrate_2400:   return 2400;
-    case SettingDBTable::WMBaudrate_4800:   return 4800;
-    case SettingDBTable::WMBaudrate_9600:   return 9600;
-    case SettingDBTable::WMBaudrate_19200:  return 19200;
-    case SettingDBTable::WMBaudrate_38400:  return 38400;
-    case SettingDBTable::WMBaudrate_57600:  return 57600;
-    case SettingDBTable::WMBaudrate_115200: return 115200;
+        if (results.at(i).at(Columns::Code).toInt() == code) return; // уже есть такая запись
     }
-    return 9600;
-}
-
-void SettingDBTable::checkDefault(const int code, const DBRecordList& defaultRecords, DBRecordList& resultRecords)
-{
-    for (int i = 0; i < resultRecords.count(); i++)
+    for (int i = 0; i < defaults.count(); i++)
     {
-        if (resultRecords.at(i).at(Columns::Code).toInt() == code) return; // уже есть такая запись
-    }
-    for (int i = 0; i < defaultRecords.count(); i++)
-    {
-        DBRecord ri = defaultRecords.at(i);
+        DBRecord ri = defaults.at(i);
         if (ri.at(Columns::Code).toInt() == code)
         {
-            qDebug() << "@@@@@ SettingDBTable::checkDefault add default record " << code;
-            resultRecords.append(ri);
+            if(db->insertRecord(this, ri))
+            {
+                qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord " << code;
+                results.append(ri);
+            }
             return;
         }
     }

@@ -198,7 +198,7 @@ void DataBase::selectAll(DBTable *table, DBRecordList& resultRecords)
         DBRecordList records;
         QString sql = QString("SELECT * FROM %1").arg(table->name);
         executeSelectSQL(table, sql, records);
-        resultRecords.append(table->checkList(records));
+        resultRecords.append(table->checkList(this, records));
     }
 }
 
@@ -227,18 +227,19 @@ bool DataBase::removeRecord(DBTable* table, const QString& code)
 bool DataBase::insertRecord(DBTable *table, const DBRecord& record)
 {
     if (!opened) return false;
-    qDebug() << "@@@@@ DataBase::insertRecord: table name =" << table->name;
     DBRecord checkedRecord = table->checkRecord(record);
     if (checkedRecord.isEmpty())
     {
-        qDebug() << "@@@@@ DataBase::insertRecord ERROR (check record)";
+        qDebug() << "@@@@@ DataBase::insertRecord ERROR";
         //saveLog(LogDBTable::LogType_Error, "БД. Не сохранена запись в таблице " + table->name);
         return false;
     }
 
+    QString code = checkedRecord.at(0).toString();
     QString sql;
     DBRecord r;
-    if (selectById(table, checkedRecord.at(0).toString(), r)) removeRecord(table, r.at(0).toString());
+    qDebug() << "@@@@@ DataBase::insertRecord " << table->name << code;
+    if (selectById(table, code, r)) removeRecord(table, code);
     sql = "INSERT INTO " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
     {
@@ -257,7 +258,7 @@ bool DataBase::insertRecord(DBTable *table, const DBRecord& record)
 void DataBase::saveLog(const int type, const int source, const QString &comment)
 {
     if (!opened) return;
-    int logging = settings.getItemIntValue(SettingDBTable::SettingCode_Logging);
+    int logging = settings.getItemIntValue(Settings::SettingCode_Logging);
     if (type > 0 && type <= logging)
     {
         qDebug() << "@@@@@ DataBase::saveLog: " << type << source << comment;
@@ -274,7 +275,7 @@ void DataBase::removeOldLogRecords()
     if (!opened) return;
     qDebug() << "@@@@@ DataBase::removeOldLogRecords";
     DBTable* t = getTableByName(DBTABLENAME_LOG);
-    quint64 logDuration = settings.getItemIntValue(SettingDBTable::SettingCode_LogDuration);
+    quint64 logDuration = settings.getItemIntValue(Settings::SettingCode_LogDuration);
     if(t != nullptr && logDuration > 0) // Remove old records
     {
         quint64 first = Tools::currentDateTimeToUInt() - logDuration * 24 * 60 * 60 * 1000;
@@ -293,7 +294,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
     DBRecordList resultRecords;
     switch(selector)
     {
-    case Selector::GetSettings:
+    case Selector::UpdateSettings:
+    case Selector::ChangeSettings:
     // Запрос списка настроек:
         selectAll(getTableByName(DBTABLENAME_SETTINGS), resultRecords);
         break;
@@ -375,8 +377,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         QString p = param.trimmed();
         if (p.isEmpty())
             break;
-        if (!settings.getItemBoolValue(SettingDBTable::SettingCode_SearchType))
-            if (p.size() < settings.getItemIntValue(SettingDBTable::SettingCode_SearchCodeSymbols))
+        if (!settings.getItemBoolValue(Settings::SettingCode_SearchType))
+            if (p.size() < settings.getItemIntValue(Settings::SettingCode_SearchCodeSymbols))
                 break;
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
@@ -399,8 +401,8 @@ void DataBase::onSelect(const DataBase::Selector selector, const QString& param)
         QString p = param.trimmed();
         if (p.isEmpty())
             break;
-        if (!settings.getItemBoolValue(SettingDBTable::SettingCode_SearchType))
-            if (p.size() < settings.getItemIntValue(SettingDBTable::SettingCode_SearchBarcodeSymbols))
+        if (!settings.getItemBoolValue(Settings::SettingCode_SearchType))
+            if (p.size() < settings.getItemIntValue(Settings::SettingCode_SearchBarcodeSymbols))
                 break;
         DBTable* t = getTableByName(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
@@ -487,12 +489,12 @@ QString DataBase::deleteRecords(const QString& tableName, const QString& codeLis
     // Удаление из таблицы по списку кодов
 
     qDebug() << "@@@@@ DataBase::deleteRecords" << tableName << codeList;
-    saveLog(LogType_Error, LogSource_DB, QString(" Удаление. Таблица: %1").arg(tableName));
+    saveLog(LogType_Error, LogSource_DB, QString(" Удаление. Таблица: %1").arg(tableName));
 
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = settings.getItemIntValue(SettingDBTable::SettingCode_Logging);
+    int logging = settings.getItemIntValue(Settings::SettingCode_Logging);
     bool detailedLog = logging >= LogType_Info;
     DBTable* t = getTableByName(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -559,7 +561,7 @@ QString DataBase::uploadRecords(const QString& tableName, const QString& codeLis
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    bool detailedLog = settings.getItemIntValue(SettingDBTable::SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings.getItemIntValue(Settings::SettingCode_Logging) >= LogType_Info;
     DBRecordList records;
     DBTable* t = getTableByName(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -668,7 +670,7 @@ QString DataBase::downloadRecords(const QString& json, const QString& fileName, 
 void DataBase::downloadTableRecords(DBTable* table, DBRecordList& records, int& successCount, int& errorCount)
 {
     qDebug() << "@@@@@ DataBase::downloadTableRecords";
-    bool detailedLog = settings.getItemIntValue(SettingDBTable::SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings.getItemIntValue(Settings::SettingCode_Logging) >= LogType_Info;
     for(int i = 0; i < records.count(); i++)
     {
         DBRecord& r = records[i];

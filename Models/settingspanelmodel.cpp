@@ -8,7 +8,7 @@ void SettingsPanelModel::update(Settings& settings)
     beginResetModel();
     items.clear();
     QList<int> groupItemCodes = settings.getCurrentGroupItemCodes();
-    std::sort(groupItemCodes.begin(), groupItemCodes.end());
+    //std::sort(groupItemCodes.begin(), groupItemCodes.end());
     qDebug() << "@@@@@ SettingsPanelModel::update groupItemCodes =" << groupItemCodes;
     for (int i = 0; i < groupItemCodes.count(); i++)
     {

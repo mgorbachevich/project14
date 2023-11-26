@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "settings.h"
+#include "dbtable.h"
 
 #define DB_VERSION "1.1"
 #define DBTABLENAME_SHOWCASE "showcase"
@@ -40,10 +41,11 @@ public:
         GetUserNames,
         GetAuthorizationUserByName,
         GetSettingsItemByCode,
-        GetSettings,
+        UpdateSettings,
         GetLog,
         RefreshCurrentProduct,
         ReplaceSettingsItem,
+        ChangeSettings,
     };
 
     explicit DataBase(const QString&, Settings&, QObject*);

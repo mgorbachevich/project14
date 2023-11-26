@@ -40,7 +40,7 @@ int DBTable::columnIndex(const QString& columnName)
     return -1;
 }
 
-const DBRecordList DBTable::checkList(const DBRecordList &records)
+const DBRecordList DBTable::checkList(DataBase*, const DBRecordList &records)
 {
     qDebug() << "@@@@@ DBTable::checkList: table =" << name;
     DBRecordList result;

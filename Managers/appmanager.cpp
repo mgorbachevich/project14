@@ -25,6 +25,7 @@
 #include "netserver.h"
 #include "screenmanager.h"
 #include "keyemitter.h"
+#include "settingdbtable.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject *parent):
     QObject(parent), context(qmlContext)
@@ -105,7 +106,7 @@ void AppManager::onDBStarted()
     onUserAction();
     settingsPanelModel->update(settings);
     startAuthorization();
-    emit selectFromDB(DataBase::GetSettings, "");
+    emit selectFromDB(DataBase::UpdateSettings, "");
     //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
 }
 
@@ -115,6 +116,7 @@ void AppManager::onUpdateDBFinished(const QString& comment)
     refreshAll();
     if(!product.isEmpty())
         emit selectFromDB(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
+    emit selectFromDB(DataBase::ChangeSettings, "");
 }
 
 QString AppManager::quantityAsString(const DBRecord& productRecord)
@@ -125,7 +127,7 @@ QString AppManager::quantityAsString(const DBRecord& productRecord)
 
 QString AppManager::priceAsString(const DBRecord& productRecord)
 {
-    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
+    int pp = settings.getItemIntValue(Settings::SettingCode_PointPosition);
     return Tools::moneyToText(price(productRecord), pp);
 }
 
@@ -136,7 +138,7 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
         q = printStatus.pieces;
     else if(!weightManager->isError())
         q = weightManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
-    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
+    int pp = settings.getItemIntValue(Settings::SettingCode_PointPosition);
     return Tools::moneyToText(q * price(productRecord), pp);
 }
 
@@ -144,7 +146,7 @@ double AppManager::price(const DBRecord& productRecord)
 {
     const int p = ProductDBTable::Price;
     if (productRecord.count() <= p) return 0;
-    int pp = settings.getItemIntValue(SettingDBTable::SettingCode_PointPosition);
+    int pp = settings.getItemIntValue(Settings::SettingCode_PointPosition);
     return Tools::priceToDouble(productRecord[p].toString(), pp);
 }
 
@@ -161,9 +163,9 @@ void AppManager::setProduct(const DBRecord& newProduct)
     printStatus.onNewProduct();
     updateStatus();
 
-    if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Time)
+    if (settings.getItemIntValue(Settings::SettingCode_ProductReset) == Settings::ProductReset_Time)
     {
-        int resetTime = settings.getItemIntValue(SettingDBTable::SettingCode_ProductResetTime);
+        int resetTime = settings.getItemIntValue(Settings::SettingCode_ProductResetTime);
         if (resetTime > 0) QTimer::singleShot(resetTime * 1000, this, &AppManager::resetProduct);
     }
 }
@@ -252,10 +254,10 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     DBRecord* r = settings.getItemByCode(settingItemCode);
     if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
     {
-        r->replace(SettingDBTable::Value, value);
+        settings.setItemValue(settingItemCode, value);
+        emit updateDBRecord(DataBase::ReplaceSettingsItem, *r);
         QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
         emit log(LogType_Warning, LogSource_Admin, s);
-        emit updateDBRecord(DataBase::ReplaceSettingsItem, *r);
     }
 }
 
@@ -332,62 +334,52 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     switch(selector)
     {
-    case DataBase::GetSettings:
-    // Обновление настроек:
-        if(!records.isEmpty()) settings.updateAllItems(records);
+    case DataBase::UpdateSettings: // Обновление настроек с перезапуском оборудования:
+    case DataBase::ChangeSettings: // Обновление настроек без перезапуска сервера:
+        if(!records.isEmpty()) settings.update(records);
         settingsPanelModel->update(settings);
-        if(started) runEquipment(true);
-        emit settingsChanged();
+        if(started) startEquipment(selector == DataBase::UpdateSettings, true, true);
         break;
 
-    case DataBase::GetAuthorizationUserByName:
-    // Получен результат поиска пользователя по введеному имени при авторизации:
+    case DataBase::ReplaceSettingsItem: // Изменена настройка оператором:
+        emit selectFromDB(DataBase::ChangeSettings, "");
+        break;
+
+    case DataBase::GetAuthorizationUserByName: // Получен результат поиска пользователя по введеному имени при авторизации:
         checkAuthorization(records);
         break;
 
-    case DataBase::GetShowcaseProducts:
-    // Обновление списка товаров экрана Showcase:
+    case DataBase::GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
         showcasePanelModel->updateProducts(records);
         emit selectFromDBByList(DataBase::GetShowcaseResources, records);
         break;
 
-    case DataBase::GetMessageByResourceCode:
-    // Отображение сообщения (описания) выбранного товара:
+    case DataBase::GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
         if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
             emit showMessageBox("Описание товара", records[0][ResourceDBTable::Value].toString(), true);
         break;
 
-    case DataBase::GetUserNames:
-    // Отображение имен пользователей при авторизации:
+    case DataBase::GetUserNames: // Отображение имен пользователей при авторизации:
         showUsers(records);
         break;
 
-    case DataBase::GetLog:
-    // Отображение лога:
+    case DataBase::GetLog: // Отображение лога:
         if(!records.isEmpty()) viewLogPanelModel->update(records);
         break;
 
-    case DataBase::GetProductsByGroupCodeIncludeGroups:
-    // Отображение товаров выбранной группы:
+    case DataBase::GetProductsByGroupCodeIncludeGroups: // Отображение товаров выбранной группы:
         tablePanelModel->update(records);
         break;
 
-    case DataBase::GetProductsByFilteredCode:
-    // Отображение товаров с заданным фрагментом кода:
+    case DataBase::GetProductsByFilteredCode: // Отображение товаров с заданным фрагментом кода:
         searchPanelModel->update(records, SearchFilterModel::Code);
         break;
 
-    case DataBase::GetProductsByFilteredBarcode:
-    // Отображение товаров с заданным фрагментом штрих-кода:
+    case DataBase::GetProductsByFilteredBarcode: // Отображение товаров с заданным фрагментом штрих-кода:
         searchPanelModel->update(records, SearchFilterModel::Barcode);
         break;
 
-    case DataBase::ReplaceSettingsItem:
-        emit selectFromDB(DataBase::GetSettings, "");
-        break;
-
-    case DataBase::RefreshCurrentProduct:
-        // Сброс выбранного товара после изменений в БД:
+    case DataBase::RefreshCurrentProduct: // Сброс выбранного товара после изменений в БД:
         resetProduct();
         if (!records.isEmpty() && !records.at(0).isEmpty())
         {
@@ -396,8 +388,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         }
         break;
 
-    case DataBase::GetShowcaseResources:
-     // Отображение картинок товаров экрана Showcase:
+    case DataBase::GetShowcaseResources: // Отображение картинок товаров экрана Showcase:
     {
         qDebug() << "@@@@@ AppManager::onDBRequestResult GetShowcaseResources" << records.count();
         QStringList fileNames;
@@ -411,8 +402,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         break;
     }
 
-    case DataBase::GetImageByResourceCode:
-    // Отображение картинки выбранного товара:
+    case DataBase::GetImageByResourceCode: // Отображение картинки выбранного товара:
     {
         QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_QML_PATH;
         emit showProductImage(imagePath);
@@ -505,7 +495,7 @@ void AppManager::onTableResultClicked(const int index)
 void AppManager::onTimer()
 {
     quint64 dt = Tools::currentDateTimeToUInt() - userActionTime; // минуты
-    quint64 bt = settings.getItemIntValue(SettingDBTable::SettingCode_Blocking); // минуты
+    quint64 bt = settings.getItemIntValue(Settings::SettingCode_Blocking); // минуты
     //qDebug() << "@@@@@ AppManager::onTimer " << dt << bt * 1000 * 60;
     if(!authorizationOpened && bt > 0 && bt * 1000 * 60 < dt)
         startAuthorization();
@@ -581,7 +571,7 @@ void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
     started = false;
-    runEquipment(false);
+    stopEquipment();
     QString info = appInfo.all();
     qDebug() << "@@@@@ AppManager::startAuthorization " << info;
     emit showAuthorizationPanel(info);
@@ -639,7 +629,7 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
     if(!started)
     {
         started = true;
-        runEquipment(true);
+        startEquipment();
         // showMessage(title, "Успешно!");
         emit authorizationSucceded();
         refreshAll();
@@ -679,14 +669,15 @@ void AppManager::resetProduct()
     updateStatus();
 }
 
-void AppManager::runEquipment(const bool start)
+void AppManager::startEquipment(const bool server, const bool weight, const bool printer)
 {
-    // Запустить/остановить оборудование
-    if(start)
+    if(server) netServer->start(settings.getItemIntValue(Settings::SettingCode_TCPPort));
+
+    QString demoMessage = "", url1, url2;
+    int e1 = 0, e2 = 0;
+
+    if(weight)
     {
-        QString demoMessage = "";
-        netServer->start(settings.getItemIntValue(SettingDBTable::SettingCode_TCPPort));
-        QString url1;
         if(WM_DEMO)
         {
             url1 = "demo://COM3?baudrate=115200&timeout=100";
@@ -698,13 +689,16 @@ void AppManager::runEquipment(const bool start)
         }
         else
         {
-            QString address = settings.getItemStringValue(SettingDBTable::SettingCode_WMAddress);
-            QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_WMBaudrate)));
-            QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_WMTimeout));
+            QString address = settings.getItemStringValue(Settings::SettingCode_WMAddress);
+            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(Settings::SettingCode_WMBaudrate)));
+            QString timeout = QString::number(settings.getItemIntValue(Settings::SettingCode_WMTimeout));
             url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
         }
-        int e1 = weightManager->start(url1);
-        QString url2;
+        e1 = weightManager->start(url1);
+    }
+
+    if(printer)
+    {
         if(PRINTER_DEMO)
         {
             url2 = "demo://COM3?baudrate=115200&timeout=100";
@@ -716,25 +710,26 @@ void AppManager::runEquipment(const bool start)
         }
         else
         {
-            QString address = settings.getItemStringValue(SettingDBTable::SettingCode_PrinterAddress);
-            QString boudrate =  QString::number(SettingDBTable::getBoudrate(settings.getItemIntValue(SettingDBTable::SettingCode_PrinterBaudrate)));
-            QString timeout = QString::number(settings.getItemIntValue(SettingDBTable::SettingCode_PrinterTimeout));
+            QString address = settings.getItemStringValue(Settings::SettingCode_PrinterAddress);
+            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(Settings::SettingCode_PrinterBaudrate)));
+            QString timeout = QString::number(settings.getItemIntValue(Settings::SettingCode_PrinterTimeout));
             url2 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
         }
-        int e2 = printManager->start(url2);
+        e2 = printManager->start(url2);
+    }
 
-        if(e1 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
-                                        arg(QString::number(e1), weightManager->getErrorDescription(e1)), true);
-        if(e2 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
-                                        arg(QString::number(e2), printManager->getErrorDescription(e2)), true);
-        if(!demoMessage.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", demoMessage, true);
-    }
-    else
-    {
-        netServer->stop();
-        weightManager->stop();
-        printManager->stop();
-    }
+    if(e1 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
+                                    arg(QString::number(e1), weightManager->getErrorDescription(e1)), true);
+    if(e2 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
+                                    arg(QString::number(e2), printManager->getErrorDescription(e2)), true);
+    if(!demoMessage.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", demoMessage, true);
+}
+
+void AppManager::stopEquipment()
+{
+    netServer->stop();
+    weightManager->stop();
+    printManager->stop();
 }
 
 void AppManager::onUserAction()
@@ -798,7 +793,7 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
                 newTransaction[TransactionDBTable::ItemCode].toString(),
                 newTransaction[TransactionDBTable::Weight].toString()));
     emit transaction(newTransaction);
-    if (settings.getItemIntValue(SettingDBTable::SettingCode_ProductReset) == SettingDBTable::ProductReset_Print)
+    if (settings.getItemIntValue(Settings::SettingCode_ProductReset) == Settings::ProductReset_Print)
         resetProduct();
 }
 
@@ -839,8 +834,8 @@ void AppManager::updateStatus()
     const bool isPrintError = printManager->isError();
     const bool isFixed = weightManager->isWeightFixed();
 
-    const bool isAutoPrint = settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAuto) &&
-           (!isPieceProduct || settings.getItemBoolValue(SettingDBTable::SettingCode_PrintAutoPcs));
+    const bool isAutoPrint = settings.getItemBoolValue(Settings::SettingCode_PrintAuto) &&
+           (!isPieceProduct || settings.getItemBoolValue(Settings::SettingCode_PrintAutoPcs));
     const QString passiveColor = "#424242";
     const QString activeColor = "#fafafa";
 
@@ -897,7 +892,7 @@ void AppManager::updateStatus()
                 const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
                 if(wg > 0)
                 {
-                    if(wg >= settings.getItemIntValue(SettingDBTable::SettingCode_PrintAutoWeight)) print();
+                    if(wg >= settings.getItemIntValue(Settings::SettingCode_PrintAutoWeight)) print();
                     else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
                 }
             }

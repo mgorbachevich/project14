@@ -7,6 +7,8 @@
 #include "constants.h"
 #include "dbtablecolumn.h"
 
+class DataBase;
+
 class DBTable : public QObject
 {
     Q_OBJECT
@@ -21,7 +23,7 @@ public:
     DBRecord createRecord();
     void addColumn(const QString& title, const QString& name, const QString& type);
     virtual int columnCount() { return 0; }
-    virtual const DBRecordList checkList(const DBRecordList&);
+    virtual const DBRecordList checkList(DataBase*, const DBRecordList&);
     virtual const DBRecord checkRecord(const DBRecord&);
     static bool isEqual(const DBRecord&, const DBRecord&);
     int columnIndex(const QString&);
