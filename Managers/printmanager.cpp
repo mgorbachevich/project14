@@ -49,7 +49,7 @@ void PrintManager::stop()
 
 QString PrintManager::version() const
 {
-    return (slpa != nullptr) ? QString::number(slpa->getPrinterVersion()) : "?";
+    return (slpa == nullptr) ? "DEMO" : QString::number(slpa->getPrinterVersion());
 }
 
 void PrintManager::feed()

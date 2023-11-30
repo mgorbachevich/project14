@@ -6,16 +6,17 @@
 SettingDBTable::SettingDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
     qDebug() << "@@@@@ SettingDBTable::SettingDBTable";
-    addColumn("Код",          "code",       "INT PRIMARY KEY");
-    addColumn("Тип",          "type",       "INT");
-    addColumn("Код группы",   "group_code", "INT");
-    addColumn("Наименование", "name",       "TEXT");
-    addColumn("Значение",     "value",      "TEXT");
+    addColumn("Код",           "code",       "INT PRIMARY KEY");
+    addColumn("Тип",           "type",       "INT");
+    addColumn("Код группы",    "group_code", "INT");
+    addColumn("Наименование",  "name",       "TEXT");
+    addColumn("Значение",      "value",      "TEXT");
+    addColumn("Только чтение", "read_only",  "INT"); // 0/1
 }
 
 const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
 {
-    qDebug() << "@@@@@ SettingDBTable::checkRecord: table =" << name;
+    // qDebug() << "@@@@@ SettingDBTable::checkRecord: table =" << name;
     bool ok = record.count() >= columnCount();
     if(ok)
     {

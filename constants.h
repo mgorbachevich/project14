@@ -1,26 +1,23 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-//#define NET_SERVER_DEMO
+#define CLEAR_DB_ON_START true
+#define WM_DEMO true
+#define PRINTER_DEMO true
+#define WM_HTTP true
+#define PRINTER_HTTP true
+#define CHECK_AUTHORIZATION true
 
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DB_FILENAME "ShtrihScale.db"
 #define DB_HOSTNAME "ShtrihScaleDataBase"
 #define DUMMY_IMAGE_FILE_QML_PATH "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
-#define DEFAULT_SETTING_GROUPS_FILE ":/Text/json_default_setting_groups.txt"
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define EOL "\r\n"
-
-#define WM_DEMO false
-#define PRINTER_DEMO false
-#define WM_HTTP true
-#define PRINTER_HTTP true
-#define CLEAR_DB_ON_START false
-#define CHECK_AUTHORIZATION true
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320

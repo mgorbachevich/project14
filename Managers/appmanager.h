@@ -10,7 +10,6 @@
 #include "appinfo.h"
 #include "printstatus.h"
 
-class DBThread;
 class ProductPanelModel;
 class TablePanelModel;
 class ViewLogPanelModel;
@@ -38,7 +37,6 @@ public:
     };
 
     explicit AppManager(QQmlContext*, const QSize&, QObject*);
-    ~AppManager();
     double price(const DBRecord&);
 
     Q_INVOKABLE void beep();
@@ -93,7 +91,6 @@ private:
 
     bool started = false;
     DataBase* db = nullptr;
-    DBThread* dbThread = nullptr;
     NetServer* netServer = nullptr;
     WeightManager* weightManager = nullptr;
     PrintManager* printManager = nullptr;
@@ -127,10 +124,7 @@ signals:
     void closeSettings();
     void enableManualPrint(const bool);
     void hideToast();
-    void log(const int, const int, const QString&);
     void resetCurrentProduct();
-    void selectFromDB(const DataBase::Selector, const QString&);
-    void selectFromDBByList(const DataBase::Selector, const DBRecordList&);
     void setCurrentUser(const int, const QString&);
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
@@ -149,8 +143,6 @@ signals:
     void showVirtualKeyboard(const int);
     void showWeightParam(const int, const QString&);
     void start();
-    void transaction(const DBRecord&);
-    void updateDBRecord(const DataBase::Selector, const DBRecord&);
 
 public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);

@@ -7,162 +7,188 @@
                 "code":"1",
                 "name":"Номер весов (1..999999)",
                 "value":"1",
-                "group_code":"9000",
-                "type":"0"
+                "group_code":"9000"
             },
             {
                 "code":"2",
                 "name":"Наименование весов",
                 "value":"ШТРИХ РС200",
-                "group_code":"9000",
-                "type":"0"
+                "group_code":"9000"
             },
             {
                 "code":"3",
                 "name":"Блокировка весов при бездействии, минуты",
                 "value":"0",
-                "group_code":"8100",
-                "type":"0"
+                "group_code":"8100"
             },
             {
                 "code":"7",
                 "name":"Сброс выбранного товара (0/1/2)",
                 "value":"0",
-                "group_code":"8200",
-                "type":"0"
-            },
+                "group_code":"8200"
+           },
             {
                 "code":"8",
                 "name":"Время простоя перед сбросом товара",
                 "value":"10",
-                "group_code":"8200",
-                "type":"0"
+                "group_code":"8200"
             },
             {
                 "code":"12",
                 "name":"Число десятичных знаков цены и стоимости (0..3)",
                 "value":"2",
-                "group_code":"8200",
-                "type":"0"
+                "group_code":"8200"
             },
             {
                 "code":"44",
                 "name":"Число символов кода для начала поиска (0..9)",
                 "value":"0",
-                "group_code":"8300",
-                "type":"0"
+                "group_code":"8300"
             },
             {
                 "code":"45",
                 "name":"Число символов штрих-кода для начала поиска (0..9)",
                 "value":"0",
+                "group_code":"8300"
+            },
+            {
+                "code":"47",
+                "name":"Поиск по частичному или полному совпадению (0-частичное, 1-полное)",
+                "value":"1",
                 "group_code":"8300",
-                "type":"0"
+                "read_only":"1"
             },
             {
                 "code":"202",
                 "name":"Название магазина",
                 "value":"",
-                "group_code":"8200",
-                "type":"0"
+                "group_code":"8200"
             },
             {
                 "code":"203",
                 "name":"Вес автопечати (граммы)",
                 "value":"200",
-                "group_code":"8601",
-                "type":"0"
+                "group_code":"8601"
             },
             {
                 "code":"208",
                 "name":"Тип печати (0 - бумага/1-этикетка)",
                 "value":"0",
-                "group_code":"8601",
-                "type":"0"
-            },
+                "group_code":"8601"
+           },
             {
                 "code":"210",
                 "name":"Автопечать (0/1)",
                 "value":"0",
-                "group_code":"8601",
-                "type":"0"
+                "group_code":"8601"
             },
             {
                 "code":"218",
                 "name":"Автопечать штучного товара (0/1)",
                 "value":"0",
-                "group_code":"8601",
-                "type":"0"
+                "group_code":"8601"
             },
             {
                 "code":"606",
                 "name":"Уровень логирования (0..5)",
                 "value":"5",
-                "group_code":"8801",
-                "type":"0"
+                "group_code":"8801"
             },
             {
                 "code":"607",
                 "name":"Число дней хранения лога",
                 "value":"30",
-                "group_code":"8801",
-                "type":"0"
+                "group_code":"8801"
             },
             {
                 "code":"1003",
                 "name":"TCP порт",
                 "value":"8080",
-                "group_code":"8700",
-                "type":"0"
+                "group_code":"8700"
             },
             {
                 "code":"1004",
                 "name":"Динамический поиск (0/1)",
                 "value":"1",
-                "group_code":"8300",
-                "type":"0"
+                "group_code":"8300"
+            },
+            {
+                "code":"1005",
+                "name":"Производитель",
+                "value":"ШТРИХ-М",
+                "group_code":"8900",
+                "read_only":"1"
             },
             {
                 "code":"1006",
                 "name":"Адрес",
                 "value":"ttyS0",
-                "group_code":"9002",
-                "type":"0"
+                "group_code":"9002"
             },
             {
                 "code":"1007",
                 "name":"Скорость (0..6)",
                 "value":"6",
-                "group_code":"9002",
-                "type":"0"
+                "group_code":"9002"
             },
             {
                 "code":"1008",
                 "name":"Таймаут",
                 "value":"9000",
-                "group_code":"9002",
-                "type":"0"
+                "group_code":"9002"
+            },
+            {
+                "code":"1009",
+                "name":"Лицензия",
+                "value":"?????",
+                "group_code":"8900",
+                "read_only":"1"
             },
             {
                 "code":"1010",
                 "name":"Адрес",
                 "value":"ttyS8",
-                "group_code":"9003",
-                "type":"0"
+                "group_code":"9003"
             },
             {
                 "code":"1011",
                 "name":"Скорость (0..6)",
                 "value":"6",
-                "group_code":"9003",
-                "type":"0"
+                "group_code":"9003"
             },
             {
                 "code":"1012",
                 "name":"Таймаут",
                 "value":"9000",
-                "group_code":"9003",
-                "type":"0"
+                "group_code":"9003"
+            },
+            {
+                "code":"1013",
+                "name":"Версия ПО",
+                "value":"?????",
+                "group_code":"8900",
+                "read_only":"1"
+            },
+            {
+                "code":"1014",
+                "name":"Версия ПО оборудования",
+                "value":"?????",
+                "group_code":"8900",
+                "read_only":"1"
+            },
+            {
+                "code":"1015",
+                "name":"Подсказки",
+                "value":"?????",
+                "group_code":"8900",
+                "read_only":"1"
+            },
+            {
+                "code":"1016",
+                "name":"Поверка",
+                "value":"?????",
+                "group_code":"9000",
+                "read_only":"1"
             },
 
 

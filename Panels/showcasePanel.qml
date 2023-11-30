@@ -77,7 +77,7 @@ Rectangle
         {
             width: screenManager.scrollBarWidth()
             background: Rectangle { color: "transparent" }
-            policy: ScrollBar.AsNeeded
+            policy: ScrollBar.AlwaysOn
         }
 
         model: showcasePanelModel

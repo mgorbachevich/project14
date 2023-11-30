@@ -23,7 +23,6 @@ INCLUDEPATH += \
 SOURCES += \
     DB/database.cpp \
     DB/dbtable.cpp \
-    DB/dbthread.cpp \
     DB/jsonparser.cpp \
     DB/logdbtable.cpp \
     DB/productdbtable.cpp \
@@ -131,7 +130,6 @@ HEADERS += \
     DB/resourcedbtable.h \
     DB/settingdbtable.h \
     DB/showcasedbtable.h \
-    DB/dbthread.h \
     DB/transactiondbtable.h \
     DB/userdbtable.h \
     Equipment/Wm100_Slpa100u_2/IO/RequestSender.h \

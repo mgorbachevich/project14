@@ -18,6 +18,7 @@ public:
         SettingCode_PointPosition = 12,
         SettingCode_SearchCodeSymbols = 44,
         SettingCode_SearchBarcodeSymbols = 45,
+        SettingCode_SearchEquality = 47, // todo
         SettingCode_ShopName = 202,
         SettingCode_PrintAutoWeight = 203,
         SettingCode_PrintPaper = 208,
@@ -28,14 +29,18 @@ public:
         SettingCode_LogDuration = 607,
         SettingCode_TCPPort = 1003,
         SettingCode_SearchType = 1004,
-        //SettingCode_WMDemo = 1005,
+        SettingCode_Manufacturer = 1005, // todo
         SettingCode_WMAddress = 1006,
         SettingCode_WMBaudrate = 1007,
         SettingCode_WMTimeout = 1008,
-        //SettingCode_PrinterDemo = 1009,
+        SettingCode_License = 1009, // todo
         SettingCode_PrinterAddress = 1010,
         SettingCode_PrinterBaudrate = 1011,
         SettingCode_PrinterTimeout = 1012,
+        SettingCode_Version = 1013, // todo
+        SettingCode_EquipmentVersion = 1014, // todo
+        SettingCode_Help = 1015, // todo
+        SettingCode_Verification = 1016, // todo
         /*
         SettingCode_Power = 17,
         SettingCode_Cursor = 10,
@@ -43,7 +48,6 @@ public:
         SettingCode_Currency = 1002,
         SettingCode_PointPositionQuantity = 43,
         SettingCode_SearchCode2Symbols = 46,
-        SettingCode_SearchEquality = 47,
         SettingCode_PrinterAutoFeed = 42,
         SettingCode_PrinterBrightness = 211,
         SettingCode_PrintTitle = 201,
@@ -87,7 +91,6 @@ public:
     void update(const DBRecordList&);
     static int getBoudrate(const int);
     static bool isGroup(const DBRecord&);
-
     int currentGroupCode = 0;
 
 private:

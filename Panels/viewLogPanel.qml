@@ -108,7 +108,7 @@ Popup
                 {
                     width: screenManager.spacer()
                     background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AsNeeded
+                    policy: ScrollBar.AlwaysOn
                 }
 
                 model: viewLogPanelModel

@@ -1,6 +1,8 @@
 #include "settings.h"
 #include "tools.h"
 #include "settingdbtable.h"
+#include "appinfo.h"
+#include "database.h"
 
 QString Settings::getItemStringValue(const SettingCode code)
 {

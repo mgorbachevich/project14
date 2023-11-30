@@ -4,6 +4,7 @@
 #include <QHostInfo>
 #include <QProcess>
 #include <QNetworkInterface>
+#include <QThread>
 #include "tools.h"
 #include "constants.h"
 
@@ -176,6 +177,12 @@ QString Tools::dataBaseFilePath(const QString& localPath)
 QString Tools::downloadFilePath(const QString& localPath)
 {
     return makeFullPath(DOWNLOAD_SUBDIR, localPath);
+}
+
+void Tools::pause(const int msec, const QString& comment)
+{
+    qDebug() << "@@@@@ Tools::pause " << msec << comment;
+    QThread::currentThread()->msleep(msec);
 }
 
 QString Tools::rootDir()

@@ -32,6 +32,7 @@ public:
     static QString qmlFilePath(const QString&); // Read only
     static QString dataBaseFilePath(const QString&);
     static QString downloadFilePath(const QString&);
+    static void pause(const int, const QString& comment = "");
 
 private:
     static QString makeFullPath(const QString&, const QString&);
