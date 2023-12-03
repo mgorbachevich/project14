@@ -1,6 +1,7 @@
 #ifndef LOGDBTABLE_H
 #define LOGDBTABLE_H
 
+#include <QDebug>
 #include "dbtable.h"
 
 class LogDBTable: public DBTable
@@ -15,7 +16,7 @@ public:
         COLUMN_COUNT
     };
 
-    LogDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+    LogDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent): DBTable(sqlDb, name, parent)
     {
         qDebug() << "@@@@@ LogDBTable::LogDBTable";
 

@@ -1,16 +1,24 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define CLEAR_DB_ON_START true
-#define WM_DEMO true
-#define PRINTER_DEMO true
+#define REMOVE_PRODUCT_DB_ON_START false
+#define REMOVE_SETTINGS_DB_ON_START false
+#define REMOVE_LOG_DB_ON_START false
+#define DB_PRODUCT_NAME "ShtrihScale.db"
+#define DB_SETTINGS_NAME "Settings.db"
+#define DB_LOG_NAME "Log.db"
+#define DB_TEMP_NAME "Temp.db"
+#define REMOVE_TEMP_DB true
+//#define DOWNLOAD_PAUSE 0
+
+#define WM_DEMO false
+#define PRINTER_DEMO false
 #define WM_HTTP true
 #define PRINTER_HTTP true
 #define CHECK_AUTHORIZATION true
+#define CONCURRENT_SERVER
 
 #define DOWNLOAD_SUBDIR "Downloads"
-#define DB_FILENAME "ShtrihScale.db"
-#define DB_HOSTNAME "ShtrihScaleDataBase"
 #define DUMMY_IMAGE_FILE_QML_PATH "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000

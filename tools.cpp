@@ -124,7 +124,7 @@ QByteArray Tools::readBinaryFile(const QString& path)
 
 QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
 {
-    qDebug() << "@@@@@ Tools::makeFullPath";
+    //qDebug() << "@@@@@ Tools::makeFullPath";
     if(localPath.isEmpty()) return "";
     const QStringList dirs = QString(subDir + "/" + localPath).split("/");
     QDir dir;
@@ -133,10 +133,14 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
     {
         if(dirs.at(i).isEmpty()) continue;
         path += "/" + dirs.at(i);
-        if(!dir.exists(path)) qDebug() << "@@@@@ Tools::makeFullPath mkdir " << dir.mkdir(path) << path;
+        if(!dir.exists(path))
+        {
+            bool ok = dir.mkdir(path);
+            qDebug() << "@@@@@ Tools::makeFullPath mkdir " << ok << path;
+        }
     }
     path += "/" + dirs.last(); // file name
-    qDebug() << "@@@@@ Tools::makeFullPath local path " << localPath;
+    //qDebug() << "@@@@@ Tools::makeFullPath local path " << localPath;
     qDebug() << "@@@@@ Tools::makeFullPath full path " << path;
     return path;
 }
@@ -172,6 +176,20 @@ QString Tools::qmlFilePath(const QString& localPath)
 QString Tools::dataBaseFilePath(const QString& localPath)
 {
     return makeFullPath("", localPath);
+}
+
+bool Tools::copyFile(const QString& from, const QString& to)
+{
+    qDebug() << "@@@@@ Tools::copyFile " << from << to;
+    if (!QFile::exists(from)) return false;
+    if (QFile::exists(to)) QFile::remove(to);
+    return QFile::copy(from, to);
+}
+
+bool Tools::removeFile(const QString &path)
+{
+    qDebug() << "@@@@@ Tools::removeFile " << path;
+    return QFile::exists(path) ? QFile::remove(path) : true;
 }
 
 QString Tools::downloadFilePath(const QString& localPath)

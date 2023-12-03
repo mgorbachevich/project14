@@ -32,6 +32,8 @@ public:
     static QString qmlFilePath(const QString&); // Read only
     static QString dataBaseFilePath(const QString&);
     static QString downloadFilePath(const QString&);
+    static bool copyFile(const QString&, const QString&);
+    static bool removeFile(const QString&);
     static void pause(const int, const QString& comment = "");
 
 private:

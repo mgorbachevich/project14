@@ -24,7 +24,7 @@ public:
         UserRole_Operator = 1,
     };
 
-    UserDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+    UserDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent): DBTable(sqlDb, name, parent)
     {
         qDebug() << "@@@@@ UserDBTable::UserDBTable";
 

@@ -3,7 +3,8 @@
 #include "jsonparser.h"
 #include "database.h"
 
-SettingDBTable::SettingDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+SettingDBTable::SettingDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent):
+    DBTable(sqlDb, name, parent)
 {
     qDebug() << "@@@@@ SettingDBTable::SettingDBTable";
     addColumn("Код",           "code",       "INT PRIMARY KEY");

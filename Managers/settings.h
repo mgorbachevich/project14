@@ -16,6 +16,7 @@ public:
         SettingCode_ProductReset = 7,
         SettingCode_ProductResetTime = 8,
         SettingCode_PointPosition = 12,
+        SettingCode_PrinterAutoFeed = 42,
         SettingCode_SearchCodeSymbols = 44,
         SettingCode_SearchBarcodeSymbols = 45,
         SettingCode_SearchEquality = 47, // todo
@@ -23,6 +24,7 @@ public:
         SettingCode_PrintAutoWeight = 203,
         SettingCode_PrintPaper = 208,
         SettingCode_PrintAuto = 210,
+        SettingCode_PrinterBrightness = 211,
         SettingCode_PrintLabelFormat = 213,
         SettingCode_PrintAutoPcs = 218,
         SettingCode_Logging = 606,
@@ -41,6 +43,9 @@ public:
         SettingCode_EquipmentVersion = 1014, // todo
         SettingCode_Help = 1015, // todo
         SettingCode_Verification = 1016, // todo
+        SettingCode_ReportsDuration = 1017, // todo
+        SettingCode_Brightness = 1018, // todo
+        SettingCode_SoundVolume = 1019, // todo
         /*
         SettingCode_Power = 17,
         SettingCode_Cursor = 10,
@@ -48,7 +53,6 @@ public:
         SettingCode_Currency = 1002,
         SettingCode_PointPositionQuantity = 43,
         SettingCode_SearchCode2Symbols = 46,
-        SettingCode_PrinterAutoFeed = 42,
         SettingCode_PrinterBrightness = 211,
         SettingCode_PrintTitle = 201,
           */

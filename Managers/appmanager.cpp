@@ -56,7 +56,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject
     connect(db, &DataBase::started, this, &AppManager::onDBStarted);
     connect(db, &DataBase::showMessage, this, &AppManager::onShowMessage);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
-    connect(db, &DataBase::updateDBFinished, this, &AppManager::onUpdateDBFinished);
+    connect(db, &DataBase::downloadFinished, this, &AppManager::onDownloadDBFinished);
+    connect(db, &DataBase::deleteFinished, this, &AppManager::onDeleteDBFinished);
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
     connect(printManager, &PrintManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
@@ -97,13 +98,27 @@ void AppManager::onDBStarted()
     //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
 }
 
-void AppManager::onUpdateDBFinished(const QString& comment)
+void AppManager::onUpdateDB()
 {
-    qDebug() << "@@@@@ AppManager::onUpdateDBFinished " << comment;
+    qDebug() << "@@@@@ AppManager::onUpdateDB";
     refreshAll();
     if(!product.isEmpty())
         db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
     db->selectByParam(DataBase::ChangeSettings, "");
+}
+
+void AppManager::onDeleteDBFinished()
+{
+    qDebug() << "@@@@@ AppManager::onDeleteDBFinished";
+    db->onDeleteFinished();
+    onUpdateDB();
+}
+
+void AppManager::onDownloadDBFinished()
+{
+    qDebug() << "@@@@@ AppManager::onDownloadDBFinished";
+    db->onDownloadFinished();
+    onUpdateDB();
 }
 
 QString AppManager::quantityAsString(const DBRecord& productRecord)
@@ -142,7 +157,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     product = newProduct;
     QString productCode = product[ProductDBTable::Code].toString();
     qDebug() << "@@@@@ AppManager::setProduct " << productCode;
-    productPanelModel->update(product, (ProductDBTable*)db->getTableByName(DBTABLENAME_PRODUCTS));
+    productPanelModel->update(product, (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
     emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
     db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
     QString pictureCode = product[ProductDBTable::PictureCode].toString();
@@ -520,6 +535,7 @@ void AppManager::onSettingsPanelCloseClicked()
 {
     qDebug() << "@@@@@ AppManager::onSettingsPanelCloseClicked " << settings.currentGroupCode;
     onUserAction();
+    emit closeSettings();
     if(settings.currentGroupCode != 0)
     {
         DBRecord* r =  settings.getItemByCode(settings.currentGroupCode);
@@ -528,10 +544,8 @@ void AppManager::onSettingsPanelCloseClicked()
             settings.currentGroupCode = r->at(SettingDBTable::GroupCode).toInt();
             settingsPanelModel->update(settings);
             emit showSettingsPanel(settings.getCurrentGroupName());
-            return;
         }
     }
-    emit closeSettings();
 }
 
 void AppManager::onSearchResultClicked(const int index)
@@ -668,6 +682,7 @@ void AppManager::resetProduct()
 
 void AppManager::startEquipment(const bool server, const bool weight, const bool printer)
 {
+    qDebug() << "@@@@@ AppManager::startEquipment";
     if(server) netServer->start(settings.getItemIntValue(Settings::SettingCode_TCPPort));
 
     QString demoMessage = "", url1, url2;

@@ -88,6 +88,7 @@ private:
     void stopEquipment();
     void print();
     QString getImageFileWithQmlPath(const DBRecord&);
+    void onUpdateDB();
 
     bool started = false;
     DataBase* db = nullptr;
@@ -147,7 +148,8 @@ signals:
 public slots:
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
-    void onUpdateDBFinished(const QString&);
+    void onDownloadDBFinished();
+    void onDeleteDBFinished();
     void onEquipmentParamChanged(const int, const int);
     void onPrinted(const DBRecord&);
     void onTimer();

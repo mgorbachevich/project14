@@ -156,7 +156,6 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
     {
         qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Singlepart";
         return makeResultJson(LogError_WrongRequest, "Неверный запрос", "", "");
-        //return db->downloadRecords(parseText(request), "", "");
     }
 
     // Multipart:
@@ -188,6 +187,7 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
         {
             for(int hi = 0; hi < headers.count(); hi++)
             {
+                // Tools::pause(1000); // debug concurrent downloading
                 QByteArray& header = headers[hi];
                 qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header);
@@ -200,15 +200,14 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
                     qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text =" << text;
                     if(!text.isEmpty())
                     {
-                        for (int ti = 0; ti < db->tables.size(); ti++)
+                        for (DBTable* t : db->tables)
                         {
-                            DBTable* table = db->tables[ti];
-                            if(table == nullptr) continue;
-                            DBRecordList tableRecords = JSONParser::parseTable(table, text);
+                            if(t == nullptr) continue;
+                            DBRecordList tableRecords = JSONParser::parseTable(t, text);
                             if(tableRecords.count() == 0) continue;
                             qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Table %1, records %2").
-                                    arg(table->name, QString::number(tableRecords.count()));
-                            downloadedRecords.insert(table, tableRecords);
+                                    arg(t->name, QString::number(tableRecords.count()));
+                            downloadedRecords.insert(t, tableRecords);
                         }
                     }
                     qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Record count =" << downloadedRecords.count();
@@ -219,6 +218,7 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
         {
             for(int hi = 0; hi < headers.count(); hi++)
             {
+                // Tools::pause(1000); // debug concurrent downloading
                 QByteArray& header = headers[hi];
                 qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header);

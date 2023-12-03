@@ -1,7 +1,8 @@
 #include "productdbtable.h"
 #include "tools.h"
 
-ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+ProductDBTable::ProductDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent):
+    DBTable(sqlDb, name, parent)
 {
     qDebug() << "@@@@@ ProductDBTable::ProductDBTable";
 

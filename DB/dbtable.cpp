@@ -1,4 +1,8 @@
+#include <QVariant>
 #include "dbtable.h"
+
+DBTable::DBTable(const QSqlDatabase &sqlDb, const QString &name, QObject *parent):
+    QObject(parent), name(name), db(sqlDb) {}
 
 QVariantList DBTable::createRecord()
 {
@@ -9,7 +13,7 @@ QVariantList DBTable::createRecord()
 
 void DBTable::addColumn(const QString& title, const QString& name, const QString& type)
 {
-    qDebug() << "@@@@@ DBTable::addColumn " << name;
+    //qDebug() << "@@@@@ DBTable::addColumn " << name;
     columns.append(DBTableColumn(title, name, type));
 }
 

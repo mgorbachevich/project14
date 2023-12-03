@@ -1,6 +1,7 @@
 #ifndef TRANSACTIONDBTABLE_H
 #define TRANSACTIONDBTABLE_H
 
+#include <QDebug>
 #include "dbtable.h"
 
 class TransactionDBTable: public DBTable
@@ -20,7 +21,8 @@ public:
         COLUMN_COUNT
     };
 
-    TransactionDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+    TransactionDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent):
+        DBTable(sqlDb, name, parent)
     {
         qDebug() << "@@@@@ TransactionDBTable::TransactionDBTable";
 

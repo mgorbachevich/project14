@@ -169,7 +169,7 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
     }
     if(e == 0)
     {
-        TransactionDBTable* t = (TransactionDBTable*)db->getTableByName(DBTABLENAME_TRANSACTIONS);
+        TransactionDBTable* t = (TransactionDBTable*)db->getTable(DBTABLENAME_TRANSACTIONS);
         DBRecord r = t->createRecord(
                     dateTime,
                     user[UserDBTable::Code].toInt(),

@@ -1,7 +1,7 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <QObject>
+#include <QSqlDatabase>
 #include "settings.h"
 #include "dbtable.h"
 
@@ -50,8 +50,8 @@ public:
     };
 
     explicit DataBase(Settings&, QObject*);
-    ~DataBase() { db.close(); }
-    DBTable* getTableByName(const QString&) const;
+    ~DataBase();
+    DBTable* getTable(const QString&) const;
     QString getProductMessageById(const QString&);
     void selectAll(DBTable*, DBRecordList&);
     bool removeAll(DBTable*);
@@ -66,27 +66,38 @@ public:
     void updateRecord(const DataBase::Selector, const DBRecord&);
     void onSelectByList(const DataBase::Selector, const DBRecordList&);
     void selectByParam(const DataBase::Selector, const QString&);
+    void onDownloadFinished();
+    void onDeleteFinished();
 
     Settings& settings;
     QList<DBTable*> tables;
 
 protected:
-    void emulation();
-    bool open(const QString&);
+    bool init();
+    bool open(QSqlDatabase&, const QString&);
+    bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     bool createTable(DBTable*);
-    bool executeSQL(const QString&);
+    bool executeSQL(const QSqlDatabase&, const QString&);
     bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
     bool selectById(const QString&, const QString&, DBRecord&);
     bool removeRecord(DBTable*, const QString&);
     void removeOldLogRecords();
+    void removeTempDb();
+    bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
+    void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
+    bool copyDBFiles(const QString&, const QString&);
 
     bool opened = false;
-    QSqlDatabase db;
+    QSqlDatabase productDB;
+    QSqlDatabase tempDB;
+    QSqlDatabase settingsDB;
+    QSqlDatabase logDB;
 
 signals:
     void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void started();
-    void updateDBFinished(const QString&);
+    void deleteFinished();
+    void downloadFinished();
     void showMessage(const QString&, const QString&);
 
 public slots:

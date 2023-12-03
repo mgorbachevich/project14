@@ -12,10 +12,9 @@ public:
         COLUMN_COUNT
     };
 
-    ShowcaseDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+    ShowcaseDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent): DBTable(sqlDb, name, parent)
     {
         qDebug() << "@@@@@ ShowcaseDBTable::ShowcaseDBTable";
-
         addColumn("Код", "code", "TEXT PRIMARY KEY");
     }
     int columnCount() { return Columns::COLUMN_COUNT; }
