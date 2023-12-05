@@ -1,9 +1,6 @@
 #include <QVariant>
 #include "dbtable.h"
 
-DBTable::DBTable(const QSqlDatabase &sqlDb, const QString &name, QObject *parent):
-    QObject(parent), name(name), db(sqlDb) {}
-
 QVariantList DBTable::createRecord()
 {
     DBRecord r;

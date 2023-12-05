@@ -16,7 +16,7 @@ public:
         COLUMN_COUNT
     };
 
-    ResourceDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent): DBTable(sqlDb, name, parent)
+    ResourceDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
         qDebug() << "@@@@@ ResourceDBTable::ResourceDBTable";
 

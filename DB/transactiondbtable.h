@@ -21,8 +21,7 @@ public:
         COLUMN_COUNT
     };
 
-    TransactionDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent):
-        DBTable(sqlDb, name, parent)
+    TransactionDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
         qDebug() << "@@@@@ TransactionDBTable::TransactionDBTable";
 

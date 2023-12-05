@@ -3,7 +3,6 @@
 #include "netserver.h"
 #include "requestparser.h"
 #include "database.h"
-#include "tools.h"
 
 NetServer::NetServer(QObject *parent, DataBase* dataBase): QObject{parent}, db(dataBase)
 {
@@ -31,15 +30,18 @@ void NetServer::start(const int port)
     else
     {
         qDebug() << "@@@@@ NetServer::start: listening...";
-#ifdef CONCURRENT_SERVER
         server->route("/deleteData", [this] (const QHttpServerRequest &request)
         {
             return QtConcurrent::run([&request, this]
             {
+                isActive = true;
+                emit action(NetAction_Delete);
                 QByteArray ba = request.query().toString().toUtf8();
                 qDebug() << QString("@@@@@ NetServer::start: deleteData length = %1\n").arg(ba.length());
-                QString response = RequestParser::parseGetDataRequest(NetRequest_Delete, db, ba);
+                QString response = RequestParser::parseDeleteRequest(db, ba);
                 qDebug() << QString("@@@@@ NetServer::start: deleteData response = %1\n").arg(response);
+                emit action(NetAction_DeleteFinished);
+                isActive = false;
                 return QHttpServerResponse(response);
             });
         });
@@ -47,10 +49,14 @@ void NetServer::start(const int port)
         {
             return QtConcurrent::run([&request, this]
             {
+                isActive = true;
+                emit action(NetAction_Upload);
                 QByteArray ba = request.query().toString().toUtf8();
                 qDebug() << QString("@@@@@ NetServer::start: getData length = %1\n").arg(ba.length());
-                QString response = RequestParser::parseGetDataRequest(NetRequest_Get, db, ba);
+                QString response = RequestParser::parseGetRequest(db, ba);
                 qDebug() << QString("@@@@@ NetServer::start: getData response = %1\n").arg(response);
+                emit action(NetAction_UploadFinished);
+                isActive = false;
                 return QHttpServerResponse(response);
             });
         });
@@ -58,39 +64,17 @@ void NetServer::start(const int port)
         {
             return QtConcurrent::run([&request, this]
             {
+                isActive = true;
+                emit action(NetAction_Download);
                 QByteArray ba = request.body();
                 qDebug() << QString("@@@@@ NetServer::start: setData length = %1\n").arg(ba.length());
-                QString response = RequestParser::parseSetDataRequest(db, ba);
+                QString response = RequestParser::parseSetRequest(db, ba);
                 qDebug() << QString("@@@@@ NetServer::start: setData response = %1\n").arg(response);
+                emit action(NetAction_DownloadFinished);
+                isActive = false;
                 return QHttpServerResponse(response);
             });
         });
-#else
-        server->route("/deleteData", [this] (const QHttpServerRequest &request)
-        {
-            QByteArray ba = request.query().toString().toUtf8();
-            qDebug() << QString("@@@@@ NetServer::start: deleteData length = %1\n").arg(ba.length());
-            QString response = RequestParser::parseGetDataRequest(NetRequest_Delete, db, ba);
-            qDebug() << QString("@@@@@ NetServer::start: deleteData response = %1\n").arg(response);
-            return QHttpServerResponse(response);
-        });
-        server->route("/getData", [this] (const QHttpServerRequest &request)
-        {
-            QByteArray ba = request.query().toString().toUtf8();
-            qDebug() << QString("@@@@@ NetServer::start: getData length = %1\n").arg(ba.length());
-            QString response = RequestParser::parseGetDataRequest(NetRequest_Get, db, ba);
-            qDebug() << QString("@@@@@ NetServer::start: getData response = %1\n").arg(response);
-            return QHttpServerResponse(response);
-        });
-        server->route("/setData", [this] (const QHttpServerRequest &request)
-        {
-            QByteArray ba = request.body();
-            qDebug() << QString("@@@@@ NetServer::start: setData length = %1\n").arg(ba.length());
-            QString response = RequestParser::parseSetDataRequest(db, ba);
-            qDebug() << QString("@@@@@ NetServer::start: setData response = %1\n").arg(response);
-            return QHttpServerResponse(response);
-        });
-#endif
     }
 }
 

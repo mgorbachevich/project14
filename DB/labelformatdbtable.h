@@ -14,7 +14,7 @@ public:
         COLUMN_COUNT
     };
 
-    LabelFormatDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent): DBTable(sqlDb, name, parent)
+    LabelFormatDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
         qDebug() << "@@@@@ LabelFormatDBTable::LabelFormatDBTable";
 

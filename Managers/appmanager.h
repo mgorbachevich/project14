@@ -88,18 +88,25 @@ private:
     void stopEquipment();
     void print();
     QString getImageFileWithQmlPath(const DBRecord&);
-    void onUpdateDB();
 
-    bool started = false;
+    bool isStarted = false;
+    AppInfo appInfo;
+
+    // БД:
     DataBase* db = nullptr;
-    NetServer* netServer = nullptr;
-    WeightManager* weightManager = nullptr;
-    PrintManager* printManager = nullptr;
     Settings settings;
     DBRecord user;
     DBRecord product;
-    AppInfo appInfo;
+
+    // Сеть:
+    NetServer* netServer = nullptr;
+    quint64 netActionTime = 0;
+    bool isRefreshNeeded = false;
+
+    // Оборудование:
+    WeightManager* weightManager = nullptr;
     PrintStatus printStatus;
+    PrintManager* printManager = nullptr;
 
     // UI:
     QQmlContext* context = nullptr;
@@ -107,9 +114,9 @@ private:
     int openedPopupCount = 0;
     int mainPageIndex = 0;
     int secret = 0;
-    bool authorizationOpened = false;
+    bool isAuthorizationOpened = false;
 
-    // Models:
+    // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
     ShowcasePanelModel* showcasePanelModel = nullptr;
     TablePanelModel* tablePanelModel = nullptr;
@@ -146,10 +153,9 @@ signals:
     void start();
 
 public slots:
+    void onNetAction(const int);
     void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
     void onDBStarted();
-    void onDownloadDBFinished();
-    void onDeleteDBFinished();
     void onEquipmentParamChanged(const int, const int);
     void onPrinted(const DBRecord&);
     void onTimer();

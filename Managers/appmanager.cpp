@@ -53,11 +53,10 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject
     appInfo.ip = Tools::getNetParams().localHostIP;
 
     connect(this, &AppManager::start, db, &DataBase::onStart);
+    connect(netServer, &NetServer::action, this, &AppManager::onNetAction);
     connect(db, &DataBase::started, this, &AppManager::onDBStarted);
     connect(db, &DataBase::showMessage, this, &AppManager::onShowMessage);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
-    connect(db, &DataBase::downloadFinished, this, &AppManager::onDownloadDBFinished);
-    connect(db, &DataBase::deleteFinished, this, &AppManager::onDeleteDBFinished);
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
     connect(printManager, &PrintManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
@@ -94,31 +93,56 @@ void AppManager::onDBStarted()
     onUserAction();
     settingsPanelModel->update(settings);
     startAuthorization();
-    db->selectByParam(DataBase::UpdateSettings, "");
+    db->select(DataBase::UpdateSettings, "");
     //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
 }
 
-void AppManager::onUpdateDB()
+void AppManager::onNetAction(const int action)
 {
-    qDebug() << "@@@@@ AppManager::onUpdateDB";
-    refreshAll();
-    if(!product.isEmpty())
-        db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
-    db->selectByParam(DataBase::ChangeSettings, "");
+    qDebug() << "@@@@@ AppManager::onNetAction " << action;
+    netActionTime = Tools::currentDateTimeToUInt();
+    switch (action)
+    {
+    case NetAction_Delete:
+    case NetAction_Download:
+        isRefreshNeeded = true;
+        break;
+    default:
+        break;
+    }
 }
 
-void AppManager::onDeleteDBFinished()
+void AppManager::onTimer()
 {
-    qDebug() << "@@@@@ AppManager::onDeleteDBFinished";
-    db->onDeleteFinished();
-    onUpdateDB();
-}
+    const quint64 now = Tools::currentDateTimeToUInt();
 
-void AppManager::onDownloadDBFinished()
-{
-    qDebug() << "@@@@@ AppManager::onDownloadDBFinished";
-    db->onDownloadFinished();
-    onUpdateDB();
+    // Блокировка:
+    quint64 t = settings.getItemIntValue(Settings::SettingCode_Blocking); // минуты
+    if(!isAuthorizationOpened && t > 0 && t * 1000 * 60 < now - userActionTime)
+    {
+        qDebug() << "@@@@@ AppManager::onTimer userActionTime";
+        startAuthorization();
+    }
+
+    // Ожидание окончания сетевых запросов:
+    if(!netServer->isActive && netActionTime > 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
+    {
+        qDebug() << "@@@@@ AppManager::onTimer netActionTime";
+        netActionTime = 0;
+        if(isRefreshNeeded)
+        {
+            qDebug() << "@@@@@ AppManager::onTimer isRefreshNeeded";
+            isRefreshNeeded = false;
+            db->afterNetAction();
+            refreshAll();
+            resetProduct();
+            emit showMessageBox("ВНИМАНИЕ!", "Товары обновлены!", true);
+            /*
+            if(!product.isEmpty())
+                db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
+            */
+        }
+    }
 }
 
 QString AppManager::quantityAsString(const DBRecord& productRecord)
@@ -161,7 +185,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
     db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
     QString pictureCode = product[ProductDBTable::PictureCode].toString();
-    db->selectByParam(DataBase::GetImageByResourceCode, pictureCode);
+    db->select(DataBase::GetImageByResourceCode, pictureCode);
     printStatus.onNewProduct();
     updateStatus();
 
@@ -176,7 +200,7 @@ void AppManager::onProductDescriptionClicked()
 {
     qDebug() << "@@@@@ AppManager::onProductDescriptionClicked";
     onUserAction();
-    db->selectByParam(DataBase::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
+    db->select(DataBase::GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
 }
 
 void AppManager::onProductPanelCloseClicked()
@@ -208,10 +232,10 @@ void AppManager::filteredSearch()
     switch(searchFilterModel->index)
     {
         case SearchFilterModel::Code:
-            db->selectByParam(DataBase::GetProductsByFilteredCode, v);
+            db->select(DataBase::GetProductsByFilteredCode, v);
             break;
         case SearchFilterModel::Barcode:
-            db->selectByParam(DataBase::GetProductsByFilteredBarcode, v);
+            db->select(DataBase::GetProductsByFilteredBarcode, v);
             break;
          default:
             qDebug() << "@@@@@ AppManager::filteredSearch ERROR";
@@ -257,7 +281,7 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
     {
         settings.setItemValue(settingItemCode, value);
-        db->updateRecord(DataBase::ReplaceSettingsItem, *r);
+        db->updateSettingsRecord(DataBase::ReplaceSettingsItem, *r);
         QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
         db->saveLog(LogType_Warning, LogSource_Admin, s);
     }
@@ -312,7 +336,7 @@ void AppManager::onPopupClosed()
     {
         openedPopupCount = 0;
         emit showMainPage(mainPageIndex);
-        authorizationOpened = false;
+        isAuthorizationOpened = false;
     }
     qDebug() << "@@@@@ AppManager::onPopupClosed " << openedPopupCount;
 }
@@ -339,7 +363,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
     case DataBase::UpdateSettings: // Обновление настроек с перезапуском оборудования:
         if(!records.isEmpty()) settings.update(records);
         settingsPanelModel->update(settings);
-        if(started) startEquipment();
+        if(isStarted) startEquipment();
         break;
 
     case DataBase::ChangeSettings: // Обновление настроек без перезапуска оборудования:
@@ -349,7 +373,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
         break;
 
     case DataBase::ReplaceSettingsItem: // Изменена настройка оператором:
-        db->selectByParam(DataBase::ChangeSettings, "");
+        db->select(DataBase::ChangeSettings, "");
         break;
 
     case DataBase::GetAuthorizationUserByName: // Получен результат поиска пользователя по введеному имени при авторизации:
@@ -358,7 +382,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
         showcasePanelModel->updateProducts(records);
-        db->onSelectByList(DataBase::GetShowcaseResources, records);
+        db->select(DataBase::GetShowcaseResources, records);
         break;
 
     case DataBase::GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
@@ -438,7 +462,7 @@ void AppManager::onViewLogClicked()
 {
     db->saveLog(LogType_Info, LogSource_Admin, "Просмотр лога");
     onUserAction();
-    db->selectByParam(DataBase::GetLog, "");
+    db->select(DataBase::GetLog, "");
     emit showViewLogPanel();
 }
 
@@ -497,15 +521,6 @@ void AppManager::onTableResultClicked(const int index)
         }
         else setProduct(clickedProduct);
     }
-}
-
-void AppManager::onTimer()
-{
-    quint64 dt = Tools::currentDateTimeToUInt() - userActionTime; // минуты
-    quint64 bt = settings.getItemIntValue(Settings::SettingCode_Blocking); // минуты
-    //qDebug() << "@@@@@ AppManager::onTimer " << dt << bt * 1000 * 60;
-    if(!authorizationOpened && bt > 0 && bt * 1000 * 60 < dt)
-        startAuthorization();
 }
 
 void AppManager::onSettingsItemClicked(const int index)
@@ -575,20 +590,20 @@ void AppManager::updateTablePanel(const bool root)
     emit showTablePanelTitle(tablePanelModel->title());
     const QString currentGroupCode = tablePanelModel->lastGroupCode();
     emit showGroupHierarchyRoot(currentGroupCode.isEmpty() || currentGroupCode == "0");
-    db->selectByParam(DataBase::GetProductsByGroupCodeIncludeGroups, currentGroupCode);
+    db->select(DataBase::GetProductsByGroupCodeIncludeGroups, currentGroupCode);
 }
 
 void AppManager::startAuthorization()
 {
     qDebug() << "@@@@@ AppManager::startAuthorization";
-    started = false;
+    isStarted = false;
     stopEquipment();
     QString info = appInfo.all();
     qDebug() << "@@@@@ AppManager::startAuthorization " << info;
     emit showAuthorizationPanel(info);
-    authorizationOpened = true;
+    isAuthorizationOpened = true;
     db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
-    db->selectByParam(DataBase::GetUserNames, "");
+    db->select(DataBase::GetUserNames, "");
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
@@ -598,7 +613,7 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     qDebug() << "@@@@@ AppManager::onCheckAuthorizationClick " << normalizedLogin << password;
     user[UserDBTable::Name] = normalizedLogin;
     user[UserDBTable::Password] = password;
-    db->selectByParam(DataBase::GetAuthorizationUserByName, normalizedLogin);
+    db->select(DataBase::GetAuthorizationUserByName, normalizedLogin);
 }
 
 void AppManager::checkAuthorization(const DBRecordList& dbUsers)
@@ -637,9 +652,9 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
     qDebug() << "@@@@@ AppManager::checkAuthorization OK";
     QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
     db->saveLog(LogType_Warning, LogSource_User, s);
-    if(!started)
+    if(!isStarted)
     {
-        started = true;
+        isStarted = true;
         startEquipment();
         // showMessage(title, "Успешно!");
         emit authorizationSucceded();
@@ -647,7 +662,7 @@ void AppManager::checkAuthorization(const DBRecordList& dbUsers)
         resetProduct();
         mainPageIndex = 0;
         emit showMainPage(mainPageIndex);
-        authorizationOpened = false;
+        isAuthorizationOpened = false;
     }
 }
 
@@ -657,7 +672,7 @@ void AppManager::refreshAll()
 
     qDebug() << "@@@@@ AppManager::refreshAll";
     emit showAdminMenu(UserDBTable::isAdmin(user));
-    db->selectByParam(DataBase::GetShowcaseProducts, "");
+    db->select(DataBase::GetShowcaseProducts, "");
     searchFilterModel->update();
     //searchPanelModel->update();
     filteredSearch();

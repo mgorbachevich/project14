@@ -26,12 +26,14 @@ public:
     void start(const int);
     void stop();
     QString version() { return SERVER_VERSION; }
+    bool isActive = false;
 
 protected:
     QHttpServer* server = nullptr;
     DataBase* db;
 
 signals:
+    void action(const int);
 };
 
 #endif // NETSERVER_H

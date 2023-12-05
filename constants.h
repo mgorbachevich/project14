@@ -1,22 +1,21 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define REMOVE_PRODUCT_DB_ON_START false
+#define REMOVE_PRODUCT_DB_ON_START true
 #define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
+#define REMOVE_TEMP_DB true
 #define DB_PRODUCT_NAME "ShtrihScale.db"
 #define DB_SETTINGS_NAME "Settings.db"
 #define DB_LOG_NAME "Log.db"
 #define DB_TEMP_NAME "Temp.db"
-#define REMOVE_TEMP_DB true
-//#define DOWNLOAD_PAUSE 0
+#define DOWNLOAD_PAUSE 0
 
 #define WM_DEMO false
 #define PRINTER_DEMO false
 #define WM_HTTP true
 #define PRINTER_HTTP true
 #define CHECK_AUTHORIZATION true
-#define CONCURRENT_SERVER
 
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE_QML_PATH "../Images/image_dummy.png"
@@ -25,6 +24,7 @@
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
+#define WAIT_NET_ACTION_MSEC 15000
 #define EOL "\r\n"
 
 #define DEFAULT_SCREEN_WIDTH 568
@@ -96,11 +96,14 @@ enum EquipmentParam
     EquipmentParam_AutoPrint = 16,
 };
 
-enum NetRequest
+enum NetAction
 {
-    NetRequest_Get,
-    NetRequest_Set,
-    NetRequest_Delete,
+    NetAction_Upload,
+    NetAction_UploadFinished,
+    NetAction_Download,
+    NetAction_DownloadFinished,
+    NetAction_Delete,
+    NetAction_DeleteFinished,
 };
 
 enum VirtualKeyboardSet

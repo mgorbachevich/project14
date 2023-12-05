@@ -17,7 +17,7 @@ public:
         COLUMN_COUNT
     };
 
-    SettingDBTable(const QSqlDatabase&, const QString&, QObject*);
+    SettingDBTable(const QString&, QObject*);
     int columnCount() { return Columns::COLUMN_COUNT; }
     const DBRecord checkRecord(const DBRecord&);
     const DBRecordList checkList(DataBase*, const DBRecordList&);

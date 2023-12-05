@@ -16,7 +16,7 @@ public:
         COLUMN_COUNT
     };
 
-    LogDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent): DBTable(sqlDb, name, parent)
+    LogDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
         qDebug() << "@@@@@ LogDBTable::LogDBTable";
 

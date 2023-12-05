@@ -17,10 +17,10 @@ QString RequestParser::parseJson(const QByteArray& request)
     return QString(text);
 }
 
-QString RequestParser::parseGetDataRequest(const NetRequest requestType, DataBase* db, const QByteArray &request)
+QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, const QByteArray &request)
 {
     // Parse list of codes to upload:
-    qDebug() << "@@@@@ RequestParser::parseGetDataRequest " << QString(request);
+    qDebug() << "@@@@@ RequestParser::parseGetRequest " << action << QString(request);
     QByteArray tableName;
     QByteArray codeList;
     const QByteArray s1 = "source=";
@@ -64,89 +64,29 @@ QString RequestParser::parseGetDataRequest(const NetRequest requestType, DataBas
             }
         }
     }
-    switch(requestType)
+    switch(action)
     {
-    case NetRequest_Delete: return db->deleteRecords(tableName, codeList);
-    case NetRequest_Get:    return db->uploadRecords(tableName, codeList);
+    case NetAction_Delete: return db->netDelete(tableName, codeList);
+    case NetAction_Upload: return db->netUpload(tableName, codeList);
     default: break;
     }
     return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
 }
 
-/*
-bool RequestParser::parseSetDataRequest(const QByteArray &request)
+QString RequestParser::parseGetRequest(DataBase *db, const QByteArray &request)
 {
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest";
-
-    // Singlepart:
-    if(request.indexOf("{") == 0)
-    {
-        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Singlepart";
-        return parseText(request);
-    }
-    // Multipart:
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Multipart";
-    QByteArray boundary = request.mid(0, request.indexOf(EOL));
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary =" << QString(boundary);
-    QList<int> boundaryIndeces;
-    int bi = 0;
-    boundaryIndeces.append(bi);
-    for(int i = 1; i < 3; i++)
-    {
-        bi = request.indexOf(QByteArrayView(boundary), bi + boundary.size() + 2);
-        if(bi >= 0) boundaryIndeces.append(bi);
-    }
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary indices =" << boundaryIndeces;
-    const int partCount = boundaryIndeces.count() - 1;
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Part count =" << partCount;
-    int result = 0;
-    for(int i = 0; i < partCount; i++)
-    {
-        const int i1 = boundaryIndeces[i] + boundary.size() + 2;
-        const int i2 = request.indexOf(EOL, i1) + 2;
-        const int i3 = request.indexOf(EOL, i2) + 2;
-        QByteArrayList headers;
-        headers.append(request.mid(i1, i2 - i1 - 2));
-        headers.append(request.mid(i2, i3 - i2 - 2));
-        for(int j = 0; j < headers.count(); j++)
-        {
-            qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Header =" << headers[j];
-            if(headers[j].contains("\"value\""))
-            {
-                parseText(request.mid(i3 + 2, boundaryIndeces[i + 1] - i3 - 2));
-                if(!text.isEmpty()) result++;
-                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text =" << text;
-                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text lenght =" << text.length();
-            }
-            else if(headers[j].contains("\"file1\"")) // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
-            {
-                const int j1 = headers[j].indexOf("filename");
-                if(j1 < 0) continue;
-                int j2 = headers[j].indexOf("\"", j1);
-                if(j2 < 0) continue;
-                const int j3 = headers[j].lastIndexOf("\"");
-                if(j3 < 0) continue;
-                const int j4 = headers[j].indexOf(":", j1);
-                const int j5 = headers[j].indexOf("/", j1);
-                if(j4 > j2) j2 = j4;
-                if(j5 == j2 + 1) j2 = j5;
-                fileName = headers[j].mid(j2 + 1, j3 - j2 - 1); // Должно получиться Images/image.png
-                fileData = request.mid(i3 + 2, boundaryIndeces[i + 1] - i3 - 4);
-                //qDebug() << "@@@@@ RequestParser::parseSetDataRequest indeces =" << j1 << j2 << j3 << j4 << j5;
-                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. File name =" << QString(fileName);
-                qDebug() << "@@@@@ RequestParser::parseSetDataRequest. File data length =" << fileData.length();
-                if(!fileData.isEmpty() && !fileName.isEmpty()) result++;
-            }
-        }
-    }
-    return partCount > 0 && result == partCount;
+    return parseGetRequest(NetAction_Upload, db, request);
 }
-*/
 
-QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &request)
+QString RequestParser::parseDeleteRequest(DataBase *db, const QByteArray &request)
 {
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest";
-    //qDebug() << "@@@@@ RequestParser::parseSetDataRequest = " << request;
+    return parseGetRequest(NetAction_Delete, db, request);
+}
+
+QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
+{
+    qDebug() << "@@@@@ RequestParser::parseSetRequest";
+    //qDebug() << "@@@@@ RequestParser::parseSetRequest = " << request;
     int successCount = 0;
     int errorCount = 0;
     int errorCode = 0;
@@ -154,14 +94,14 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
     // Singlepart:
     if(request.indexOf("{") == 0)
     {
-        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Singlepart";
+        qDebug() << "@@@@@ RequestParser::parseSetRequest. Singlepart";
         return makeResultJson(LogError_WrongRequest, "Неверный запрос", "", "");
     }
 
     // Multipart:
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Multipart";
+    qDebug() << "@@@@@ RequestParser::parseSetRequest. Multipart";
     QByteArray boundary = request.mid(0, request.indexOf(EOL));
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary =" << QString(boundary);
+    qDebug() << "@@@@@ RequestParser::parseSetRequest. Boundary =" << QString(boundary);
     QList<int> boundaryIndeces;
     int bi = 0;
     while(bi >= 0)
@@ -169,9 +109,9 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
         boundaryIndeces.append(bi);
         bi = request.indexOf(QByteArrayView(boundary), bi + boundary.size() + 2);
     }
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Boundary indices =" << boundaryIndeces;
+    qDebug() << "@@@@@ RequestParser::parseSetRequest. Boundary indices =" << boundaryIndeces;
     const int partCount = boundaryIndeces.count() - 1;
-    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Part count =" << partCount;
+    qDebug() << "@@@@@ RequestParser::parseSetRequest. Part count =" << partCount;
     QHash<DBTable*, DBRecordList> downloadedRecords;
     for(int partIndex = 0; partIndex < partCount; partIndex++)
     {
@@ -189,7 +129,7 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
             {
                 // Tools::pause(1000); // debug concurrent downloading
                 QByteArray& header = headers[hi];
-                qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Part %1, header %2 = %3").
+                qDebug() << QString("@@@@@ RequestParser::parseSetRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header);
 
                 // Content-Disposition: form-data; name="value"
@@ -197,7 +137,7 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
                 if(nameItemValue == "value")
                 {
                     QString text = parseJson(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
-                    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Text =" << text;
+                    qDebug() << "@@@@@ RequestParser::parseSetRequest. Text =" << text;
                     if(!text.isEmpty())
                     {
                         for (DBTable* t : db->tables)
@@ -205,12 +145,12 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
                             if(t == nullptr) continue;
                             DBRecordList tableRecords = JSONParser::parseTable(t, text);
                             if(tableRecords.count() == 0) continue;
-                            qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Table %1, records %2").
+                            qDebug() << QString("@@@@@ RequestParser::parseSetRequest. Table %1, records %2").
                                     arg(t->name, QString::number(tableRecords.count()));
                             downloadedRecords.insert(t, tableRecords);
                         }
                     }
-                    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Record count =" << downloadedRecords.count();
+                    qDebug() << "@@@@@ RequestParser::parseSetRequest. Record count =" << downloadedRecords.count();
                 }
             }
         }
@@ -220,14 +160,14 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
             {
                 // Tools::pause(1000); // debug concurrent downloading
                 QByteArray& header = headers[hi];
-                qDebug() << QString("@@@@@ RequestParser::parseSetDataRequest. Part %1, header %2 = %3").
+                qDebug() << QString("@@@@@ RequestParser::parseSetRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header);
                 QList tables = downloadedRecords.keys();
                 for (DBTable* table : tables)
                 {
                     const int fieldIndex = table->columnIndex("field");
                     if(fieldIndex < 0) continue;
-                    qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Table " << table->name;
+                    qDebug() << "@@@@@ RequestParser::parseSetRequest. Table " << table->name;
                     DBRecordList tableRecords = downloadedRecords.value(table);
                     for(int ri = 0; ri < tableRecords.count(); ri++)
                     {
@@ -242,13 +182,13 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
                         const int dotIndex = source.lastIndexOf(".");
                         QString extension =  dotIndex < 0 ? "" : source.mid(dotIndex + 1, source.length());
                         QString localFilePath = QString("%1/%2.%3").arg(table->name, record[0].toString(), extension);
-                        //qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Record =" << DBTable::toJsonString(table, record);
+                        //qDebug() << "@@@@@ RequestParser::parseSetRequest. Record =" << DBTable::toJsonString(table, record);
 
                         // Write data file:
                         QByteArray fileData = request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d * 2);
-                        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. File data length =" << fileData.length();
+                        qDebug() << "@@@@@ RequestParser::parseSetRequest. File data length =" << fileData.length();
                         QString fullFilePath = Tools::downloadFilePath(localFilePath);
-                        qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Full file path = " << fullFilePath;
+                        qDebug() << "@@@@@ RequestParser::parseSetRequest. Full file path = " << fullFilePath;
                         if(Tools::writeBinaryFile(fullFilePath, fileData))
                         {
                             successCount++;
@@ -261,7 +201,7 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
                             errorCode = LogError_WrongRecord;
                             record[ResourceDBTable::Source] = "";
                             record[ResourceDBTable::Value] = "";
-                            qDebug() << "@@@@@ RequestParser::parseSetDataRequest. Write file ERROR";
+                            qDebug() << "@@@@@ RequestParser::parseSetRequest. Write file ERROR";
                         }
                     }
                     downloadedRecords.remove(table);
@@ -270,7 +210,7 @@ QString RequestParser::parseSetDataRequest(DataBase* db, const QByteArray &reque
             }
         }
     }
-    db->downloadRecords(downloadedRecords, successCount, errorCount);
+    db->netDownload(downloadedRecords, successCount, errorCount);
     QString description = QString("Загружено записей %1 из %2").
             arg(QString::number(successCount), QString::number(successCount + errorCount));
     return makeResultJson(errorCode, description, "", "");

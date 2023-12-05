@@ -3,8 +3,7 @@
 #include "jsonparser.h"
 #include "database.h"
 
-SettingDBTable::SettingDBTable(const QSqlDatabase &sqlDb, const QString& name, QObject *parent):
-    DBTable(sqlDb, name, parent)
+SettingDBTable::SettingDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
     qDebug() << "@@@@@ SettingDBTable::SettingDBTable";
     addColumn("Код",           "code",       "INT PRIMARY KEY");
@@ -93,7 +92,7 @@ void SettingDBTable::checkAndSaveDefaultRecord(DataBase* db, const int code, con
         DBRecord ri = defaults.at(i);
         if (ri.at(Columns::Code).toInt() == code)
         {
-            if(db->insertRecord(this, ri))
+            if(db->insertSettingsRecord(ri))
             {
                 qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord " << code;
                 results.append(ri);

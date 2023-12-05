@@ -52,7 +52,7 @@ public:
         ProductPriceBase_100g = 2
     };
 
-    ProductDBTable(const QSqlDatabase &, const QString&, QObject*);
+    ProductDBTable(const QString&, QObject*);
     const DBRecord checkRecord(const DBRecord&);
     int columnCount() { return Columns::COLUMN_COUNT; }
     static bool isForShowcase(const DBRecord&);
