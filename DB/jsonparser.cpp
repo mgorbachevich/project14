@@ -22,7 +22,7 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
     DBRecordList records;
     if(table == nullptr)
     {
-        qDebug() << "@@@@@ JSONParser::parseTable ERROR";
+        qDebug() << "@@@@@ JSONParser::parseTable ERROR (table == nullptr)";
         if(ok != nullptr) *ok = false;
         return records;
     }
@@ -31,13 +31,17 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
     QJsonValue data = jo["data"];
     if (!data.isObject())
     {
-        qDebug() << "@@@@@ JSONParser::parseTable ERROR";
+        qDebug() << "@@@@@ JSONParser::parseTable ERROR (!data.isObject())";
         if(ok != nullptr) *ok = false;
         return records;
     }
     if(ok != nullptr) *ok = true;
     QJsonValue jt = data.toObject()[table->name];
-    if(!jt.isArray()) return records;
+    if(!jt.isArray())
+    {
+        qDebug() << "@@@@@ JSONParser::parseTable ERROR (!jt.isArray())";
+        return records;
+    }
     QJsonArray ja = jt.toArray();
     for (int i = 0; i < ja.size(); i++)
     {
@@ -49,6 +53,7 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
             records << r;
         }
     }
+    qDebug() << "@@@@@ JSONParser::parseTable Done " << records.count();
     return records;
 }
 /*

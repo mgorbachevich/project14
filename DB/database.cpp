@@ -17,6 +17,19 @@ DataBase::DataBase(Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
 {
     qDebug() << "@@@@@ DataBase::DataBase ";
+
+    tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
+    tables.append(new UserDBTable(DBTABLENAME_USERS, this));
+    tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
+    tables.append(new ResourceDBTable(DBTABLENAME_MESSAGES, this));
+    tables.append(new ResourceDBTable(DBTABLENAME_MESSAGEFILES, this));
+    tables.append(new ResourceDBTable(DBTABLENAME_PICTURES, this));
+    tables.append(new ResourceDBTable(DBTABLENAME_MOVIES, this));
+    tables.append(new ResourceDBTable(DBTABLENAME_SOUNDS, this));
+    tables.append(new ShowcaseDBTable(DBTABLENAME_SHOWCASE, this));
+    tables.append(new SettingDBTable(DBTABLENAME_SETTINGS, this));
+    tables.append(new LogDBTable(DBTABLENAME_LOG, this));
+    tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, this));
 }
 
 DataBase::~DataBase()
@@ -37,15 +50,6 @@ bool DataBase::init()
     bool exists = QFile(path).exists();
     qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(DB_PRODUCT_NAME, Tools::boolToString(exists));
     opened = addAndOpen(productDB, path);
-    tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
-    tables.append(new UserDBTable(DBTABLENAME_USERS, this));
-    tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
-    tables.append(new ResourceDBTable(DBTABLENAME_MESSAGES, this));
-    tables.append(new ResourceDBTable(DBTABLENAME_MESSAGEFILES, this));
-    tables.append(new ResourceDBTable(DBTABLENAME_PICTURES, this));
-    tables.append(new ResourceDBTable(DBTABLENAME_MOVIES, this));
-    tables.append(new ResourceDBTable(DBTABLENAME_SOUNDS, this));
-    tables.append(new ShowcaseDBTable(DBTABLENAME_SHOWCASE, this));
     if(!exists && opened)
     {
         qDebug() << QString("@@@@@ DataBase::init %1 create tables").arg(DB_PRODUCT_NAME);
@@ -69,7 +73,6 @@ bool DataBase::init()
     if(REMOVE_SETTINGS_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
     opened = addAndOpen(settingsDB, path);
-    tables.append(new SettingDBTable(DBTABLENAME_SETTINGS, this));
     if(!exists && opened) opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
     if (!opened) return false;
 
@@ -77,13 +80,12 @@ bool DataBase::init()
     if(REMOVE_LOG_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
     opened = addAndOpen(logDB, path);
-    tables.append(new LogDBTable(DBTABLENAME_LOG, this));
-    tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, this));
     if(!exists && opened)
     {
         opened &= createTable(logDB, getTable(DBTABLENAME_LOG));
         opened &= createTable(logDB, getTable(DBTABLENAME_TRANSACTIONS));
     }
+    qDebug() << "@@@@@ DataBase::init " << opened;
     return opened;
 }
 
@@ -120,10 +122,10 @@ bool DataBase::addAndOpen(QSqlDatabase& db, const QString& filePath, const bool 
     return false;
 }
 
-DBTable *DataBase::getTable(const QString &name) const
+DBTable* DataBase::getTable(const QString &name) const
 {
-    for (DBTable* t : tables) if (t->name == name) return t;
-    qDebug() << "@@@@@ DataBase::getTable ERROR";
+    for (int i = 0; i < tables.count(); i++) if (tables[i]->name == name) return tables[i];
+    qDebug() << "@@@@@ DataBase::getTable ERROR " << name;
     return nullptr;
 }
 
@@ -236,11 +238,16 @@ bool DataBase::removeRecord(const QSqlDatabase& db, DBTable* table, const QStrin
 
 bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBRecord& record)
 {
-    if (!opened) return false;
+    qDebug() << "@@@@@ DataBase::insertRecord";
+    if (!opened)
+    {
+        qDebug() << "@@@@@ DataBase::insertRecord ERROR (!opened)";
+        return false;
+    }
     DBRecord checkedRecord = table->checkRecord(record);
     if (checkedRecord.isEmpty())
     {
-        qDebug() << "@@@@@ DataBase::insertRecord ERROR";
+        qDebug() << "@@@@@ DataBase::insertRecord ERROR (checkedRecord.isEmpty())";
         //saveLog(LogDBTable::LogType_Error, "БД. Не сохранена запись в таблице " + table->name);
         return false;
     }
@@ -267,7 +274,8 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
 
 bool DataBase::insertSettingsRecord(const DBRecord &r)
 {
-    return insertRecord(settingsDB, getTable(DB_SETTINGS_NAME), r);
+    qDebug() << "@@@@@ DataBase::insertSettingsRecord";
+    return insertRecord(settingsDB, getTable(DBTABLENAME_SETTINGS), r);
 }
 
 bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
@@ -651,8 +659,8 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
         DBRecordList tableRecords = records.value(table);
         for(DBRecord& r : tableRecords)
         {
-#ifdef DOWNLOAD_PAUSE
-            if(DOWNLOAD_PAUSE > 0) Tools::pause(DOWNLOAD_PAUSE); // debug concurrent downloading
+#ifdef DOWNLOAD_PAUSE_MSEC
+            if(DOWNLOAD_PAUSE_MSEC > 0) Tools::pause(DOWNLOAD_PAUSE_MSEC); // debug concurrent downloading
 #endif
             QString code = r.count() > 0 ? r.at(0).toString() : "";
             QString s;

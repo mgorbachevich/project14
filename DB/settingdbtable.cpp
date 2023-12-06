@@ -83,9 +83,14 @@ const DBRecordList SettingDBTable::checkList(DataBase* db, const DBRecordList& r
 
 void SettingDBTable::checkAndSaveDefaultRecord(DataBase* db, const int code, const DBRecordList& defaults, DBRecordList& results)
 {
+    //qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord " << code;
     for (int i = 0; i < results.count(); i++)
     {
-        if (results.at(i).at(Columns::Code).toInt() == code) return; // уже есть такая запись
+        if (results.at(i).at(Columns::Code).toInt() == code) // уже есть такая запись
+        {
+            qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord exists " << code;
+            return;
+        }
     }
     for (int i = 0; i < defaults.count(); i++)
     {
@@ -94,7 +99,7 @@ void SettingDBTable::checkAndSaveDefaultRecord(DataBase* db, const int code, con
         {
             if(db->insertSettingsRecord(ri))
             {
-                qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord " << code;
+                qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord insert" << code;
                 results.append(ri);
             }
             return;

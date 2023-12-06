@@ -170,23 +170,20 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
     if(e == 0)
     {
         TransactionDBTable* t = (TransactionDBTable*)db->getTable(DBTABLENAME_TRANSACTIONS);
-        DBRecord r = t->createRecord(
-                    dateTime,
-                    user[UserDBTable::Code].toInt(),
-                    Tools::stringToInt(product[ProductDBTable::Code]),
-                    labelNumber,
-                    Tools::stringToDouble(quantity),
-                    Tools::stringToInt(price),
-                    Tools::stringToInt(amount));
-        emit printed(r);
+        if(t != nullptr)
+        {
+            DBRecord r = t->createRecord(
+                        dateTime,
+                        user[UserDBTable::Code].toInt(),
+                        Tools::stringToInt(product[ProductDBTable::Code]),
+                        labelNumber,
+                        Tools::stringToDouble(quantity),
+                        Tools::stringToInt(price),
+                        Tools::stringToInt(amount));
+            emit printed(r);
+        }
+        else qDebug() << "@@@@@ PrintManager::print ERROR (get Transactions Table)";
     }
-    /*
-    else
-    {
-        QString s = QString("Ошибка печати %1").arg(error);
-        emit showMessageBox("Внимание!", s, true);
-    }
-    */
 }
 
 

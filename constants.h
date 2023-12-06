@@ -1,22 +1,34 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define REMOVE_PRODUCT_DB_ON_START true
+#define RELEASE
+
+#ifdef RELEASE
+#define WM_DEMO false
+#define PRINTER_DEMO false
+//#define DOWNLOAD_PAUSE_MSEC 0
+#define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
 #define REMOVE_TEMP_DB true
+#else
+#define WM_DEMO true
+#define PRINTER_DEMO true
+#define DOWNLOAD_PAUSE_MSEC 1000
+#define REMOVE_PRODUCT_DB_ON_START false
+#define REMOVE_SETTINGS_DB_ON_START false
+#define REMOVE_LOG_DB_ON_START false
+#define REMOVE_TEMP_DB true
+#endif
+
+#define CHECK_AUTHORIZATION true
+#define WAIT_NET_ACTION_MSEC 30000
+#define WM_HTTP true
+#define PRINTER_HTTP true
 #define DB_PRODUCT_NAME "ShtrihScale.db"
 #define DB_SETTINGS_NAME "Settings.db"
 #define DB_LOG_NAME "Log.db"
 #define DB_TEMP_NAME "Temp.db"
-#define DOWNLOAD_PAUSE 0
-
-#define WM_DEMO false
-#define PRINTER_DEMO false
-#define WM_HTTP true
-#define PRINTER_HTTP true
-#define CHECK_AUTHORIZATION true
-
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE_QML_PATH "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
@@ -24,7 +36,6 @@
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
-#define WAIT_NET_ACTION_MSEC 15000
 #define EOL "\r\n"
 
 #define DEFAULT_SCREEN_WIDTH 568

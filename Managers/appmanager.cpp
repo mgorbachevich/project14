@@ -37,8 +37,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject
     KeyEmitter* keyEmitter = new KeyEmitter(this);
     context->setContextProperty("keyEmitter", keyEmitter);
 
-    user = UserDBTable::defaultAdmin();
     db = new DataBase(settings, this);
+    user = UserDBTable::defaultAdmin();
     netServer = new NetServer(this, db);
     weightManager = new WeightManager(this, WM_DEMO);
     printManager = new PrintManager(this, db, settings, PRINTER_DEMO);
@@ -84,6 +84,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject
     QTimer::singleShot(100, this, &AppManager::start);
     onUserAction();
     timer->start(APP_TIMER_MSEC);
+
+    qDebug() << "@@@@@ AppManager::AppManager Done";
 }
 
 void AppManager::onDBStarted()
@@ -95,6 +97,7 @@ void AppManager::onDBStarted()
     startAuthorization();
     db->select(DataBase::UpdateSettings, "");
     //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
+    qDebug() << "@@@@@ AppManager::onDBStarted Done";
 }
 
 void AppManager::onNetAction(const int action)
@@ -604,6 +607,7 @@ void AppManager::startAuthorization()
     isAuthorizationOpened = true;
     db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
     db->select(DataBase::GetUserNames, "");
+    qDebug() << "@@@@@ AppManager::startAuthorization Done";
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
