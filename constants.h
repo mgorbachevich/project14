@@ -7,6 +7,7 @@
 #define WM_DEMO false
 #define PRINTER_DEMO false
 //#define DOWNLOAD_PAUSE_MSEC 0
+#define WAIT_NET_ACTION_MSEC 30000
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
@@ -15,6 +16,7 @@
 #define WM_DEMO true
 #define PRINTER_DEMO true
 #define DOWNLOAD_PAUSE_MSEC 1000
+#define WAIT_NET_ACTION_MSEC 10000
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
@@ -22,7 +24,6 @@
 #endif
 
 #define CHECK_AUTHORIZATION true
-#define WAIT_NET_ACTION_MSEC 30000
 #define WM_HTTP true
 #define PRINTER_HTTP true
 #define DB_PRODUCT_NAME "ShtrihScale.db"

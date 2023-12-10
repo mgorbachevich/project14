@@ -106,11 +106,18 @@ void AppManager::onNetAction(const int action)
     netActionTime = Tools::currentDateTimeToUInt();
     switch (action)
     {
+    case NetAction_Upload:
+        netRoutes++;
+        break;
     case NetAction_Delete:
     case NetAction_Download:
+        netRoutes++;
         isRefreshNeeded = true;
         break;
-    default:
+    case NetAction_UploadFinished:
+    case NetAction_DeleteFinished:
+    case NetAction_DownloadFinished:
+        netRoutes--;
         break;
     }
 }
@@ -120,15 +127,15 @@ void AppManager::onTimer()
     const quint64 now = Tools::currentDateTimeToUInt();
 
     // Блокировка:
-    quint64 t = settings.getItemIntValue(Settings::SettingCode_Blocking); // минуты
-    if(!isAuthorizationOpened && t > 0 && t * 1000 * 60 < now - userActionTime)
+    quint64 waitBlocking = settings.getItemIntValue(Settings::SettingCode_Blocking); // минуты
+    if(!isAuthorizationOpened && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
     {
         qDebug() << "@@@@@ AppManager::onTimer userActionTime";
         startAuthorization();
     }
 
     // Ожидание окончания сетевых запросов:
-    if(!netServer->isActive && netActionTime > 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
+    if(netRoutes == 0 && netActionTime > 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
     {
         qDebug() << "@@@@@ AppManager::onTimer netActionTime";
         netActionTime = 0;

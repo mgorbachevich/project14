@@ -660,7 +660,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
         for(DBRecord& r : tableRecords)
         {
 #ifdef DOWNLOAD_PAUSE_MSEC
-            if(DOWNLOAD_PAUSE_MSEC > 0) Tools::pause(DOWNLOAD_PAUSE_MSEC); // debug concurrent downloading
+            if(DOWNLOAD_PAUSE_MSEC > 0) Tools::pause(DOWNLOAD_PAUSE_MSEC, "netDownload"); // debug concurrent downloading
 #endif
             QString code = r.count() > 0 ? r.at(0).toString() : "";
             QString s;

@@ -102,6 +102,7 @@ private:
     NetServer* netServer = nullptr;
     quint64 netActionTime = 0;
     bool isRefreshNeeded = false;
+    int netRoutes = 0;
 
     // Оборудование:
     WeightManager* weightManager = nullptr;

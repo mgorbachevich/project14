@@ -12,7 +12,7 @@
 #include <QSslKey>
 #endif
 
-#define SERVER_VERSION "1.3"
+#define SERVER_VERSION "1.4"
 
 class DataBase;
 
@@ -26,9 +26,12 @@ public:
     void start(const int);
     void stop();
     QString version() { return SERVER_VERSION; }
-    bool isActive = false;
 
 protected:
+    QHttpServerResponse getData(const QHttpServerRequest&);
+    QHttpServerResponse deleteData(const QHttpServerRequest&);
+    QHttpServerResponse setData(const QHttpServerRequest&);
+
     QHttpServer* server = nullptr;
     DataBase* db;
 

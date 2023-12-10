@@ -85,7 +85,7 @@ QString RequestParser::parseDeleteRequest(DataBase *db, const QByteArray &reques
 
 QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
 {
-    qDebug() << "@@@@@ RequestParser::parseSetRequest";
+    qDebug() << "@@@@@ RequestParser::parseSetRequest " << request.length();
     //qDebug() << "@@@@@ RequestParser::parseSetRequest = " << request;
     int successCount = 0;
     int errorCount = 0;
@@ -127,7 +127,6 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
         {
             for(int hi = 0; hi < headers.count(); hi++)
             {
-                // Tools::pause(1000); // debug concurrent downloading
                 QByteArray& header = headers[hi];
                 qDebug() << QString("@@@@@ RequestParser::parseSetRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header);
@@ -158,7 +157,6 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
         {
             for(int hi = 0; hi < headers.count(); hi++)
             {
-                // Tools::pause(1000); // debug concurrent downloading
                 QByteArray& header = headers[hi];
                 qDebug() << QString("@@@@@ RequestParser::parseSetRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header);

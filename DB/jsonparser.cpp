@@ -26,7 +26,6 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
         if(ok != nullptr) *ok = false;
         return records;
     }
-    qDebug() << "@@@@@ JSONParser::parseTable " << table->name;
     const QJsonObject jo = Tools::stringToJson(json);
     QJsonValue data = jo["data"];
     if (!data.isObject())
@@ -39,9 +38,10 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
     QJsonValue jt = data.toObject()[table->name];
     if(!jt.isArray())
     {
-        qDebug() << "@@@@@ JSONParser::parseTable ERROR (!jt.isArray())";
+        //qDebug() << "@@@@@ JSONParser::parseTable ERROR (!jt.isArray())";
         return records;
     }
+    qDebug() << "@@@@@ JSONParser::parseTable " << table->name;
     QJsonArray ja = jt.toArray();
     for (int i = 0; i < ja.size(); i++)
     {
