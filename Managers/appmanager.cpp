@@ -309,12 +309,12 @@ void AppManager::onAdminSettingsClicked()
 
 void AppManager::beepSound()
 {
-    Tools::sound(BEEP_SOUND_FILE_PATH);
+    Tools::sound("qrc:/Sound/beep.mp3");
 }
 
 void AppManager::clickSound()
 {
-    Tools::sound(CLICK_SOUND_FILE_PATH);
+    Tools::sound("qrc:/Sound/click.mp3");
 }
 
 void AppManager::onLockClicked()
@@ -548,7 +548,6 @@ void AppManager::onTableResultClicked(const int index)
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
-    clickSound();
     onUserAction();
     DBRecord* r =  settings.getItemByIndexInCurrentGroup(index);
     if(r == nullptr  || r->empty()) return;
@@ -809,6 +808,7 @@ void AppManager::onUserAction()
     qDebug() << "@@@@@ AppManager::onUserAction";
     userActionTime = Tools::currentDateTimeToUInt();
     secret = 0;
+    clickSound();
 }
 
 void AppManager::showUsers(const DBRecordList& records)

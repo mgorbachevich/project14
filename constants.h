@@ -32,8 +32,6 @@
 #define DB_TEMP_NAME "Temp.db"
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE_PATH "../Images/image_dummy.png"
-#define BEEP_SOUND_FILE_PATH "../Sound/beep-01a.wav"
-#define CLICK_SOUND_FILE_PATH "qrc:/Sound/KeypressStandard.ogg"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10

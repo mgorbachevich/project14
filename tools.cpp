@@ -212,8 +212,7 @@ void Tools::sound(const QString& fileName)
     auto player = new QMediaPlayer;
     auto audioOutput = new QAudioOutput;
     player->setAudioOutput(audioOutput);
-    const QUrl url(fileName);
-    player->setSource(url);
+    player->setSource(QUrl(fileName));
     audioOutput->setVolume(50);
     player->play();
 }
