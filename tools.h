@@ -35,6 +35,7 @@ public:
     static bool copyFile(const QString&, const QString&);
     static bool removeFile(const QString&);
     static void pause(const int, const QString& comment = "");
+    static void sound(const QString&);
 
 private:
     static QString makeFullPath(const QString&, const QString&);

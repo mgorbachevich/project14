@@ -39,10 +39,12 @@ public:
     explicit AppManager(QQmlContext*, const QSize&, QObject*);
     double price(const DBRecord&);
 
-    Q_INVOKABLE void beep();
+    Q_INVOKABLE void beepSound();
+    Q_INVOKABLE void clickSound();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
+    Q_INVOKABLE void onInfoClicked();
     Q_INVOKABLE void onLockClicked();
     Q_INVOKABLE void onMainPageChanged(const int);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);

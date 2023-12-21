@@ -17,6 +17,16 @@ QString RequestParser::parseJson(const QByteArray& request)
     return QString(text);
 }
 
+QString RequestParser::parseGetRequest(DataBase *db, const QByteArray &request)
+{
+    return parseGetRequest(NetAction_Upload, db, request);
+}
+
+QString RequestParser::parseDeleteRequest(DataBase *db, const QByteArray &request)
+{
+    return parseGetRequest(NetAction_Delete, db, request);
+}
+
 QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, const QByteArray &request)
 {
     // Parse list of codes to upload:
@@ -71,16 +81,6 @@ QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, con
     default: break;
     }
     return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
-}
-
-QString RequestParser::parseGetRequest(DataBase *db, const QByteArray &request)
-{
-    return parseGetRequest(NetAction_Upload, db, request);
-}
-
-QString RequestParser::parseDeleteRequest(DataBase *db, const QByteArray &request)
-{
-    return parseGetRequest(NetAction_Delete, db, request);
 }
 
 QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)

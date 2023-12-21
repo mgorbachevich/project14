@@ -169,14 +169,14 @@ Rectangle
                         break
                     case Qt.Key_Up:
                         if (!searchPanelResultList.atYBeginning) searchPanelResultList.flick(0, Constants.flickVelocity)
-                        else app.beep()
+                        else app.beepSound()
                         break;
                     case Qt.Key_Down:
                         if (!searchPanelResultList.atYEnd) searchPanelResultList.flick(0, -Constants.flickVelocity)
-                        else app.beep()
+                        else app.beepSound()
                         break;
                     default:
-                        app.beep();
+                        app.beepSound();
                         break;
                 }
             }

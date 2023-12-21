@@ -28,12 +28,8 @@ public:
     QString version() { return SERVER_VERSION; }
 
 protected:
-    QHttpServerResponse getData(const QHttpServerRequest&);
-    QHttpServerResponse deleteData(const QHttpServerRequest&);
-    QHttpServerResponse setData(const QHttpServerRequest&);
-
     QHttpServer* server = nullptr;
-    DataBase* db;
+    DataBase* db = nullptr;
 
 signals:
     void action(const int);

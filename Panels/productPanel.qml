@@ -101,14 +101,14 @@ Popup
                     break
                 case Qt.Key_Up:
                     if (!productPanelList.atYBeginning) productPanelList.flick(0, Constants.flickVelocity)
-                    else app.beep()
+                    else app.beepSound()
                     break;
                 case Qt.Key_Down:
                     if (!productPanelList.atYEnd) productPanelList.flick(0, -Constants.flickVelocity)
-                    else app.beep()
+                    else app.beepSound()
                     break;
                 default:
-                    app.beep();
+                    app.beepSound();
                     break
             }
         }

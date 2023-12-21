@@ -15,6 +15,7 @@ Popup
     dim: true
     Material.background: Material.color(Material.Grey, Material.Shade100)
     property string versionValue: "Version"
+    property int flagSize: screenManager.flagSize()
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
@@ -38,31 +39,79 @@ Popup
         }
     }
 
-    GridLayout
+    Image
+    {
+        anchors.left: parent.left
+        width: screenManager.buttonSize() * 3 / 2
+        height: screenManager.buttonSize() * 3 / 2
+        source: "../Images/logo"
+
+        MouseArea
+        {
+            anchors.fill: parent
+            onClicked: app.onInfoClicked()
+        }
+    }
+
+    Row
+    {
+        id: flags
+        anchors.right: parent.right
+        spacing: screenManager.spacer()
+        visible: true
+
+        Image
+        {
+            id: usbIcon
+            width: flagSize
+            height: flagSize
+            source: "../Icons/usb_black_48"
+        }
+
+        Image
+        {
+            id: bluetoothIcon
+            width: flagSize
+            height: flagSize
+            source: "../Icons/bluetooth_black_48"
+        }
+
+        Image
+        {
+            id: wifiIcon
+            width: flagSize
+            height: flagSize
+            source: "../Icons/wifi_black_48"
+        }
+
+        Image
+        {
+            id: sdcardIcon
+            width: flagSize
+            height: flagSize
+            source: "../Icons/sdcard_black_48"
+        }
+    }
+
+    Column
     {
         id: authorizationPanelLayout
-        anchors.fill: parent
-        columnSpacing: 0
-        rowSpacing: 0
-        //columns: 1
+        anchors.centerIn: parent
+        spacing: 0
 
         Text
         {
             id: versionText
-            Layout.column: 0
-            Layout.row: 0
-            Layout.alignment: Qt.AlignHCenter
             color: Material.color(Material.BlueGrey, Material.Shade600)
             font { pointSize: screenManager.normalFontSize() }
             text: versionValue
+            visible: false
         }
 
         Text
         {
-            Layout.column: 0
-            Layout.row: 1
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: screenManager.spacer()
+            horizontalAlignment: Text.AlignHCenter
+            width: screenManager.editWidth()
             font { pointSize: screenManager.largeFontSize() }
             color: Material.color(Material.BlueGrey, Material.Shade900)
             text: qsTr("Авторизация")
@@ -70,10 +119,12 @@ Popup
 
         Text
         {
-            Layout.column: 0
-            Layout.row: 2
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: screenManager.spacer()
+            font { pointSize: screenManager.largeFontSize() }
+            text: " "
+        }
+
+        Text
+        {
             font { pointSize: screenManager.normalFontSize() }
             color: Material.color(Material.BlueGrey, Material.Shade600)
             text: qsTr("Пользователь")
@@ -82,10 +133,7 @@ Popup
         ComboBox
         {
             id: loginComboBox
-            Layout.column: 0
-            Layout.row: 3
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: screenManager.editWidth()
+            width: screenManager.editWidth()
             editable: false
             popup.modal: true
 
@@ -115,10 +163,12 @@ Popup
 
         Text
         {
-            Layout.column: 0
-            Layout.row: 4
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: screenManager.spacer()
+            font { pointSize: screenManager.normalFontSize() }
+            text: " "
+        }
+
+        Text
+        {
             font { pointSize: screenManager.normalFontSize() }
             color: Material.color(Material.BlueGrey, Material.Shade600)
             text: qsTr("Пароль")
@@ -127,10 +177,7 @@ Popup
         TextField
         {
             id: passwordTextField
-            Layout.column: 0
-            Layout.row: 5
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.preferredWidth: screenManager.editWidth()
+            width: screenManager.editWidth()
             font { pointSize: screenManager.normalFontSize() }
             Material.accent: Material.Orange
             color: Material.color(Material.BlueGrey, Material.Shade900)
@@ -158,18 +205,21 @@ Popup
                         app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text)
                         break
                     default:
-                        app.beep();
+                        app.beepSound();
                         break
                 }
             }
         }
 
+        Text
+        {
+            font { pointSize: screenManager.largeFontSize() }
+            text: " "
+        }
+
         RoundTextButton
         {
-            Layout.column: 0
-            Layout.row: 6
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: screenManager.spacer() * 2
+            anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("ПРОДОЛЖИТЬ")
             onClicked: app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text)
         }

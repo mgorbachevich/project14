@@ -53,7 +53,7 @@ Popup
                         confirmationPanel.close()
                         break
                     default:
-                        app.beep();
+                        app.beepSound();
                         break
                 }
             }

@@ -35,14 +35,14 @@ Rectangle
                 break;
             case Qt.Key_Up:
                 if (!tablePanelResultList.atYBeginning) tablePanelResultList.flick(0, Constants.flickVelocity)
-                else app.beep()
+                else app.beepSound()
                 break;
             case Qt.Key_Down:
                 if (!tablePanelResultList.atYEnd) tablePanelResultList.flick(0, -Constants.flickVelocity)
-                else app.beep()
+                else app.beepSound()
                 break;
             default:
-                app.beep();
+                app.beepSound();
                 break;
         }
     }

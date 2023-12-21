@@ -127,15 +127,16 @@ void AppManager::onTimer()
     const quint64 now = Tools::currentDateTimeToUInt();
 
     // Блокировка:
-    quint64 waitBlocking = settings.getItemIntValue(Settings::SettingCode_Blocking); // минуты
-    if(!isAuthorizationOpened && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
+    quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
+    if(userActionTime > 0 && !isAuthorizationOpened && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
     {
         qDebug() << "@@@@@ AppManager::onTimer userActionTime";
+        userActionTime = 0;
         startAuthorization();
     }
 
     // Ожидание окончания сетевых запросов:
-    if(netRoutes == 0 && netActionTime > 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
+    if(netActionTime > 0 && netRoutes == 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
     {
         qDebug() << "@@@@@ AppManager::onTimer netActionTime";
         netActionTime = 0;
@@ -163,7 +164,7 @@ QString AppManager::quantityAsString(const DBRecord& productRecord)
 
 QString AppManager::priceAsString(const DBRecord& productRecord)
 {
-    int pp = settings.getItemIntValue(Settings::SettingCode_PointPosition);
+    int pp = settings.getItemIntValue(SettingCode_PointPosition);
     return Tools::moneyToText(price(productRecord), pp);
 }
 
@@ -174,7 +175,7 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
         q = printStatus.pieces;
     else if(!weightManager->isError())
         q = weightManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
-    int pp = settings.getItemIntValue(Settings::SettingCode_PointPosition);
+    int pp = settings.getItemIntValue(SettingCode_PointPosition);
     return Tools::moneyToText(q * price(productRecord), pp);
 }
 
@@ -182,7 +183,7 @@ double AppManager::price(const DBRecord& productRecord)
 {
     const int p = ProductDBTable::Price;
     if (productRecord.count() <= p) return 0;
-    int pp = settings.getItemIntValue(Settings::SettingCode_PointPosition);
+    int pp = settings.getItemIntValue(SettingCode_PointPosition);
     return Tools::priceToDouble(productRecord[p].toString(), pp);
 }
 
@@ -199,9 +200,9 @@ void AppManager::setProduct(const DBRecord& newProduct)
     printStatus.onNewProduct();
     updateStatus();
 
-    if (settings.getItemIntValue(Settings::SettingCode_ProductReset) == Settings::ProductReset_Time)
+    if (settings.getItemIntValue(SettingCode_ProductReset) ==  ProductReset_Time)
     {
-        int resetTime = settings.getItemIntValue(Settings::SettingCode_ProductResetTime);
+        int resetTime = settings.getItemIntValue(SettingCode_ProductResetTime);
         if (resetTime > 0) QTimer::singleShot(resetTime * 1000, this, &AppManager::resetProduct);
     }
 }
@@ -223,7 +224,7 @@ void AppManager::onProductPanelPiecesClicked()
 {
     onUserAction();
     if(ProductDBTable::isPiece(product)) emit showPiecesInputBox(printStatus.pieces);
-    else beep();
+    else beepSound();
 }
 
 void AppManager::onRewind() // Перемотка
@@ -306,10 +307,14 @@ void AppManager::onAdminSettingsClicked()
     emit showSettingsPanel(settings.getCurrentGroupName());
 }
 
-void AppManager::beep()
+void AppManager::beepSound()
 {
-    qDebug() << "@@@@@ AppManager::beep";
-    QApplication::beep();
+    Tools::sound(BEEP_SOUND_FILE_PATH);
+}
+
+void AppManager::clickSound()
+{
+    Tools::sound(CLICK_SOUND_FILE_PATH);
 }
 
 void AppManager::onLockClicked()
@@ -445,7 +450,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetImageByResourceCode: // Отображение картинки выбранного товара:
     {
-        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_QML_PATH;
+        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_PATH;
         emit showProductImage(imagePath);
         //showMessage("Image file path", imagePath);
         break;
@@ -457,7 +462,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
 QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
 {
-    QString path = DUMMY_IMAGE_FILE_QML_PATH;
+    QString path = DUMMY_IMAGE_FILE_PATH;
     const int i = ResourceDBTable::Value;
     if (r.count() > i)
     {
@@ -518,6 +523,13 @@ void AppManager::onConfirmationClicked(const int selector)
     }
 }
 
+void AppManager::onInfoClicked()
+{
+    qDebug() << "@@@@@ AppManager::onInfoClicked ";
+    onUserAction();
+    emit showMessageBox("Инфо", appInfo.all(EOL), true);
+}
+
 void AppManager::onTableResultClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onTableResultClicked " << index;
@@ -536,24 +548,42 @@ void AppManager::onTableResultClicked(const int index)
 void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
+    clickSound();
     onUserAction();
     DBRecord* r =  settings.getItemByIndexInCurrentGroup(index);
     if(r == nullptr  || r->empty()) return;
-    if(r->at(SettingDBTable::ReadOnly).toBool())
+
+    const int code = (r->at(SettingDBTable::Code)).toInt();
+    const int type = (r->at(SettingDBTable::Type)).toInt();
+    const QString name = (r->at(SettingDBTable::Name)).toString();
+    const QString value = (r->at(SettingDBTable::Value)).toString();
+
+    switch (type)
     {
-        emit showMessageBox("Настройки", "Редактирование запрещено", true);
-        return;
-    }
-    if(settings.isGroup(*r))
-    {
-        settings.currentGroupCode = r->at(0).toInt();
+    case SettingType_Group:
+        settings.currentGroupCode = code;
         settingsPanelModel->update(settings);
         emit showSettingsPanel(settings.getCurrentGroupName());
+        break;
+    case SettingType_ReadOnly:
+        emit showMessageBox(name, "Редактирование запрещено", true);
+        break;
+    case SettingType_InputNumber:
+    case SettingType_InputText:
+        emit showSettingInputBox(code, name, value);
+        break;
+    case SettingType_Custom:
+        emit showMessageBox(name, "СПЕЦ КОМАНДА", true);
+        break;
+    case SettingType_IntervalNumber:
+        emit showMessageBox(name, "ПОЛЗУНОК", true);
+        break;
+    case SettingType_List:
+        emit showMessageBox(name, "ВЫБОР ИЗ СПИСКА", true);
+        break;
+    default:
+        break;
     }
-    else
-        emit showSettingInputBox((r->at(SettingDBTable::Code)).toInt(),
-                                 (r->at(SettingDBTable::Name)).toString(),
-                                 (r->at(SettingDBTable::Value)).toString());
 }
 
 void AppManager::onSettingsPanelCloseClicked()
@@ -709,7 +739,7 @@ void AppManager::resetProduct()
 void AppManager::startEquipment(const bool server, const bool weight, const bool printer)
 {
     qDebug() << "@@@@@ AppManager::startEquipment";
-    if(server) netServer->start(settings.getItemIntValue(Settings::SettingCode_TCPPort));
+    if(server) netServer->start(settings.getItemIntValue(SettingCode_TCPPort));
 
     QString demoMessage = "", url1, url2;
     int e1 = 0, e2 = 0;
@@ -727,10 +757,12 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
         }
         else
         {
-            QString address = settings.getItemStringValue(Settings::SettingCode_WMAddress);
-            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(Settings::SettingCode_WMBaudrate)));
-            QString timeout = QString::number(settings.getItemIntValue(Settings::SettingCode_WMTimeout));
+            /*
+            QString address = settings.getItemStringValue(SettingCode_WMAddress);
+            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(SettingCode_WMBaudrate)));
+            QString timeout = QString::number(settings.getItemIntValue(SettingCode_WMTimeout));
             url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
+            */
         }
         e1 = weightManager->start(url1);
     }
@@ -748,10 +780,12 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
         }
         else
         {
-            QString address = settings.getItemStringValue(Settings::SettingCode_PrinterAddress);
-            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(Settings::SettingCode_PrinterBaudrate)));
-            QString timeout = QString::number(settings.getItemIntValue(Settings::SettingCode_PrinterTimeout));
+            /*
+            QString address = settings.getItemStringValue(SettingCode_PrinterAddress);
+            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(SettingCode_PrinterBaudrate)));
+            QString timeout = QString::number(settings.getItemIntValue(SettingCode_PrinterTimeout));
             url2 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
+            */
         }
         e2 = printManager->start(url2);
     }
@@ -831,7 +865,7 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
                 newTransaction[TransactionDBTable::ItemCode].toString(),
                 newTransaction[TransactionDBTable::Weight].toString()));
     db->saveTransaction(newTransaction);
-    if (settings.getItemIntValue(Settings::SettingCode_ProductReset) == Settings::ProductReset_Print)
+    if (settings.getItemIntValue(SettingCode_ProductReset) ==  ProductReset_Print)
         resetProduct();
 }
 
@@ -872,8 +906,8 @@ void AppManager::updateStatus()
     const bool isPrintError = printManager->isError();
     const bool isFixed = weightManager->isWeightFixed();
 
-    const bool isAutoPrint = settings.getItemBoolValue(Settings::SettingCode_PrintAuto) &&
-           (!isPieceProduct || settings.getItemBoolValue(Settings::SettingCode_PrintAutoPcs));
+    const bool isAutoPrint = settings.getItemBoolValue(SettingCode_PrintAuto) &&
+           (!isPieceProduct || settings.getItemBoolValue(SettingCode_PrintAutoPcs));
     const QString passiveColor = "#424242";
     const QString activeColor = "#fafafa";
 
@@ -930,7 +964,7 @@ void AppManager::updateStatus()
                 const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
                 if(wg > 0)
                 {
-                    if(wg >= settings.getItemIntValue(Settings::SettingCode_PrintAutoWeight)) print();
+                    if(wg >= settings.getItemIntValue(SettingCode_PrintAutoWeight)) print();
                     else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
                 }
             }

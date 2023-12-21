@@ -3,16 +3,21 @@
 
 #include <QString>
 
-#define APP_VERSION "1.71"
+#define APP_VERSION "1.72"
 
 class AppInfo
 {
 public:
     AppInfo() {}
-    QString all()
+    QString all(const QString delimeter = " ")
     {
-        return QString("Штрих ПРИНТ 6А %1. БД %2. ВМ %3. Принтер %4. Сервер %5. IP %6").
-                arg(appVersion, dbVersion, weightManagerVersion, printManagerVersion, netServerVersion, ip);
+        return QString("Штрих ПРИНТ 6А %1.%2БД %3.%4ВМ %5.%6Принтер %7.%8Сервер %9.%10IP %11").
+                arg(appVersion,
+                    delimeter, dbVersion,
+                    delimeter, weightManagerVersion,
+                    delimeter, printManagerVersion,
+                    delimeter, netServerVersion,
+                    delimeter, ip);
     }
 
     QString appVersion = APP_VERSION;

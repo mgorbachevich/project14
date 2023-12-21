@@ -8,7 +8,7 @@ DBRecord UserDBTable::defaultAdmin()
         r << QVariant("");
     r[UserDBTable::Code] = QVariant(0);
     r[UserDBTable::Name] = QVariant("АДМИНИСТРАТОР");
-    r[UserDBTable::Role] = QVariant(UserDBTable::UserRole_Admin);
+    r[UserDBTable::Role] = QVariant(UserRole_Admin);
     r[UserDBTable::Password] = QVariant("0");
     return r;
 }
@@ -16,7 +16,7 @@ DBRecord UserDBTable::defaultAdmin()
 bool UserDBTable::isAdmin(const DBRecord& record)
 {
     return (record.count() >= UserDBTable::COLUMN_COUNT) &&
-            record[UserDBTable::Role].toInt() == UserDBTable::UserRole_Admin;
+            record[UserDBTable::Role].toInt() == UserRole_Admin;
 }
 
 QString UserDBTable::toAdminName(const QString & name)

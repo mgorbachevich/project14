@@ -43,14 +43,14 @@ Popup
                     break
                 case Qt.Key_Up:
                     if (!viewLogPanelList.atYBeginning) viewLogPanelList.flick(0, Constants.flickVelocity)
-                    else app.beep()
+                    else app.beepSound()
                     break;
                 case Qt.Key_Down:
                     if (!viewLogPanelList.atYEnd) viewLogPanelList.flick(0, -Constants.flickVelocity)
-                    else app.beep()
+                    else app.beepSound()
                     break;
                 default:
-                    app.beep();
+                    app.beepSound();
                     break
             }
         }

@@ -154,13 +154,13 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
         pd.price2 = product[ProductDBTable::Price2].toString();
         pd.certificate = product[ProductDBTable::Certificate].toString();
         pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
-        pd.shop = settings.getItemStringValue(Settings::SettingCode_ShopName);
+        pd.shop = settings.getItemStringValue(SettingCode_ShopName);
         pd.operatorcode = user[UserDBTable::Code].toString();
         pd.operatorname = user[UserDBTable::Name].toString();
         pd.date = Tools::dateFromUInt(dateTime);
         pd.time = Tools::timeFromUInt(dateTime);
         pd.labelnumber = QString::number(labelNumber);
-        pd.scalesnumber = settings.getItemStringValue(Settings::SettingCode_ScalesNumber),
+        pd.scalesnumber = settings.getItemStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo
         pd.textfile = ""; // todo
 

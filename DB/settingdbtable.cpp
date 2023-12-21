@@ -11,9 +11,8 @@ SettingDBTable::SettingDBTable(const QString& name, QObject *parent): DBTable(na
     addColumn("Код группы",    "group_code", "INT");
     addColumn("Наименование",  "name",       "TEXT");
     addColumn("Значение",      "value",      "TEXT");
-    addColumn("Только чтение", "read_only",  "INT"); // 0/1
 }
-
+/*
 const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
 {
     // qDebug() << "@@@@@ SettingDBTable::checkRecord: table =" << name;
@@ -27,30 +26,28 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
         case 0:
             ok = false;
             break;
-        case Settings::SettingCode_ScalesNumber:
+        case SettingCode_ScalesNumber:
             ok = value > 0 && value <= 999999;
             break;
-        case Settings::SettingCode_PointPosition:
+        case SettingCode_PointPosition:
+        case SettingCode_PointPositionQuantity:
             ok = value >= 0 && value <= 3;
             break;
-        case Settings::SettingCode_ProductReset:
-            ok = value >= Settings::ProductReset_None && value <= Settings::ProductReset_Time;
+        case SettingCode_ProductReset:
+            ok = value >= ProductReset_None && value <= ProductReset_Time;
             break;
-        case Settings::SettingCode_ProductResetTime:
+        case SettingCode_ProductResetTime:
             ok = value >= 0;
             break;
-        case Settings::SettingCode_SearchType:
+        case SettingCode_SearchType:
             ok = value >= 0 && value <= 1;
             break;
-        case Settings::SettingCode_Logging:
+        case SettingCode_Logging:
             ok = value >= 0 && value <= 5;
             break;
-        case Settings::SettingCode_SearchCodeSymbols:
-        case Settings::SettingCode_SearchBarcodeSymbols:
+        case SettingCode_SearchCodeSymbols:
+        case SettingCode_SearchBarcodeSymbols:
             ok = value >= 0 && value <= 9;
-            break;
-        case Settings::SettingCode_WMBaudrate:
-            ok = value >= 0 && value <= 6;
             break;
         default: break; // Без проверки
         }
@@ -62,7 +59,7 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
         qDebug() << "@@@@@ SettingDBTable::checkRecord ERROR";
     return result;
 }
-
+*/
 const DBRecordList SettingDBTable::checkList(DataBase* db, const DBRecordList& records)
 {
     qDebug() << "@@@@@ SettingDBTable::checkList";
@@ -77,7 +74,7 @@ const DBRecordList SettingDBTable::checkList(DataBase* db, const DBRecordList& r
 
     // Добавление недостающих значений по умолчанию:
     DBRecordList defaultRecords = JSONParser::parseTable(this, Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    for(int i = 0; i < Settings::SettingCode_Max; i++) checkAndSaveDefaultRecord(db, i, defaultRecords, result);
+    for(int i = 0; i < SettingCode_Max; i++) checkAndSaveDefaultRecord(db, i, defaultRecords, result);
     return result;
 }
 

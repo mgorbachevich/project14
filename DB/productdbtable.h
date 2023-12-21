@@ -38,20 +38,6 @@ public:
         COLUMN_COUNT
     };
 
-    enum ProductType
-    {
-        ProductType_Weight = 0,
-        ProductType_Piece = 1,
-        ProductType_Group = 2
-    };
-
-    enum ProductPriceBase
-    {
-        ProductPriceBase_Kg = 0,
-        ProductPriceBase_Piece = 1,
-        ProductPriceBase_100g = 2
-    };
-
     ProductDBTable(const QString&, QObject*);
     const DBRecord checkRecord(const DBRecord&);
     int columnCount() { return Columns::COLUMN_COUNT; }

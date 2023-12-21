@@ -1,4 +1,4 @@
-QT += quick sql widgets core gui httpserver serialport core5compat network
+QT += quick sql widgets core gui httpserver serialport core5compat network multimedia
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -221,30 +221,6 @@ HEADERS += \
 RESOURCES += \
     constants.js \
     main.qml \
-    Panels/KeyboardButton.qml \
-    Panels/KeyboardCharButton.qml \
-    Panels/adminMenuPanel.qml \
-    Panels/authorizationPanel.qml \
-    Panels/CardText.qml \
-    Panels/CardTitleText.qml \
-    Panels/confirmationPanel.qml \
-    Panels/EmptyButton.qml \
-    Panels/inputPiecesPanel.qml \
-    Panels/inputSettingPanel.qml \
-    Panels/KeyboardIconButton.qml \
-    Panels/messagePanel.qml \
-    Panels/productPanel.qml \
-    Panels/RoundIconButton.qml \
-    Panels/RoundTextButton.qml \
-    Panels/searchPanel.qml \
-    Panels/settingsPanel.qml \
-    Panels/showcasePanel.qml \
-    Panels/tablePanel.qml \
-    Panels/viewLogPanel.qml \
-    Panels/VirtualKeyboardNumeric.qml \
-    Panels/VirtualKeyboardCyrillic.qml \
-    Panels/VirtualKeyboardLatin.qml \
-    Panels/weightPanel.qml \
     Fonts/LeagueGothic-CondensedRegular.otf \
     Fonts/LeagueGothic-Regular.otf \
     Fonts/Roboto-Bold.ttf \
@@ -283,14 +259,12 @@ RESOURCES += \
     Icons/tare_flag_48.png \
     Icons/empty_48.png \
     Icons/empty_flag_48.png \
+    Icons/bluetooth_black_48.png \
+    Icons/usb_black_48.png \
+    Icons/wifi_black_48.png \
+    Icons/sdcard_black_48.png \
     Images/image_dummy.png \
-    Text/json_default_settings.txt \
-    Text/json_settings.txt \
-    Text/json_products.txt \
-    Text/json_users.txt \
-    Text/json_showcase.txt \
-    Text/json_pictures.txt \
-    Text/json_messages.txt \
+    Images/logo.png \
     Labels/60x30.dat/0.bmp \
     Labels/60x30.dat/60x30.par \
     Labels/60x30.dat/description \
@@ -315,9 +289,43 @@ RESOURCES += \
     Labels/60x60.dat/print.dat \
     Labels/60x60.dat/strings \
     Labels/60x60.lpr \
+    Panels/KeyboardButton.qml \
+    Panels/KeyboardCharButton.qml \
+    Panels/adminMenuPanel.qml \
+    Panels/authorizationPanel.qml \
+    Panels/CardText.qml \
+    Panels/CardTitleText.qml \
+    Panels/confirmationPanel.qml \
+    Panels/EmptyButton.qml \
+    Panels/inputPiecesPanel.qml \
+    Panels/inputSettingPanel.qml \
+    Panels/KeyboardIconButton.qml \
+    Panels/messagePanel.qml \
+    Panels/productPanel.qml \
+    Panels/RoundIconButton.qml \
+    Panels/RoundTextButton.qml \
+    Panels/searchPanel.qml \
+    Panels/settingsPanel.qml \
+    Panels/showcasePanel.qml \
+    Panels/tablePanel.qml \
+    Panels/viewLogPanel.qml \
+    Panels/VirtualKeyboardNumeric.qml \
+    Panels/VirtualKeyboardCyrillic.qml \
+    Panels/VirtualKeyboardLatin.qml \
+    Panels/weightPanel.qml \
+    Sound/KeypressStandard.ogg \
+    Sound/beep-01a.wav \
+    Text/json_default_settings.txt \
+    Text/json_settings.txt \
+    Text/json_products.txt \
+    Text/json_users.txt \
+    Text/json_showcase.txt \
+    Text/json_pictures.txt \
+    Text/json_messages.txt \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
+
 
 
 

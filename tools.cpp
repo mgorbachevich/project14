@@ -5,6 +5,8 @@
 #include <QProcess>
 #include <QNetworkInterface>
 #include <QThread>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include "tools.h"
 #include "constants.h"
 
@@ -201,6 +203,19 @@ void Tools::pause(const int msec, const QString& comment)
 {
     qDebug() << "@@@@@ Tools::pause " << msec << comment;
     QThread::currentThread()->msleep(msec);
+}
+
+void Tools::sound(const QString& fileName)
+{
+    // https://doc.qt.io/qt-6/audiooverview.html
+    qDebug() << "@@@@@ Tools::sound " << fileName;
+    auto player = new QMediaPlayer;
+    auto audioOutput = new QAudioOutput;
+    player->setAudioOutput(audioOutput);
+    const QUrl url(fileName);
+    player->setSource(url);
+    audioOutput->setVolume(50);
+    player->play();
 }
 
 QString Tools::rootDir()

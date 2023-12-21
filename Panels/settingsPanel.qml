@@ -44,17 +44,17 @@ Popup
             {
                 case Qt.Key_Up:
                     if (!settingPanelList.atYBeginning) settingPanelList.flick(0, Constants.flickVelocity)
-                    else app.beep()
+                    else app.beepSound()
                     break;
                 case Qt.Key_Down:
                     if (!settingPanelList.atYEnd) settingPanelList.flick(0, -Constants.flickVelocity)
-                    else app.beep()
+                    else app.beepSound()
                     break;
                 case Qt.Key_Escape: // Круглая стрелка
                     settingPanel.close()
                     break
                 default:
-                    app.beep();
+                    app.beepSound();
                     break
             }
         }

@@ -23,6 +23,7 @@ public:
     Q_INVOKABLE int editWidth() const { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }
     Q_INVOKABLE int scrollBarWidth() const { return (int)(DEFAULT_SPACER * screenScale) / 2; }
     Q_INVOKABLE int spacer() const { return (int)(DEFAULT_SPACER * screenScale); }
+    Q_INVOKABLE int flagSize() const { return (int)(DEFAULT_FLAG_SIZE * screenScale); }
 
 private:
     QSize screenSize;

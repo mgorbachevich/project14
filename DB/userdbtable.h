@@ -18,12 +18,6 @@ public:
         COLUMN_COUNT
     };
 
-    enum UserRole
-    {
-        UserRole_Admin = 0,
-        UserRole_Operator = 1,
-    };
-
     UserDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
         qDebug() << "@@@@@ UserDBTable::UserDBTable";

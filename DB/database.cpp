@@ -288,7 +288,7 @@ bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 void DataBase::saveLog(const int type, const int source, const QString &comment)
 {
     if (!opened) return;
-    int logging = settings.getItemIntValue(Settings::SettingCode_Logging);
+    int logging = settings.getItemIntValue(SettingCode_Logging);
     if (type > 0 && type <= logging)
     {
         qDebug() << "@@@@@ DataBase::saveLog: " << type << source << comment;
@@ -305,7 +305,7 @@ void DataBase::removeOldLogRecords()
     if (!opened) return;
     qDebug() << "@@@@@ DataBase::removeOldLogRecords";
     DBTable* t = getTable(DBTABLENAME_LOG);
-    quint64 logDuration = settings.getItemIntValue(Settings::SettingCode_LogDuration);
+    quint64 logDuration = settings.getItemIntValue(SettingCode_LogDuration);
     if(t != nullptr && logDuration > 0) // Remove old records
     {
         quint64 first = Tools::currentDateTimeToUInt() - logDuration * 24 * 60 * 60 * 1000;
@@ -389,7 +389,7 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         QString sql = "SELECT * FROM " + t->name;
         sql += " WHERE " + t->columnName(ProductDBTable::GroupCode) + "='" + param + "'";
         if (selector == Selector::GetProductsByGroupCode)
-           sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
+           sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductType_Group) + "'";
         sql += " ORDER BY ";
         sql += t->columnName(ProductDBTable::Type) + " DESC, ";
         sql += t->columnName(ProductDBTable::Name) + " ASC";
@@ -403,8 +403,8 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(Settings::SettingCode_SearchType))
-            if (p.size() < settings.getItemIntValue(Settings::SettingCode_SearchCodeSymbols))
+        if (!settings.getItemBoolValue(SettingCode_SearchType))
+            if (p.size() < settings.getItemIntValue(SettingCode_SearchCodeSymbols))
                 break;
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
@@ -413,7 +413,7 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         if (selector == Selector::GetProductsByFilteredCode)
            sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
         */
-        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
+        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductType_Group) + "'";
         sql += " ORDER BY ";
         sql += t->columnName(ProductDBTable::Code) + " ASC";
         executeSelectSQL(productDB, t, sql, resultRecords);
@@ -426,8 +426,8 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(Settings::SettingCode_SearchType))
-            if (p.size() < settings.getItemIntValue(Settings::SettingCode_SearchBarcodeSymbols))
+        if (!settings.getItemBoolValue(SettingCode_SearchType))
+            if (p.size() < settings.getItemIntValue(SettingCode_SearchBarcodeSymbols))
                 break;
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = "SELECT * FROM " + t->name;
@@ -436,7 +436,7 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         if (selector == Selector::GetProductsByFilteredBarcode)
             sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
         */
-        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
+        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductType_Group) + "'";
         sql += " ORDER BY ";
         sql += t->columnName(ProductDBTable::Barcode) + " ASC";
         executeSelectSQL(productDB, t, sql, resultRecords);
@@ -522,7 +522,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = settings.getItemIntValue(Settings::SettingCode_Logging);
+    int logging = settings.getItemIntValue(SettingCode_Logging);
     bool detailedLog = logging >= LogType_Info;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -586,7 +586,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    bool detailedLog = settings.getItemIntValue(Settings::SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings.getItemIntValue(SettingCode_Logging) >= LogType_Info;
     DBRecordList records;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -652,7 +652,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
 {
     qDebug() << "@@@@@ DataBase::netDownload";
     if(!open(tempDB, DB_TEMP_NAME)) return;
-    bool detailedLog = settings.getItemIntValue(Settings::SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings.getItemIntValue(SettingCode_Logging) >= LogType_Info;
     QList tables = records.keys();
     for (DBTable* table : tables)
     {

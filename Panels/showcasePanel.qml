@@ -36,14 +36,14 @@ Rectangle
                 break;
             case Qt.Key_Up:
                 if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, Constants.flickVelocity)
-                else app.beep()
+                else app.beepSound()
                 break;
             case Qt.Key_Down:
                 if (!showcasePanelGrid.atYEnd) showcasePanelGrid.flick(0, -Constants.flickVelocity)
-                else app.beep()
+                else app.beepSound()
                 break;
             default:
-                app.beep();
+                app.beepSound();
                 break;
         }
     }

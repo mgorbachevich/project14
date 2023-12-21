@@ -28,8 +28,8 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
         case ProductDBTable::Type:
             switch (product.at(ProductDBTable::Type).toInt())
             {
-            case ProductDBTable::ProductType_Weight: s += "Весовой"; break;
-            case ProductDBTable::ProductType_Piece: s += "Штучный"; break;
+            case ProductType_Weight: s += "Весовой"; break;
+            case ProductType_Piece: s += "Штучный"; break;
             default: s = ""; break;
             }
             break;
@@ -40,8 +40,8 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
             {
                 switch (product.at(ProductDBTable::PriceBase).toInt())
                 {
-                case ProductDBTable::ProductPriceBase_Kg: s += "1 кг"; break;
-                case ProductDBTable::ProductPriceBase_100g: s += "100 г"; break;
+                case ProductPriceBase_Kg: s += "1 кг"; break;
+                case ProductPriceBase_100g: s += "100 г"; break;
                 default: s = ""; break;
                 }
             }

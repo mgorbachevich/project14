@@ -108,7 +108,7 @@ Popup
                                 inputPiecesPanel.close()
                                 break
                              default:
-                                app.beep();
+                                app.beepSound();
                                 break
                         }
                         if (parseInt(text) < 0) text = ""

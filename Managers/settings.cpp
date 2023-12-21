@@ -90,13 +90,13 @@ int Settings::getBoudrate(const int code)
 {
     switch (code)
     {
-    case Settings::WMBaudrate_2400:   return 2400;
-    case Settings::WMBaudrate_4800:   return 4800;
-    case Settings::WMBaudrate_9600:   break;
-    case Settings::WMBaudrate_19200:  return 19200;
-    case Settings::WMBaudrate_38400:  return 38400;
-    case Settings::WMBaudrate_57600:  return 57600;
-    case Settings::WMBaudrate_115200: return 115200;
+    case WMBaudrate_2400:   return 2400;
+    case WMBaudrate_4800:   return 4800;
+    case WMBaudrate_9600:   return 9600;
+    case WMBaudrate_19200:  return 19200;
+    case WMBaudrate_38400:  return 38400;
+    case WMBaudrate_57600:  return 57600;
+    case WMBaudrate_115200: return 115200;
     }
     return 9600;
 }

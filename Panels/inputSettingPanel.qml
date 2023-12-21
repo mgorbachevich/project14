@@ -125,7 +125,7 @@ Popup
                             inputSettingPanel.close()
                             break
                          default:
-                            app.beep();
+                            app.beepSound();
                             break
                     }
                 }
