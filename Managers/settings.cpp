@@ -1,18 +1,31 @@
 #include "settings.h"
 #include "tools.h"
 #include "settingdbtable.h"
-#include "appinfo.h"
-#include "database.h"
+
+QString Settings::getItemStringValue(const DBRecord& r)
+{
+    if(getItemType(r) != SettingType_List) return (r.at(SettingDBTable::Value)).toString();
+    QStringList values = getItemValueList(r);
+    int i = Tools::stringToInt((r.at(SettingDBTable::Value)).toString());
+    if(i < values.count()) return values[i].trimmed();
+    return "";
+}
 
 QString Settings::getItemStringValue(const SettingCode code)
 {
     DBRecord* r = getItemByCode(code);
-    return r != nullptr ? (r->at(SettingDBTable::Value)).toString() : "";
+    return r == nullptr ? "" : getItemStringValue(*r);
 }
 
 int Settings::getItemIntValue(const SettingCode code)
 {
-    return Tools::stringToInt(getItemStringValue(code));
+    DBRecord* r = getItemByCode(code);
+    return r == nullptr ? 0 : getItemIntValue(*r);
+}
+
+int Settings::getItemIntValue(const DBRecord& r)
+{
+    return Tools::stringToInt((r.at(SettingDBTable::Value)).toString());
 }
 
 bool Settings::getItemBoolValue(const SettingCode code)
@@ -23,11 +36,7 @@ bool Settings::getItemBoolValue(const SettingCode code)
 DBRecord* Settings::getItemByCode(const int code)
 {
     bool ok = false;
-    for (int i = 0; i < items.count(); i++)
-    {
-        DBRecord& ri = items[i];
-        if (ri[SettingDBTable::Code].toInt(&ok) == code && ok) return &ri;
-    }
+    for (DBRecord& r : items) if (r[SettingDBTable::Code].toInt(&ok) == code && ok) return &r;
     return nullptr;
 }
 
@@ -47,45 +56,95 @@ DBRecord *Settings::getItemByIndexInCurrentGroup(const int indexInGroup)
 QList<int> Settings::getCurrentGroupItemCodes()
 {
     QList<int> codes;
-    for (int i = 0; i < items.count(); i++)
+    for (DBRecord& r : items)
     {
-        DBRecord& item = items[i];
-        int groupCode = item[SettingDBTable::GroupCode].toInt();
-        if (groupCode == currentGroupCode) codes.append(item[SettingDBTable::Code].toInt());
+        int groupCode = r[SettingDBTable::GroupCode].toInt();
+        if (groupCode == currentGroupCode) codes.append(r[SettingDBTable::Code].toInt());
     }
-    qDebug() << "@@@@@ SettingsPanelModel::getCurrentGroupItemCodes " << codes;
+    qDebug() << "@@@@@ Settings::getCurrentGroupItemCodes " << codes;
     return codes;
 }
 
-bool Settings::isGroup(const DBRecord& r)
+bool Settings::isGroupItem(const DBRecord& r)
 {
-    return r.count() >= SettingDBTable::Type && r[SettingDBTable::Type].toInt() == SettingType_Group;
+    return getItemType(r) == SettingType_Group;
+}
+
+void Settings::sort()
+{
+    // https://copyprogramming.com/howto/how-to-sort-qlist-qvariant-in-qt
+    int i, n;
+    for (n = 0; n < items.count(); n++)
+    {
+        for (i = n + 1; i < items.count(); i++)
+        {
+            if (items[n][0].toInt() > items[i][0].toInt())
+            {
+                items.move(i, n);
+                n = 0;
+            }
+        }
+    }
+}
+
+int Settings::getItemCode(const DBRecord& r)
+{
+    return r.count() >= SettingDBTable::Code ? r[SettingDBTable::Code].toInt() : 0;
+}
+
+int Settings::getItemType(const DBRecord& r)
+{
+    return r.count() >= SettingDBTable::Type ? r[SettingDBTable::Type].toInt() : SettingType_Group;
+}
+
+QString Settings::getItemName(const DBRecord& r)
+{
+    return r.count() >= SettingDBTable::Name ? r[SettingDBTable::Name].toString() : "";
+}
+
+QStringList Settings::getItemValueList(const DBRecord& r)
+{
+    return r.count() >= SettingDBTable::ValueList ? r[SettingDBTable::ValueList].toString().split(',') :
+        QStringList();
 }
 
 QString Settings::getCurrentGroupName()
 {
     DBRecord* r = getItemByCode(currentGroupCode);
-    return (r != nullptr && r->count() >= SettingDBTable::Name)? r->at(SettingDBTable::Name).toString() : "Настройки";
+    return (r != nullptr && r->count() >= SettingDBTable::Name) ? r->at(SettingDBTable::Name).toString() : "Настройки";
 }
 
 void Settings::update(const DBRecordList& records)
 {
+    qDebug() << "@@@@@ Settings::update ";
     items.clear();
     items.append(records);
 }
 
-void Settings::setItemValue(const int itemCode, const QString& value)
+bool Settings::onManualInputItemValue(const int itemCode, const QString& value)
 {
-    for (int i = 0; i < items.count(); i++)
+    for (DBRecord& r : items)
     {
-        if (items[i][SettingDBTable::Code].toInt() == itemCode)
+        if (r[SettingDBTable::Code].toInt() == itemCode)
         {
-            items[i][SettingDBTable::Value] = value;
-            return;
+            if(r[SettingDBTable::Value].toString() != value)
+            {
+                switch(getItemType(r))
+                {
+                case SettingType_InputNumber:
+                case SettingType_InputText:
+                case SettingType_IntervalNumber:
+                case SettingType_List:
+                    r[SettingDBTable::Value] = value;
+                    return true;
+                }
+            }
+            return false;
         }
     }
+    return false;
 }
-
+/*
 int Settings::getBoudrate(const int code)
 {
     switch (code)
@@ -100,5 +159,5 @@ int Settings::getBoudrate(const int code)
     }
     return 9600;
 }
-
+*/
 

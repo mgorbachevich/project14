@@ -187,6 +187,7 @@ Popup
             Keys.onPressed: (event) =>
             {
                 console.debug("@@@@@ passwordTextField Keys.onPressed ", JSON.stringify(event))
+                app.clickSound();
                 app.onUserAction();
                 event.accepted = true;
                 switch (event.key)

@@ -19,6 +19,7 @@ class SearchPanelModel;
 class SettingsPanelModel;
 class SettingGroupsPanelModel;
 class UserNameModel;
+class SettingItemListModel;
 class QQmlContext;
 class NetServer;
 class AppInfo;
@@ -129,6 +130,7 @@ private:
     SearchFilterModel* searchFilterModel = nullptr;
     UserNameModel* userNameModel = nullptr;
     ViewLogPanelModel* viewLogPanelModel = nullptr;
+    SettingItemListModel* settingItemListModel = nullptr;
 
 signals:
     void authorizationSucceded();
@@ -148,6 +150,8 @@ signals:
     void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);
     void showSettingInputBox(const int, const QString&, const QString&);
+    void showSettingComboBox(const int, const QString&, const int, const QString&);
+    void showSettingSlider(const int, const QString&, const int, const int, const int, const int);
     void showSettingsPanel(const QString&);
     void showTablePanelTitle(const QString&);
     void showViewLogPanel();

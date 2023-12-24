@@ -1,5 +1,15 @@
 #include "userdbtable.h"
 
+UserDBTable::UserDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+{
+    qDebug() << "@@@@@ UserDBTable::UserDBTable";
+
+    addColumn("Код",    "code",     "INT PRIMARY KEY");
+    addColumn("Имя",    "name",     "TEXT");
+    addColumn("Права",  "role",     "INT");
+    addColumn("Пароль", "password", "TEXT");
+}
+
 DBRecord UserDBTable::defaultAdmin()
 {
     qDebug() << "@@@@@ UserDBTable::defaultAdmin ";

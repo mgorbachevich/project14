@@ -4,6 +4,7 @@
 #include <QQmlContext>
 #include <QThread>
 #include <QSslSocket>
+#include "SettingItemListModel.h"
 #include "appmanager.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
@@ -25,6 +26,7 @@
 #include "screenmanager.h"
 #include "keyemitter.h"
 #include "settingdbtable.h"
+#include "settingitemlistmodel.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject *parent):
     QObject(parent), context(qmlContext)
@@ -72,6 +74,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
     viewLogPanelModel = new ViewLogPanelModel(this);
+    settingItemListModel = new SettingItemListModel(this);
+
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
     context->setContextProperty("tablePanelModel", tablePanelModel);
@@ -80,6 +84,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
     context->setContextProperty("viewLogPanelModel", viewLogPanelModel);
+    context->setContextProperty("settingItemListModel", settingItemListModel);
 
     QTimer::singleShot(100, this, &AppManager::start);
     onUserAction();
@@ -289,12 +294,16 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
 
     qDebug() << "@@@@@ AppManager::onSettingInputClosed " << settingItemCode << value;
     DBRecord* r = settings.getItemByCode(settingItemCode);
-    if (r != nullptr && value != (r->at(SettingDBTable::Value)).toString())
+    if (r != nullptr && settings.onManualInputItemValue(settingItemCode, value))
     {
-        settings.setItemValue(settingItemCode, value);
         db->updateSettingsRecord(DataBase::ReplaceSettingsItem, *r);
         QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
         db->saveLog(LogType_Warning, LogSource_Admin, s);
+    }
+    else
+    {
+        qDebug() << "@@@@@ AppManager::onSettingInputClosed ERROR";
+        //emit showMessageBox("ВНИМАНИЕ!", "Ошибка при сохранении значения настройки!", true);
     }
 }
 
@@ -549,15 +558,13 @@ void AppManager::onSettingsItemClicked(const int index)
 {
     qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
     onUserAction();
-    DBRecord* r =  settings.getItemByIndexInCurrentGroup(index);
-    if(r == nullptr  || r->empty()) return;
+    DBRecord* r = settings.getItemByIndexInCurrentGroup(index);
+    if(r == nullptr || r->empty()) return;
 
-    const int code = (r->at(SettingDBTable::Code)).toInt();
-    const int type = (r->at(SettingDBTable::Type)).toInt();
-    const QString name = (r->at(SettingDBTable::Name)).toString();
-    const QString value = (r->at(SettingDBTable::Value)).toString();
+    const int code = settings.getItemCode(*r);
+    const QString& name = settings.getItemName(*r);
 
-    switch (type)
+    switch (settings.getItemType(*r))
     {
     case SettingType_Group:
         settings.currentGroupCode = code;
@@ -569,16 +576,26 @@ void AppManager::onSettingsItemClicked(const int index)
         break;
     case SettingType_InputNumber:
     case SettingType_InputText:
-        emit showSettingInputBox(code, name, value);
-        break;
-    case SettingType_Custom:
-        emit showMessageBox(name, "СПЕЦ КОМАНДА", true);
-        break;
-    case SettingType_IntervalNumber:
-        emit showMessageBox(name, "ПОЛЗУНОК", true);
+        emit showSettingInputBox(code, name, settings.getItemStringValue(*r));
         break;
     case SettingType_List:
-        emit showMessageBox(name, "ВЫБОР ИЗ СПИСКА", true);
+        settingItemListModel->update(settings.getItemValueList(*r));
+        emit showSettingComboBox(code, name, settings.getItemIntValue(*r), settings.getItemStringValue(*r));
+        break;
+    case SettingType_IntervalNumber:
+    {
+        QStringList list = settings.getItemValueList(*r);
+        if(list.count() >= 2)
+        {
+            int from = Tools::stringToInt(list[0]);
+            int to = Tools::stringToInt(list[1]);
+            int value = settings.getItemIntValue(*r);
+            emit showSettingSlider(code, name, from, to, 1, value);
+        }
+        break;
+    }
+    case SettingType_Custom:
+        emit showMessageBox(name, "СПЕЦ КОМАНДА", true);
         break;
     default:
         break;
@@ -592,8 +609,8 @@ void AppManager::onSettingsPanelCloseClicked()
     emit closeSettings();
     if(settings.currentGroupCode != 0)
     {
-        DBRecord* r =  settings.getItemByCode(settings.currentGroupCode);
-        if(r != nullptr && !r->empty() && settings.isGroup(*r))
+        DBRecord* r = settings.getItemByCode(settings.currentGroupCode);
+        if(r != nullptr && !r->empty() && settings.isGroupItem(*r))
         {
             settings.currentGroupCode = r->at(SettingDBTable::GroupCode).toInt();
             settingsPanelModel->update(settings);
@@ -808,7 +825,6 @@ void AppManager::onUserAction()
     qDebug() << "@@@@@ AppManager::onUserAction";
     userActionTime = Tools::currentDateTimeToUInt();
     secret = 0;
-    clickSound();
 }
 
 void AppManager::showUsers(const DBRecordList& records)

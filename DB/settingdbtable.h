@@ -13,6 +13,7 @@ public:
         GroupCode, // enum SettingCode
         Name,
         Value,
+        ValueList,
         COLUMN_COUNT
     };
 

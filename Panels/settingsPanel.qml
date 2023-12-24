@@ -39,6 +39,7 @@ Popup
         {
             console.debug("@@@@@ settingPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
+            app.clickSound();
             app.onUserAction();
             switch (event.key)
             {

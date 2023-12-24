@@ -116,7 +116,6 @@ SOURCES += \
     Managers/weightmanager.cpp \
 
 HEADERS += \
-    Managers/screenmanager.h \
     constants.h \
     tools.h \
     appinfo.h \
@@ -204,6 +203,8 @@ HEADERS += \
     Managers/appmanager.h \
     Managers/printstatus.h \
     Managers/settings.h \
+    Managers/screenmanager.h \
+    Models/settingitemlistmodel.h \
     Models/baselistmodel2.h \
     Models/baselistmodel.h \
     Models/productpanelmodel.h \
@@ -295,6 +296,8 @@ RESOURCES += \
     Panels/authorizationPanel.qml \
     Panels/CardText.qml \
     Panels/CardTitleText.qml \
+    Panels/comboSettingPanel.qml \
+    Panels/sliderSettingPanel.qml \
     Panels/confirmationPanel.qml \
     Panels/EmptyButton.qml \
     Panels/inputPiecesPanel.qml \
@@ -325,7 +328,6 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
-
 
 
 

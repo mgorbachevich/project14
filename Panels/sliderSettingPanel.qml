@@ -7,7 +7,7 @@ import RegisteredTypes
 
 Popup
 {
-    id: messagePanel
+    id: sliderSettingPanel
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -16,16 +16,13 @@ Popup
     dim: true
     Material.background: "transparent"
     property string titleText: "Title"
-    property string messageText: "Message"
-    property bool buttonVisibility: true
+    property int settingItemCode: 0
+    property int sliderFrom: 0
+    property int sliderTo: 1
+    property int sliderStep: 1
+    property int sliderValue: 1
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
-
-    Connections // Slot for signal AppManager::hideToast
-    {
-        target: app
-        function onHideToast() { messagePanel.close() }
-    }
 
     Rectangle
     {
@@ -39,15 +36,16 @@ Popup
             anchors.fill: parent
             anchors.margins: screenManager.spacer()
             columns: 3
-            rows: 2
+            rows: 3
             focus: true
             Keys.onPressed: (event) =>
             {
-                console.debug("@@@@@ messagePanel Keys.onPressed ", JSON.stringify(event))
+                console.debug("@@@@@ sliderSettingPanel Keys.onPressed ", JSON.stringify(event))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
-                messagePanel.close()
+                app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
+                sliderSettingPanel.close()
             }
 
             EmptyButton
@@ -74,25 +72,38 @@ Popup
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close_black_48"
-                visible: buttonVisibility
                 onClicked:
                 {
                     app.onUserAction();
-                    messagePanel.close()
+                    app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
+                    sliderSettingPanel.close()
                 }
             }
 
-            Rectangle
+            Text
             {
-                Layout.column: 0
+                id: sliderValueText
+                Layout.column: 1
                 Layout.row: 1
-                Layout.columnSpan: 3
-                Layout.fillWidth: parent
-                Layout.fillHeight: parent
-                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
-                color: "transparent"
+                Layout.alignment: Qt.AlignHCenter
+                color: Material.color(Material.BlueGrey, Material.Shade600)
+                font { pointSize: screenManager.largeFontSize() }
+                text: settingItemSlider.value
+            }
 
-                CardText { text: messageText }
+            Slider
+            {
+                id: settingItemSlider
+                Layout.column: 0
+                Layout.row: 2
+                Layout.columnSpan: 3
+                Layout.preferredWidth: screenManager.editWidth()
+                Layout.alignment: Qt.AlignHCenter
+                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
+                from: sliderFrom
+                to: sliderTo
+                stepSize: sliderStep
+                value: sliderValue
             }
         }
     }

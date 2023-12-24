@@ -124,7 +124,7 @@ bool DataBase::addAndOpen(QSqlDatabase& db, const QString& filePath, const bool 
 
 DBTable* DataBase::getTable(const QString &name) const
 {
-    for (int i = 0; i < tables.count(); i++) if (tables[i]->name == name) return tables[i];
+    for (DBTable* t : tables) if (t->name == name) return t;
     qDebug() << "@@@@@ DataBase::getTable ERROR " << name;
     return nullptr;
 }

@@ -50,7 +50,9 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
             Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
-                { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: title }).open()
+            {
+                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: title
+            }).open()
         }
     }
 
@@ -79,6 +81,35 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showSettingComboBox:
+    {
+        target: app
+        function onShowSettingComboBox(code, name, index, value)
+        {
+            console.debug("@@@@@ mainWindow.onShowSettingComboBox ", code, " ", name, " ", index, " ", value);
+            Qt.createComponent("Panels/comboSettingPanel.qml").createObject(mainWindow,
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight,
+                titleText: name, settingItemCode: code, comboIndex: index, comboText: value
+            }).open()
+        }
+    }
+
+    Connections // Slot for signal AppManager::showSettingSlider:
+    {
+        target: app
+        function onShowSettingSlider(code, name, from, to, step, value)
+        {
+            console.debug("@@@@@ mainWindow.onShowSettingSlider ", code, " ", name);
+            Qt.createComponent("Panels/sliderSettingPanel.qml").createObject(mainWindow,
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight,
+                titleText: name, settingItemCode: code,
+                sliderFrom: from, sliderTo: to, sliderStep: step, sliderValue: value
+            }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showPiecesInputBox:
     {
         target: app
@@ -86,7 +117,9 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowPiecesInputBox ", value);
             Qt.createComponent("Panels/inputPiecesPanel.qml").createObject(mainWindow,
-            { x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value }).open()
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value
+            }).open()
         }
     }
 
@@ -139,7 +172,9 @@ ApplicationWindow
         {
             console.debug("@@@@@ mainWindow.onShowSettingsPanel ", title);
             Qt.createComponent("Panels/settingsPanel.qml").createObject(mainWindow,
-            { x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, panelTitle: title }).open()
+            {
+                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, panelTitle: title
+            }).open()
         }
     }
 

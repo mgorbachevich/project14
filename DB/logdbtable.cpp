@@ -1,6 +1,16 @@
 #include "logdbtable.h"
 #include "tools.h"
 
+LogDBTable::LogDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+{
+    qDebug() << "@@@@@ LogDBTable::LogDBTable";
+
+    addColumn("Дата, время", "date_time", "UNSIGNED BIG INT PRIMARY KEY");
+    addColumn("Тип",         "type",      "INT");
+    addColumn("Источник",    "source",    "INT");
+    addColumn("Сообщение",   "comment",   "TEXT");
+}
+
 DBRecord LogDBTable::createRecord(const int type, const int source, const QString &comment)
 {
     DBRecord r = DBTable::createRecord();

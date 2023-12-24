@@ -18,15 +18,7 @@ public:
         COLUMN_COUNT
     };
 
-    UserDBTable(const QString& name, QObject *parent): DBTable(name, parent)
-    {
-        qDebug() << "@@@@@ UserDBTable::UserDBTable";
-
-        addColumn("Код",    "code",     "INT PRIMARY KEY");
-        addColumn("Имя",    "name",     "TEXT");
-        addColumn("Права",  "role",     "INT");
-        addColumn("Пароль", "password", "TEXT");
-    }
+    UserDBTable(const QString& name, QObject *parent);
     int columnCount() { return Columns::COLUMN_COUNT; }
     static DBRecord defaultAdmin();
     static bool isAdmin(const DBRecord&);

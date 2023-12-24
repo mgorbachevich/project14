@@ -1,5 +1,21 @@
 #include "transactiondbtable.h"
 
+TransactionDBTable::TransactionDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+{
+    qDebug() << "@@@@@ TransactionDBTable::TransactionDBTable";
+
+    //addColumn("Дата, время",      "date_time",    "BIGINT PRIMARY KEY");
+    addColumn("Дата, время",      "date_time",    "UNSIGNED BIG INT PRIMARY KEY");
+    addColumn("Код пользователя", "user",         "INT");
+    addColumn("Код товара",       "item_code",    "INT");
+    addColumn("Номер этикетки",   "label_number", "INT");
+    addColumn("Вес/количество",   "weight",       "REAL");
+    addColumn("Цена",             "price",        "INT");
+    addColumn("Стоимость",        "cost",         "INT");
+    addColumn("Цена 2",           "price2",       "INT");
+    addColumn("Стоимость 2",      "cost2",        "INT");
+}
+
 DBRecord TransactionDBTable::createRecord(const qint64 dateTime,
                                           const int userCode,
                                           const int itemCode,

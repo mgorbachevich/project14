@@ -1,5 +1,4 @@
 #include "settingspanelmodel.h"
-#include "settingdbtable.h"
 #include "settings.h"
 
 void SettingsPanelModel::update(Settings& settings)
@@ -7,6 +6,7 @@ void SettingsPanelModel::update(Settings& settings)
     qDebug() << "@@@@@ SettingsPanelModel::update currentGroupCode =" << settings.currentGroupCode;
     beginResetModel();
     items.clear();
+    settings.sort();
     QList<int> groupItemCodes = settings.getCurrentGroupItemCodes();
     //std::sort(groupItemCodes.begin(), groupItemCodes.end());
     qDebug() << "@@@@@ SettingsPanelModel::update groupItemCodes =" << groupItemCodes;
@@ -15,7 +15,10 @@ void SettingsPanelModel::update(Settings& settings)
         int itemCode = groupItemCodes[i];
         DBRecord* ri = settings.getItemByCode(itemCode);
         if(ri != nullptr)
-            addItem(ri->at(SettingDBTable::Name).toString(), ri->at(SettingDBTable::Value).toString());
+        {
+            qDebug() << "@@@@@ SettingsPanelModel::update addItem " << settings.getItemName(*ri) << settings.getItemStringValue(*ri);
+            addItem(settings.getItemName(*ri), settings.getItemStringValue(*ri));
+        }
     }
     endResetModel();
 }

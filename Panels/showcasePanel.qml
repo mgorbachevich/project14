@@ -16,6 +16,7 @@ Rectangle
     {
         console.debug("@@@@@ showcasePanel Keys.onPressed ", JSON.stringify(event));
         event.accepted = true;
+        app.clickSound();
         app.onUserAction();
         switch (event.key)
         {

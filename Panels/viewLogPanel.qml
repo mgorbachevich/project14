@@ -32,6 +32,7 @@ Popup
         {
             console.debug("@@@@@ viewLogPanel Keys.onPressed ", JSON.stringify(event))
             event.accepted = true;
+            app.clickSound();
             app.onUserAction();
             switch (event.key)
             {

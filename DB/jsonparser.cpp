@@ -67,7 +67,7 @@ void JSONParser::parseAndSaveAllTables(DataBase* db, const QString& json, int* r
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = db->settings.getItemIntValue(SettingDBTable::SettingCode_Logging);
+    int logging = db->settings.getItemIntValue(SettingCode_Logging);
     bool detailedLog = (logging >= LogType_Info) && (returnErrorCode != nullptr || returnDescription != nullptr);
     for (int i = 0; i < db->tables.size(); i++)
     {

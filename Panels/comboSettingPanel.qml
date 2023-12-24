@@ -7,7 +7,7 @@ import RegisteredTypes
 
 Popup
 {
-    id: messagePanel
+    id: comboSettingPanel
     padding : 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -16,16 +16,11 @@ Popup
     dim: true
     Material.background: "transparent"
     property string titleText: "Title"
-    property string messageText: "Message"
-    property bool buttonVisibility: true
+    property int settingItemCode: 0
+    property int comboIndex: 0
+    property string comboText: ""
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
-
-    Connections // Slot for signal AppManager::hideToast
-    {
-        target: app
-        function onHideToast() { messagePanel.close() }
-    }
 
     Rectangle
     {
@@ -43,11 +38,12 @@ Popup
             focus: true
             Keys.onPressed: (event) =>
             {
-                console.debug("@@@@@ messagePanel Keys.onPressed ", JSON.stringify(event))
+                console.debug("@@@@@ comboSettingPanel Keys.onPressed ", JSON.stringify(event))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
-                messagePanel.close()
+                app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
+                comboSettingPanel.close()
             }
 
             EmptyButton
@@ -74,25 +70,49 @@ Popup
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close_black_48"
-                visible: buttonVisibility
                 onClicked:
                 {
                     app.onUserAction();
-                    messagePanel.close()
+                    app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
+                    comboSettingPanel.close()
                 }
             }
 
-            Rectangle
+            ComboBox
             {
+                id: settingItemComboBox
                 Layout.column: 0
                 Layout.row: 1
                 Layout.columnSpan: 3
-                Layout.fillWidth: parent
-                Layout.fillHeight: parent
+                Layout.preferredWidth: screenManager.editWidth()
+                Layout.alignment: Qt.AlignCenter
                 Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
-                color: "transparent"
+                editable: false
+                popup.modal: true
+                currentIndex: comboIndex
+                displayText: comboText
 
-                CardText { text: messageText }
+                model: settingItemListModel
+                delegate: Text
+                {
+                    padding: screenManager.spacer()
+                    font { pointSize: screenManager.normalFontSize() }
+                    color: Material.color(Material.BlueGrey, Material.Shade900)
+                    text: model.value // Roles::ValueRole
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        onClicked:
+                        {
+                            console.debug("@@@@@ comboSettingPanel.settingItemComboBox.onClicked ", index)
+                            app.onUserAction();
+                            settingItemComboBox.currentIndex = index
+                            settingItemComboBox.displayText = text
+                            settingItemComboBox.popup.close()
+                        }
+                    }
+                }
             }
         }
     }

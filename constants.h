@@ -163,7 +163,7 @@ enum SettingType
     SettingType_IntervalNumber = 5,
     SettingType_List = 6,
 };
-
+/*
 enum WMBaudrate
 {
     WMBaudrate_2400 = 0,
@@ -174,7 +174,7 @@ enum WMBaudrate
     WMBaudrate_57600 = 5,
     WMBaudrate_115200 = 6,
 };
-
+*/
 enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt!
 {
     SettingCode_None = 0,
