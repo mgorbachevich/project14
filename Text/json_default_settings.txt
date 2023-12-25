@@ -222,17 +222,17 @@
             },
             {
                 "code":"1018",
-                "name":"Яркость",
-                "value":"0",
-                "value_list":"-7, 7",
+                "name":"Яркость, %",
+                "value":"100",
+                "value_list":"0, 100",
                 "group_code":"8100",
                 "type":"5"
             },
             {
                 "code":"1019",
-                "name":"Громкость",
-                "value":"0",
-                "value_list":"-7, 7",
+                "name":"Громкость, %",
+                "value":"100",
+                "value_list":"0, 100",
                 "group_code":"8100",
                 "type":"5"
             },

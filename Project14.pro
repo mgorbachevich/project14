@@ -316,8 +316,8 @@ RESOURCES += \
     Panels/VirtualKeyboardCyrillic.qml \
     Panels/VirtualKeyboardLatin.qml \
     Panels/weightPanel.qml \
-    Sound/click.mp3 \
-    Sound/beep.mp3 \
+    Sound/KeypressStandard.wav \
+    Sound/KeypressInvalid.wav \
     Text/json_default_settings.txt \
     Text/json_settings.txt \
     Text/json_products.txt \

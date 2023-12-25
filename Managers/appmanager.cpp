@@ -197,7 +197,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     product = newProduct;
     QString productCode = product[ProductDBTable::Code].toString();
     qDebug() << "@@@@@ AppManager::setProduct " << productCode;
-    productPanelModel->update(product, (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+    productPanelModel->update(product, price(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
     emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
     db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
     QString pictureCode = product[ProductDBTable::PictureCode].toString();
@@ -316,14 +316,10 @@ void AppManager::onAdminSettingsClicked()
     emit showSettingsPanel(settings.getCurrentGroupName());
 }
 
-void AppManager::beepSound()
+void AppManager::sound(const QString& fileName)
 {
-    Tools::sound("qrc:/Sound/beep.mp3");
-}
-
-void AppManager::clickSound()
-{
-    Tools::sound("qrc:/Sound/click.mp3");
+    const float volume = 1.0f * settings.getItemIntValue(SettingCode_SoundVolume) / 100.0f;
+    Tools::sound(fileName, volume);
 }
 
 void AppManager::onLockClicked()

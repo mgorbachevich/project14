@@ -12,7 +12,7 @@ class ProductPanelModel : public BaseListModel
 
 public:
     explicit ProductPanelModel(AppManager *parent): BaseListModel(parent) {}
-    void update(const DBRecord&, ProductDBTable*);
+    void update(const DBRecord&, const double, ProductDBTable*);
 };
 
 #endif // PRODUCTPANELMODEL_H

@@ -38,10 +38,9 @@ public:
     };
 
     explicit AppManager(QQmlContext*, const QSize&, QObject*);
-    double price(const DBRecord&);
 
-    Q_INVOKABLE void beepSound();
-    Q_INVOKABLE void clickSound();
+    Q_INVOKABLE void beepSound() { sound("qrc:/Sound/KeypressInvalid.wav"); }
+    Q_INVOKABLE void clickSound() { sound("qrc:/Sound/KeypressStandard.wav"); }
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
@@ -74,6 +73,7 @@ public:
     Q_INVOKABLE void onZeroClicked();
 
 private:
+    double price(const DBRecord&);
     QString priceAsString(const DBRecord&);
     QString amountAsString(const DBRecord&);
     QString quantityAsString(const DBRecord&);
@@ -90,6 +90,7 @@ private:
     void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
     void stopEquipment();
     void print();
+    void sound(const QString&);
     QString getImageFileWithQmlPath(const DBRecord&);
 
     bool isStarted = false;

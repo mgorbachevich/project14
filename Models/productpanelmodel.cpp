@@ -2,7 +2,7 @@
 #include "productdbtable.h"
 #include "appmanager.h"
 
-void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productTable)
+void ProductPanelModel::update(const DBRecord& product, const double price, ProductDBTable* productTable)
 {
     qDebug() << "@@@@@ ProductPanelModel::update " << product.at(ProductDBTable::Code).toString();
     QStringList ss;
@@ -23,7 +23,7 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* productT
             s += product.at(i).toString();
             break;
         case ProductDBTable::Price:
-            s += QString("%1").arg(appManager->price(product));
+            s += QString("%1").arg(price);
             break;
         case ProductDBTable::Type:
             switch (product.at(ProductDBTable::Type).toInt())
