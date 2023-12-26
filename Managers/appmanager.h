@@ -39,8 +39,8 @@ public:
 
     explicit AppManager(QQmlContext*, const QSize&, QObject*);
 
-    Q_INVOKABLE void beepSound() { sound("qrc:/Sound/KeypressInvalid.wav"); }
-    Q_INVOKABLE void clickSound() { sound("qrc:/Sound/KeypressStandard.wav"); }
+    Q_INVOKABLE void beepSound();
+    Q_INVOKABLE void clickSound();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
@@ -90,7 +90,6 @@ private:
     void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
     void stopEquipment();
     void print();
-    void sound(const QString&);
     QString getImageFileWithQmlPath(const DBRecord&);
 
     bool isStarted = false;
@@ -168,8 +167,8 @@ public slots:
     void onPrinted(const DBRecord&);
     void onTimer();
     void onShowMessage(const QString &title, const QString &text) { emit showMessageBox(title, text, true); }
-    void onEnterChar(const QChar) { onUserAction(); }
-    void onEnterKey(const Qt::Key) { onUserAction(); }
+    void onEnterChar(const QChar) { clickSound(); onUserAction(); }
+    void onEnterKey(const Qt::Key) { clickSound(); onUserAction(); }
 };
 
 #endif // APPMANAGER_H

@@ -2,13 +2,10 @@
 
 QVariant BaseListModel2::data(const QModelIndex &index, int role) const
 {
-    if (index.row() < 0 || index.row() > items.count())
-        return QVariant();
-    const StringPair & p = items[index.row()];
-    if (role == FirstRole)
-        return p.first;
-    if (role == SecondRole)
-        return p.second;
+    if (index.row() < 0 || index.row() > items.count()) return QVariant();
+    const StringPair& p = items[index.row()];
+    if (role == FirstRole) return p.first;
+    if (role == SecondRole) return p.second;
     return QVariant();
 }
 

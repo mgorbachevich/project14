@@ -318,6 +318,8 @@ RESOURCES += \
     Panels/weightPanel.qml \
     Sound/KeypressStandard.wav \
     Sound/KeypressInvalid.wav \
+    Sound/KeypressStandard.mp3 \
+    Sound/KeypressInvalid.mp3 \
     Text/json_default_settings.txt \
     Text/json_settings.txt \
     Text/json_products.txt \

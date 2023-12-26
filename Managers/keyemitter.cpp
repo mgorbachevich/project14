@@ -1,3 +1,4 @@
+#include <QKeyEvent>
 #include "keyemitter.h"
 
 void KeyEmitter::emitKey(Qt::Key k)

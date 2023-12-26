@@ -4,6 +4,7 @@
 #include <QQmlContext>
 #include <QThread>
 #include <QSslSocket>
+#include <QtConcurrent/QtConcurrent>
 #include "SettingItemListModel.h"
 #include "appmanager.h"
 #include "resourcedbtable.h"
@@ -316,12 +317,6 @@ void AppManager::onAdminSettingsClicked()
     emit showSettingsPanel(settings.getCurrentGroupName());
 }
 
-void AppManager::sound(const QString& fileName)
-{
-    const float volume = 1.0f * settings.getItemIntValue(SettingCode_SoundVolume) / 100.0f;
-    Tools::sound(fileName, volume);
-}
-
 void AppManager::onLockClicked()
 {
     qDebug() << "@@@@@ AppManager::onLockClicked";
@@ -455,7 +450,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetImageByResourceCode: // Отображение картинки выбранного товара:
     {
-        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE_PATH;
+        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
         emit showProductImage(imagePath);
         //showMessage("Image file path", imagePath);
         break;
@@ -467,7 +462,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
 QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
 {
-    QString path = DUMMY_IMAGE_FILE_PATH;
+    QString path = DUMMY_IMAGE_FILE;
     const int i = ResourceDBTable::Value;
     if (r.count() > i)
     {
@@ -1010,6 +1005,15 @@ void AppManager::updateStatus()
                     quantity, price, amount);
 }
 
+void AppManager::beepSound()
+{
+    Tools::sound("qrc:/Sound/KeypressInvalid.mp3", settings.getItemIntValue(SettingCode_SoundVolume));
+}
+
+void AppManager::clickSound()
+{
+    Tools::sound("qrc:/Sound/KeypressStandard.mp3", settings.getItemIntValue(SettingCode_SoundVolume));
+}
 
 
 

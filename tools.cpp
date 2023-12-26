@@ -5,7 +5,9 @@
 #include <QProcess>
 #include <QNetworkInterface>
 #include <QThread>
-#include <QSoundEffect>
+//#include <QSoundEffect>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include "tools.h"
 #include "constants.h"
 
@@ -204,26 +206,6 @@ void Tools::pause(const int msec, const QString& comment)
     QThread::currentThread()->msleep(msec);
 }
 
-void Tools::sound(const QString& fileName, const float volume)
-{
-    /*
-    QT += multimedia
-    // https://doc.qt.io/qt-6/audiooverview.html
-    qDebug() << "@@@@@ Tools::sound " << fileName;
-    auto player = new QMediaPlayer;
-    auto audioOutput = new QAudioOutput;
-    player->setAudioOutput(audioOutput);
-    player->setSource(QUrl(fileName));
-    audioOutput->setVolume(50);
-    player->play();
-    */
-    QSoundEffect effect;
-    effect.setSource(QUrl(fileName));
-    effect.setLoopCount(1);
-    effect.setVolume(volume); // 0..1
-    effect.play();
-}
-
 QString Tools::rootDir()
 {
     // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
@@ -233,3 +215,22 @@ QString Tools::rootDir()
     return app->applicationDirPath(); // Returns the directory that contains the application executable.
 #endif
 }
+
+void Tools::sound(const QString& fileName, const int volume)
+{
+    auto mp = new QMediaPlayer;
+    auto ao = new QAudioOutput;
+    ao->setVolume(1.0f * volume / 100.0f); // 0 .. 1.0f
+    mp->setAudioOutput(ao);
+    mp->setSource(QUrl(fileName)); // qrc:/...
+    mp->play();
+    /*
+    soundEffect.setSource(QUrl(fileName));
+    soundEffect.setLoopCount(1);
+    soundEffect.setVolume(volume); // 0..1
+    soundEffect.play();
+    */
+}
+
+
+

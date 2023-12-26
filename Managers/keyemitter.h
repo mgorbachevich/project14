@@ -5,7 +5,6 @@
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QGuiApplication>
-#include "appmanager.h"
 
 class AppManager;
 

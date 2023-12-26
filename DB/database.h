@@ -5,7 +5,7 @@
 #include "settings.h"
 #include "dbtable.h"
 
-#define DB_VERSION "1.3"
+#define DB_VERSION "1.4"
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"

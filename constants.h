@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define RELEASE
+//#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false
@@ -26,18 +26,21 @@
 #define CHECK_AUTHORIZATION true
 #define WM_HTTP true
 #define PRINTER_HTTP true
-#define DB_PRODUCT_NAME "ShtrihScale.db"
-#define DB_SETTINGS_NAME "Settings.db"
-#define DB_LOG_NAME "Log.db"
-#define DB_TEMP_NAME "Temp.db"
-#define DOWNLOAD_SUBDIR "Downloads"
-#define DUMMY_IMAGE_FILE_PATH "../Images/image_dummy.png"
-#define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define EOL "\r\n"
+
+#define DB_LOG_NAME "Log.db"
+#define DB_TEMP_NAME "Temp.db"
+#define DOWNLOAD_SUBDIR "Downloads"
+#define DB_PRODUCT_NAME "ShtrihScale.db"
+#define DB_SETTINGS_NAME "Settings.db"
+#define DUMMY_IMAGE_FILE "../Images/image_dummy.png"
+#define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
+#define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
+#define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
