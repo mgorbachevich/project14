@@ -184,7 +184,7 @@ Popup
             Layout.column: 2
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            icon.source: "../Icons/info_outline_black_48"
+            icon.source: "../Icons/info_outline"
             onClicked: app.onProductDescriptionClicked()
         }
 
@@ -194,7 +194,7 @@ Popup
             Layout.column: 3
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            icon.source: "../Icons/close_black_48"
+            icon.source: "../Icons/close"
             onClicked: app.onProductPanelCloseClicked()
         }
 
@@ -241,7 +241,7 @@ Popup
             Layout.alignment: Qt.AlignBottom
             Layout.preferredWidth:  printButtonSize
             Layout.preferredHeight: printButtonSize
-            icon { width: screenManager.buttonSize(); height: screenManager.buttonSize(); source: "../Icons/print_black_48" }
+            icon { width: screenManager.buttonSize(); height: screenManager.buttonSize(); source: "../Icons/print" }
             Material.background: Constants.colorAuto
             onClicked: app.onPrintClicked()
         }

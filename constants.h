@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-//#define RELEASE
+#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false
@@ -15,11 +15,11 @@
 #else
 #define WM_DEMO true
 #define PRINTER_DEMO true
-#define DOWNLOAD_PAUSE_MSEC 1000
+//#define DOWNLOAD_PAUSE_MSEC 0
 #define WAIT_NET_ACTION_MSEC 10000
-#define REMOVE_PRODUCT_DB_ON_START true
-#define REMOVE_SETTINGS_DB_ON_START true
-#define REMOVE_LOG_DB_ON_START true
+#define REMOVE_PRODUCT_DB_ON_START false
+#define REMOVE_SETTINGS_DB_ON_START false
+#define REMOVE_LOG_DB_ON_START false
 #define REMOVE_TEMP_DB true
 #endif
 
@@ -139,6 +139,19 @@ enum EquipmentParam
     EquipmentParam_AutoPrint = 16,
 };
 
+/*
+enum WMBaudrate
+{
+    WMBaudrate_2400 = 0,
+    WMBaudrate_4800 = 1,
+    WMBaudrate_9600 = 2,
+    WMBaudrate_19200 = 3,
+    WMBaudrate_38400 = 4,
+    WMBaudrate_57600 = 5,
+    WMBaudrate_115200 = 6,
+};
+*/
+
 enum NetAction
 {
     NetAction_Upload,
@@ -166,18 +179,15 @@ enum SettingType
     SettingType_IntervalNumber = 5,
     SettingType_List = 6,
 };
-/*
-enum WMBaudrate
+
+enum ShowcaseSort
 {
-    WMBaudrate_2400 = 0,
-    WMBaudrate_4800 = 1,
-    WMBaudrate_9600 = 2,
-    WMBaudrate_19200 = 3,
-    WMBaudrate_38400 = 4,
-    WMBaudrate_57600 = 5,
-    WMBaudrate_115200 = 6,
+    ShowcaseSort_CodeIncrease = 0,
+    ShowcaseSort_CodeDecrease = 1,
+    ShowcaseSort_NameIncrease = 2,
+    ShowcaseSort_NameDecrease = 3,
 };
-*/
+
 enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt!
 {
     SettingCode_None = 0,

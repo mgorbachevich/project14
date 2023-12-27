@@ -13,7 +13,7 @@
 class ProductPanelModel;
 class TablePanelModel;
 class ViewLogPanelModel;
-class ShowcasePanelModel;
+class ShowcasePanelModel2;
 class SearchFilterModel;
 class SearchPanelModel;
 class SettingsPanelModel;
@@ -122,7 +122,7 @@ private:
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
-    ShowcasePanelModel* showcasePanelModel = nullptr;
+    ShowcasePanelModel2* showcasePanelModel = nullptr;
     TablePanelModel* tablePanelModel = nullptr;
     SearchPanelModel* searchPanelModel = nullptr;
     SettingsPanelModel* settingsPanelModel = nullptr;

@@ -62,7 +62,7 @@ Rectangle
             KeyboardCharButton { text: qsTr("'") }
             KeyboardIconButton
             {
-                icon.source: "../Icons/backspace_black_48";
+                icon.source: "../Icons/backspace";
                 onClicked: emitKey(Qt.Key_Backspace)
             }
         }
@@ -89,7 +89,7 @@ Rectangle
             /*
             KeyboardIconButton
             {
-                icon.source: "../Icons/ok_outline_black_48";
+                icon.source: "../Icons/ok_outline";
                 onClicked: emitKey(Qt.Key_Return)
             }
             */

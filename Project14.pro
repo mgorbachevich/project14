@@ -110,7 +110,7 @@ SOURCES += \
     Models/baselistmodel.cpp \
     Models/productpanelmodel.cpp \
     Models/searchpanelmodel.cpp \
-    Models/showcasepanelmodel.cpp \
+    Models/showcasepanelmodel2.cpp \
     Models/tablepanelmodel.cpp \
     Managers/printmanager.cpp \
     Managers/weightmanager.cpp \
@@ -209,7 +209,7 @@ HEADERS += \
     Models/baselistmodel.h \
     Models/productpanelmodel.h \
     Models/searchpanelmodel.h \
-    Models/showcasepanelmodel.h \
+    Models/showcasepanelmodel2.h \
     Models/tablepanelmodel.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
@@ -240,30 +240,36 @@ RESOURCES += \
     Fonts/impact.ttf \
     Fonts/sserifer.fon \
     Fonts/times.ttf \
-    Icons/arrow_left_black_48.png \
-    Icons/arrow_up_black_48.png \
-    Icons/auto_flag_green_48.png \
-    Icons/auto_flag_orange_48.png \
-    Icons/backspace_black_48.png \
-    Icons/close_black_48.png \
-    Icons/error_flag_48.png \
-    Icons/info_outline_black_48.png \
-    Icons/keyboard_black_48.png \
-    Icons/lock_black_48.png \
-    Icons/log_black_48.png \
-    Icons/menu_black_48.png \
-    Icons/ok_outline_black_48.png \
-    Icons/print_black_48.png \
-    Icons/red_48.png \
-    Icons/settings_black_48.png \
-    Icons/zero_flag_48.png \
-    Icons/tare_flag_48.png \
-    Icons/empty_48.png \
-    Icons/empty_flag_48.png \
-    Icons/bluetooth_black_48.png \
-    Icons/usb_black_48.png \
-    Icons/wifi_black_48.png \
-    Icons/sdcard_black_48.png \
+    Icons/arrow_left.png \
+    Icons/arrow_up.png \
+    Icons/auto_flag_green.png \
+    Icons/auto_flag_orange.png \
+    Icons/backspace.png \
+    Icons/bluetooth.png \
+    Icons/close.png \
+    Icons/empty.png \
+    Icons/empty_flag.png \
+    Icons/error_flag.png \
+    Icons/info_outline.png \
+    Icons/keyboard.png \
+    Icons/lock.png \
+    Icons/log.png \
+    Icons/menu.png \
+    Icons/ok_outline.png \
+    Icons/print.png \
+    Icons/red.png \
+    Icons/sdcard.png \
+    Icons/settings.png \
+    Icons/tare_flag.png \
+    Icons/usb.png \
+    Icons/wifi.png \
+    Icons/zero_flag.png \
+    Icons/a_down.png \
+    Icons/a_up.png \
+    Icons/folder.png \
+    Icons/n_down.png \
+    Icons/n_up.png \
+    Icons/star.png \
     Images/image_dummy.png \
     Images/logo.png \
     Labels/60x30.dat/0.bmp \
@@ -330,7 +336,6 @@ RESOURCES += \
 
 OTHER_FILES += \
     Android/AndroidManifest.xml \
-
 
 
 

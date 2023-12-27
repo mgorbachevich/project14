@@ -73,7 +73,7 @@ Rectangle
         function onShowGroupHierarchyRoot(value)
         {
             console.debug("@@@@@ tablePanel.onShowGroupHierarchyRoot " , value);
-            tablePanelBackButton.icon.source = value ? "../Icons/empty_48" : "../Icons/arrow_up_black_48"
+            tablePanelBackButton.icon.source = value ? "../Icons/empty" : "../Icons/arrow_up"
         }
     }
 
@@ -91,7 +91,7 @@ Rectangle
             Layout.column: 0
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            icon.source: "../Icons/empty_48"
+            icon.source: "../Icons/empty"
             onClicked: app.onTableBackClicked()
         }
 

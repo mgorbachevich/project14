@@ -81,7 +81,7 @@ Popup
         {
             Layout.column: 2
             Layout.row: 0
-            icon.source: "../Icons/close_black_48"
+            icon.source: "../Icons/close"
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
             onClicked: app.onSettingsPanelCloseClicked()
         }

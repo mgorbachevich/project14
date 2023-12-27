@@ -24,6 +24,7 @@ protected:
     QList<StringPair> items;
     QHash<int, QByteArray> roles;
     AppManager* appManager;
+    DBRecord emptyRecord;
 };
 
 #endif // BASELISTMODEL2_H

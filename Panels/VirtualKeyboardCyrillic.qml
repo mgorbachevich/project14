@@ -58,7 +58,7 @@ Rectangle
             KeyboardIconButton
             {
                 id: shiftButton
-                icon.source: "../Icons/arrow_up_black_48"
+                icon.source: "../Icons/arrow_up"
                 onClicked: { app.onUserAction(); capital = !capital; }
             }
             KeyboardCharButton { text: capital ? qsTr("Я") : qsTr("я") }
@@ -72,7 +72,7 @@ Rectangle
             KeyboardCharButton { text: capital ? qsTr("Ю") : qsTr("ю") }
             KeyboardIconButton
             {
-                icon.source: "../Icons/backspace_black_48";
+                icon.source: "../Icons/backspace";
                 onClicked: keyEmitter.emitKey(Qt.Key_Backspace)
             }
         }
@@ -99,7 +99,7 @@ Rectangle
             /*
             KeyboardIconButton
             {
-                icon.source: "../Icons/ok_outline_black_48";
+                icon.source: "../Icons/ok_outline";
                 onClicked: keyEmitter.emitKey(Qt.Key_Return)
             }
             */

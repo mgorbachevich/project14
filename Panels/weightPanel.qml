@@ -30,12 +30,12 @@ Rectangle
             switch (param)
             {
             case 1: // TareFlag >T<
-                if (value === 'true') productPanelTareIcon.source = "../Icons/tare_flag_48"
-                else productPanelTareIcon.source = "../Icons/empty_flag_48"
+                if (value === 'true') productPanelTareIcon.source = "../Icons/tare_flag"
+                else productPanelTareIcon.source = "../Icons/empty_flag"
                 break
             case 2: // ZeroFlag >0<
-                if (value === 'true') productPanelZeroIcon.source = "../Icons/zero_flag_48"
-                else productPanelZeroIcon.source = "../Icons/empty_flag_48"
+                if (value === 'true') productPanelZeroIcon.source = "../Icons/zero_flag"
+                else productPanelZeroIcon.source = "../Icons/empty_flag"
                 break
             case 3: // TareValue todo
                 break
@@ -67,16 +67,16 @@ Rectangle
                 weightPanelAmountTitle.text = value
                 break
             case 13: // WeightError
-                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_flag_48"
-                else productPanelErrorIcon.source = "../Icons/empty_flag_48"
+                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_flag"
+                else productPanelErrorIcon.source = "../Icons/empty_flag"
                 break
             case 14: // WeightFixed
             case 15: // PrintError
                 break
             case 16: // AutoPrint
-                if (value === '1') productPanelAutoPrintIcon.source = "../Icons/auto_flag_green_48"
-                else if (value === '2') productPanelAutoPrintIcon.source = "../Icons/auto_flag_orange_48"
-                else productPanelAutoPrintIcon.source = "../Icons/empty_flag_48"
+                if (value === '1') productPanelAutoPrintIcon.source = "../Icons/auto_flag_green"
+                else if (value === '2') productPanelAutoPrintIcon.source = "../Icons/auto_flag_orange"
+                else productPanelAutoPrintIcon.source = "../Icons/empty_flag"
                 break
             }
         }
@@ -106,7 +106,7 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag_48"
+                    source: "../Icons/empty_flag"
                 }
 
                 Image
@@ -115,7 +115,7 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag_48"
+                    source: "../Icons/empty_flag"
                 }
 
                 Image
@@ -124,7 +124,7 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag_48"
+                    source: "../Icons/empty_flag"
                 }
 
                 Image
@@ -133,7 +133,7 @@ Rectangle
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag_48"
+                    source: "../Icons/empty_flag"
                 }
             }
         }

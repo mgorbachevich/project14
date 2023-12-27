@@ -13,21 +13,21 @@ Column
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
-        icon.source: "../Icons/settings_black_48"
+        icon.source: "../Icons/settings"
         onClicked: app.onAdminSettingsClicked()
     }
 
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
-        icon.source: "../Icons/lock_black_48"
+        icon.source: "../Icons/lock"
         onClicked: app.onLockClicked()
     }
 
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
-        icon.source: "../Icons/log_black_48"
+        icon.source: "../Icons/log"
         onClicked: app.onViewLogClicked()
     }
 }

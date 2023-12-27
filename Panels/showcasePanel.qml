@@ -9,7 +9,8 @@ Rectangle
 {
     id:  showcasePanel
     color: Material.background
-    property int imageSize: (height - screenManager.spacer() * 3 / 2 + 1) / 2
+    property int imageSpacer: screenManager.spacer() / 2
+    property int imageSize: (width - screenManager.scrollBarWidth() - imageSpacer * 2) / 5 - imageSpacer
 
     focus: true
     Keys.onPressed: (event) =>
@@ -62,17 +63,18 @@ Rectangle
         }
     }
 
+
     GridView
     {
         id: showcasePanelGrid
         anchors.fill: parent
-        anchors.rightMargin: screenManager.spacer() / 2
-        anchors.leftMargin: screenManager.spacer() / 2
-        anchors.topMargin: screenManager.spacer() / 2
-        anchors.bottomMargin: screenManager.spacer() / 2
+        anchors.leftMargin: imageSpacer
+        anchors.rightMargin: imageSpacer
+        anchors.topMargin: imageSpacer
+        anchors.bottomMargin: imageSpacer
         clip: true
-        cellWidth: showcasePanel.imageSize + screenManager.spacer() / 2
-        cellHeight: showcasePanel.imageSize + screenManager.spacer() / 2
+        cellWidth: imageSize + imageSpacer
+        cellHeight: imageSize + imageSpacer
 
         ScrollBar.vertical: ScrollBar
         {
@@ -80,12 +82,12 @@ Rectangle
             background: Rectangle { color: "transparent" }
             policy: ScrollBar.AlwaysOn
         }
-
+        /*
         model: showcasePanelModel
         delegate: Image
         {
-            width: showcasePanel.imageSize
-            height: showcasePanel.imageSize
+            width: showcasePanelGrid.cellWidth - imageSpacer
+            height: showcasePanelGrid.cellHeight - imageSpacer
             fillMode: Image.PreserveAspectFit
             source: model.value  // Roles::ValueRole
             MouseArea
@@ -94,7 +96,29 @@ Rectangle
                 onClicked: app.onShowcaseClicked(index)
             }
         }
+        */
+        model: showcasePanelModel
+        delegate: Label
+        {
+            width: showcasePanelGrid.cellWidth - imageSpacer
+            height: showcasePanelGrid.cellHeight - imageSpacer
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            wrapMode: Text.WordWrap
+            text: model.first
+            background: Image
+            {
+                fillMode: Image.PreserveAspectFit
+                source: model.second
+            }
+            MouseArea
+            {
+                anchors.fill: parent
+                onClicked: app.onShowcaseClicked(index)
+            }
+        }
     }
 }
+
 
 

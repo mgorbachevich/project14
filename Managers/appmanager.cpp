@@ -14,7 +14,7 @@
 #include "productpanelmodel.h"
 #include "tablepanelmodel.h"
 #include "usernamemodel.h"
-#include "showcasepanelmodel.h"
+#include "showcasepanelmodel2.h"
 #include "searchpanelmodel.h"
 #include "settingspanelmodel.h"
 #include "viewlogpanelmodel.h"
@@ -68,7 +68,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject
     connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
 
     productPanelModel = new ProductPanelModel(this);
-    showcasePanelModel = new ShowcasePanelModel(this);
+    showcasePanelModel = new ShowcasePanelModel2(this);
     tablePanelModel = new TablePanelModel(this);
     settingsPanelModel = new SettingsPanelModel(this);
     searchPanelModel = new SearchPanelModel(this);
@@ -405,7 +405,7 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
             emit showMessageBox("Описание товара", records[0][ResourceDBTable::Value].toString(), true);
         break;
 
-    case DataBase::GetUserNames: // Отображение имен пользователей при авторизации:
+    case DataBase::GetUsers: // Отображение имен пользователей при авторизации:
         showUsers(records);
         break;
 
@@ -650,7 +650,7 @@ void AppManager::startAuthorization()
     emit showAuthorizationPanel(info);
     isAuthorizationOpened = true;
     db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
-    db->select(DataBase::GetUserNames, "");
+    db->select(DataBase::GetUsers, "");
     qDebug() << "@@@@@ AppManager::startAuthorization Done";
 }
 
@@ -1014,6 +1014,8 @@ void AppManager::clickSound()
 {
     Tools::sound("qrc:/Sound/KeypressStandard.mp3", settings.getItemIntValue(SettingCode_SoundVolume));
 }
+
+
 
 
 

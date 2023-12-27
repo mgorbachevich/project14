@@ -19,7 +19,7 @@ RoundButton
     horizontalPadding: screenManager.spacer() / 4
     verticalPadding: screenManager.spacer() / 4
     flat: true
-    icon.source: "../Icons/empty_48"
+    icon.source: "../Icons/empty"
     Material.background: Material.color(Material.BlueGrey, Material.Shade200)
     Material.foreground: Material.color(Material.BlueGrey, Material.Shade900)
     background: Rectangle

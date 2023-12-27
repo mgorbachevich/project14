@@ -9,7 +9,6 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include "tools.h"
-#include "constants.h"
 
 QString Tools::readTextFile(const QString &fileName)
 {
@@ -230,6 +229,40 @@ void Tools::sound(const QString& fileName, const int volume)
     soundEffect.setVolume(volume); // 0..1
     soundEffect.play();
     */
+}
+
+void Tools::sortByInt(DBRecordList& records, const int field)
+{
+    // https://copyprogramming.com/howto/how-to-sort-qlist-qvariant-in-qt
+    int i, n;
+    for (n = 0; n < records.count(); n++)
+    {
+        for (i = n + 1; i < records.count(); i++)
+        {
+            if (records[n][field].toInt() > records[i][field].toInt())
+            {
+                records.move(i, n);
+                n = 0;
+            }
+        }
+    }
+}
+
+void Tools::sortByString(DBRecordList& records, const int field)
+{
+    // https://copyprogramming.com/howto/how-to-sort-qlist-qvariant-in-qt
+    int i, n;
+    for (n = 0; n < records.count(); n++)
+    {
+        for (i = n + 1; i < records.count(); i++)
+        {
+            if (records[n][field].toString() > records[i][field].toString())
+            {
+                records.move(i, n);
+                n = 0;
+            }
+        }
+    }
 }
 
 

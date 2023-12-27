@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QJsonObject>
 #include <QApplication>
+#include "constants.h"
 #include "netparams.h"
 
 class Tools
@@ -36,6 +37,8 @@ public:
     static bool removeFile(const QString&);
     static void pause(const int, const QString& comment = "");
     static void sound(const QString&, const int);
+    static void sortByInt(DBRecordList&, const int);
+    static void sortByString(DBRecordList&, const int);
 
 private:
     static QString makeFullPath(const QString&, const QString&);

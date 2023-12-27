@@ -65,7 +65,7 @@ Popup
             id: usbIcon
             width: flagSize
             height: flagSize
-            source: "../Icons/usb_black_48"
+            source: "../Icons/usb"
         }
 
         Image
@@ -73,7 +73,7 @@ Popup
             id: bluetoothIcon
             width: flagSize
             height: flagSize
-            source: "../Icons/bluetooth_black_48"
+            source: "../Icons/bluetooth"
         }
 
         Image
@@ -81,7 +81,7 @@ Popup
             id: wifiIcon
             width: flagSize
             height: flagSize
-            source: "../Icons/wifi_black_48"
+            source: "../Icons/wifi"
         }
 
         Image
@@ -89,7 +89,7 @@ Popup
             id: sdcardIcon
             width: flagSize
             height: flagSize
-            source: "../Icons/sdcard_black_48"
+            source: "../Icons/sdcard"
         }
     }
 

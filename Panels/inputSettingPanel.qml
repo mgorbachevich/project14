@@ -73,7 +73,7 @@ Popup
             Layout.column: 2
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-            icon.source: "../Icons/close_black_48"
+            icon.source: "../Icons/close"
             onClicked:
             {
                 app.onUserAction();

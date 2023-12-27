@@ -329,9 +329,10 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         selectAll(settingsDB, getTable(DBTABLENAME_SETTINGS), resultRecords);
         break;
 
-    case Selector::GetUserNames:
+    case Selector::GetUsers:
     // Запрос списка пользователей для авторизации:
         selectAll(productDB, getTable(DBTABLENAME_USERS), resultRecords);
+        Tools::sortByString(resultRecords, UserDBTable::Name);
         break;
 
     case Selector::GetLog:
@@ -351,6 +352,7 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
             if (selectById(productDB, DBTABLENAME_PRODUCTS, showcaseProductCode, r) && ProductDBTable::isForShowcase(r))
                 resultRecords.append(r);
         }
+        Tools::sortByString(resultRecords, ProductDBTable::Name);
         break;
     }
 

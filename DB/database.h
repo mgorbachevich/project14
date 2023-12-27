@@ -39,7 +39,7 @@ public:
         GetProductsByFilteredBarcode,
         //GetProductsByFilteredBarcodeIncludeGroups,
         GetItemsByCodes,
-        GetUserNames,
+        GetUsers,
         GetAuthorizationUserByName,
         GetSettingsItemByCode,
         UpdateSettings,

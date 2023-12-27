@@ -72,6 +72,7 @@ bool Settings::isGroupItem(const DBRecord& r)
 
 void Settings::sort()
 {
+    /*
     // https://copyprogramming.com/howto/how-to-sort-qlist-qvariant-in-qt
     int i, n;
     for (n = 0; n < items.count(); n++)
@@ -85,6 +86,8 @@ void Settings::sort()
             }
         }
     }
+    */
+    Tools::sortByInt(items, SettingDBTable::Code);
 }
 
 int Settings::getItemCode(const DBRecord& r)

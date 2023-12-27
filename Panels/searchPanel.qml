@@ -64,7 +64,7 @@ Rectangle
             Layout.column: 2
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            icon.source: "../Icons/keyboard_black_48"
+            icon.source: "../Icons/keyboard"
             onClicked:
             {
                 app.onUserAction();
