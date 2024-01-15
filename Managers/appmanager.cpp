@@ -547,13 +547,17 @@ void AppManager::onTableResultClicked(const int index)
 
 void AppManager::onSettingsItemClicked(const int index)
 {
-    qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << index;
     onUserAction();
     DBRecord* r = settings.getItemByIndexInCurrentGroup(index);
-    if(r == nullptr || r->empty()) return;
+    if(r == nullptr || r->empty())
+    {
+        qDebug() << "@@@@@ AppManager::onSettingsItemClicked ERROR " << index;
+        return;
+    }
 
     const int code = settings.getItemCode(*r);
     const QString& name = settings.getItemName(*r);
+    qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << code << name;
 
     switch (settings.getItemType(*r))
     {
@@ -586,9 +590,26 @@ void AppManager::onSettingsItemClicked(const int index)
         break;
     }
     case SettingType_Custom:
-        emit showMessageBox(name, "СПЕЦ КОМАНДА", true);
+        onCustomSettingsItemClicked(*r);
         break;
     default:
+        break;
+    }
+}
+
+void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
+{
+    const int code = settings.getItemCode(r);
+    const QString& name = settings.getItemName(r);
+    qDebug() << "@@@@@ AppManager::onCustomSettingsItemClicked " << code << name;
+    switch (code)
+    {
+    case SettingCode_WiFi:
+        if(!Tools::wifiSettings())
+            emit showMessageBox(name, "Настройки WiFi не поддерживаются", true);
+        break;
+    default:
+        emit showMessageBox(name, "СПЕЦ КОМАНДА", true);
         break;
     }
 }

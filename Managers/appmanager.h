@@ -91,6 +91,7 @@ private:
     void stopEquipment();
     void print();
     QString getImageFileWithQmlPath(const DBRecord&);
+    void onCustomSettingsItemClicked(const DBRecord&);
 
     bool isStarted = false;
     AppInfo appInfo;

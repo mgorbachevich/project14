@@ -5,9 +5,14 @@
 #include <QProcess>
 #include <QNetworkInterface>
 #include <QThread>
-//#include <QSoundEffect>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+
+#ifdef Q_OS_ANDROID
+// https://www.qt.io/blog/qt-extras-modules-in-qt-6
+#include <QtCore/private/qandroidextras_p.h>
+#endif
+
 #include "tools.h"
 
 QString Tools::readTextFile(const QString &fileName)
@@ -263,6 +268,26 @@ void Tools::sortByString(DBRecordList& records, const int field)
             }
         }
     }
+}
+
+bool Tools::wifiSettings()
+{
+    //https://www.google.com/search?q=android+call+wifi+settings+programmatically&rlz=1C5CHFA_enRU1035RU1035&oq=android+call+wifi+settings+pro&gs_lcrp=EgZjaHJvbWUqBwgBECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIHCAQQIRigATIHCAUQIRigAdIBCTM5MDY2ajBqN6gCALACAA&sourceid=chrome&ie=UTF-8
+    //https://stackoverflow.com/questions/2318310/how-to-call-wi-fi-settings-screen-from-my-application-using-android
+    //https://stackoverflow.com/questions/71216717/requesting-android-permissions-in-qt-6
+#ifdef Q_OS_ANDROID
+    qDebug("@@@@@ AppManager::wifiSettings");
+    const QJniObject action = QJniObject::getStaticObjectField("android/provider/Settings",
+                                                               "ACTION_WIFI_SETTINGS",
+                                                               "Ljava/lang/String;");
+    if (action.isValid())
+    {
+        const QAndroidIntent intent(action.toString());
+        QtAndroidPrivate::startActivity(intent.handle(), 10101);
+        return true;
+    }
+#endif
+    return false;
 }
 
 

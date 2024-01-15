@@ -5,11 +5,6 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-# SSL for android https://github.com/KDAB/android_openssl
-android: include(Android/android_openssl-master/openssl.pri)
-
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
-
 DEFINES += ZINT_NO_PNG
 
 INCLUDEPATH += \
@@ -334,9 +329,17 @@ RESOURCES += \
     Text/json_pictures.txt \
     Text/json_messages.txt \
 
-OTHER_FILES += \
-    Android/AndroidManifest.xml \
+android {
+    QT += core-private
 
+    # SSL for android https://github.com/KDAB/android_openssl
+    include(Android/android_openssl-master/openssl.pri)
+
+    DISTFILES += \
+        Android/AndroidManifest.xml
+
+    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
+}
 
 
 

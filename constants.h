@@ -239,7 +239,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_PrintLabelBarcodeWeight = 1028, // todo
     SettingCode_PrintLabelBarcodePiece = 1029, // todo
     SettingCode_Ethernet = 1030, // todo
-    SettingCode_WiFi = 1031, // todo
+    SettingCode_WiFi = 1031,
     SettingCode_ClearLog = 1032, // todo
     SettingCode_ClearReports = 1033, // todo
     SettingCode_HorizontalCalibration = 1034, // todo
