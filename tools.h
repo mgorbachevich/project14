@@ -39,7 +39,6 @@ public:
     static void sound(const QString&, const int);
     static void sortByInt(DBRecordList&, const int);
     static void sortByString(DBRecordList&, const int);
-    static bool wifiSettings();
 
 private:
     static QString makeFullPath(const QString&, const QString&);

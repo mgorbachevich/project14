@@ -92,7 +92,6 @@ SOURCES += \
     Managers/appmanager.cpp \
     Managers/keyemitter.cpp \
     Managers/screenmanager.cpp \
-    Managers/settings.cpp \
     Models/baselistmodel2.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
@@ -109,6 +108,8 @@ SOURCES += \
     Models/tablepanelmodel.cpp \
     Managers/printmanager.cpp \
     Managers/weightmanager.cpp \
+    Settings/androidactivityresultreceiver.cpp \
+    Settings/settings.cpp \
 
 HEADERS += \
     constants.h \
@@ -197,7 +198,6 @@ HEADERS += \
     Managers/weightmanager.h \
     Managers/appmanager.h \
     Managers/printstatus.h \
-    Managers/settings.h \
     Managers/screenmanager.h \
     Models/settingitemlistmodel.h \
     Models/baselistmodel2.h \
@@ -213,6 +213,8 @@ HEADERS += \
     Net/netparams.h \
     Net/netserver.h \
     Net/requestparser.h \
+    Settings/androidactivityresultreceiver.h \
+    Settings/settings.h \
 
 RESOURCES += \
     constants.js \

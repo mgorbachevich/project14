@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
     //qDebug() <<  "@@@@@ main font families: " << QFontDatabase::families();
 
     QSize screenSize = QSize(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
-#ifdef Q_OS_ANDROID
+#ifdef Q_OS_ANDROID // --------------------------------------------------------
     QRect r = application.primaryScreen()->geometry();
     screenSize = QSize(r.width() > r.height() ? r.width() : r.height(),
                        r.width() <= r.height() ? r.width() : r.height());
-#endif
+#endif // Q_OS_ANDROID --------------------------------------------------------
     AppManager* appManager = new AppManager(engine.rootContext(), screenSize, &application);
     qmlRegisterUncreatableType<BaseListModel>("RegisteredTypes", 1, 0, "BaseListModel", "");
     engine.rootContext()->setContextProperty("app", appManager);

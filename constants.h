@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define RELEASE
+//#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false

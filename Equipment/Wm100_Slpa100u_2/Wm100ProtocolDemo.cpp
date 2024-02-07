@@ -38,21 +38,33 @@ void Wm100ProtocolDemo::initDemo()
     };
 }
 
-
 int Wm100ProtocolDemo::cGetStatus(channel_status *status)
 {
     *status = demo.status;
     return 0;
 }
 
+int Wm100ProtocolDemo::cGetStatusEx(channel_status_ex *status)
+{
+    status->weight = demo.status.weight;
+    status->tare = demo.status.tare;
+    status->state = demo.status.state;
+    status->flags = demo.status.flags;
+    status->weightprecise = demo.status.weight+0.1;
+    status->levelx = 127;
+    status->levely = 127;
+    return 0;
+}
+
 int Wm100ProtocolDemo::cSetMode(uint8_t mode)
 {
-    return mode?180:0;
+    demo.mode = mode;
+    return 0;
 }
 
 int Wm100ProtocolDemo::cGetMode(uint8_t *mode)
 {
-    *mode = 0;
+    *mode = demo.mode;
     return 0;
 }
 
@@ -84,6 +96,20 @@ int Wm100ProtocolDemo::cSetTareValue(const double_t tare)
     }
     else return 151;
 }
+
+int Wm100ProtocolDemo::cGetADC(uint32_t *ADCValue)
+{
+    *ADCValue = QRandomGenerator::global()->bounded(22535438, 22536438);
+    return 0;
+}
+/*
+int Wm100Protocol::cControllerId(controller_id *id)
+{
+    id->crc16 = 0xc0de;
+    id->id = QByteArray(16, 7);
+    id->firmware = "Feb 12 2016 23:59:01 v0.1 SME22022.121_1";
+    return 0;
+}*/
 
 bool Wm100ProtocolDemo::checkUri(const QString &uri)
 {

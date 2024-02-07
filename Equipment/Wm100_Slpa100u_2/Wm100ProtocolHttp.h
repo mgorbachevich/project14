@@ -11,8 +11,9 @@ public:
     explicit Wm100ProtocolHttp(QObject *parent = nullptr);
 
 public:
-    virtual int open(const QString &uri);
     static bool checkUri(const QString &uri);
+    virtual int open(const QString &uri);
+    virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
 
 private:
     virtual int executeCommand(wmcommand cmd, const QByteArray &out, QByteArray &in);

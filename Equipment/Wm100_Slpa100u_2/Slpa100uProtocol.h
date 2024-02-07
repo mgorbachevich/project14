@@ -76,7 +76,7 @@ public:
     int cBufferData(const QByteArray &line);
     int cClearBuffer();
     int cPrint(prnanswer *status);
-    int cGetStatus(prnanswer *status);
+    int cGetStatus(prnanswer *status, const int isPE = 0);
     int cSetBrightness(const uint8_t value);
     int cSetOffset(const uint8_t value);
     int cSetPaperType(const papertype value);

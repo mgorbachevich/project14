@@ -1,6 +1,7 @@
 #include <QRegularExpression>
 #include <QTimer>
 #include <QEventLoop>
+#include <QThread>
 #include "iohttp.h"
 
 IoHttp::IoHttp(QObject *parent)
@@ -55,6 +56,7 @@ bool IoHttp::writeRead(const QByteArray &out, QByteArray &in, int64_t toRead, in
     sender.setMaxWaitTime(timeoutRead);
     if (postCommand) in = sender.post(request);
                 else in = sender.get(request);
+    //QThread::msleep(50);
     return sender.error() == Network::RequestSender::NoError;
 }
 

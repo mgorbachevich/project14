@@ -829,7 +829,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     } /* End Lineloop */
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        /* Dump the output to the screenManager
+        /* Dump the output to the screen
          */
         fputs("\nCode 128 Code Numbers:\n", stdout);
         { /* start a new level of local variables */

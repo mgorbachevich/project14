@@ -27,7 +27,6 @@
 #include "screenmanager.h"
 #include "keyemitter.h"
 #include "settingdbtable.h"
-#include "settingitemlistmodel.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject *parent):
     QObject(parent), context(qmlContext)
@@ -605,7 +604,7 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     switch (code)
     {
     case SettingCode_WiFi:
-        if(!Tools::wifiSettings())
+        if(!settings.nativeSettings(SettingCode_WiFi))
             emit showMessageBox(name, "Настройки WiFi не поддерживаются", true);
         break;
     default:

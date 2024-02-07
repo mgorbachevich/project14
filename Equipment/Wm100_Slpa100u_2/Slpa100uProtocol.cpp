@@ -62,10 +62,12 @@ int Slpa100uProtocol::cPrint(prnanswer *status)
     return command(cmPrint, status);
 }
 
-int Slpa100uProtocol::cGetStatus(prnanswer *status)
+int Slpa100uProtocol::cGetStatus(prnanswer *status, const int isPE)
 {
     emit showMessage(QString("cGetStatus"));
-    int res = command(cmGetStatus, status);
+    QByteArray out;
+    out << static_cast<uint8_t>(isPE);
+    int res = command(cmGetStatus, out, status);
     if (res == 0) lastStatus = *status;
     return res;
 }
@@ -190,9 +192,16 @@ int Slpa100uProtocol::command(prncommand cmd, const QByteArray &out, QByteArray 
     //if (QDateTime::currentMSecsSinceEpoch() < delayTill) res = -17;
     if (!res) res = executeCommand(cmd, out, in);
     if (!res) setDelay(cmd);
-    if (res == -17 && cmd == cmGetStatus) {
-        in = statusToByteArray(lastStatus);
-        res = 0;
+    QByteArray ba(9,0);
+    QByteArrayView bav(ba);
+    if (((res == -13 && in.contains(bav)) || res == -4) && QDateTime::currentMSecsSinceEpoch() < delayTill)
+    {
+        if (cmd == cmGetStatus)
+        {
+            in = statusToByteArray(lastStatus);
+            res = 0;
+        }
+        else res = -17;
     }
     return res;
 }
@@ -219,7 +228,7 @@ int Slpa100uProtocol::command(prncommand cmd, prnanswer *ans)
 {
     QByteArray out, in;
     int res = command(cmd, out, in);
-    if (res >=0 && ans != nullptr) {
+    if (res >= 0 && ans != nullptr) {
         QDataStream ds(in);
         ds.setByteOrder(QDataStream::LittleEndian);
         ds >> ans->printerStatus >> ans->versionH >> ans->versionL >> ans->PE >> ans->LAB >> ans->TM >> ans->RUL >> ans->brightness;
@@ -255,8 +264,8 @@ void Slpa100uProtocol::setDelay(prncommand cmd)
 {
     switch (cmd) {
     case cmFeed:
-    case cmPrint:     delayTill = QDateTime::currentMSecsSinceEpoch() + labelLength*12; break;
-    case cmPrintTest: delayTill = QDateTime::currentMSecsSinceEpoch() + testLength *12; break;
+    case cmPrint:     delayTill = QDateTime::currentMSecsSinceEpoch() + 2000/*labelLength*12*/; break;
+    case cmPrintTest: delayTill = QDateTime::currentMSecsSinceEpoch() + 2000/*testLength *12*/; break;
     default: delayTill = 0;
     }
 }

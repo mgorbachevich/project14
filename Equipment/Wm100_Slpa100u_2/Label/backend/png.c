@@ -39,7 +39,7 @@
 #include <fcntl.h>
 #include <io.h>
 #endif
-#include <QtPng/png.h>
+#include <png.h>
 #include <zlib.h>
 #include <setjmp.h>
 #include "common.h"

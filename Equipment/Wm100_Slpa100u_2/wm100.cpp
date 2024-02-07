@@ -65,6 +65,12 @@ int Wm100::getStatus(Wm100Protocol::channel_status *status)
     return res;
 }
 
+int Wm100::getStatusEx(Wm100Protocol::channel_status_ex *status)
+{
+    if (!isConnected()) return -20;
+    return protocol->cGetStatusEx(status);
+}
+
 int Wm100::setMode(uint8_t mode)
 {
     if (!isConnected()) return -20;
@@ -129,6 +135,22 @@ int Wm100::getADC(uint32_t *ADCValue)
 {
     if (!isConnected()) return -20;
     return protocol->cGetADC(ADCValue);
+}
+
+int Wm100::controllerId(Wm100Protocol::controller_id *id)
+{
+    if (!isConnected()) return -20;
+    return protocol->cControllerId(id);
+}
+
+int Wm100::setDateTime(const QDateTime &datetime, const QString &uri)
+{
+    Wm100ProtocolHttp* pr = nullptr;
+    if (Wm100ProtocolHttp::checkUri(uri)) pr = new Wm100ProtocolHttp(this);
+    if (pr == nullptr) return -15;
+    int res =  pr->cSetDateTime(datetime, uri);
+    delete pr;
+    return res;
 }
 
 int Wm100::calibAccStart()
@@ -203,6 +225,7 @@ QString Wm100::errorDescription(const int err) const
     case -17: desc = "Устройство занято обработкой предыдущей команды"; break;
     case -16: desc = "Получен ответ на предыдущую команду"; break;
     case -15: desc = "Команда не реализуется в данной версии"; break;
+    case -13: desc = "Контрольная сумма не совпадает"; break;
     case -11: desc = "Интерфейс не поддерживается"; break;
     case -9:  desc = "Параметр вне диапазона"; break;
     case -8:  desc = "Неожиданный ответ"; break;

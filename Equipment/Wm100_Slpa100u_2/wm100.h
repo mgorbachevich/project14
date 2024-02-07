@@ -16,6 +16,7 @@ public:
     int connectDevice(const QString &uri);
     int disconnectDevice();
     int getStatus(Wm100Protocol::channel_status *status);
+    int getStatusEx(Wm100Protocol::channel_status_ex *status);
     int setMode(uint8_t mode);
     int getMode(uint8_t *mode);
     int setZero();
@@ -29,6 +30,10 @@ public:
     int calibAccStart();
     int getDeviceMetrics(Wm100Protocol::device_metrics *deviceMetrics);
     int getChannelParam(Wm100Protocol::channel_specs *channelParam);
+    int getADC(uint32_t *ADCValue);
+    int controllerId(Wm100Protocol::controller_id *id);
+
+    int setDateTime(const QDateTime &datetime, const QString &uri);
 
     void startPolling(int time);
     void stopPolling();
@@ -37,7 +42,6 @@ public:
 
 protected:
     int resetDevice();
-    int getADC(uint32_t *ADCValue);
 
 private:
     Wm100Protocol *protocol = nullptr;

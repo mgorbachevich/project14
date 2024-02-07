@@ -10,6 +10,7 @@ class Wm100Protocol : public QObject
     Q_OBJECT
 public:
     explicit Wm100Protocol(QObject *parent = nullptr);
+    ~Wm100Protocol();
 
 public:
     struct channel_status {
@@ -17,6 +18,16 @@ public:
         double_t weight;
         double_t tare;
         uint8_t  flags;
+    };
+
+    struct channel_status_ex {
+        uint16_t state;
+        double_t weight;
+        double_t tare;
+        uint8_t  flags;
+        double_t weightprecise;
+        uint8_t  levelx;
+        uint8_t  levely;
     };
 
     struct channel_specs {
@@ -29,13 +40,19 @@ public:
         double_t ranges[3];
         double_t discreteness[4];
         uint8_t  calibration_points_number;
-        uint8_t  reserved1;
+        uint8_t  calibrations_number;
     };
 
     struct calib_status {
         uint8_t channel_number;
         double_t reference_point;
         uint8_t  reference_point_state;
+    };
+
+    struct controller_id {
+        QByteArray id;
+        uint16_t crc16;
+        QString  firmware;
     };
 
     struct device_metrics {
@@ -46,6 +63,7 @@ public:
         uint8_t  lang;
         QString  name;
     };
+
     enum demo_state {
         dmNone = 0,
         dmZero = 1,
@@ -62,6 +80,7 @@ public:
         cmSetTare = 0x31,
         cmSetTareValue = 0x32,
         cmGetStatus = 0x3a,
+        cmGetStatusEx = 0x3b,
         cmCalibWritePoint = 0x70,
         cmCalibReadPoint = 0x71,
         cmCalibStart = 0x72,
@@ -71,6 +90,7 @@ public:
         cmCalibAccStart = 0x76,
         cmGetChannelParam = 0xe8,
         cmReset = 0xf0,
+        cmControllerID = 0xf4,
         cmGetDeviceMetrics = 0xfc,
     } ;
     enum t_mode{
@@ -83,6 +103,7 @@ public:
     virtual void close();
     virtual bool connected();
     virtual int cGetStatus(channel_status *status);
+    virtual int cGetStatusEx(channel_status_ex *status);
     virtual int cSetMode(uint8_t mode);
     virtual int cGetMode(uint8_t *mode);
     virtual int cSetZero();
@@ -94,12 +115,14 @@ public:
     virtual int cCalibStop();
     virtual int cCalibStatus(calib_status *status);
     virtual int cCalibAccStart();
+    virtual int cControllerId(controller_id *id);
     virtual int cGetDeviceMetrics();
     virtual int cGetChannelParam();
     virtual int cResetDevice();
     virtual int cGetADC(uint32_t *ADCValue);
-    void getDeviceMetrics(device_metrics *metrics);
-    void getChannelParam(channel_specs *params);
+    virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
+    virtual void getDeviceMetrics(device_metrics *metrics);
+    virtual void getChannelParam(channel_specs *params);
 
 protected:
     IoBase *io = nullptr;

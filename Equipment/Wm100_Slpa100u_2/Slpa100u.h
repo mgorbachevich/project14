@@ -22,7 +22,7 @@ public:
     int print(QImage &p);
     int printTest(int lines);
     int feed();
-    int getStatus(Slpa100uProtocol::prnanswer *status);
+    int getStatus(Slpa100uProtocol::prnanswer *status, const int isPE = 0);
     int reset();
     int setBrightness(int value);
     int setOffset(int value);

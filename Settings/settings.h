@@ -4,6 +4,10 @@
 #include <QVariantList>
 #include "constants.h"
 
+#ifdef Q_OS_ANDROID // --------------------------------------------------------
+#include "androidactivityresultreceiver.h"
+#endif // Q_OS_ANDROID --------------------------------------------------------
+
 class Settings
 {
 public:
@@ -26,11 +30,15 @@ public:
     //static int getBoudrate(const int);
     bool isGroupItem(const DBRecord&);
     void sort();
+    bool nativeSettings(const SettingCode);
 
     int currentGroupCode = 0;
 
 private:
     DBRecordList items;
+#ifdef Q_OS_ANDROID // --------------------------------------------------------
+    AndroidActivityResultReceiver resultReceiver;
+#endif // Q_OS_ANDROID --------------------------------------------------------
 };
 
 #endif // SETTINGS_H

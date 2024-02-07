@@ -1,7 +1,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <thread>
+//#include <thread>
 #include "Slpa100uProtocolHttp.h"
 
 Slpa100uProtocolHttp::Slpa100uProtocolHttp(QObject *parent)
@@ -27,47 +27,8 @@ int Slpa100uProtocolHttp::executeCommand(prncommand cmd, const QByteArray &out, 
 
     QByteArray answer;
     int res = 0;
-    if (cmd == Slpa100uProtocol::cmPrint) res = printBuffer();
-    else if (!res) res = sendCommand(cmd, out, answer, 16);
-    if (isWithAnswer && !res && answer.toStdString()=="ok")
-    {
-        res = readAnswer(cmd, out, in);
-        if (!res && in.size() == 16)
-        {
-            if (cmd != in[2]) res = -16;
-            else res = in[3];
-            in = in.mid(4,9);
-        }
-    }
-    return res;
-}
-
-int Slpa100uProtocolHttp::readAnswer(prncommand cmd, const QByteArray &out, QByteArray &in)
-{
-    int res = -1;
-
-    //qDebug() << "readAnswer cmd = " << cmd << " out = " << out.toHex(' ') << " in = " << in.toHex(' ');
-
-    QByteArray answer;
-    io->setOption(0, 0); // GET
-    io->setOption(1, 0, "/api/v0/spi/rxbuf");
-    io->setOption(2, 0);
-    io->setOption(2, 1, "format", "hextext");
-    bool b = io->writeRead(out, answer, 0, 3000);
-    if (b)
-    {
-        parseReply(answer, in);
-        res = 0;
-        //qDebug() << in.toHex(' ');
-    }
-    //qDebug() << "readAnswer answer = " << answer;
-    return res;
-}
-
-int Slpa100uProtocolHttp::sendCommand(prncommand cmd, const QByteArray &out, QByteArray &in, uint32_t toRead)
-{
-    int res = 0;
-    if (cmd == Slpa100uProtocol::cmBufferData && !res)
+    if (cmd == Slpa100uProtocol::cmPrint) res = printBuffer(in);
+    else if (cmd == Slpa100uProtocol::cmBufferData)
     {
         buffer += out;
         if (out.size() < 56) buffer += QByteArray(56-out.size(), 0x00);
@@ -77,34 +38,89 @@ int Slpa100uProtocolHttp::sendCommand(prncommand cmd, const QByteArray &out, QBy
         ds.setByteOrder(QDataStream::LittleEndian);
         ds >> linesToPrint;
     }
+    else if (cmd == Slpa100uProtocol::cmClearBuffer) buffer.clear();
     else
     {
-        io->setOption(0, 1);
-        io->setOption(1, 0, "/api/v0/spi/cmd16/send");
-        io->setOption(2, 0);
-        io->setOption(2, 1, "format", "hextext");
-        //io->setOption(2, 1, "delayus", "10000");
-        QByteArray cmd16data;
-        cmd16data += cmd;
-        cmd16data += out;
-        QString cmd16(cmd16data.toHex());
-        io->setOption(2, 1, "cmd16data", cmd16.toUpper());
-        io->setOption(2, 1, "rxlength", QString("%1").arg(toRead));
-        if (!io->writeRead(out, in, 0, 3000)) res = -1;
+        res = sendCommand(cmd, out, answer, (isWithAnswer)?16:0);
+        if (isWithAnswer && !res && answer.toStdString()=="ok")
+        {
+            res = readAnswer(cmd, out, in);
+            if (!res && in.size() == 16)
+            {
+                if (static_cast<prncommand>(in[2]) == 0) res = -17;
+                else if (cmd != static_cast<prncommand>(in[2])) res = -16;
+                else res = static_cast<uchar>(in[3]);
+                in = in.mid(4,9);
+                if (res == -16) qDebug() << "executeCommand() получили ответ от команды =" << static_cast<uchar>(in[2]) << " ожидали = " << static_cast<uchar>(cmd);
+            }
+            else if (in.size() == 0)  res = -7;
+            else if (in.size() != 16) res = -8;
+        }
+        else if (answer.toStdString() != "ok") res = -4;
     }
     return res;
 }
 
-int Slpa100uProtocolHttp::printBuffer()
+int Slpa100uProtocolHttp::readAnswer(prncommand cmd, const QByteArray &out, QByteArray &in)
+{
+    int res = -1;
+    QByteArray answer;
+    io->setOption(0, 0); // GET
+    io->setOption(1, 0, "/api/v0/spi/rxbuf");
+    io->setOption(2, 0);
+    io->setOption(2, 1, "format", "hextext");
+    int nn = 0; bool b;
+    do { b = io->writeRead(out, answer, 0, 3000); }
+    while (answer == "error: spi device busy" && ++nn < 10);
+    if (answer == "error: spi device busy" && nn == 10) b = -1;
+    if (b)
+    {
+        parseReply(answer, in);
+        res = 0;
+        if (in.size() > 5 && getCRC16(in.mid(2, in.size()-3))) res = -13;
+        qDebug() << ">> " << in.toHex(' ');
+        if (in.size() == 0) qDebug() << answer;
+    }
+    return res;
+}
+
+int Slpa100uProtocolHttp::sendCommand(prncommand cmd, const QByteArray &out, QByteArray &in, uint32_t toRead)
 {
     int res = 0;
-    uint16_t offset = 0, flags = 0;
+    io->setOption(0, 1);
+    io->setOption(1, 0, "/api/v0/spi/cmd16/send");
+    io->setOption(2, 0);
+    io->setOption(2, 1, "format", "hextext");
+    //io->setOption(2, 1, "delayus", "10000");
+    QByteArray cmd16data;
+    cmd16data += cmd;
+    cmd16data += out;
+    QString cmd16(cmd16data.toHex());
+    io->setOption(2, 1, "cmd16data", cmd16.toUpper());
+    io->setOption(2, 1, "rxlength", QString("%1").arg(toRead));
+    int nn = 0; bool b;
+    do { b = io->writeRead(out, in, 0, 3000); }
+    while (in != "ok" && ++nn < 30);
+    if (!b) res = -1;
+    if (nn == 30) res = -30;
+    qDebug() << ">> " << cmd16data.toHex(' ') << " -> " << in;
+    return res;
+}
+
+int Slpa100uProtocolHttp::printBuffer(QByteArray &in)
+{
+    int res = 0;
     if (buffer.size() / 56 != linesToPrint) return -14;
+    res = sendImage(buffer, in);
+
+
+    /*uint16_t offset = 0, flags = 0;
+    offset = buffer.size();
     while (!buffer.isEmpty() && !res)
     {
         int nRepeats = 5;
         QByteArray out;
-        if (!offset) flushBuffer(out, 0, 0);
+        //if (!offset) flushBuffer(out, 0, 0);
         out = buffer.first(qMin(4096, buffer.size()));
         buffer.remove(0, out.size());
         flags = (buffer.size()) ? 0 : 7;
@@ -112,7 +128,65 @@ int Slpa100uProtocolHttp::printBuffer()
         //if (!offset) do { res = flushBuffer(out, offset, flags); } while (res && --nRepeats);
         offset += out.size();
     }
-    if (res) buffer.clear();
+    if (res)
+        buffer.clear();*/
+    return res;
+}
+
+int Slpa100uProtocolHttp::sendImage(const QByteArray &out, QByteArray &in)
+{
+    int res = 0;
+    QByteArray answer;
+    io->setOption(0, 1);
+    io->setOption(1, 0, "/api/v0/spi/cmd16/sendimage");
+    io->setOption(2, 0);
+    io->setOption(2, 1, "format", "hextext");
+    QString imagedata(out.toHex());
+    io->setOption(2, 1, "imagedata", imagedata.toUpper());
+    io->setOption(2, 1, "doprint", "true");
+    bool b = io->writeRead(out, answer, 0, 3000);
+    if (!b) res = -1;
+    else
+    {
+        parseReply(answer, in);
+        res = 0;
+        if (in.size() > 5 && getCRC16(in.mid(2, in.size()-3))) res = -13;
+        qDebug() << ">> " << in.toHex(' ');
+        if (in.size() == 0) qDebug() << answer;
+    }
+    //int nn = 0; bool b;
+    // do { b = io->writeRead(out, answer, 0, 3000); }
+    // while (answer == "error: spi device busy" && ++nn < 10);
+    // if (!b) res = -1;
+    // qDebug() << "sendImage() writeRead() answer = " << answer << ", res = " << res << ", size = " << out.size();
+
+    // if (!res && answer.toStdString()=="ok")
+    // {
+    //     QByteArray send;
+    //     int nn = 0;
+    //     do { res = sendCommand(prncommand::cmLastSendDataRes, send, answer, 12); }
+    //     while (answer == "error: spi device busy" && ++nn < 500);
+    //     if (!res && answer.toStdString()=="ok")
+    //     {
+    //         //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    //         res = readAnswer(prncommand::cmLastSendDataRes, out, answer);
+    //         if (!res && answer.size() == 12)
+    //         {
+    //             res = 0;
+    //             /*uint16_t crc;
+    //             QDataStream ds(out);
+    //             ds.setByteOrder(QDataStream::LittleEndian);
+    //             ds.skipRawData(6);
+    //             ds >> crc;
+    //             if (getCRC16(out) == crc) res = 0;
+    //             else res = -13;*/
+    //             qDebug() << "sendImage() answer = " << answer.toHex(' ') << ", res = " << res << ", size = " << out.size();
+    //         }
+    //         qDebug() << "sendImage() answer = " << answer.toHex(' ') << ", res = " << res << ", size = " << out.size();
+    //     }
+    //     else qDebug() << "sendImage() answer = " << answer;
+    // }
+    // else qDebug() << "sendImage() answer = " << answer;
     return res;
 }
 
@@ -149,7 +223,6 @@ int Slpa100uProtocolHttp::flushBuffer(const QByteArray &out, uint16_t offset, ui
     QString txdata(out.toHex());
     io->setOption(2, 1, "txdata", txdata.toUpper());
     if (!io->writeRead(out, answer, 0, 3000)) res = -1;
-    //qDebug() << "flushBuffer() 1 res = " << res << ", answer = " << answer.toHex(' ');
     qDebug() << "flushBuffer() writeRead() answer = " << answer << ", res = " << res << ", size = " << out.size() << ", offset = " << offset << ", cmd16 = " << cmd16;
 
     if (!res && answer.toStdString()=="ok" && !lines)
@@ -168,17 +241,12 @@ int Slpa100uProtocolHttp::flushBuffer(const QByteArray &out, uint16_t offset, ui
             if (!res && answer.size() == 12)
             {
                 res = 0;
-                /*uint16_t crc;
-                QDataStream ds(out);
-                ds.setByteOrder(QDataStream::LittleEndian);
-                ds.skipRawData(6);
-                ds >> crc;
-                if (getCRC16(out) == crc) res = 0;
-                else res = -13;*/
-                qDebug() << "flushBuffer() answer = " << answer.toHex(' ') << ", res = " << res << ", size = " << out.size() << ", offset = " << offset;
             }
+            qDebug() << "flushBuffer() answer = " << answer.toHex(' ') << ", res = " << res << ", size = " << out.size() << ", offset = " << offset;
         }
+        else qDebug() << "flushBuffer() answer = " << answer;
     }
+    else qDebug() << "flushBuffer() answer = " << answer;
     return res;
 }
 

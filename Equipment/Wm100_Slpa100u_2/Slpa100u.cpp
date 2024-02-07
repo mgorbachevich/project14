@@ -73,9 +73,11 @@ QString Slpa100u::errorDescription(const int err) const
     case -16: desc = "Получен ответ на предыдущую команду"; break;
     case -15: desc = "Команда не реализуется в данной версии"; break;
     case -14: desc = "Изображение загружено не полностью"; break;
+    case -13: desc = "Контрольная сумма не совпадает"; break;
     case -11: desc = "Интерфейс не поддерживается"; break;
     case -9:  desc = "Параметр вне диапазона"; break;
     case -8:  desc = "Неожиданный ответ"; break;
+    case -7:  desc = "Пустой ответ"; break;
     case -5:  desc = "Ошибка чтения из порта"; break;
     case -4:  desc = "Ошибка записи в порт"; break;
     case -3:  desc = "Порт недоступен"; break;
@@ -147,10 +149,10 @@ int Slpa100u::feed()
     return protocol->cFeed(&status);
 }
 
-int Slpa100u::getStatus(Slpa100uProtocol::prnanswer *status)
+int Slpa100u::getStatus(Slpa100uProtocol::prnanswer *status, const int isPE)
 {
     if (!isConnected()) return -20;
-    return protocol->cGetStatus(status);
+    return protocol->cGetStatus(status, isPE);
 }
 
 int Slpa100u::reset()
@@ -208,17 +210,20 @@ void Slpa100u::timerEvent(QTimerEvent *event)
         killTimer(timerid);
         Slpa100uProtocol::prnanswer status;
         int res = getStatus(&status);
-        if (res != lastStatusError)
+        if (res != -17)
         {
-            lastStatusError = res;
-            emit printerErrorChanged(res);
+            if (res != lastStatusError)
+            {
+                lastStatusError = res;
+                emit printerErrorChanged(res);
+            }
+            if (!res && lastStatus != status.printerStatus)
+            {
+                lastStatus = status.printerStatus;
+                emit printerStatusChanged(lastStatus);
+            }
+            emit pollingStatus(res);
         }
-        if (!res && lastStatus != status.printerStatus)
-        {
-            lastStatus = status.printerStatus;
-            emit printerStatusChanged(lastStatus);
-        }
-        emit pollingStatus(res);
         startPolling(timerInterval);
     }
 }

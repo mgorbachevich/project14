@@ -20,6 +20,27 @@ int Wm100ProtocolHttp::open(const QString &uri)
     return 0;
 }
 
+int Wm100ProtocolHttp::cSetDateTime(const QDateTime &datetime, const QString &uri)
+{
+    int res = open(uri);
+    if (!res)
+    {
+        io->setOption(0, 1);
+        io->setOption(1, 0, "/api/v0/i2c/setsystemtime");
+        io->setOption(2, 0);
+        io->setOption(2, 1, "year", QString("%1").arg(datetime.date().year()));
+        io->setOption(2, 1, "month", QString("%1").arg(datetime.date().month()));
+        io->setOption(2, 1, "day", QString("%1").arg(datetime.date().day()));
+        io->setOption(2, 1, "hours", QString("%1").arg(datetime.time().hour()));
+        io->setOption(2, 1, "minutes", QString("%1").arg(datetime.time().minute()));
+        io->setOption(2, 1, "seconds", QString("%1").arg(datetime.time().second()));
+        QByteArray out, in;
+        if (!io->writeRead(out, in, 0, 3000)) res = -1;
+        close();
+    }
+    return res;
+}
+
 bool Wm100ProtocolHttp::checkUri(const QString &uri)
 {
     static QString RegexStr("^http:\\/\\/([\\w\\-\\/\\.]+)(\\:(\\d+))$");
@@ -65,13 +86,13 @@ int Wm100ProtocolHttp::executeCommand(wmcommand cmd, const QByteArray &out, QByt
             } while (res);
             //qDebug() << "readAnswer() res = " << res << ", cmd = " << cmd << ", in = " << in.toHex(' ');
             if (!res) res = readAnswer(in, len);
-            qDebug() << "<<" << in.toHex(' ');
+            //qDebug() << "<<" << in.toHex(' ');
             if (!res)
             {
                 if (in.size() <= 6) res = -8;
                 else if (!checkCRC(in)) res = -13;
                 else if (static_cast<char>(cmd) != in[3] || inf != (in[1] & 0x3f)) res = -16;
-                else res = in[4];
+                else res = static_cast<uchar>(in[4]);
                 in = in.mid(5, len-7);
             }
         }
@@ -129,7 +150,7 @@ int Wm100ProtocolHttp::sendCommand(wmcommand cmd, const QByteArray &out, QByteAr
     QString cmd16(cmd16data.toHex());
     io->setOption(2, 1, "data", cmd16.toUpper());
     if (!io->writeRead(out, in, 0, 3000)) res = -1;
-    qDebug() << ">>" << cmd16data.toHex(' ');
+    //qDebug() << ">>" << cmd16data.toHex(' ');
     return res;
 }
 

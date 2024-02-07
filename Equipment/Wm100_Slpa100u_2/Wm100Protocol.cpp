@@ -7,6 +7,11 @@ Wm100Protocol::Wm100Protocol(QObject *parent)
 
 }
 
+Wm100Protocol::~Wm100Protocol()
+{
+    close();
+}
+
 void Wm100Protocol::close()
 {
     lastStatus = {0, 0.0, 0.0, 0};
@@ -42,6 +47,24 @@ int Wm100Protocol::cGetStatus(channel_status *status)
         ds >> status->state >> weight >> tare >> status->flags;
         status->weight = weight * qPow(10, channelParams.measure);
         status->tare   = tare   * qPow(10, channelParams.measure);
+    }
+    return res;
+}
+
+int Wm100Protocol::cGetStatusEx(channel_status_ex *status)
+{
+    QByteArray out("0030"), in;
+    int res = executeCommand(cmGetStatusEx, out, in);
+    if (!res)
+    {
+        int32_t  weight, weight2;
+        uint16_t tare;
+        QDataStream ds(in);
+        ds.setByteOrder(QDataStream::LittleEndian);
+        ds >> status->state >> weight >> tare >> status->flags >> weight2 >> status->levelx >> status->levely;
+        status->weight = weight * qPow(10, channelParams.measure);
+        status->tare   = tare   * qPow(10, channelParams.measure);
+        status->weightprecise = weight2 * qPow(10, -4);
     }
     return res;
 }
@@ -137,7 +160,7 @@ int Wm100Protocol::cCalibStatus(calib_status *status)
         QDataStream ds(in);
         ds.setByteOrder(QDataStream::LittleEndian);
         ds >> status->channel_number >> w >> status->reference_point_state;
-        status->reference_point = w;
+        status->reference_point = w * qPow(10, channelParams.measure);
     }
     return res;
 }
@@ -148,6 +171,26 @@ int Wm100Protocol::cCalibAccStart()
     return executeCommand(cmCalibAccStart, out, in);
 }
 
+int Wm100Protocol::cControllerId(controller_id *id)
+{
+    QByteArray out, in;
+    int res = executeCommand(cmControllerID, out, in);
+    if (!res)
+    {
+        id->id = in.first(16);
+        in.remove(0,16);
+        QDataStream ds(in);
+        ds.setByteOrder(QDataStream::LittleEndian);
+        ds >> id->crc16;
+        in = in.mid(2, in.size()-4);
+        QString firmware(in);
+        auto n = firmware.indexOf('\0');
+        if (n >= 0) firmware.remove(n, firmware.size()-n);
+        id->firmware = firmware.trimmed();
+    }
+    return res;
+}
+
 int Wm100Protocol::cGetDeviceMetrics()
 {
     QByteArray out, in;
@@ -156,7 +199,7 @@ int Wm100Protocol::cGetDeviceMetrics()
     {
         QDataStream ds(in);
         ds.setByteOrder(QDataStream::LittleEndian);
-        ds >> deviceMetrics.type
+        ds  >> deviceMetrics.type
             >> deviceMetrics.subtype
             >> deviceMetrics.protocol_version
             >> deviceMetrics.model
@@ -180,14 +223,14 @@ int Wm100Protocol::cGetChannelParam()
         uint8_t  discreteness[4];
         QDataStream ds(in);
         ds.setByteOrder(QDataStream::LittleEndian);
-        ds >> channelParams.flags
+        ds  >> channelParams.flags
             >> channelParams.reserved0
             >> channelParams.measure
             >> max >> min >> tare
             >> ranges[0] >> ranges[1] >> ranges[2]
             >> discreteness[0] >> discreteness[1] >> discreteness[2] >> discreteness[3]
             >> channelParams.calibration_points_number
-            >> channelParams.reserved1;
+            >> channelParams.calibrations_number;
         channelParams.max = max * qPow(10, channelParams.measure);
         channelParams.min = min * qPow(10, channelParams.measure);
         channelParams.tare = tare * qPow(10, channelParams.measure);
@@ -220,14 +263,19 @@ int Wm100Protocol::cGetADC(uint32_t *ADCValue)
     return res;
 }
 
+int Wm100Protocol::cSetDateTime(const QDateTime &datetime, const QString &uri)
+{
+    return 0;
+}
+
 void Wm100Protocol::getDeviceMetrics(device_metrics *metrics)
 {
-    metrics = &deviceMetrics;
+   *metrics = deviceMetrics;
 }
 
 void Wm100Protocol::getChannelParam(channel_specs *params)
 {
-    params = &channelParams;
+    *params = channelParams;
 }
 
 
