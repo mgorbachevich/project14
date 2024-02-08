@@ -604,8 +604,9 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     switch (code)
     {
     case SettingCode_WiFi:
-        if(!settings.nativeSettings(SettingCode_WiFi))
-            emit showMessageBox(name, "Настройки WiFi не поддерживаются", true);
+    case SettingCode_Equipment:
+        if(!settings.nativeSettings(code))
+            emit showMessageBox(name, "Настройки не поддерживаются", true);
         break;
     default:
         emit showMessageBox(name, "СПЕЦ КОМАНДА", true);

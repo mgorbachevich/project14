@@ -164,38 +164,52 @@ int Settings::getBoudrate(const int code)
 }
 */
 
-bool Settings::nativeSettings(const SettingCode code)
+bool Settings::nativeSettings(const int code)
 {
     qDebug() << "@@@@@ Settings::nativeSettings " << code;
 
 #ifdef Q_OS_ANDROID // --------------------------------------------------------
-    //https://www.google.com/search?q=android+call+wifi+settings+programmatically&rlz=1C5CHFA_enRU1035RU1035&oq=android+call+wifi+settings+pro&gs_lcrp=EgZjaHJvbWUqBwgBECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIHCAQQIRigATIHCAUQIRigAdIBCTM5MDY2ajBqN6gCALACAA&sourceid=chrome&ie=UTF-8
-    //https://stackoverflow.com/questions/2318310/how-to-call-wi-fi-settings-screen-from-my-application-using-android
-    //https://stackoverflow.com/questions/71216717/requesting-android-permissions-in-qt-6
-    //https://developer.android.com/reference/android/provider/Settings
-    //https://doc.qt.io/qt-6/qandroidactivityresultreceiver.html
-    //https://doc.qt.io/qt-6/qtandroidprivate.html#startActivity
-
-    QString field;
     switch (code)
     {
     case SettingCode_WiFi:
-        field = "ACTION_WIFI_SETTINGS";
+    {
+        //https://www.google.com/search?q=android+call+wifi+settings+programmatically&rlz=1C5CHFA_enRU1035RU1035&oq=android+call+wifi+settings+pro&gs_lcrp=EgZjaHJvbWUqBwgBECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIHCAQQIRigATIHCAUQIRigAdIBCTM5MDY2ajBqN6gCALACAA&sourceid=chrome&ie=UTF-8
+        //https://stackoverflow.com/questions/2318310/how-to-call-wi-fi-settings-screen-from-my-application-using-android
+        //https://stackoverflow.com/questions/71216717/requesting-android-permissions-in-qt-6
+        //https://developer.android.com/reference/android/provider/Settings
+        //https://doc.qt.io/qt-6/qandroidactivityresultreceiver.html
+        //https://doc.qt.io/qt-6/qtandroidprivate.html#startActivity
+        QString field = "ACTION_WIFI_SETTINGS";
+        const QJniObject action = QJniObject::getStaticObjectField("android/provider/Settings", field.toUtf8(), "Ljava/lang/String;");
+        if (action.isValid())
+        {
+            const QAndroidIntent intent(action.toString());
+            QtAndroidPrivate::startActivity(intent.handle(), code, &resultReceiver);
+            return true;
+        }
         break;
+    }
+
+    case SettingCode_Equipment:
+    {
+        //https://stackoverflow.com/questions/3872063/how-to-launch-an-activity-from-another-application-in-android
+        //https://developer.android.com/training/package-visibility
+        QJniObject::callStaticMethod<jint>(
+                    "ru.shtrih_m.project14/AndroidNative",
+                    "nativeMethod",
+                    "(Landroid/content/Context;I)I",
+                    QNativeInterface::QAndroidApplication::context(), 0);
+        return true;
+    }
+
     case SettingCode_Ethernet:
     default:
         qDebug("@@@@@ Settings::nativeSettings: Unknown code");
         return false;
-    }
-    const QJniObject action = QJniObject::getStaticObjectField("android/provider/Settings", field.toUtf8(), "Ljava/lang/String;");
-    if (action.isValid())
-    {
-        const QAndroidIntent intent(action.toString());
-        QtAndroidPrivate::startActivity(intent.handle(), code, &resultReceiver);
-        return true;
     }
 #endif // Q_OS_ANDROID --------------------------------------------------------
 
     qDebug("@@@@@ Settings::nativeSettings: Unknown OS");
     return false;
 }
+

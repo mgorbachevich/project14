@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-//#define RELEASE
+#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false
@@ -253,6 +253,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_PrinterCalibration = 1042, // todo
     SettingCode_WMInfo = 1043, // todo
     SettingCode_PrinterInfo = 1044, // todo
+    SettingCode_Equipment = 1045,
     /*
     SettingCode_Power = 17,
     SettingCode_Cursor = 10,

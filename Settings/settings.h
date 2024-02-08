@@ -30,7 +30,7 @@ public:
     //static int getBoudrate(const int);
     bool isGroupItem(const DBRecord&);
     void sort();
-    bool nativeSettings(const SettingCode);
+    bool nativeSettings(const int);
 
     int currentGroupCode = 0;
 
