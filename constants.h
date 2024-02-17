@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define RELEASE
+//#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false
@@ -24,14 +24,12 @@
 #endif
 
 #define CHECK_AUTHORIZATION true
-#define WM_HTTP true
-#define PRINTER_HTTP true
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
+#define WAIT_SOUND_MSEC 3000
 #define EOL "\r\n"
-
 #define DB_LOG_NAME "Log.db"
 #define DB_TEMP_NAME "Temp.db"
 #define DOWNLOAD_SUBDIR "Downloads"
@@ -41,6 +39,10 @@
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
+#define EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
+#define DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
+#define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
+#define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -254,6 +256,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_WMInfo = 1043, // todo
     SettingCode_PrinterInfo = 1044, // todo
     SettingCode_Equipment = 1045,
+    SettingCode_SystemSettings = 1046,
     /*
     SettingCode_Power = 17,
     SettingCode_Cursor = 10,

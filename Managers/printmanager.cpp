@@ -23,7 +23,7 @@ PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& global
 
 int PrintManager::start(const QString& url)
 {
-    qDebug() << "@@@@@ PrintManager::start ";
+    qDebug() << "@@@@@ PrintManager::start url = " << url;
     int e = 0;
     if (slpa != nullptr && labelCreator != nullptr && !started)
     {

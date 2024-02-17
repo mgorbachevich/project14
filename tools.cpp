@@ -7,8 +7,23 @@
 #include <QThread>
 #include <QMediaPlayer>
 #include <QAudioOutput>
-
 #include "tools.h"
+
+quint64 soundTime = 0;
+QMediaPlayer mediaPlayer;
+QAudioOutput audioOutput;
+
+void Tools::sound(const QString& fileName, const int volume)
+{
+    if(!mediaPlayer.isAvailable()) return;
+    const quint64 now = Tools::currentDateTimeToUInt();
+    if(now - soundTime < WAIT_SOUND_MSEC) return;
+    soundTime = now;
+    audioOutput.setVolume(1.0f * volume / 100.0f); // 0 .. 1.0f
+    mediaPlayer.setAudioOutput(&audioOutput);
+    mediaPlayer.setSource(QUrl(fileName)); // qrc:/...
+    mediaPlayer.play();
+}
 
 QString Tools::readTextFile(const QString &fileName)
 {
@@ -213,22 +228,6 @@ QString Tools::rootDir()
 #else
     return app->applicationDirPath(); // Returns the directory that contains the application executable.
 #endif // Q_OS_ANDROID --------------------------------------------------------
-}
-
-void Tools::sound(const QString& fileName, const int volume)
-{
-    auto mp = new QMediaPlayer;
-    auto ao = new QAudioOutput;
-    ao->setVolume(1.0f * volume / 100.0f); // 0 .. 1.0f
-    mp->setAudioOutput(ao);
-    mp->setSource(QUrl(fileName)); // qrc:/...
-    mp->play();
-    /*
-    soundEffect.setSource(QUrl(fileName));
-    soundEffect.setLoopCount(1);
-    soundEffect.setVolume(volume); // 0..1
-    soundEffect.play();
-    */
 }
 
 void Tools::sortByInt(DBRecordList& records, const int field)

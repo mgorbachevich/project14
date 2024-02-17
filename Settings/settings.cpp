@@ -1,6 +1,7 @@
 #include "settings.h"
 #include "tools.h"
 #include "settingdbtable.h"
+#include <QtCore/private/qandroidextras_p.h>
 
 QString Settings::getItemStringValue(const DBRecord& r)
 {
@@ -172,33 +173,17 @@ bool Settings::nativeSettings(const int code)
     switch (code)
     {
     case SettingCode_WiFi:
-    {
-        //https://www.google.com/search?q=android+call+wifi+settings+programmatically&rlz=1C5CHFA_enRU1035RU1035&oq=android+call+wifi+settings+pro&gs_lcrp=EgZjaHJvbWUqBwgBECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIHCAQQIRigATIHCAUQIRigAdIBCTM5MDY2ajBqN6gCALACAA&sourceid=chrome&ie=UTF-8
-        //https://stackoverflow.com/questions/2318310/how-to-call-wi-fi-settings-screen-from-my-application-using-android
-        //https://stackoverflow.com/questions/71216717/requesting-android-permissions-in-qt-6
-        //https://developer.android.com/reference/android/provider/Settings
-        //https://doc.qt.io/qt-6/qandroidactivityresultreceiver.html
-        //https://doc.qt.io/qt-6/qtandroidprivate.html#startActivity
-        QString field = "ACTION_WIFI_SETTINGS";
-        const QJniObject action = QJniObject::getStaticObjectField("android/provider/Settings", field.toUtf8(), "Ljava/lang/String;");
-        if (action.isValid())
-        {
-            const QAndroidIntent intent(action.toString());
-            QtAndroidPrivate::startActivity(intent.handle(), code, &resultReceiver);
-            return true;
-        }
-        break;
-    }
-
+    case SettingCode_SystemSettings:
     case SettingCode_Equipment:
     {
         //https://stackoverflow.com/questions/3872063/how-to-launch-an-activity-from-another-application-in-android
         //https://developer.android.com/training/package-visibility
-        QJniObject::callStaticMethod<jint>(
+        jint result = QJniObject::callStaticMethod<jint>(
                     "ru.shtrih_m.project14/AndroidNative",
                     "nativeMethod",
                     "(Landroid/content/Context;I)I",
-                    QNativeInterface::QAndroidApplication::context(), 0);
+                    QNativeInterface::QAndroidApplication::context(), code);
+        qDebug() << "@@@@@ Settings::nativeSettings SettingCode_Equipment result " << result;
         return true;
     }
 
@@ -209,7 +194,22 @@ bool Settings::nativeSettings(const int code)
     }
 #endif // Q_OS_ANDROID --------------------------------------------------------
 
-    qDebug("@@@@@ Settings::nativeSettings: Unknown OS");
+    qDebug("@@@@@ Settings::nativeSettings: Unknown param");
     return false;
 }
+
+QList<QString> Settings::parseEquipmentConfig(const QString& fileName)
+{
+    qDebug() << "@@@@@ Settings::parseEquipmentConfig fileName = "<< fileName;
+    QList<QString> result;
+    if(QFileInfo::exists(fileName))
+    {
+        const QJsonObject jo = Tools::stringToJson(Tools::readTextFile(fileName));
+        result.append(jo["WmUri"].toString());
+        result.append(jo["PrinterUri"].toString());
+    }
+    qDebug() << "@@@@@ Settings::parseEquipmentConfig uris = "<< result;
+    return result;
+}
+
 

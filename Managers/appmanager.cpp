@@ -605,13 +605,11 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     {
     case SettingCode_WiFi:
     case SettingCode_Equipment:
-        if(!settings.nativeSettings(code))
-            emit showMessageBox(name, "Настройки не поддерживаются", true);
-        break;
-    default:
-        emit showMessageBox(name, "СПЕЦ КОМАНДА", true);
+    case SettingCode_SystemSettings:
+        if(settings.nativeSettings(code)) return;
         break;
     }
+    emit showMessageBox(name, "Не поддерживается", true);
 }
 
 void AppManager::onSettingsPanelCloseClicked()
@@ -764,65 +762,41 @@ void AppManager::resetProduct()
     updateStatus();
 }
 
-void AppManager::startEquipment(const bool server, const bool weight, const bool printer)
+void AppManager::startEquipment()
 {
-    qDebug() << "@@@@@ AppManager::startEquipment";
-    if(server) netServer->start(settings.getItemIntValue(SettingCode_TCPPort));
+    const int serverPort = settings.getItemIntValue(SettingCode_TCPPort);
+    qDebug() << "@@@@@ AppManager::startEquipment serverPort = " << serverPort;
+    netServer->start(serverPort);
 
-    QString demoMessage = "", url1, url2;
-    int e1 = 0, e2 = 0;
-
-    if(weight)
+    QList<QString> uris = settings.parseEquipmentConfig(EQUIPMENT_CONFIG_FILE);
+    if(uris.size() < 2) uris = settings.parseEquipmentConfig(DEFAULT_EQUIPMENT_CONFIG_FILE);
+    if(uris.size() < 2)
     {
-        if(WM_DEMO)
-        {
-            url1 = "demo://COM3?baudrate=115200&timeout=100";
-            demoMessage += "\nДемо-режим весового модуля";
-        }
-        else if(WM_HTTP)
-        {
-            url1 = "http://127.0.0.1:51233";
-        }
-        else
-        {
-            /*
-            QString address = settings.getItemStringValue(SettingCode_WMAddress);
-            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(SettingCode_WMBaudrate)));
-            QString timeout = QString::number(settings.getItemIntValue(SettingCode_WMTimeout));
-            url1 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
-            */
-        }
-        e1 = weightManager->start(url1);
+        uris.clear();
+        uris.append("");
+        uris.append("");
     }
-
-    if(printer)
+    QString message = "";
+    if(WM_DEMO || uris[0].isEmpty())
     {
-        if(PRINTER_DEMO)
-        {
-            url2 = "demo://COM3?baudrate=115200&timeout=100";
-            demoMessage += "\nДемо-режим принтера";
-        }
-        else if(PRINTER_HTTP)
-        {
-            url2 = "http://127.0.0.1:51232";
-        }
-        else
-        {
-            /*
-            QString address = settings.getItemStringValue(SettingCode_PrinterAddress);
-            QString boudrate =  QString::number(Settings::getBoudrate(settings.getItemIntValue(SettingCode_PrinterBaudrate)));
-            QString timeout = QString::number(settings.getItemIntValue(SettingCode_PrinterTimeout));
-            url2 = QString("serial://%1?baudrate=%2&timeout=%3").arg(address, boudrate, timeout);
-            */
-        }
-        e2 = printManager->start(url2);
+        uris[0] = WEIGHT_DEMO_URI;
+        message += "\nДемо-режим весового модуля";
     }
+    if(PRINTER_DEMO || uris[1].isEmpty())
+    {
+        uris[1] = PRINTER_DEMO_URI;
+        message += "\nДемо-режим принтера";
+    }
+    qDebug() << "@@@@@ AppManager::startEquipment uris = " << uris;
+
+    int e1 = weightManager->start(uris[0]);
+    int e2 = printManager->start(uris[1]);
 
     if(e1 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
                                     arg(QString::number(e1), weightManager->getErrorDescription(e1)), true);
     if(e2 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
                                     arg(QString::number(e2), printManager->getErrorDescription(e2)), true);
-    if(!demoMessage.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", demoMessage, true);
+    if(!message.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", message, true);
 }
 
 void AppManager::stopEquipment()

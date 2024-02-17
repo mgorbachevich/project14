@@ -117,7 +117,6 @@ HEADERS += \
     Net/netparams.h \
     Net/netserver.h \
     Net/requestparser.h \
-    Settings/androidactivityresultreceiver.h \
     Settings/settings.h \
 
 SOURCES += \
@@ -213,7 +212,6 @@ SOURCES += \
     Models/tablepanelmodel.cpp \
     Managers/printmanager.cpp \
     Managers/weightmanager.cpp \
-    Settings/androidactivityresultreceiver.cpp \
     Settings/settings.cpp \
 
 RESOURCES += \
@@ -324,6 +322,7 @@ RESOURCES += \
     Sound/KeypressStandard.mp3 \
     Sound/KeypressInvalid.mp3 \
     Text/json_default_settings.txt \
+    Text/json_default_equipment_config.txt \
     Text/json_settings.txt \
     Text/json_products.txt \
     Text/json_users.txt \

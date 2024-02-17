@@ -10,8 +10,6 @@
 class Tools
 {
 public:
-    explicit Tools(QApplication* a) { app = a; }
-
     static QString boolToString(const bool value) { return QVariant(value).toString(); }
     static QString moneyToText(const double& value, const int pointPosition) { return QString("%1").arg(value, 0, 'f', pointPosition); }
     static double priceToDouble(const QString&, const int);
@@ -43,8 +41,6 @@ public:
 private:
     static QString makeFullPath(const QString&, const QString&);
     static QString rootDir();
-
-    static QApplication* app;
 };
 
 #endif // TOOLS_H
