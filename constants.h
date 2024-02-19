@@ -1,12 +1,12 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-//#define RELEASE
+#define APP_VERSION "1.84"
+#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false
 #define PRINTER_DEMO false
-//#define DOWNLOAD_PAUSE_MSEC 0
 #define WAIT_NET_ACTION_MSEC 30000
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false
@@ -15,7 +15,6 @@
 #else
 #define WM_DEMO true
 #define PRINTER_DEMO true
-//#define DOWNLOAD_PAUSE_MSEC 0
 #define WAIT_NET_ACTION_MSEC 10000
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false

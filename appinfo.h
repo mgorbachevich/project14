@@ -2,8 +2,7 @@
 #define APPINFO_H
 
 #include <QString>
-
-#define APP_VERSION "1.83"
+#include "constants.h"
 
 class AppInfo
 {

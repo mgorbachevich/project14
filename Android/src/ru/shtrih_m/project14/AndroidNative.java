@@ -16,6 +16,7 @@ public class AndroidNative
                 {
                     Intent intent = new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS);
                     if (intent == null) return -1;
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
                     return 0;
                 }
@@ -23,6 +24,7 @@ public class AndroidNative
                 {
                     Intent intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
                     if (intent == null) return -1;
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
                     return 0;
                 }
@@ -31,6 +33,7 @@ public class AndroidNative
                     PackageManager pm = context.getPackageManager();
                     Intent intent = pm.getLaunchIntentForPackage("ru.shtrih_m.SettingsMng");
                     if (intent == null) return -1;
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.addCategory(Intent.CATEGORY_LAUNCHER);
                     context.startActivity(intent);
                     return 0;
