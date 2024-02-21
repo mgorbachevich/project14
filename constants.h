@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.84"
+#define APP_VERSION "1.85"
 #define RELEASE
 
 #ifdef RELEASE
@@ -239,7 +239,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_PrintLabelRotation = 1027, // todo
     SettingCode_PrintLabelBarcodeWeight = 1028, // todo
     SettingCode_PrintLabelBarcodePiece = 1029, // todo
-    SettingCode_Ethernet = 1030, // todo
+    SettingCode_Ethernet = 1030,
     SettingCode_WiFi = 1031,
     SettingCode_ClearLog = 1032, // todo
     SettingCode_ClearReports = 1033, // todo

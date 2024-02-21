@@ -606,7 +606,17 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     case SettingCode_WiFi:
     case SettingCode_Equipment:
     case SettingCode_SystemSettings:
-        if(settings.nativeSettings(code)) return;
+    case SettingCode_Ethernet:
+        switch(settings.nativeSettings(code))
+        {
+        case 0: return;
+        case -1:
+            emit showMessageBox(name, "ОШИБКА! Неизвестный параметр", true);
+            return;
+        case -2:
+            emit showMessageBox(name, "ОШИБКА! Неверный вызов", true);
+            return;
+        }
         break;
     }
     emit showMessageBox(name, "Не поддерживается", true);

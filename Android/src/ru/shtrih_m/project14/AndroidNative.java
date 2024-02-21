@@ -12,6 +12,14 @@ public class AndroidNative
         {
             switch(param)
             {
+                case 1030: // SettingCode_Ethernet
+                {
+                    Intent intent = new Intent("android.settings.ETHERNET_SETTINGS");
+                    if (intent == null) return -1;
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
+                    return 0;
+                }
                 case 1031: // SettingCode_WiFi
                 {
                     Intent intent = new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS);
@@ -44,6 +52,6 @@ public class AndroidNative
         {
             return -2;
         }
-        return 1;
+        return -1;
     }
 }

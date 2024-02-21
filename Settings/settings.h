@@ -26,7 +26,7 @@ public:
     //static int getBoudrate(const int);
     bool isGroupItem(const DBRecord&);
     void sort();
-    bool nativeSettings(const int);
+    int nativeSettings(const int);
     QList<QString> parseEquipmentConfig(const QString&);
 
     int currentGroupCode = 0;

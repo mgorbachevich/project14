@@ -165,7 +165,7 @@ int Settings::getBoudrate(const int code)
 }
 */
 
-bool Settings::nativeSettings(const int code)
+int Settings::nativeSettings(const int code) // return error
 {
     qDebug() << "@@@@@ Settings::nativeSettings " << code;
 
@@ -175,6 +175,7 @@ bool Settings::nativeSettings(const int code)
     case SettingCode_WiFi:
     case SettingCode_SystemSettings:
     case SettingCode_Equipment:
+    case SettingCode_Ethernet:
     {
         //https://stackoverflow.com/questions/3872063/how-to-launch-an-activity-from-another-application-in-android
         //https://developer.android.com/training/package-visibility
@@ -184,10 +185,8 @@ bool Settings::nativeSettings(const int code)
                     "(Landroid/content/Context;I)I",
                     QNativeInterface::QAndroidApplication::context(), code);
         qDebug() << "@@@@@ Settings::nativeSettings SettingCode_Equipment result " << result;
-        return true;
+        return result;
     }
-
-    case SettingCode_Ethernet:
     default:
         qDebug("@@@@@ Settings::nativeSettings: Unknown code");
         return false;

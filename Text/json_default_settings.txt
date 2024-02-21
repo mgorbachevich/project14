@@ -316,7 +316,7 @@
                 "name":"Ethernet (Lan)",
                 "value":"?",
                 "group_code":"8700",
-                "type":"1"
+                "type":"2"
             },
             {
                 "code":"1031",
