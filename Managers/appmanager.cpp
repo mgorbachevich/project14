@@ -28,8 +28,8 @@
 #include "keyemitter.h"
 #include "settingdbtable.h"
 
-AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QObject *parent):
-    QObject(parent), context(qmlContext)
+AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
+    QObject(application), context(qmlContext)
 {
     qDebug() << "@@@@@ AppManager::AppManager";
 
@@ -330,6 +330,12 @@ void AppManager::onMainPageChanged(const int index)
     emit showMainPage(mainPageIndex);
 }
 
+void AppManager::onNumberClicked(const QString &s)
+{
+    qDebug() << "@@@@@ AppManager::onNumberClicked " << s;
+    emit showProductCodeInputBox(s);
+}
+
 void AppManager::onPiecesInputClosed(const QString &value)
 {
     qDebug() << "@@@@@ AppManager::onPiecesInputClosed " << value;
@@ -342,6 +348,12 @@ void AppManager::onPiecesInputClosed(const QString &value)
     }
     printStatus.pieces = v;
     updateStatus();
+}
+
+void AppManager::onProductCodeInput(const QString &value)
+{
+    qDebug() << "@@@@@ AppManager::onProductCodeInput " << value;
+    db->select(DataBase::GetProductByInputCode, value);
 }
 
 void AppManager::onPopupClosed()
@@ -414,6 +426,16 @@ void AppManager::onDBRequestResult(const DataBase::Selector selector, const DBRe
 
     case DataBase::GetProductsByGroupCodeIncludeGroups: // Отображение товаров выбранной группы:
         tablePanelModel->update(records);
+        break;
+
+    case DataBase::GetProductByInputCode: // Отображение товара с заданным кодом:
+        if(records.isEmpty())
+            onShowMessage("", "Товар не найден!");
+        else
+        {
+            emit closeInputProductPanel();
+            setProduct(records.at(0));
+        }
         break;
 
     case DataBase::GetProductsByFilteredCode: // Отображение товаров с заданным фрагментом кода:
@@ -556,9 +578,10 @@ void AppManager::onSettingsItemClicked(const int index)
 
     const int code = settings.getItemCode(*r);
     const QString& name = settings.getItemName(*r);
-    qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << code << name;
+    const int type = settings.getItemType(*r);
+    qDebug() << "@@@@@ AppManager::onSettingsItemClicked " << code << name << type;
 
-    switch (settings.getItemType(*r))
+    switch (type)
     {
     case SettingType_Group:
         settings.currentGroupCode = code;

@@ -37,7 +37,7 @@ public:
         Dialog_Authorization,
     };
 
-    explicit AppManager(QQmlContext*, const QSize&, QObject*);
+    explicit AppManager(QQmlContext*, const QSize&, QApplication*);
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clickSound();
@@ -47,7 +47,9 @@ public:
     Q_INVOKABLE void onInfoClicked();
     Q_INVOKABLE void onLockClicked();
     Q_INVOKABLE void onMainPageChanged(const int);
+    Q_INVOKABLE void onNumberClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
+    Q_INVOKABLE void onProductCodeInput(const QString&);
     Q_INVOKABLE void onPopupClosed();
     Q_INVOKABLE void onPopupOpened();
     Q_INVOKABLE void onPrintClicked();
@@ -136,6 +138,7 @@ private:
 signals:
     void authorizationSucceded();
     void closeSettings();
+    void closeInputProductPanel();
     void enableManualPrint(const bool);
     void hideToast();
     void resetCurrentProduct();
@@ -147,6 +150,7 @@ signals:
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);
     void showPiecesInputBox(const int);
+    void showProductCodeInputBox(const QString&);
     void showPrinterMessage(const QString&);
     void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);

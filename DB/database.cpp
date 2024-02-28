@@ -445,7 +445,9 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         break;
     }
 
+    case Selector::GetProductByInputCode:
     case Selector::RefreshCurrentProduct:
+    // Запрос товара по коду
     {
         DBRecord r;
         if(selectById(productDB, DBTABLENAME_PRODUCTS, param, r)) resultRecords.append(r);

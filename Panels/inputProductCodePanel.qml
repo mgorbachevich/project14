@@ -7,7 +7,7 @@ import RegisteredTypes
 
 Popup
 {
-    id: inputPiecesPanel
+    id: inputProductCodePanel
     padding: 0
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
@@ -18,6 +18,15 @@ Popup
     property string inputText: "Input"
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
+
+    Connections // Slot for signal AppManager::closeInputProductPanel
+    {
+        target: app
+        function onCloseInputProductPanel()
+        {
+            inputProductCodePanel.close()
+        }
+    }
 
     Rectangle
     {
@@ -50,7 +59,7 @@ Popup
                 Layout.alignment: Qt.AlignCenter
                 color: "transparent"
 
-                CardTitleText { text: "Количество товара" }
+                CardTitleText { text: "Код товара" }
             }
 
             RoundIconButton
@@ -59,11 +68,7 @@ Popup
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close"
-                onClicked:
-                {
-                    app.onPiecesInputClosed(inputPiecesPanelText.text)
-                    inputPiecesPanel.close()
-                }
+                onClicked: inputProductCodePanel.close()
             }
 
             Rectangle
@@ -76,10 +81,10 @@ Popup
 
                 TextField
                 {
-                    id: inputPiecesPanelText
+                    id: inputProductCodePanelText
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: screenManager.editWidth() / 4
+                    width: screenManager.editWidth()
                     font { pointSize: screenManager.normalFontSize() }
                     Material.accent: Material.Orange
                     color: Material.color(Material.BlueGrey, Material.Shade900)
@@ -87,16 +92,12 @@ Popup
                     text: inputText
                     onTextChanged:
                     {
-                        console.debug("@@@@@ inputPiecesPanelText onTextChanged ", text)
-                        if (parseInt(text) <= 0 || text === "")
-                        {
-                            text = 1;
-                            app.beepSound();
-                        }
+                        console.debug("@@@@@ inputProductCodePanelText onTextChanged ", text)
+                        if (parseInt(text) <= 0) text = "";
                     }
                     Keys.onPressed: (event) =>
                     {
-                        console.debug("@@@@@ inputPiecesPanelText Keys.onPressed ", JSON.stringify(event))
+                        console.debug("@@@@@ inputProductCodePanelText Keys.onPressed ", JSON.stringify(event))
                         event.accepted = true;
                         app.clickSound();
                         app.onUserAction();
@@ -110,11 +111,10 @@ Popup
                                 if(text.length > 0) text = text.substring(0, text.length - 1);
                                 break;
                             case Qt.Key_Escape:
-                                text = 1
+                                inputProductCodePanel.close();
                                 break;
                             case Qt.Key_Enter: case Qt.Key_Return:
-                                app.onPiecesInputClosed(text);
-                                inputPiecesPanel.close();
+                                app.onProductCodeInput(text);
                                 break;
                              default:
                                 app.beepSound();
@@ -124,41 +124,14 @@ Popup
                 }
             }
 
-            Row
+            RoundTextButton
             {
                 Layout.column: 1
                 Layout.row: 2
-                Layout.preferredWidth: screenManager.buttonSize() * 2 + spacing
-                Layout.preferredHeight: screenManager.buttonSize()
                 Layout.bottomMargin: screenManager.spacer()
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                spacing: screenManager.spacer() * 4
-
-                RoundTextButton
-                {
-                    width: screenManager.buttonSize()
-                    font { pointSize: screenManager.largeFontSize() }
-                    text: qsTr("-")
-                    onClicked:
-                    {
-                        app.onUserAction();
-                        inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) - 1
-                        inputPiecesPanelText.focus = true
-                    }
-                }
-
-                RoundTextButton
-                {
-                    width: screenManager.buttonSize()
-                    font { pointSize: screenManager.largeFontSize() }
-                    text: qsTr("+")
-                    onClicked:
-                    {
-                        app.onUserAction();
-                        inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) + 1
-                        inputPiecesPanelText.focus = true
-                    }
-                }
+                text: qsTr("ПРОДОЛЖИТЬ")
+                onClicked: app.onProductCodeInput(inputProductCodePanelText.text)
             }
         }
     }

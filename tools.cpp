@@ -7,6 +7,7 @@
 #include <QThread>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QApplication>
 #include "tools.h"
 
 quint64 soundTime = 0;

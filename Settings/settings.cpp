@@ -1,7 +1,9 @@
 #include "settings.h"
 #include "tools.h"
 #include "settingdbtable.h"
+#ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
+#endif
 
 QString Settings::getItemStringValue(const DBRecord& r)
 {
@@ -148,22 +150,6 @@ bool Settings::onManualInputItemValue(const int itemCode, const QString& value)
     }
     return false;
 }
-/*
-int Settings::getBoudrate(const int code)
-{
-    switch (code)
-    {
-    case WMBaudrate_2400:   return 2400;
-    case WMBaudrate_4800:   return 4800;
-    case WMBaudrate_9600:   return 9600;
-    case WMBaudrate_19200:  return 19200;
-    case WMBaudrate_38400:  return 38400;
-    case WMBaudrate_57600:  return 57600;
-    case WMBaudrate_115200: return 115200;
-    }
-    return 9600;
-}
-*/
 
 int Settings::nativeSettings(const int code) // return error
 {
@@ -189,12 +175,12 @@ int Settings::nativeSettings(const int code) // return error
     }
     default:
         qDebug("@@@@@ Settings::nativeSettings: Unknown code");
-        return false;
+        return -1;
     }
 #endif // Q_OS_ANDROID --------------------------------------------------------
 
     qDebug("@@@@@ Settings::nativeSettings: Unknown param");
-    return false;
+    return -1;
 }
 
 QList<QString> Settings::parseEquipmentConfig(const QString& fileName)

@@ -25,6 +25,8 @@ public:
     Q_INVOKABLE int spacer() const { return (int)(DEFAULT_SPACER * screenScale); }
     Q_INVOKABLE int flagSize() const { return (int)(DEFAULT_FLAG_SIZE * screenScale); }
 
+    Q_INVOKABLE int showcaseRowImages() const { return SHOWCASE_ROW_IMAGES; }
+
 private:
     QSize screenSize;
     double screenScale = 0;

@@ -302,6 +302,7 @@ RESOURCES += \
     Panels/confirmationPanel.qml \
     Panels/EmptyButton.qml \
     Panels/inputPiecesPanel.qml \
+    Panels/inputProductCodePanel.qml \
     Panels/inputSettingPanel.qml \
     Panels/KeyboardIconButton.qml \
     Panels/messagePanel.qml \

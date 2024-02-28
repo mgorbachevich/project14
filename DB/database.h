@@ -47,6 +47,7 @@ public:
         RefreshCurrentProduct,
         ReplaceSettingsItem,
         ChangeSettings,
+        GetProductByInputCode,
     };
 
     explicit DataBase(Settings&, QObject*);
@@ -78,10 +79,10 @@ protected:
     bool copyDBFiles(const QString&, const QString&);
     void removeTempDb();
 
-    bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
     bool removeAll(const QSqlDatabase&, DBTable*);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
     void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
+    bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
     bool selectById(const QSqlDatabase&, DBTable*, const QString&, DBRecord&);
     bool executeSQL(const QSqlDatabase&, const QString&);
     bool executeSelectSQL(const QSqlDatabase&, DBTable*, const QString&, DBRecordList&);

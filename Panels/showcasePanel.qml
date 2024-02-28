@@ -9,8 +9,8 @@ Rectangle
 {
     id:  showcasePanel
     color: Material.background
-    property int imageSpacer: screenManager.spacer() / 2
-    property int imageSize: (width - screenManager.scrollBarWidth() - imageSpacer * 2) / 5 - imageSpacer
+    property int spacer: screenManager.spacer() / 2
+    property int imageSize: (width - screenManager.scrollBarWidth() - spacer * 2) / screenManager.showcaseRowImages() - spacer
 
     focus: true
     Keys.onPressed: (event) =>
@@ -21,6 +21,10 @@ Rectangle
         app.onUserAction();
         switch (event.key)
         {
+            case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:
+            case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
+                app.onNumberClicked(event.text);
+                break;
             case Qt.Key_F9: // Ключ
                 app.onLockClicked()
                 break;
@@ -68,13 +72,13 @@ Rectangle
     {
         id: showcasePanelGrid
         anchors.fill: parent
-        anchors.leftMargin: imageSpacer
-        anchors.rightMargin: imageSpacer
-        anchors.topMargin: imageSpacer
-        anchors.bottomMargin: imageSpacer
+        anchors.leftMargin: spacer
+        anchors.rightMargin: spacer
+        anchors.topMargin: spacer
+        anchors.bottomMargin: spacer
         clip: true
-        cellWidth: imageSize + imageSpacer
-        cellHeight: imageSize + imageSpacer
+        cellWidth: imageSize + spacer
+        cellHeight: imageSize + spacer
 
         ScrollBar.vertical: ScrollBar
         {
@@ -86,8 +90,8 @@ Rectangle
         model: showcasePanelModel
         delegate: Image
         {
-            width: showcasePanelGrid.cellWidth - imageSpacer
-            height: showcasePanelGrid.cellHeight - imageSpacer
+            width: showcasePanelGrid.cellWidth - spacer
+            height: showcasePanelGrid.cellHeight - spacer
             fillMode: Image.PreserveAspectFit
             source: model.value  // Roles::ValueRole
             MouseArea
@@ -100,8 +104,8 @@ Rectangle
         model: showcasePanelModel
         delegate: Label
         {
-            width: showcasePanelGrid.cellWidth - imageSpacer
-            height: showcasePanelGrid.cellHeight - imageSpacer
+            width: showcasePanelGrid.cellWidth - spacer
+            height: showcasePanelGrid.cellHeight - spacer
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WordWrap

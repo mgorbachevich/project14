@@ -110,6 +110,19 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showProductCodeInputBox:
+    {
+        target: app
+        function onShowProductCodeInputBox(value)
+        {
+            console.debug("@@@@@ mainWindow.onShowProductCodeInputBox ", value);
+            Qt.createComponent("Panels/inputProductCodePanel.qml").createObject(mainWindow,
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value
+            }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showPiecesInputBox:
     {
         target: app
