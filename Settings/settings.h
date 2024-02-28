@@ -23,7 +23,6 @@ public:
     QList<int> getCurrentGroupItemCodes();
     QString getCurrentGroupName();
     void update(const DBRecordList&);
-    //static int getBoudrate(const int);
     bool isGroupItem(const DBRecord&);
     void sort();
     int nativeSettings(const int);

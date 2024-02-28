@@ -624,10 +624,13 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     const int code = settings.getItemCode(r);
     const QString& name = settings.getItemName(r);
     qDebug() << "@@@@@ AppManager::onCustomSettingsItemClicked " << code << name;
+
+    if (code == SettingCode_Equipment) stopEquipment(false);
+
     switch (code)
     {
-    case SettingCode_WiFi:
     case SettingCode_Equipment:
+    case SettingCode_WiFi:
     case SettingCode_SystemSettings:
     case SettingCode_Ethernet:
         switch(settings.nativeSettings(code))
@@ -642,6 +645,9 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
         }
         break;
     }
+
+    if (code == SettingCode_Equipment) startEquipment(false);
+
     emit showMessageBox(name, "Не поддерживается", true);
 }
 
@@ -795,48 +801,54 @@ void AppManager::resetProduct()
     updateStatus();
 }
 
-void AppManager::startEquipment()
+void AppManager::startEquipment(const bool server, const bool weight, const bool printer)
 {
-    const int serverPort = settings.getItemIntValue(SettingCode_TCPPort);
-    qDebug() << "@@@@@ AppManager::startEquipment serverPort = " << serverPort;
-    netServer->start(serverPort);
-
-    QList<QString> uris = settings.parseEquipmentConfig(EQUIPMENT_CONFIG_FILE);
-    if(uris.size() < 2) uris = settings.parseEquipmentConfig(DEFAULT_EQUIPMENT_CONFIG_FILE);
-    if(uris.size() < 2)
+    if (server)
     {
-        uris.clear();
-        uris.append("");
-        uris.append("");
+        const int serverPort = settings.getItemIntValue(SettingCode_TCPPort);
+        qDebug() << "@@@@@ AppManager::startEquipment serverPort = " << serverPort;
+        netServer->start(serverPort);
     }
-    QString message = "";
-    if(WM_DEMO || uris[0].isEmpty())
+    if (weight || printer)
     {
-        uris[0] = WEIGHT_DEMO_URI;
-        message += "\nДемо-режим весового модуля";
-    }
-    if(PRINTER_DEMO || uris[1].isEmpty())
-    {
-        uris[1] = PRINTER_DEMO_URI;
-        message += "\nДемо-режим принтера";
-    }
-    qDebug() << "@@@@@ AppManager::startEquipment uris = " << uris;
+        QList<QString> uris = settings.parseEquipmentConfig(EQUIPMENT_CONFIG_FILE);
+        if(uris.size() < 2) uris = settings.parseEquipmentConfig(DEFAULT_EQUIPMENT_CONFIG_FILE);
+        if(uris.size() < 2)
+        {
+            uris.clear();
+            uris.append("");
+            uris.append("");
+        }
+        QString message = "";
+        if(WM_DEMO || uris[0].isEmpty())
+        {
+            uris[0] = WEIGHT_DEMO_URI;
+            message += "\nДемо-режим весового модуля";
+        }
+        if(PRINTER_DEMO || uris[1].isEmpty())
+        {
+            uris[1] = PRINTER_DEMO_URI;
+            message += "\nДемо-режим принтера";
+        }
+        qDebug() << "@@@@@ AppManager::startEquipment uris = " << uris;
 
-    int e1 = weightManager->start(uris[0]);
-    int e2 = printManager->start(uris[1]);
+        int e1 = 0, e2 = 0;
+        if (weight) e1 = weightManager->start(uris[0]);
+        if (printer) e2 = printManager->start(uris[1]);
 
-    if(e1 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
-                                    arg(QString::number(e1), weightManager->getErrorDescription(e1)), true);
-    if(e2 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
-                                    arg(QString::number(e2), printManager->getErrorDescription(e2)), true);
-    if(!message.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", message, true);
+        if(e1 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
+                                        arg(QString::number(e1), weightManager->getErrorDescription(e1)), true);
+        if(e2 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
+                                        arg(QString::number(e2), printManager->getErrorDescription(e2)), true);
+        if(!message.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", message, true);
+    }
 }
 
-void AppManager::stopEquipment()
+void AppManager::stopEquipment(const bool server, const bool weight, const bool printer)
 {
-    netServer->stop();
-    weightManager->stop();
-    printManager->stop();
+    if (server) netServer->stop();
+    if (weight) weightManager->stop();
+    if (printer) printManager->stop();
 }
 
 void AppManager::onUserAction()

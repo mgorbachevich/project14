@@ -1,8 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.86"
-//#define RELEASE
+#define APP_VERSION "1.87"
+#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false

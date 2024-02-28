@@ -89,8 +89,8 @@ private:
     void refreshAll();
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void resetProduct();
-    void startEquipment();
-    void stopEquipment();
+    void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
     void print();
     QString getImageFileWithQmlPath(const DBRecord&);
     void onCustomSettingsItemClicked(const DBRecord&);
