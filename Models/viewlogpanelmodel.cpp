@@ -21,7 +21,7 @@ void ViewLogPanelModel::update(const DBRecordList& records)
         case LogType_Warning: type = "W"; break;
         case LogType_Transaction: type = "T"; break;
         }
-        ss << QString("%1 %2 %3 %4").arg(dateTime, type, source, comment);
+        ss << QString("%1   %2   %3   %4").arg(dateTime, type, source, comment);
     }
     setStringList(ss);
 }

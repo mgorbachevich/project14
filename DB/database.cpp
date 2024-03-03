@@ -48,11 +48,11 @@ bool DataBase::init()
     QString path = Tools::dataBaseFilePath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) QFile(path).remove();
     bool exists = QFile(path).exists();
-    qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(DB_PRODUCT_NAME, Tools::boolToString(exists));
+    qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(path, Tools::boolToString(exists));
     opened = addAndOpen(productDB, path);
     if(!exists && opened)
     {
-        qDebug() << QString("@@@@@ DataBase::init %1 create tables").arg(DB_PRODUCT_NAME);
+        qDebug() << QString("@@@@@ DataBase::init %1 create tables").arg(path);
         opened &= createTable(productDB, getTable(DBTABLENAME_PRODUCTS));
         opened &= createTable(productDB, getTable(DBTABLENAME_USERS));
         opened &= createTable(productDB, getTable(DBTABLENAME_LABELFORMATS));
@@ -72,6 +72,7 @@ bool DataBase::init()
     path = Tools::dataBaseFilePath(DB_SETTINGS_NAME);
     if(REMOVE_SETTINGS_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
+    qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(path, Tools::boolToString(exists));
     opened = addAndOpen(settingsDB, path);
     if(!exists && opened) opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
     if (!opened) return false;
@@ -79,6 +80,7 @@ bool DataBase::init()
     path = Tools::dataBaseFilePath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
+    qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(path, Tools::boolToString(exists));
     opened = addAndOpen(logDB, path);
     if(!exists && opened)
     {
@@ -106,6 +108,7 @@ bool DataBase::open(QSqlDatabase& db, const QString& name)
     if (!opened) return false;
     qDebug() << "@@@@@ DataBase::openDBFile ";
     const QString path = Tools::dataBaseFilePath(name);
+    qDebug() << QString("@@@@@ DataBase::open %1").arg(path);
     if(!QFile(path).exists()) return false;
     return db.isOpen() ? true : db.open();
 }
@@ -280,7 +283,10 @@ bool DataBase::insertSettingsRecord(const DBRecord &r)
 
 bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 {
-    if(Tools::copyFile(Tools::dataBaseFilePath(fromName), Tools::dataBaseFilePath(toName))) return true;
+    QString from = Tools::dataBaseFilePath(fromName);
+    QString to = Tools::dataBaseFilePath(toName);
+    qDebug() << QString("@@@@@ DataBase::copyDBFiles %1 >> %2").arg(from, to);
+    if(Tools::copyFile(from, to)) return true;
     qDebug() << "@@@@@ DataBase::copyDBFiles ERROR";
     return false;
 }
@@ -315,7 +321,15 @@ void DataBase::removeOldLogRecords()
     }
 }
 
-void DataBase::select(const DataBase::Selector selector, const QString& param)
+void DataBase::clearLog()
+{
+    if (!opened) return;
+    qDebug() << "@@@@@ DataBase::clearLog";
+    DBTable* t = getTable(DBTABLENAME_LOG);
+    if(t != nullptr) logDB.exec(QString("DELETE FROM %1").arg(t->name));
+}
+
+void DataBase::select(const DBSelector selector, const QString& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
@@ -323,24 +337,24 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
     DBRecordList resultRecords;
     switch(selector)
     {
-    case Selector::UpdateSettings:
-    case Selector::ChangeSettings:
+    case DBSelector_UpdateSettings:
+    case DBSelector_ChangeSettings:
     // Запрос списка настроек:
         selectAll(settingsDB, getTable(DBTABLENAME_SETTINGS), resultRecords);
         break;
 
-    case Selector::GetUsers:
+    case DBSelector_GetUsers:
     // Запрос списка пользователей для авторизации:
         selectAll(productDB, getTable(DBTABLENAME_USERS), resultRecords);
         Tools::sortByString(resultRecords, UserDBTable::Name);
         break;
 
-    case Selector::GetLog:
+    case DBSelector_GetLog:
     // Запрос списка записей лога:
         selectAll(logDB, getTable(DBTABLENAME_LOG), resultRecords);
         break;
 
-    case Selector::GetShowcaseProducts:
+    case DBSelector_GetShowcaseProducts:
     // Запрос списка товаров для отображения на экране Showcase:
     {
         DBRecordList showcaseRecords;
@@ -348,25 +362,28 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         for (int i = 0; i < showcaseRecords.count(); i++)
         {
             DBRecord r;
-            QString showcaseProductCode = showcaseRecords[i][ShowcaseDBTable::Code].toString();
-            if (selectById(productDB, DBTABLENAME_PRODUCTS, showcaseProductCode, r) && ProductDBTable::isForShowcase(r))
+            QString productCode = showcaseRecords[i][ShowcaseDBTable::Code].toString();
+            if (selectById(productDB, DBTABLENAME_PRODUCTS,  productCode, r) && ProductDBTable::isForShowcase(r))
                 resultRecords.append(r);
         }
-        Tools::sortByString(resultRecords, ProductDBTable::Name);
+        switch(Tools::stringToInt(param))
+        {
+        case Sort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code); break;
+        case Sort_Name: Tools::sortByString(resultRecords, ProductDBTable::Name); break;
+        }
         break;
     }
 
-    case Selector::GetAuthorizationUserByName:
+    case DBSelector_GetAuthorizationUserByName:
     // Запрос пользователя по имени для авторизации:
     {
         DBTable* t = getTable(DBTABLENAME_USERS);
-        QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").
-                arg(t->name, t->columnName(UserDBTable::Name), param);
+        QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").arg(t->name, t->columnName(UserDBTable::Name), param);
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
 
-    case Selector::GetImageByResourceCode:
+    case DBSelector_GetImageByResourceCode:
     // Запрос картинки из ресурсов по коду ресурса:
     {
         DBRecord r;
@@ -374,7 +391,7 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         break;
     }
 
-    case Selector::GetMessageByResourceCode:
+    case DBSelector_GetMessageByResourceCode:
     // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
     // todo
     {
@@ -383,70 +400,69 @@ void DataBase::select(const DataBase::Selector selector, const QString& param)
         break;
     }
 
-    case Selector::GetProductsByGroupCode:
-    case Selector::GetProductsByGroupCodeIncludeGroups:
+    case DBSelector_GetProductsByGroupCode:
+    case DBSelector_GetProductsByGroupCodeIncludeGroups:
     // Запрос списка товаров по коду группы (исключая / включая группы):
     {
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-        QString sql = "SELECT * FROM " + t->name;
-        sql += " WHERE " + t->columnName(ProductDBTable::GroupCode) + "='" + param + "'";
-        if (selector == Selector::GetProductsByGroupCode)
-           sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductType_Group) + "'";
-        sql += " ORDER BY ";
-        sql += t->columnName(ProductDBTable::Type) + " DESC, ";
-        sql += t->columnName(ProductDBTable::Name) + " ASC";
+        QString sql = QString("SELECT * FROM %1").arg(t->name);
+        sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param);
+        if (selector == DBSelector_GetProductsByGroupCode)
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+        sql += QString(" ORDER BY %1 DESC, %2 ASC").arg(t->columnName(ProductDBTable::Type), t->columnName(ProductDBTable::Name));
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
 
-    case Selector::GetProductsByFilteredCode:
-    //case Selector::GetProductsByFilteredCodeIncludeGroups:
-    // Запрос списка товаров по фрагменту кода (исключая / включая группы):
+    case DBSelector_GetProductsByInputCode:
+    // Запрос списка товаров по фрагменту кода:
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(SettingCode_SearchType))
-            if (p.size() < settings.getItemIntValue(SettingCode_SearchCodeSymbols))
-                break;
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-        QString sql = "SELECT * FROM " + t->name;
+        QString sql = QString("SELECT * FROM %1").arg(t->name);
+        sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '" + p + "%'";
+        sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+        sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
+        executeSelectSQL(productDB, t, sql, resultRecords);
+        break;
+    }
+
+    case DBSelector_GetProductsByFilteredCode:
+    // Запрос списка товаров по фрагменту кода исключая группы:
+    {
+        QString p = param.trimmed();
+        if (p.isEmpty()) break;
+        if (!settings.getItemBoolValue(SettingCode_SearchType) &&
+            p.size() < settings.getItemIntValue(SettingCode_SearchCodeSymbols)) break;
+        DBTable* t = getTable(DBTABLENAME_PRODUCTS);
+        QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '%" + p + "%'";
-        /*
-        if (selector == Selector::GetProductsByFilteredCode)
-           sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
-        */
-        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductType_Group) + "'";
-        sql += " ORDER BY ";
-        sql += t->columnName(ProductDBTable::Code) + " ASC";
+        sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+        sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
 
-    case Selector::GetProductsByFilteredBarcode:
-    //case Selector::GetProductsByFilteredBarcodeIncludeGroups:
-    // Запрос списка товаров по фрагменту штрих-кода (исключая / включая группы):
+    case DBSelector_GetProductsByFilteredBarcode:
+    // Запрос списка товаров по фрагменту штрих-кода исключая группы:
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(SettingCode_SearchType))
-            if (p.size() < settings.getItemIntValue(SettingCode_SearchBarcodeSymbols))
-                break;
+        if (!settings.getItemBoolValue(SettingCode_SearchType) &&
+            p.size() < settings.getItemIntValue(SettingCode_SearchBarcodeSymbols)) break;
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-        QString sql = "SELECT * FROM " + t->name;
+        QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += " WHERE " + t->columnName(ProductDBTable::Barcode) + " LIKE '%" + p + "%'";
-        /*
-        if (selector == Selector::GetProductsByFilteredBarcode)
-            sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductDBTable::ProductType_Group) + "'";
-        */
-        sql += " AND " + t->columnName(ProductDBTable::Type) + "!='" + QString::number(ProductType_Group) + "'";
-        sql += " ORDER BY ";
-        sql += t->columnName(ProductDBTable::Barcode) + " ASC";
+        sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+        sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Barcode));
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
 
-    case Selector::GetProductByInputCode:
-    case Selector::RefreshCurrentProduct:
+    case DBSelector_GetProductByInputCode:
+    case DBSelector_SetProductByInputCode:
+    case DBSelector_RefreshCurrentProduct:
     // Запрос товара по коду
     {
         DBRecord r;
@@ -469,7 +485,7 @@ void DataBase::afterNetAction()
     open(productDB, DB_PRODUCT_NAME);
 }
 
-void DataBase::select(const DataBase::Selector selector, const DBRecordList& param)
+void DataBase::select(const DBSelector selector, const DBRecordList& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
@@ -477,7 +493,7 @@ void DataBase::select(const DataBase::Selector selector, const DBRecordList& par
     DBRecordList resultRecords;
     switch(selector)
     {
-    case Selector::GetShowcaseResources:
+    case DBSelector_GetShowcaseResources:
     // Запрос списка картинок из ресурсов для списка товаров:
     {
         for (int i = 0; i < param.count(); i++)
@@ -495,13 +511,13 @@ void DataBase::select(const DataBase::Selector selector, const DBRecordList& par
     emit requestResult(selector, resultRecords, true);
 }
 
-void DataBase::updateSettingsRecord(const DataBase::Selector selector, const DBRecord& record)
+void DataBase::updateSettingsRecord(const DBSelector selector, const DBRecord& record)
 {
     qDebug() << "@@@@@ DataBase::updateSettingsRecord: selector =" << selector;
     bool result = false;
     switch(selector)
     {
-    case Selector::ReplaceSettingsItem:
+    case DBSelector_ReplaceSettingsItem:
     {
         result = insertRecord(settingsDB, getTable(DBTABLENAME_SETTINGS), record);
         break;

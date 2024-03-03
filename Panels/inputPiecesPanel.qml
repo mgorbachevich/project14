@@ -85,14 +85,15 @@ Popup
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     focus: true
                     text: inputText
+                    onTextEdited: app.onUserAction();
                     onTextChanged:
                     {
-                        console.debug("@@@@@ inputPiecesPanelText onTextChanged ", text)
                         if (parseInt(text) <= 0 || text === "")
                         {
                             text = 1;
                             app.beepSound();
                         }
+                        console.debug("@@@@@ inputPiecesPanelText onTextChanged ", text)
                     }
                     Keys.onPressed: (event) =>
                     {

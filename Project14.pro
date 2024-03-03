@@ -106,6 +106,7 @@ HEADERS += \
     Models/settingitemlistmodel.h \
     Models/baselistmodel2.h \
     Models/baselistmodel.h \
+    Models/inputproductcodepanelmodel.h \
     Models/productpanelmodel.h \
     Models/searchpanelmodel.h \
     Models/showcasepanelmodel2.h \
@@ -197,14 +198,11 @@ SOURCES += \
     Managers/keyemitter.cpp \
     Managers/screenmanager.cpp \
     Models/baselistmodel2.cpp \
+    Models/inputproductcodepanelmodel.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
-    Net/netserver.cpp \
-    Net/requestparser.cpp \
-    main.cpp \
-    tools.cpp \
     Models/baselistmodel.cpp \
     Models/productpanelmodel.cpp \
     Models/searchpanelmodel.cpp \
@@ -212,6 +210,10 @@ SOURCES += \
     Models/tablepanelmodel.cpp \
     Managers/printmanager.cpp \
     Managers/weightmanager.cpp \
+    Net/netserver.cpp \
+    Net/requestparser.cpp \
+    main.cpp \
+    tools.cpp \
     Settings/settings.cpp \
 
 RESOURCES += \
@@ -259,11 +261,9 @@ RESOURCES += \
     Icons/usb.png \
     Icons/wifi.png \
     Icons/zero_flag.png \
-    Icons/a_down.png \
-    Icons/a_up.png \
+    Icons/a.png \
     Icons/folder.png \
-    Icons/n_down.png \
-    Icons/n_up.png \
+    Icons/n.png \
     Icons/star.png \
     Images/image_dummy.png \
     Images/logo.png \

@@ -1,5 +1,5 @@
-#import "showcasepanelmodel2.h"
-#import "productdbtable.h"
+#include "showcasepanelmodel2.h"
+#include "productdbtable.h"
 
 DBRecord& ShowcasePanelModel2::productByIndex(const int index)
 {

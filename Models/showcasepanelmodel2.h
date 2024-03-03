@@ -2,7 +2,7 @@
 #define SHOWCASEPANELMODEL2_H
 
 #include "baselistmodel2.h"
-#import "constants.h"
+#include "constants.h"
 
 class ShowcasePanelModel2 : public BaseListModel2
 {

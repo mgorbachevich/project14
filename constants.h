@@ -1,8 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.87"
-#define RELEASE
+#define APP_VERSION "1.88"
+//#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false
@@ -22,6 +22,7 @@
 #define REMOVE_TEMP_DB true
 #endif
 
+#define SHOW_DB_PATH_MESSAGE true
 #define CHECK_AUTHORIZATION true
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
@@ -31,9 +32,9 @@
 #define EOL "\r\n"
 #define DB_LOG_NAME "Log.db"
 #define DB_TEMP_NAME "Temp.db"
-#define DOWNLOAD_SUBDIR "Downloads"
 #define DB_PRODUCT_NAME "ShtrihScale.db"
 #define DB_SETTINGS_NAME "Settings.db"
+#define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
@@ -43,6 +44,7 @@
 #define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define SHOWCASE_ROW_IMAGES 5
+#define PRODUCT_STRING_DELIMETER "   "
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -58,6 +60,13 @@
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
 #define StringPair QPair<QString, QString>
+
+enum DialogSelector
+{
+    DialogSelector_None = 0,
+    DialogSelector_Authorization,
+    DialogSelector_ClearLog,
+};
 
 enum LogType
 {
@@ -169,6 +178,31 @@ enum SettingType
     SettingType_List = 6,
 };
 
+enum DBSelector
+{
+    DBSelector_None = 0,
+    DBSelector_GetShowcaseProducts,
+    DBSelector_GetShowcaseResources,
+    DBSelector_GetImageByResourceCode,
+    DBSelector_GetMessageByResourceCode,
+    DBSelector_GetProductsByGroupCode,
+    DBSelector_GetProductsByGroupCodeIncludeGroups,
+    DBSelector_GetProductsByFilteredCode,
+    DBSelector_GetProductsByFilteredBarcode,
+    DBSelector_GetItemsByCodes,
+    DBSelector_GetUsers,
+    DBSelector_GetAuthorizationUserByName,
+    DBSelector_GetSettingsItemByCode,
+    DBSelector_UpdateSettings,
+    DBSelector_GetLog,
+    DBSelector_RefreshCurrentProduct,
+    DBSelector_ReplaceSettingsItem,
+    DBSelector_ChangeSettings,
+    DBSelector_SetProductByInputCode,
+    DBSelector_GetProductsByInputCode,
+    DBSelector_GetProductByInputCode,
+};
+
 enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt!
 {
     SettingCode_None = 0,
@@ -221,7 +255,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_PrintLabelBarcodePiece = 1029, // todo
     SettingCode_Ethernet = 1030,
     SettingCode_WiFi = 1031,
-    SettingCode_ClearLog = 1032, // todo
+    SettingCode_ClearLog = 1032,
     SettingCode_ClearReports = 1033, // todo
     SettingCode_HorizontalCalibration = 1034, // todo
     SettingCode_ResetAll = 1035, // todo
@@ -247,20 +281,10 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_Max = 9999, // Max value
 };
 
-/*
-enum ShowcaseSort
+enum Sort
 {
-    ShowcaseSort_Increase = 0,
-    ShowcaseSort_Decrease = 1,
+    Sort_Code = 0,
+    Sort_Name = 1,
 };
-
-enum ShowcaseType
-{
-    ShowcaseType_Code = 0,
-    ShowcaseType_Name = 1,
-    ShowcaseType_Group = 2,
-    ShowcaseType_Highlight = 3,
-};
-*/
 
 #endif // CONSTANTS_H

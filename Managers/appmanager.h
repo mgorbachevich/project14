@@ -25,21 +25,17 @@ class NetServer;
 class AppInfo;
 class WeightManager;
 class PrintManager;
+class InputProductCodePanelModel;
 
 class AppManager : public QObject
 {
     Q_OBJECT
 
 public:
-    enum DialogSelector
-    {
-        Dialog_None = 0,
-        Dialog_Authorization,
-    };
-
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
 
     Q_INVOKABLE void beepSound();
+    Q_INVOKABLE void clearLog();
     Q_INVOKABLE void clickSound();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
@@ -49,7 +45,8 @@ public:
     Q_INVOKABLE void onMainPageChanged(const int);
     Q_INVOKABLE void onNumberClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
-    Q_INVOKABLE void onProductCodeInput(const QString&);
+    Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
+    Q_INVOKABLE void onProductCodeEdited(const QString&);
     Q_INVOKABLE void onPopupClosed();
     Q_INVOKABLE void onPopupOpened();
     Q_INVOKABLE void onPrintClicked();
@@ -64,6 +61,7 @@ public:
     Q_INVOKABLE void onSettingsItemClicked(const int);
     Q_INVOKABLE void onSettingsPanelCloseClicked();
     Q_INVOKABLE void onShowcaseClicked(const int);
+    Q_INVOKABLE void onShowcaseSortClicked(const int);
     Q_INVOKABLE void onSwipeMainPage(const int);
     Q_INVOKABLE void onTableBackClicked();
     Q_INVOKABLE void onTableResultClicked(const int);
@@ -94,6 +92,7 @@ private:
     void print();
     QString getImageFileWithQmlPath(const DBRecord&);
     void onCustomSettingsItemClicked(const DBRecord&);
+    void setShowcaseSort(const int);
 
     bool isStarted = false;
     AppInfo appInfo;
@@ -122,6 +121,7 @@ private:
     int mainPageIndex = 0;
     int secret = 0;
     bool isAuthorizationOpened = false;
+    int showcaseSort = Sort_Name;
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
@@ -134,12 +134,15 @@ private:
     UserNameModel* userNameModel = nullptr;
     ViewLogPanelModel* viewLogPanelModel = nullptr;
     SettingItemListModel* settingItemListModel = nullptr;
+    InputProductCodePanelModel* inputProductCodePanelModel = nullptr;
 
 signals:
     void authorizationSucceded();
+    void closeLogView();
     void closeSettings();
     void closeInputProductPanel();
     void enableManualPrint(const bool);
+    void enableSetProductByInputCode(const bool);
     void hideToast();
     void resetCurrentProduct();
     void setCurrentUser(const int, const QString&);
@@ -158,6 +161,7 @@ signals:
     void showSettingComboBox(const int, const QString&, const int, const QString&);
     void showSettingSlider(const int, const QString&, const int, const int, const int, const int);
     void showSettingsPanel(const QString&);
+    void showShowcaseSort(const int);
     void showTablePanelTitle(const QString&);
     void showViewLogPanel();
     void showVirtualKeyboard(const int);
@@ -166,7 +170,7 @@ signals:
 
 public slots:
     void onNetAction(const int);
-    void onDBRequestResult(const DataBase::Selector, const DBRecordList&, const bool);
+    void onDBRequestResult(const DBSelector, const DBRecordList&, const bool);
     void onDBStarted();
     void onEquipmentParamChanged(const int, const int);
     void onPrinted(const DBRecord&);

@@ -25,31 +25,6 @@ class DataBase : public QObject
     Q_OBJECT
 
 public:
-    enum Selector
-    {
-        None = 0,
-        GetShowcaseProducts,
-        GetShowcaseResources,
-        GetImageByResourceCode,
-        GetMessageByResourceCode,
-        GetProductsByGroupCode,
-        GetProductsByGroupCodeIncludeGroups,
-        GetProductsByFilteredCode,
-        //GetProductsByFilteredCodeIncludeGroups,
-        GetProductsByFilteredBarcode,
-        //GetProductsByFilteredBarcodeIncludeGroups,
-        GetItemsByCodes,
-        GetUsers,
-        GetAuthorizationUserByName,
-        GetSettingsItemByCode,
-        UpdateSettings,
-        GetLog,
-        RefreshCurrentProduct,
-        ReplaceSettingsItem,
-        ChangeSettings,
-        GetProductByInputCode,
-    };
-
     explicit DataBase(Settings&, QObject*);
     ~DataBase();
     DBTable* getTable(const QString&) const;
@@ -58,14 +33,14 @@ public:
     QString netUpload(const QString&, const QString&);
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
-
     QString getProductMessageById(const QString&);
     void saveLog(const int, const int, const QString&);
     bool insertSettingsRecord(const DBRecord&);
     void saveTransaction(const DBRecord&);
-    void updateSettingsRecord(const DataBase::Selector, const DBRecord&);
-    void select(const DataBase::Selector, const DBRecordList&);
-    void select(const DataBase::Selector, const QString&);
+    void updateSettingsRecord(const DBSelector, const DBRecord&);
+    void select(const DBSelector, const DBRecordList&);
+    void select(const DBSelector, const QString&);
+    void clearLog();
 
     Settings& settings;
     QList<DBTable*> tables;
@@ -78,7 +53,6 @@ protected:
     void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
     bool copyDBFiles(const QString&, const QString&);
     void removeTempDb();
-
     bool removeAll(const QSqlDatabase&, DBTable*);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
     void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
@@ -96,7 +70,7 @@ protected:
     QSqlDatabase logDB;
 
 signals:
-    void requestResult(const DataBase::Selector, const DBRecordList&, const bool);
+    void requestResult(const DBSelector, const DBRecordList&, const bool);
     void started();
     void showMessage(const QString&, const QString&);
 

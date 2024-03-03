@@ -39,6 +39,7 @@ ApplicationWindow
         function onShowMainPage(value)
         {
             console.debug("@@@@@ mainWindow.onShowMainPage");
+            mainWindowLayout.visible = true
             mainSwipeView.setCurrentIndex(value)
         }
     }
@@ -118,7 +119,9 @@ ApplicationWindow
             console.debug("@@@@@ mainWindow.onShowProductCodeInputBox ", value);
             Qt.createComponent("Panels/inputProductCodePanel.qml").createObject(mainWindow,
             {
-                x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value
+                x: popupX, y: screenManager.spacer() * 2,
+                width: popupWidth, height: mainWindow.height - screenManager.spacer() * 4,
+                inputText: value
             }).open()
         }
     }
@@ -208,9 +211,11 @@ ApplicationWindow
 
     Column
     {
+        id: mainWindowLayout
         anchors.fill: parent
         spacing: 0
         padding: 0
+        visible: false
 
         Loader
         {

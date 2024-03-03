@@ -2,8 +2,8 @@
 #define SEARCHPANELMODEL_H
 
 #include "baselistmodel.h"
-#import "searchfiltermodel.h"
-#import "constants.h"
+#include "searchfiltermodel.h"
+#include "constants.h"
 
 class SearchPanelModel : public BaseListModel
 {

@@ -17,7 +17,7 @@ RoundButton
     horizontalPadding: screenManager.spacer() * 2
     verticalPadding: screenManager.spacer() / 4
     Material.background: Material.color(Material.BlueGrey, Material.Shade200)
-    Material.foreground: Material.color(Material.BlueGrey, Material.Shade900)
+    Material.foreground: Material.color(Material.BlueGrey, enabled ? Material.Shade900 : Material.Shade50)
     font { pointSize: screenManager.normalFontSize() }
     flat: true
 }

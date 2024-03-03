@@ -5,7 +5,6 @@
 #include <QScreen>
 #include "baselistmodel.h"
 #include "appmanager.h"
-#include "tools.h"
 
 //#define RECOMENDED
 

@@ -134,6 +134,11 @@ Rectangle
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
             onTextEdited: app.onUserAction();
+            onTextChanged:
+            {
+                console.debug("@@@@@ searchPanelTextField onTextChanged ", text)
+                app.onSearchFilterEdited(text);
+            }
             focus: true
             Keys.onPressed: (event) =>
             {
@@ -146,15 +151,12 @@ Rectangle
                     case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:
                     case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
                         text += event.text
-                        app.onSearchFilterEdited(text);
                         break;
                     case Qt.Key_Backspace: case Qt.Key_Delete: case Qt.Key_C:
                         text = text.substring(0, text.length - 1);
-                        app.onSearchFilterEdited(text);
                         break;
                     case Qt.Key_Escape:
                         text = ""
-                        app.onSearchFilterEdited(text);
                         break;
                     case Qt.Key_Left:
                         app.onSwipeMainPage(1)

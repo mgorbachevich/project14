@@ -1,4 +1,4 @@
-#import "searchfiltermodel.h"
+#include "searchfiltermodel.h"
 
 void SearchFilterModel::update()
 {

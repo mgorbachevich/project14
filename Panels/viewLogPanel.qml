@@ -18,14 +18,19 @@ Popup
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
+    Connections // Slot for signal AppManager::closeLogView
+    {
+        target: app
+        function onCloseLogView() { viewLogPanel.close() }
+    }
+
     GridLayout
     {
         anchors.fill: parent
         anchors.margins: screenManager.spacer()
         columnSpacing: screenManager.spacer()
         rowSpacing: screenManager.spacer()
-        columns: 2
-        rows: 2
+        columns: 3
 
         focus: true
         Keys.onPressed: (event) =>
@@ -56,9 +61,22 @@ Popup
             }
         }
 
-        Rectangle
+        RoundTextButton
         {
             Layout.column: 0
+            Layout.row: 0
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+            text: qsTr("ОЧИСТИТЬ")
+            onClicked:
+            {
+                app.onUserAction();
+                app.clearLog()
+            }
+        }
+
+        Rectangle
+        {
+            Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
             Layout.preferredHeight: screenManager.buttonSize()
@@ -77,7 +95,7 @@ Popup
 
         RoundIconButton
         {
-            Layout.column: 1
+            Layout.column: 2
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRigth
             icon.source: "../Icons/close"
@@ -92,7 +110,7 @@ Popup
         {
             Layout.column: 0
             Layout.row: 1
-            Layout.columnSpan: 2
+            Layout.columnSpan: 3
             Layout.fillWidth: parent
             Layout.fillHeight: parent
             color: Material.color(Material.Grey, Material.Shade50)

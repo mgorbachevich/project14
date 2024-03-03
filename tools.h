@@ -36,8 +36,8 @@ public:
     static bool removeFile(const QString&);
     static void pause(const int, const QString& comment = "");
     static void sound(const QString&, const int);
-    static void sortByInt(DBRecordList&, const int);
-    static void sortByString(DBRecordList&, const int);
+    static void sortByInt(DBRecordList&, const int, const bool increase = true);
+    static void sortByString(DBRecordList&, const int, const bool increase = true);
 
 private:
     static QString makeFullPath(const QString&, const QString&);

@@ -159,7 +159,7 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
     }
     path += "/" + dirs.last(); // file name
     //qDebug() << "@@@@@ Tools::makeFullPath local path " << localPath;
-    qDebug() << "@@@@@ Tools::makeFullPath full path " << path;
+    //qDebug() << "@@@@@ Tools::makeFullPath full path " << path;
     return path;
 }
 
@@ -198,7 +198,7 @@ QString Tools::dataBaseFilePath(const QString& localPath)
 
 bool Tools::copyFile(const QString& from, const QString& to)
 {
-    qDebug() << "@@@@@ Tools::copyFile " << from << to;
+    qDebug() << QString("@@@@@ DataBase::copyFile %1 >> %2").arg(from, to);
     if (!QFile::exists(from)) return false;
     if (QFile::exists(to)) QFile::remove(to);
     return QFile::copy(from, to);
@@ -231,37 +231,29 @@ QString Tools::rootDir()
 #endif // Q_OS_ANDROID --------------------------------------------------------
 }
 
-void Tools::sortByInt(DBRecordList& records, const int field)
+void Tools::sortByInt(DBRecordList& records, const int field, const bool increase)
 {
     // https://copyprogramming.com/howto/how-to-sort-qlist-qvariant-in-qt
     int i, n;
-    for (n = 0; n < records.count(); n++)
+    for (n = 0; n < records.count(); n++) for (i = n + 1; i < records.count(); i++)
     {
-        for (i = n + 1; i < records.count(); i++)
-        {
-            if (records[n][field].toInt() > records[i][field].toInt())
-            {
-                records.move(i, n);
-                n = 0;
-            }
-        }
+        if (increase && records[n][field].toInt() <= records[i][field].toInt()) continue;
+        if (!increase && records[n][field].toInt() >= records[i][field].toInt()) continue;
+        records.move(i, n);
+        n = 0;
     }
 }
 
-void Tools::sortByString(DBRecordList& records, const int field)
+void Tools::sortByString(DBRecordList& records, const int field, const bool increase)
 {
     // https://copyprogramming.com/howto/how-to-sort-qlist-qvariant-in-qt
     int i, n;
-    for (n = 0; n < records.count(); n++)
+    for (n = 0; n < records.count(); n++) for (i = n + 1; i < records.count(); i++)
     {
-        for (i = n + 1; i < records.count(); i++)
-        {
-            if (records[n][field].toString() > records[i][field].toString())
-            {
-                records.move(i, n);
-                n = 0;
-            }
-        }
+        if (increase && records[n][field].toString() <= records[i][field].toString()) continue;
+        if (!increase && records[n][field].toString() >= records[i][field].toString()) continue;
+        records.move(i, n);
+        n = 0;
     }
 }
 

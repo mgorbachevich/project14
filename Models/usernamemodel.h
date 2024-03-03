@@ -2,7 +2,7 @@
 #define USERNAMEMODEL_H
 
 #include "baselistmodel.h"
-#import "constants.h"
+#include "constants.h"
 
 class UserNameModel : public BaseListModel
 {

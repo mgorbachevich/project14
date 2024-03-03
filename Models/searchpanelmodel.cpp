@@ -1,5 +1,5 @@
-#import "searchpanelmodel.h"
-#import "productdbtable.h"
+#include "searchpanelmodel.h"
+#include "productdbtable.h"
 
 void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilterModel::FilterIndex filterIndex)
 {
@@ -16,11 +16,11 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilte
         {
             case SearchFilterModel::Code:
                 //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Code).toString() + " ";
-                s += ri[ProductDBTable::Code].toString() + " ";
+                s += ri[ProductDBTable::Code].toString() + PRODUCT_STRING_DELIMETER;
                 break;
             case SearchFilterModel::Barcode:
                 //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Barcode).toString() + " ";
-                s += ri[ProductDBTable::Barcode].toString() + " ";
+                s += ri[ProductDBTable::Barcode].toString() + PRODUCT_STRING_DELIMETER;
                 break;
         }
         //s += "<font color='" + valueColor + "'>" + ri.field(ProductDBTable::Name).toString();

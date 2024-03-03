@@ -1,6 +1,5 @@
 #include "productpanelmodel.h"
 #include "productdbtable.h"
-#include "appmanager.h"
 
 void ProductPanelModel::update(const DBRecord& product, const double price, ProductDBTable* productTable)
 {
