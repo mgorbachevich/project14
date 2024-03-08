@@ -1,8 +1,9 @@
 #include "searchfiltermodel.h"
+#include "tools.h"
 
 void SearchFilterModel::update()
 {
-    qDebug() << "@@@@@ SearchFilterModel::update";
+    Tools::debugLog("@@@@@ SearchFilterModel::update");
     QStringList ss;
     ss << "Код" << "Штрихкод";
     setStringList(ss);

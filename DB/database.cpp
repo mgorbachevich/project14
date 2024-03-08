@@ -16,7 +16,7 @@
 DataBase::DataBase(Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
 {
-    qDebug() << "@@@@@ DataBase::DataBase ";
+    Tools::debugLog("@@@@@ DataBase::DataBase");
 
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
     tables.append(new UserDBTable(DBTABLENAME_USERS, this));
@@ -34,7 +34,7 @@ DataBase::DataBase(Settings& globalSettings, QObject *parent):
 
 DataBase::~DataBase()
 {
-    qDebug() << "@@@@@ DataBase::~DataBase ";
+    Tools::debugLog("@@@@@ DataBase::~DataBase");
     close(productDB);
     close(settingsDB);
     close(logDB);
@@ -44,15 +44,14 @@ DataBase::~DataBase()
 
 bool DataBase::init()
 {
-    qDebug() << "@@@@@ DataBase::init";
+    Tools::debugLog("@@@@@ DataBase::init");
     QString path = Tools::dataBaseFilePath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) QFile(path).remove();
     bool exists = QFile(path).exists();
-    qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(path, Tools::boolToString(exists));
+    Tools::debugLog(QString("@@@@@ DataBase::init %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(productDB, path);
     if(!exists && opened)
     {
-        qDebug() << QString("@@@@@ DataBase::init %1 create tables").arg(path);
         opened &= createTable(productDB, getTable(DBTABLENAME_PRODUCTS));
         opened &= createTable(productDB, getTable(DBTABLENAME_USERS));
         opened &= createTable(productDB, getTable(DBTABLENAME_LABELFORMATS));
@@ -72,7 +71,7 @@ bool DataBase::init()
     path = Tools::dataBaseFilePath(DB_SETTINGS_NAME);
     if(REMOVE_SETTINGS_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
-    qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(path, Tools::boolToString(exists));
+    Tools::debugLog(QString("@@@@@ DataBase::init %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(settingsDB, path);
     if(!exists && opened) opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
     if (!opened) return false;
@@ -80,25 +79,25 @@ bool DataBase::init()
     path = Tools::dataBaseFilePath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
-    qDebug() << QString("@@@@@ DataBase::init %1 exists %2").arg(path, Tools::boolToString(exists));
+    Tools::debugLog(QString("@@@@@ DataBase::init %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(logDB, path);
     if(!exists && opened)
     {
         opened &= createTable(logDB, getTable(DBTABLENAME_LOG));
         opened &= createTable(logDB, getTable(DBTABLENAME_TRANSACTIONS));
     }
-    qDebug() << "@@@@@ DataBase::init " << opened;
+    Tools::debugLog(QString("@@@@@ DataBase::init %1").arg(opened));
     return opened;
 }
 
 void DataBase::onStart()
 {
-    qDebug() << "@@@@@ DataBase::onStart ";
+    Tools::debugLog("@@@@@ DataBase::onStart");
     init();
     if (opened) emit started();
     else
     {
-        qDebug() << "@@@@@ DataBase::onStart ERROR";
+        Tools::debugLog("@@@@@ DataBase::onStart ERROR");
         emit showMessage("ВНИМАНИЕ!", "Ошибка при открытии базы данных");
     }
 }
@@ -106,29 +105,28 @@ void DataBase::onStart()
 bool DataBase::open(QSqlDatabase& db, const QString& name)
 {
     if (!opened) return false;
-    qDebug() << "@@@@@ DataBase::openDBFile ";
     const QString path = Tools::dataBaseFilePath(name);
-    qDebug() << QString("@@@@@ DataBase::open %1").arg(path);
+    Tools::debugLog("@@@@@ DataBase::open " + path);
     if(!QFile(path).exists()) return false;
     return db.isOpen() ? true : db.open();
 }
 
 bool DataBase::addAndOpen(QSqlDatabase& db, const QString& filePath, const bool open)
 {
-    qDebug() << "@@@@@ DataBase::addAndOpen " << filePath;
+    Tools::debugLog(QString("@@@@@ DataBase::addAndOpen %1").arg(filePath));
     if(db.isOpen()) return true;
     db = QSqlDatabase::addDatabase("QSQLITE", filePath);
     db.setDatabaseName(filePath);
     //db.setHostName(hostName);
     if(!open || db.open()) return true;
-    qDebug() << "@@@@@ DataBase::addAndOpen ERROR";
+    Tools::debugLog("@@@@@ DataBase::addAndOpen ERROR");
     return false;
 }
 
 DBTable* DataBase::getTable(const QString &name) const
 {
     for (DBTable* t : tables) if (t->name == name) return t;
-    qDebug() << "@@@@@ DataBase::getTable ERROR " << name;
+    Tools::debugLog(QString("@@@@@ DataBase::getTable ERROR %1").arg(name));
     return nullptr;
 }
 
@@ -143,7 +141,7 @@ QString DataBase::getProductMessageById(const QString& id)
 bool DataBase::createTable(const QSqlDatabase& db, DBTable* table)
 {
     if (!opened) return false;
-    qDebug() << "@@@@@ DataBase::createTable: name =" << table->name;
+    Tools::debugLog(QString("@@@@@ DataBase::createTable %1").arg(table->name));
 
     QString sql =  "CREATE TABLE " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
@@ -157,12 +155,12 @@ bool DataBase::createTable(const QSqlDatabase& db, DBTable* table)
 bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql)
 {
     if (!opened) return false;
-    qDebug() << "@@@@@ DataBase::executeSQL: sql =" << sql;
+    Tools::debugLog(QString("@@@@@ DataBase::executeSQL %1").arg(sql));
 
     QSqlQuery q(db);
     if (!q.exec(sql))
     {
-        qDebug() << "DataBase::executeSQL @@@@@ ERROR: " << q.lastError().text();
+        Tools::debugLog(QString("@@@@@ DataBase::executeSQL ERROR %1").arg(q.lastError().text()));
         //saveLog(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql);
         return false;
     }
@@ -172,24 +170,23 @@ bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql)
 bool DataBase::executeSelectSQL(const QSqlDatabase& db, DBTable* table, const QString& sql, DBRecordList& resultRecords)
 {
     if (!opened) return false;
-    qDebug() << "@@@@@ DataBase::executeSelectSQL: sql =" << sql;
+    Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1").arg(sql));
     resultRecords.clear();
 
     QSqlQuery q(db);
     if (!q.exec(sql))
     {
-        qDebug() << "@@@@@ DataBase::executeSelectSQL ERROR: " << q.lastError().text();
+        Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL ERROR %1").arg(q.lastError().text()));
         //saveLog(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql, log);
         return false;
     }
     while (q.next())
     {
         DBRecord r;
-        for(int i = 0; i < table->columnCount(); i++)
-            r << q.value(i);
+        for(int i = 0; i < table->columnCount(); i++) r << q.value(i);
         resultRecords.append(r);
     }
-    qDebug() << "@@@@@ DataBase::executeSelectSQL: records =" << resultRecords.count();
+    Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1").arg(resultRecords.count()));
     return resultRecords.count() > 0;
 }
 
@@ -200,7 +197,7 @@ bool DataBase::selectById(const QSqlDatabase& db, const QString& table, const QS
 
 bool DataBase::selectById(const QSqlDatabase& db, DBTable* table, const QString& id, DBRecord& resultRecord)
 {
-    qDebug() << "@@@@@ DataBase::selectById " << id;
+    Tools::debugLog(QString("@@@@@ DataBase::selectById %1").arg(id));
     resultRecord.clear();
     if(table == nullptr) return false;
     QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").arg(table->name, table->columnName(0), id);
@@ -212,7 +209,7 @@ bool DataBase::selectById(const QSqlDatabase& db, DBTable* table, const QString&
 
 void DataBase::selectAll(const QSqlDatabase& db, DBTable *table, DBRecordList& resultRecords)
 {
-    qDebug() << "@@@@@ DataBase::selectAll ";
+    Tools::debugLog("@@@@@ DataBase::selectAll ");
     resultRecords.clear();
     if(table != nullptr)
     {
@@ -225,7 +222,7 @@ void DataBase::selectAll(const QSqlDatabase& db, DBTable *table, DBRecordList& r
 
 bool DataBase::removeAll(const QSqlDatabase& db, DBTable* table)
 {
-    qDebug() << "@@@@@ DataBase::removeAll: table =" << table->name;
+    Tools::debugLog(QString("@@@@@ DataBase::removeAll %1").arg(table->name));
     QString sql = QString("DELETE FROM %1").arg(table->name);
     bool ok = executeSQL(db, sql);
     return ok;
@@ -234,23 +231,23 @@ bool DataBase::removeAll(const QSqlDatabase& db, DBTable* table)
 bool DataBase::removeRecord(const QSqlDatabase& db, DBTable* table, const QString& code)
 {
     if (!opened) return false;
-    qDebug() << "@@@@@ DataBase::removeRecord: table name =" << table->name;
+    Tools::debugLog(QString("@@@@@ DataBase::removeRecord %1").arg(table->name));
     QString sql = QString("DELETE FROM %1 WHERE %2 = '%3'").arg(table->name, table->columnName(0), code);
     return executeSQL(db, sql);
 }
 
 bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBRecord& record)
 {
-    qDebug() << "@@@@@ DataBase::insertRecord";
+    Tools::debugLog("@@@@@ DataBase::insertRecord");
     if (!opened)
     {
-        qDebug() << "@@@@@ DataBase::insertRecord ERROR (!opened)";
+        Tools::debugLog("@@@@@ DataBase::insertRecord ERROR opened=false");
         return false;
     }
     DBRecord checkedRecord = table->checkRecord(record);
     if (checkedRecord.isEmpty())
     {
-        qDebug() << "@@@@@ DataBase::insertRecord ERROR (checkedRecord.isEmpty())";
+        Tools::debugLog("@@@@@ DataBase::insertRecord ERROR checkedRecord.isEmpty()");
         //saveLog(LogDBTable::LogType_Error, "БД. Не сохранена запись в таблице " + table->name);
         return false;
     }
@@ -258,7 +255,7 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
     QString code = checkedRecord.at(0).toString();
     QString sql;
     DBRecord r;
-    qDebug() << "@@@@@ DataBase::insertRecord " << table->name << code;
+    Tools::debugLog(QString("@@@@@ DataBase::insertRecord %1 %2").arg(table->name, code));
     if (selectById(sqlDb, table, code, r)) removeRecord(sqlDb, table, code);
     sql = "INSERT INTO " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
@@ -277,17 +274,17 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
 
 bool DataBase::insertSettingsRecord(const DBRecord &r)
 {
-    qDebug() << "@@@@@ DataBase::insertSettingsRecord";
+    Tools::debugLog("@@@@@ DataBase::insertSettingsRecord");
     return insertRecord(settingsDB, getTable(DBTABLENAME_SETTINGS), r);
 }
 
 bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 {
+    Tools::debugLog(QString("@@@@@ DataBase::copyDBFiles %1 %2").arg(fromName, toName));
     QString from = Tools::dataBaseFilePath(fromName);
     QString to = Tools::dataBaseFilePath(toName);
-    qDebug() << QString("@@@@@ DataBase::copyDBFiles %1 >> %2").arg(from, to);
     if(Tools::copyFile(from, to)) return true;
-    qDebug() << "@@@@@ DataBase::copyDBFiles ERROR";
+    Tools::debugLog("@@@@@ DataBase::copyDBFiles ERROR");
     return false;
 }
 
@@ -297,19 +294,19 @@ void DataBase::saveLog(const int type, const int source, const QString &comment)
     int logging = settings.getItemIntValue(SettingCode_Logging);
     if (type > 0 && type <= logging)
     {
-        qDebug() << "@@@@@ DataBase::saveLog: " << type << source << comment;
+        Tools::debugLog(QString("@@@@@ DataBase::saveLog %1 %2 %3").arg(QString::number(type), QString::number(source), comment));
         LogDBTable* t = (LogDBTable*)getTable(DBTABLENAME_LOG);
         if (t != nullptr && insertRecord(logDB, t, t->createRecord(type, source, comment)))
             removeOldLogRecords();
         else
-            qDebug() << "@@@@@ DataBase::saveLog ERROR";
+            Tools::debugLog("@@@@@ DataBase::saveLog ERROR");
     }
 }
 
 void DataBase::removeOldLogRecords()
 {
     if (!opened) return;
-    qDebug() << "@@@@@ DataBase::removeOldLogRecords";
+    Tools::debugLog("@@@@@ DataBase::removeOldLogRecords");
     DBTable* t = getTable(DBTABLENAME_LOG);
     quint64 logDuration = settings.getItemIntValue(SettingCode_LogDuration);
     if(t != nullptr && logDuration > 0) // Remove old records
@@ -324,7 +321,7 @@ void DataBase::removeOldLogRecords()
 void DataBase::clearLog()
 {
     if (!opened) return;
-    qDebug() << "@@@@@ DataBase::clearLog";
+    Tools::debugLog("@@@@@ DataBase::clearLog");
     DBTable* t = getTable(DBTABLENAME_LOG);
     if(t != nullptr) logDB.exec(QString("DELETE FROM %1").arg(t->name));
 }
@@ -333,7 +330,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
-    qDebug() << "@@@@@ DataBase::select: selector =" << selector;
+    Tools::debugLog(QString("@@@@@ DataBase::select %1").arg(selector));
     DBRecordList resultRecords;
     switch(selector)
     {
@@ -472,13 +469,13 @@ void DataBase::select(const DBSelector selector, const QString& param)
 
     default: break;
     }
-    qDebug() << "@@@@@ DataBase::selectByParam: records =" << resultRecords.count();
+    Tools::debugLog(QString("@@@@@ DataBase::selectByParam records = %1").arg(resultRecords.count()));
     emit requestResult(selector, resultRecords, true);
 }
 
 void DataBase::afterNetAction()
 {
-    qDebug() << "@@@@@ DataBase::afterNetAction ";
+    Tools::debugLog("@@@@@ DataBase::afterNetAction ");
     close(tempDB);
     close(productDB);
     copyDBFiles(DB_TEMP_NAME, DB_PRODUCT_NAME);
@@ -489,7 +486,7 @@ void DataBase::select(const DBSelector selector, const DBRecordList& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
-    qDebug() << "@@@@@ DataBase::select: selector =" << selector << param.count();
+    Tools::debugLog(QString("@@@@@ DataBase::select %1 %2").arg(QString::number(selector), QString::number(param.count())));
     DBRecordList resultRecords;
     switch(selector)
     {
@@ -513,7 +510,7 @@ void DataBase::select(const DBSelector selector, const DBRecordList& param)
 
 void DataBase::updateSettingsRecord(const DBSelector selector, const DBRecord& record)
 {
-    qDebug() << "@@@@@ DataBase::updateSettingsRecord: selector =" << selector;
+    Tools::debugLog(QString("@@@@@ DataBase::updateSettingsRecord %1").arg(selector));
     bool result = false;
     switch(selector)
     {
@@ -529,7 +526,7 @@ void DataBase::updateSettingsRecord(const DBSelector selector, const DBRecord& r
 
 void DataBase::saveTransaction(const DBRecord& t)
 {
-    qDebug() << "@@@@@ DataBase::saveTransaction";
+    Tools::debugLog("@@@@@ DataBase::saveTransaction");
     insertRecord(logDB, getTable(DBTABLENAME_TRANSACTIONS), t);
 }
 
@@ -537,7 +534,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
 {
     // Удаление из таблицы по списку кодов
 
-    qDebug() << "@@@@@ DataBase::netDelete" << tableName << codeList;
+    Tools::debugLog(QString("@@@@@ DataBase::netDelete %1").arg(tableName));
     saveLog(LogType_Error, LogSource_DB, QString(" Удаление. Таблица: %1").arg(tableName));
     int errorCount = 0;
     int errorCode = 0;
@@ -592,7 +589,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     saveLog(LogType_Error, LogSource_DB, s);
     DBRecordList records;
     QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
-    qDebug() << "@@@@@ DataBase::netDelete: result" << resultJson;
+    Tools::debugLog(QString("@@@@@ DataBase::netDelete result = %1").arg(resultJson));
     return resultJson;
 }
 
@@ -600,7 +597,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
 {
     // Выгрузка из таблицы по списку кодов
 
-    qDebug() << "@@@@@ DataBase::netUpload" << tableName << codeList;
+    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1").arg(tableName));
     saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1").arg(tableName));
     int recordCount = 0;
     int errorCount = 0;
@@ -664,13 +661,13 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
             arg(tableName, QString::number(recordCount), QString::number(errorCount), description);
     saveLog(LogType_Error, LogSource_DB, s);
     QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
-    qDebug() << "@@@@@ DataBase::netUpload: result" << resultJson;
+    Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
     return resultJson;
 }
 
 void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount)
 {
-    qDebug() << "@@@@@ DataBase::netDownload";
+    Tools::debugLog("@@@@@ DataBase::netDownload");
     if(!open(tempDB, DB_TEMP_NAME)) return;
     bool detailedLog = settings.getItemIntValue(SettingCode_Logging) >= LogType_Info;
     QList tables = records.keys();
@@ -694,7 +691,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
                 s = QString("Запись загружена. Таблица: %1. Код: %2").arg(table->name, code);
                 if (detailedLog) saveLog(LogType_Warning, LogSource_DB, s);
             }
-            qDebug() << "@@@@@ DataBase::netDownload " << s;
+            Tools::debugLog("@@@@@ DataBase::netDownload "+ s);
         }
     }
 }

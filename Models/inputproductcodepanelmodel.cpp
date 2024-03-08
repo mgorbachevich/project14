@@ -1,9 +1,10 @@
 #include "inputproductcodepanelmodel.h"
 #include "productdbtable.h"
+#include "tools.h"
 
 void InputProductCodePanelModel::update(const DBRecordList &products)
 {
-    qDebug() << "@@@@@ InputProductCodePanelModel::update";
+    Tools::debugLog("@@@@@ InputProductCodePanelModel::update");
     QStringList ss;
     for (int i = 0; i < products.count(); i++)
     {

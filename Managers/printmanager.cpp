@@ -11,7 +11,7 @@
 PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& globalSettings, const bool demo):
     QObject(parent), db(dataBase), settings(globalSettings)
 {
-    qDebug() << "@@@@@ PrintManager::PrintManager " << demo;
+    Tools::debugLog("@@@@@ PrintManager::PrintManager " + Tools::boolToString(demo));
     if(!demo)
     {
         slpa = new Slpa100u(this);
@@ -23,27 +23,27 @@ PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& global
 
 int PrintManager::start(const QString& url)
 {
-    qDebug() << "@@@@@ PrintManager::start url = " << url;
+    Tools::debugLog("@@@@@ PrintManager::start " + url);
     int e = 0;
     if (slpa != nullptr && labelCreator != nullptr && !started)
     {
         e = slpa->connectDevice(url);
         started = (e == 0);
         if(started) slpa->startPolling(200);
-        qDebug() << "@@@@@ PrintManager::start error = " << e;
+        Tools::debugLog("@@@@@ PrintManager::start ERROR " + QString::number(e));
     }
     return e;
 }
 
 void PrintManager::stop()
 {
-    qDebug() << "@@@@@ PrintManager::stop";
+    Tools::debugLog("@@@@@ PrintManager::stop");
     if (slpa != nullptr && started)
     {
         slpa->stopPolling();
         int error = slpa->disconnectDevice();
         started = false;
-        qDebug() << "@@@@@ PrintManager::stop error = " << error;
+        Tools::debugLog("@@@@@ PrintManager::stop ERROR " + QString::number(error));
     }
 }
 
@@ -54,7 +54,7 @@ QString PrintManager::version() const
 
 void PrintManager::feed()
 {
-    qDebug() << "@@@@@ PrintManager::feed";
+    Tools::debugLog("@@@@@ PrintManager::feed");
     if(!started || slpa == nullptr) return;
     slpa->feed();
     // int e = slpa->feed(); todo
@@ -88,7 +88,7 @@ QString PrintManager::getErrorDescription(const int e) const
 
 void PrintManager::onStatusChanged(uint16_t s)
 {
-    qDebug() << QString("@@@@@ PrintManager::onStatusChanged %1b").arg(s);
+    Tools::debugLog(QString("@@@@@ PrintManager::onStatusChanged %1").arg(s));
     if(slpa == nullptr)
     {
         status = 0;
@@ -121,7 +121,7 @@ void PrintManager::onStatusChanged(uint16_t s)
 
 void PrintManager::onErrorStatusChanged(int e)
 {
-    qDebug() << "@@@@@ PrintManager::onErrorStatusChanged " << e;
+    Tools::debugLog("@@@@@ PrintManager::onErrorStatusChanged " + QString::number(e));
     if(slpa != nullptr && errorCode != e)
     {
         errorCode = e;
@@ -132,7 +132,7 @@ void PrintManager::onErrorStatusChanged(int e)
 void PrintManager::print(const DBRecord& user, const DBRecord& product,
                          const QString& quantity, const QString& price, const QString& amount)
 {
-    qDebug() << "@@@@@ PrintManager::print";
+    Tools::debugLog("@@@@@ PrintManager::print");
     if(!started || slpa == nullptr) return;
 
     quint64 dateTime = Tools::currentDateTimeToUInt();
@@ -182,7 +182,7 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
                         Tools::stringToInt(amount));
             emit printed(r);
         }
-        else qDebug() << "@@@@@ PrintManager::print ERROR (get Transactions Table)";
+        else Tools::debugLog("@@@@@ PrintManager::print ERROR (get Transactions Table)");
     }
 }
 

@@ -1,9 +1,10 @@
 #include "tablepanelmodel.h"
 #include "productdbtable.h"
+#include "tools.h"
 
 void TablePanelModel::update(const DBRecordList& newProducts)
 {
-    qDebug() << "@@@@@ TablePanelModel::update";
+    Tools::debugLog("@@@@@ TablePanelModel::update");
     products.clear();
     products.append(newProducts);
     QStringList ss;
@@ -49,7 +50,7 @@ bool TablePanelModel::groupDown(DBRecord& group)
 
 QString TablePanelModel::lastGroupCode()
 {
-    qDebug() << "@@@@@ TablePanelModel::lastGroupCode";
+    Tools::debugLog("@@@@@ TablePanelModel::lastGroupCode");
     return groupHierarchy.empty() ? "0" : groupHierarchy.last()[ProductDBTable::Code].toString();
 }
 
@@ -58,7 +59,7 @@ QString TablePanelModel::title()
     QString s = "/";
     for (int i = 0; i < groupHierarchy.count(); i++)
          s += " " + groupHierarchy[i][ProductDBTable::Name].toString() + " /";
-    qDebug() << "@@@@@ TablePanelModel::title " << s;
+    Tools::debugLog("@@@@@ TablePanelModel::title " + s);
     return s;
 }
 

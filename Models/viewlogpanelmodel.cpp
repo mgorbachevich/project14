@@ -4,7 +4,7 @@
 
 void ViewLogPanelModel::update(const DBRecordList& records)
 {
-    qDebug() << "@@@@@ ViewLogPanelModel::update";
+    Tools::debugLog("@@@@@ ViewLogPanelModel::update");
     QStringList ss;
     for (int i = 0; i < records.count(); i++)
     {

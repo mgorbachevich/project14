@@ -3,7 +3,7 @@
 
 ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
-    qDebug() << "@@@@@ ProductDBTable::ProductDBTable";
+    Tools::debugLog("@@@@@ ProductDBTable::ProductDBTable");
 
     addColumn("Код",                    "code",             "TEXT PRIMARY KEY");
     addColumn("Штрих-код",              "barcode",          "TEXT");
@@ -36,11 +36,11 @@ ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(na
 
 const DBRecord ProductDBTable::checkRecord(const DBRecord& record)
 {
-    qDebug() << "@@@@@ ProductDBTable::checkRecord: table =" << name;
+    Tools::debugLog("@@@@@ ProductDBTable::checkRecord " + name);
     DBRecord result;
     if (record.count() < columnCount())
     {
-        qDebug() << "@@@@@ ProductDBTable::checkRecord ERROR";
+        Tools::debugLog("@@@@@ ProductDBTable::checkRecord ERROR");
         return result;
     }
     int code = Tools::stringToInt(record.at(Columns::Code), 0);

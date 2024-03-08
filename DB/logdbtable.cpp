@@ -3,7 +3,7 @@
 
 LogDBTable::LogDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
-    qDebug() << "@@@@@ LogDBTable::LogDBTable";
+    Tools::debugLog("@@@@@ LogDBTable::LogDBTable");
 
     addColumn("Дата, время", "date_time", "UNSIGNED BIG INT PRIMARY KEY");
     addColumn("Тип",         "type",      "INT");

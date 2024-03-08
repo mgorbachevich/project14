@@ -6,7 +6,6 @@
 
 void JSONParser::parseTableColumn(DBTable* table, DBRecord& r, const QJsonObject &jo, const int columnIndex)
 {
-    // qDebug() << "@@@@@ JSONParser::parseTableColumn " << columnIndex;
     QString type = table->columnType(columnIndex);
     QString value = jo[table->columnName(columnIndex)].toString("");
     if (type.contains("INT"))
@@ -22,7 +21,7 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
     DBRecordList records;
     if(table == nullptr)
     {
-        qDebug() << "@@@@@ JSONParser::parseTable ERROR (table == nullptr)";
+        Tools::debugLog("@@@@@ JSONParser::parseTable ERROR table==nullptr");
         if(ok != nullptr) *ok = false;
         return records;
     }
@@ -30,18 +29,14 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
     QJsonValue data = jo["data"];
     if (!data.isObject())
     {
-        qDebug() << "@@@@@ JSONParser::parseTable ERROR (!data.isObject())";
+        Tools::debugLog("@@@@@ JSONParser::parseTable ERROR !data.isObject()");
         if(ok != nullptr) *ok = false;
         return records;
     }
     if(ok != nullptr) *ok = true;
     QJsonValue jt = data.toObject()[table->name];
-    if(!jt.isArray())
-    {
-        //qDebug() << "@@@@@ JSONParser::parseTable ERROR (!jt.isArray())";
-        return records;
-    }
-    qDebug() << "@@@@@ JSONParser::parseTable " << table->name;
+    if(!jt.isArray()) return records;
+    Tools::debugLog("@@@@@ JSONParser::parseTable " + table->name);
     QJsonArray ja = jt.toArray();
     for (int i = 0; i < ja.size(); i++)
     {
@@ -53,7 +48,7 @@ DBRecordList JSONParser::parseTable(DBTable *table, const QString &json, bool *o
             records << r;
         }
     }
-    qDebug() << "@@@@@ JSONParser::parseTable Done " << records.count();
+    Tools::debugLog(QString("@@@@@ JSONParser::parseTable Done %1").arg(records.count()));
     return records;
 }
 /*

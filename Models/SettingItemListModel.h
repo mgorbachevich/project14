@@ -2,6 +2,7 @@
 #define SETTINGITEMLISTMODEL_H
 
 #include "baselistmodel.h"
+#include "tools.h"
 
 class SettingItemListModel : public BaseListModel
 {
@@ -11,7 +12,7 @@ public:
     explicit SettingItemListModel(AppManager *parent): BaseListModel(parent) {}
     void update(const QStringList& values)
     {
-        qDebug() << "@@@@@ SettingItemListModel::update " << values;
+        Tools::debugLog("@@@@@ SettingItemListModel::update ");
         setStringList(values);
     }
 };

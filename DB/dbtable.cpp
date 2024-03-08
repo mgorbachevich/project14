@@ -1,5 +1,6 @@
 #include <QVariant>
 #include "dbtable.h"
+#include "tools.h"
 
 QVariantList DBTable::createRecord()
 {
@@ -10,18 +11,14 @@ QVariantList DBTable::createRecord()
 
 void DBTable::addColumn(const QString& title, const QString& name, const QString& type)
 {
-    //qDebug() << "@@@@@ DBTable::addColumn " << name;
     columns.append(DBTableColumn(title, name, type));
 }
 
 const DBRecord DBTable::checkRecord(const DBRecord& record)
 {
-    // qDebug() << "@@@@@ DBTable::checkRecord: table =" << name;
     DBRecord result;
-    if(record.count() >= columnCount())
-        result.append(record);
-    else
-        qDebug() << "@@@@@ DBTable::checkRecord ERROR";
+    if(record.count() >= columnCount()) result.append(record);
+    else Tools::debugLog("@@@@@ DBTable::checkRecord ERROR");
     return result;
 }
 
@@ -43,7 +40,7 @@ int DBTable::columnIndex(const QString& columnName)
 
 const DBRecordList DBTable::checkList(DataBase*, const DBRecordList &records)
 {
-    qDebug() << "@@@@@ DBTable::checkList: table =" << name;
+    Tools::debugLog("@@@@@ DBTable::checkList " + name);
     DBRecordList result;
     for (int i = 0; i < records.count(); i++)
     {

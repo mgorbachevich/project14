@@ -3,10 +3,11 @@
 #include <QDateTime>
 #include "weightmanager.h"
 #include "constants.h"
+#include "tools.h"
 
 WeightManager::WeightManager(QObject *parent, const bool demo): QObject(parent)
 {
-    qDebug() << "@@@@@ WeightManager::WeightManager " << demo;
+    Tools::debugLog("@@@@@ WeightManager::WeightManager ");
     if(!demo)
     {
         wm100 = new Wm100(this);
@@ -17,12 +18,12 @@ WeightManager::WeightManager(QObject *parent, const bool demo): QObject(parent)
 
 int WeightManager::start(const QString& url) // return error
 {
-    qDebug() << "@@@@@ WeightManager::start url = " << url;
+    Tools::debugLog("@@@@@ WeightManager::start " + url);
     int error = 0;
     if (wm100 != nullptr && !started)
     {
         error = wm100->connectDevice(url);
-        qDebug() << "@@@@@ WeightManager::start error = " << error;
+        Tools::debugLog("@@@@@ WeightManager::start error " + QString::number(error));
         started = (error == 0);
         if(started) wm100->startPolling(200);
     }
@@ -31,13 +32,13 @@ int WeightManager::start(const QString& url) // return error
 
 void WeightManager::stop()
 {
-    qDebug() << "@@@@@ WeightManager::stop";
+    Tools::debugLog("@@@@@ WeightManager::stop");
     if (wm100 != nullptr && started)
     {
         wm100->stopPolling();
         int e = wm100->disconnectDevice();
         started = false;
-        qDebug() << "@@@@@ WeightManager::stop error = " << e;
+        Tools::debugLog("@@@@@ WeightManager::stop error " + QString::number(e));
     }
 }
 
@@ -53,7 +54,7 @@ QString WeightManager::version() const
 
 void WeightManager::setWeightParam(const int param)
 {
-    qDebug() << "@@@@@ WeightManager::onSetWeightParam " << param;
+    Tools::debugLog("@@@@@ WeightManager::onSetWeightParam " + QString::number(param));
     if (wm100 == nullptr || !started) return;
     switch (param)
     {
@@ -95,10 +96,8 @@ QString WeightManager::getErrorDescription(const int e) const
 
 void WeightManager::onStatusChanged(Wm100Protocol::channel_status &s)
 {
-    qDebug() << QString("@@@@@ WeightManager::onStatusChanged state=%1b weight=%2 tare=%3").arg(
-                QString::number(s.state, 2),
-                QString::number(s.weight),
-                QString::number(s.tare));
+    Tools::debugLog(QString("@@@@@ WeightManager::onStatusChanged state=%1b weight=%2 tare=%3").arg(
+        QString::number(s.state, 2), QString::number(s.weight), QString::number(s.tare)));
 
     //bool b0 = isFlag(s, 0); // признак фиксации веса
     //bool b1 = isFlag(s, 1); // признак работы автонуляmain()
@@ -132,7 +131,7 @@ void WeightManager::onStatusChanged(Wm100Protocol::channel_status &s)
 
 void WeightManager::onErrorStatusChanged(int e)
 {
-    qDebug() << "@@@@@ WeightManager::onErrorStatusChanged " << e;
+    Tools::debugLog("@@@@@ WeightManager::onErrorStatusChanged " + QString::number(e));
     if(errorCode != e)
     {
         errorCode = e;

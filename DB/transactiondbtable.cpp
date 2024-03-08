@@ -1,8 +1,9 @@
 #include "transactiondbtable.h"
+#include "tools.h"
 
 TransactionDBTable::TransactionDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
-    qDebug() << "@@@@@ TransactionDBTable::TransactionDBTable";
+    Tools::debugLog("@@@@@ TransactionDBTable::TransactionDBTable");
 
     //addColumn("Дата, время",      "date_time",    "BIGINT PRIMARY KEY");
     addColumn("Дата, время",      "date_time",    "UNSIGNED BIG INT PRIMARY KEY");

@@ -2,6 +2,7 @@
 #define LABELFORMATDBTABLE_H
 
 #include "dbtable.h"
+#include "tools.h"
 
 class LabelFormatDBTable: public DBTable
 {
@@ -16,7 +17,7 @@ public:
 
     LabelFormatDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
-        qDebug() << "@@@@@ LabelFormatDBTable::LabelFormatDBTable";
+        Tools::debugLog("@@@@@ LabelFormatDBTable::LabelFormatDBTable");
 
         addColumn("Код",          "code",  "INT PRIMARY KEY");
         addColumn("Наименование", "name",  "TEXT");

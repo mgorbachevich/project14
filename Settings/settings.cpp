@@ -64,7 +64,7 @@ QList<int> Settings::getCurrentGroupItemCodes()
         int groupCode = r[SettingDBTable::GroupCode].toInt();
         if (groupCode == currentGroupCode) codes.append(r[SettingDBTable::Code].toInt());
     }
-    qDebug() << "@@@@@ Settings::getCurrentGroupItemCodes " << codes;
+    Tools::debugLog("@@@@@ Settings::getCurrentGroupItemCodes ");
     return codes;
 }
 
@@ -122,7 +122,7 @@ QString Settings::getCurrentGroupName()
 
 void Settings::update(const DBRecordList& records)
 {
-    qDebug() << "@@@@@ Settings::update ";
+    Tools::debugLog("@@@@@ Settings::update ");
     items.clear();
     items.append(records);
 }
@@ -153,7 +153,7 @@ bool Settings::onManualInputItemValue(const int itemCode, const QString& value)
 
 int Settings::nativeSettings(const int code) // return error
 {
-    qDebug() << "@@@@@ Settings::nativeSettings " << code;
+    Tools::debugLog("@@@@@ Settings::nativeSettings " + QString::number(code));
 
 #ifdef Q_OS_ANDROID // --------------------------------------------------------
     switch (code)
@@ -170,7 +170,7 @@ int Settings::nativeSettings(const int code) // return error
                     "nativeMethod",
                     "(Landroid/content/Context;I)I",
                     QNativeInterface::QAndroidApplication::context(), code);
-        qDebug() << "@@@@@ Settings::nativeSettings SettingCode_Equipment result " << result;
+        Tools::debugLog("@@@@@ Settings::nativeSettings SettingCode_Equipment result " + QString::number(result));
         return result;
     }
     default:
@@ -185,7 +185,7 @@ int Settings::nativeSettings(const int code) // return error
 
 QList<QString> Settings::parseEquipmentConfig(const QString& fileName)
 {
-    qDebug() << "@@@@@ Settings::parseEquipmentConfig fileName = "<< fileName;
+    Tools::debugLog("@@@@@ Settings::parseEquipmentConfig fileName " + fileName);
     QList<QString> result;
     if(QFileInfo::exists(fileName))
     {
@@ -193,7 +193,7 @@ QList<QString> Settings::parseEquipmentConfig(const QString& fileName)
         result.append(jo["WmUri"].toString());
         result.append(jo["PrinterUri"].toString());
     }
-    qDebug() << "@@@@@ Settings::parseEquipmentConfig uris = "<< result;
+    Tools::debugLog("@@@@@ Settings::parseEquipmentConfig uris " + result.join(", "));
     return result;
 }
 

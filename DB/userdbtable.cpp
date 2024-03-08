@@ -1,8 +1,9 @@
 #include "userdbtable.h"
+#include "tools.h"
 
 UserDBTable::UserDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
-    qDebug() << "@@@@@ UserDBTable::UserDBTable";
+    Tools::debugLog("@@@@@ UserDBTable::UserDBTable");
 
     addColumn("Код",    "code",     "INT PRIMARY KEY");
     addColumn("Имя",    "name",     "TEXT");
@@ -12,7 +13,7 @@ UserDBTable::UserDBTable(const QString& name, QObject *parent): DBTable(name, pa
 
 DBRecord UserDBTable::defaultAdmin()
 {
-    qDebug() << "@@@@@ UserDBTable::defaultAdmin ";
+    Tools::debugLog("@@@@@ UserDBTable::defaultAdmin");
     DBRecord r;
     for (int i = 0; i < UserDBTable::Columns::COLUMN_COUNT; i++)
         r << QVariant("");

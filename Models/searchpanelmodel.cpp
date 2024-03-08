@@ -1,9 +1,10 @@
 #include "searchpanelmodel.h"
 #include "productdbtable.h"
+#include "tools.h"
 
 void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilterModel::FilterIndex filterIndex)
 {
-    qDebug() << "@@@@@ SearchPanelModel::update: index =" << filterIndex;
+    Tools::debugLog("@@@@@ SearchPanelModel::update " + QString::number(filterIndex));
     index = filterIndex;
     products.clear();
     products.append(newProducts);

@@ -2,6 +2,7 @@
 #define RESOURCEDBTABLE_H
 
 #include "dbtable.h"
+#include "tools.h"
 
 class ResourceDBTable: public DBTable
 {
@@ -18,7 +19,7 @@ public:
 
     ResourceDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
-        qDebug() << "@@@@@ ResourceDBTable::ResourceDBTable";
+        Tools::debugLog("@@@@@ ResourceDBTable::ResourceDBTable");
 
         addColumn("Код",      "code",   "INT PRIMARY KEY");
         addColumn("Значение", "value",  "TEXT");

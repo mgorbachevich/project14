@@ -5,7 +5,8 @@
 
 SettingDBTable::SettingDBTable(const QString& name, QObject *parent): DBTable(name, parent)
 {
-    qDebug() << "@@@@@ SettingDBTable::SettingDBTable";
+    Tools::debugLog("@@@@@ SettingDBTable::SettingDBTable");
+
     addColumn("Код",             "code",       "INT PRIMARY KEY");
     addColumn("Тип",             "type",       "INT");
     addColumn("Код группы",      "group_code", "INT");
@@ -63,7 +64,7 @@ const DBRecord SettingDBTable::checkRecord(const DBRecord& record)
 */
 const DBRecordList SettingDBTable::checkList(DataBase* db, const DBRecordList& records)
 {
-    qDebug() << "@@@@@ SettingDBTable::checkList";
+    Tools::debugLog("@@@@@ SettingDBTable::checkList");
     DBRecordList result;
 
     // Проверка допустимых значений:
@@ -86,7 +87,7 @@ void SettingDBTable::checkAndSaveDefaultRecord(DataBase* db, const int code, con
     {
         if (results.at(i).at(Columns::Code).toInt() == code) // уже есть такая запись
         {
-            qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord exists " << code;
+            Tools::debugLog(QString("@@@@@ SettingDBTable::checkAndSaveDefaultRecord exists %1").arg(code));
             return;
         }
     }
@@ -97,7 +98,7 @@ void SettingDBTable::checkAndSaveDefaultRecord(DataBase* db, const int code, con
         {
             if(db->insertSettingsRecord(ri))
             {
-                qDebug() << "@@@@@ SettingDBTable::checkAndSaveDefaultRecord insert" << code;
+                Tools::debugLog(QString("@@@@@ SettingDBTable::checkAndSaveDefaultRecord insert %1").arg(code));
                 results.append(ri);
             }
             return;

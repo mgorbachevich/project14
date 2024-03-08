@@ -1,9 +1,10 @@
 #include "usernamemodel.h"
 #include "userdbtable.h"
+#include "tools.h"
 
 void UserNameModel::update(const DBRecordList& users)
 {
-    qDebug() << "@@@@@ UserNameModel::update " << users.count();
+    Tools::debugLog("@@@@@ UserNameModel::update " + QString::number(users.count()));
     QStringList ss;
     for (int i = 0; i < users.count(); i++)
     {

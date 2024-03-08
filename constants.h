@@ -1,35 +1,35 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.88"
+#define APP_VERSION "1.89"
 //#define RELEASE
 
 #ifdef RELEASE
 #define WM_DEMO false
 #define PRINTER_DEMO false
 #define WAIT_NET_ACTION_MSEC 30000
-#define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false
-#define REMOVE_LOG_DB_ON_START false
-#define REMOVE_TEMP_DB true
 #else
 #define WM_DEMO true
 #define PRINTER_DEMO true
 #define WAIT_NET_ACTION_MSEC 10000
-#define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START true
-#define REMOVE_LOG_DB_ON_START false
-#define REMOVE_TEMP_DB true
 #endif
 
-#define SHOW_DB_PATH_MESSAGE true
+#define DEBUG_LOG
+#define REMOVE_DEBUG_LOG_ON_START
+#define REMOVE_PRODUCT_DB_ON_START false
+#define REMOVE_LOG_DB_ON_START false
+#define REMOVE_TEMP_DB true
 #define CHECK_AUTHORIZATION true
+//#define SHOW_DB_PATH_MESSAGE
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define WAIT_SOUND_MSEC 500
 #define EOL "\r\n"
+#define DEBUG_LOG_NAME "DebugLog.txt"
 #define DB_LOG_NAME "Log.db"
 #define DB_TEMP_NAME "Temp.db"
 #define DB_PRODUCT_NAME "ShtrihScale.db"

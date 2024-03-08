@@ -2,6 +2,7 @@
 #define SHOWCASEDBTABLE_H
 
 #include "dbtable.h"
+#include "tools.h"
 
 class ShowcaseDBTable: public DBTable
 {
@@ -14,7 +15,7 @@ public:
 
     ShowcaseDBTable(const QString& name, QObject *parent): DBTable(name, parent)
     {
-        qDebug() << "@@@@@ ShowcaseDBTable::ShowcaseDBTable";
+        Tools::debugLog("@@@@@ ShowcaseDBTable::ShowcaseDBTable");
         addColumn("Код", "code", "TEXT PRIMARY KEY");
     }
     int columnCount() { return Columns::COLUMN_COUNT; }

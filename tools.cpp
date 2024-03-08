@@ -28,7 +28,7 @@ void Tools::sound(const QString& fileName, const int volume)
 
 QString Tools::readTextFile(const QString &fileName)
 {
-    qDebug() << "@@@@@ Tools::readTextFile " << fileName;
+    debugLog("@@@@@ Tools::readTextFile " + fileName);
     QFile f(fileName);
     if (!f.open(QFile::ReadOnly | QFile::Text)) return "";
     QTextStream in(&f);
@@ -104,39 +104,38 @@ NetParams Tools::getNetParams()
             }
         }
     }
-    qDebug() << "@@@@@ Tools::getNetParams " << np.localHostName << np.localMacAddress << np.localHostIP << np.localNetMask;
+    debugLog(QString("@@@@@ Tools::getNetParams %1 %2 %3 %4").arg(np.localHostName, np.localMacAddress, np.localHostIP, np.localNetMask));
     return np;
 }
 
 bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
 {
-    qDebug() << "@@@@@ Tools::writeBinaryFile name =" << filePath;
+    debugLog("@@@@@ Tools::writeBinaryFile " + filePath);
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly))
     {
         quint64 n1 = file.write(data);
         quint64 n2 = file.size();
-        qDebug() << QString("@@@@@ Tools::writeBinaryFile OK %1 %2").arg(QString::number(n1), QString::number(n2));
+        Tools::debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(QString::number(n1), QString::number(n2)));
         file.close();
         return true;
     }
-    qDebug() << "@@@@@ Tools::writeBinaryFile ERROR";
+    debugLog("@@@@@ Tools::writeBinaryFile ERROR");
     return false;
 }
 
 QByteArray Tools::readBinaryFile(const QString& path)
 {
-    qDebug() << "@@@@@ Tools::readBinaryFile name =" << path;
+    debugLog("@@@@@ Tools::readBinaryFile " + path);
     QByteArray a;
     QFile file(path);
     if (file.open(QIODevice::ReadOnly))
     {
         a = file.readAll();
         file.close();
-        qDebug() << "@@@@@ Tools::writeBinaryFile OK";
     }
     else
-        qDebug() << "@@@@@ Tools::writeBinaryFile ERROR";
+        debugLog("@@@@@ Tools::writeBinaryFile ERROR");
     return a;
 }
 
@@ -154,7 +153,7 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
         if(!dir.exists(path))
         {
             bool ok = dir.mkdir(path);
-            qDebug() << "@@@@@ Tools::makeFullPath mkdir " << ok << path;
+            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::boolToString(ok), path));
         }
     }
     path += "/" + dirs.last(); // file name
@@ -176,7 +175,7 @@ bool Tools::isFileExistInDownloadPath(const QString &localPath)
             ok = true;
         }
     }
-    qDebug() << "@@@@@ Tools::isFileExistInDownloadPath " << localPath << ok;
+    debugLog(QString("@@@@@ Tools::isFileExistInDownloadPath %1 %2").arg(Tools::boolToString(ok), localPath));
     return ok;
 }
 
@@ -198,7 +197,7 @@ QString Tools::dataBaseFilePath(const QString& localPath)
 
 bool Tools::copyFile(const QString& from, const QString& to)
 {
-    qDebug() << QString("@@@@@ DataBase::copyFile %1 >> %2").arg(from, to);
+    debugLog(QString("@@@@@ DataBase::copyFile %1 >> %2").arg(from, to));
     if (!QFile::exists(from)) return false;
     if (QFile::exists(to)) QFile::remove(to);
     return QFile::copy(from, to);
@@ -206,7 +205,7 @@ bool Tools::copyFile(const QString& from, const QString& to)
 
 bool Tools::removeFile(const QString &path)
 {
-    qDebug() << "@@@@@ Tools::removeFile " << path;
+    debugLog("@@@@@ Tools::removeFile " + path);
     return QFile::exists(path) ? QFile::remove(path) : true;
 }
 
@@ -217,7 +216,7 @@ QString Tools::downloadFilePath(const QString& localPath)
 
 void Tools::pause(const int msec, const QString& comment)
 {
-    qDebug() << "@@@@@ Tools::pause " << msec << comment;
+    debugLog(QString("@@@@@ Tools::pause %1 %2").arg(QString::number(msec), comment));
     QThread::currentThread()->msleep(msec);
 }
 
@@ -256,6 +255,32 @@ void Tools::sortByString(DBRecordList& records, const int field, const bool incr
         n = 0;
     }
 }
+
+void Tools::debugLog(const QString &s)
+{
+    qDebug() << s;
+#ifdef DEBUG_LOG
+    QFile f(dataBaseFilePath(DEBUG_LOG_NAME));
+    if (f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
+    {
+         QTextStream out(&f);
+         out << dateTimeFromUInt(currentDateTimeToUInt()) << " " << s << EOL;
+         f.close();
+    }
+#endif
+}
+
+void Tools::removeDebugLog()
+{
+#ifdef REMOVE_DEBUG_LOG_ON_START
+    removeFile(dataBaseFilePath(DEBUG_LOG_NAME));
+    debugLog("@@@@@ Tools::removeDebugLog");
+#endif
+}
+
+
+
+
 
 
 

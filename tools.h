@@ -38,6 +38,8 @@ public:
     static void sound(const QString&, const int);
     static void sortByInt(DBRecordList&, const int, const bool increase = true);
     static void sortByString(DBRecordList&, const int, const bool increase = true);
+    static void debugLog(const QString&);
+    static void removeDebugLog();
 
 private:
     static QString makeFullPath(const QString&, const QString&);

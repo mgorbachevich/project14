@@ -1,9 +1,10 @@
 #include "productpanelmodel.h"
 #include "productdbtable.h"
+#include "tools.h"
 
 void ProductPanelModel::update(const DBRecord& product, const double price, ProductDBTable* productTable)
 {
-    qDebug() << "@@@@@ ProductPanelModel::update " << product.at(ProductDBTable::Code).toString();
+    Tools::debugLog("@@@@@ ProductPanelModel::update " + product.at(ProductDBTable::Code).toString());
     QStringList ss;
     //ss << "<b>" + product.at(ProductDBTable::Name).toString() +"</b>" << "";
     for (int i = 0; i < product.count() && i < productTable->columnCount(); i++)
