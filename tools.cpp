@@ -53,6 +53,11 @@ int Tools::stringToInt(const QString &s, const int defaultValue)
     return ok ? v : defaultValue;
 }
 
+int Tools::stringToInt(const QVariant &v, const int defaultValue)
+{
+    return stringToInt(v.toString(), defaultValue);
+}
+
 double Tools::stringToDouble(const QString &s, const double defaultValue)
 {
     bool ok;
@@ -65,6 +70,21 @@ double Tools::priceToDouble(const QString &dbPrice, const int pointPosition)
     double v = dbPrice.toDouble();
     for (int i = 0; i < pointPosition; i++) v /= 10;
     return v;
+}
+
+QString Tools::moneyToText(const double& value, const int pointPosition)
+{
+    return QString("%1").arg(value, 0, 'f', pointPosition);
+}
+
+QString Tools::boolToString(const bool value)
+{
+    return QVariant(value).toString();
+}
+
+quint64 Tools::currentDateTimeToUInt()
+{
+    return QDateTime::currentMSecsSinceEpoch();
 }
 
 /*
@@ -256,15 +276,16 @@ void Tools::sortByString(DBRecordList& records, const int field, const bool incr
     }
 }
 
-void Tools::debugLog(const QString &s)
+void Tools::debugLog(const QString &text)
 {
-    qDebug() << s;
+    QString s = text;
+    qDebug() << s.replace("\n", " ").replace("\r", " ");
 #ifdef DEBUG_LOG
     QFile f(dataBaseFilePath(DEBUG_LOG_NAME));
     if (f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
     {
          QTextStream out(&f);
-         out << dateTimeFromUInt(currentDateTimeToUInt()) << " " << s << EOL;
+         out << dateTimeFromUInt(currentDateTimeToUInt(), "%1 %2", "dd.MM.yyyy", "hh:mm:ss.zzz") << " " << s.replace("\n", " ").replace("\r", " ") << EOL;
          f.close();
     }
 #endif
@@ -277,6 +298,22 @@ void Tools::removeDebugLog()
     debugLog("@@@@@ Tools::removeDebugLog");
 #endif
 }
+
+QString Tools::dateTimeFromUInt(quint64 v, const QString& format, const QString& dateFormat, const QString& timeFormat)
+{
+    return QString(format).arg(dateFromUInt(v, dateFormat), timeFromUInt(v, timeFormat));
+}
+
+QString Tools::dateFromUInt(quint64 v, const QString& format)
+{
+    return QDateTime::fromMSecsSinceEpoch(v).toString(format);
+}
+
+QString Tools::timeFromUInt(quint64 v, const QString& format)
+{
+    return QDateTime::fromMSecsSinceEpoch(v).toString(format);
+}
+
 
 
 

@@ -102,10 +102,7 @@ void AppManager::onDBStarted()
     //showToast("", "Инициализация");
     Tools::debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
-    settingsPanelModel->update(settings);
-    startAuthorization();
-    db->select(DBSelector_UpdateSettings, "");
-    //showMessage("NetParams", QString("IP = %1").arg(Tools::getNetParams().localHostIP));
+    db->select(DBSelector_UpdateSettingsOnStart, "");
     Tools::debugLog("@@@@@ AppManager::onDBStarted Done");
 }
 
@@ -133,11 +130,12 @@ void AppManager::onNetAction(const int action)
 
 void AppManager::onTimer()
 {
+    if(DEBUG_ONTIMER_MESSAGE) Tools::debugLog("@@@@@ AppManager::onTimer");
     const quint64 now = Tools::currentDateTimeToUInt();
 
     // Блокировка:
     quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
-    if(userActionTime > 0 && !isAuthorizationOpened && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
+    if(!isAuthorizationOpened && userActionTime > 0 && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
     {
         Tools::debugLog("@@@@@ AppManager::onTimer userActionTime");
         userActionTime = 0;
@@ -156,11 +154,8 @@ void AppManager::onTimer()
             db->afterNetAction();
             refreshAll();
             resetProduct();
-            emit showMessageBox("ВНИМАНИЕ!", "Товары обновлены!", true);
-            /*
-            if(!product.isEmpty())
-                db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
-            */
+            showMessage("ВНИМАНИЕ!", "Товары обновлены!");
+            // if(!product.isEmpty()) db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
         }
     }
 }
@@ -173,8 +168,7 @@ QString AppManager::quantityAsString(const DBRecord& productRecord)
 
 QString AppManager::priceAsString(const DBRecord& productRecord)
 {
-    int pp = settings.getItemIntValue(SettingCode_PointPosition);
-    return Tools::moneyToText(price(productRecord), pp);
+    return Tools::moneyToText(price(productRecord), settings.getItemIntValue(SettingCode_PointPosition));
 }
 
 QString AppManager::amountAsString(const DBRecord& productRecord)
@@ -184,16 +178,14 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
         q = printStatus.pieces;
     else if(!weightManager->isError())
         q = weightManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
-    int pp = settings.getItemIntValue(SettingCode_PointPosition);
-    return Tools::moneyToText(q * price(productRecord), pp);
+    return Tools::moneyToText(q * price(productRecord), settings.getItemIntValue(SettingCode_PointPosition));
 }
 
 double AppManager::price(const DBRecord& productRecord)
 {
     const int p = ProductDBTable::Price;
     if (productRecord.count() <= p) return 0;
-    int pp = settings.getItemIntValue(SettingCode_PointPosition);
-    return Tools::priceToDouble(productRecord[p].toString(), pp);
+    return Tools::priceToDouble(productRecord[p].toString(), settings.getItemIntValue(SettingCode_PointPosition));
 }
 
 void AppManager::setProduct(const DBRecord& newProduct)
@@ -307,7 +299,7 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     else
     {
         Tools::debugLog("@@@@@ AppManager::onSettingInputClosed ERROR");
-        //emit showMessageBox("ВНИМАНИЕ!", "Ошибка при сохранении значения настройки!", true);
+        //showMessage("ВНИМАНИЕ!", "Ошибка при сохранении значения настройки!");
     }
 }
 
@@ -324,7 +316,7 @@ void AppManager::onLockClicked()
 {
     Tools::debugLog("@@@@@ AppManager::onLockClicked");
     onUserAction();
-    emit showConfirmationBox(DialogSelector::DialogSelector_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
+    showConfirmation(DialogSelector::DialogSelector_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
 void AppManager::onMainPageChanged(const int index)
@@ -348,7 +340,7 @@ void AppManager::onPiecesInputClosed(const QString &value)
     if(v < 1)
     {
         v = 1;
-        emit showMessageBox("ВНИМАНИЕ!", "Количество не должно быть меньше 1", true);
+        showMessage("ВНИМАНИЕ!", "Количество не должно быть меньше 1");
     }
     printStatus.pieces = v;
     updateStatus();
@@ -391,22 +383,21 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
     Tools::debugLog("@@@@@ AppManager::onDBRequestResult " + QString::number(selector));
     if (!ok)
     {
-        emit showMessageBox("ВНИМАНИЕ!", "Ошибка базы данных!", true);
+        showMessage("ВНИМАНИЕ!", "Ошибка базы данных!");
         return;
     }
 
     switch(selector)
     {
-    case DBSelector_UpdateSettings: // Обновление настроек с перезапуском оборудования:
+    case DBSelector_UpdateSettingsOnStart:
         if(!records.isEmpty()) settings.update(records);
         settingsPanelModel->update(settings);
-        if(isStarted) startEquipment();
+        startAuthorization();
         break;
 
     case DBSelector_ChangeSettings: // Обновление настроек без перезапуска оборудования:
         if(!records.isEmpty()) settings.update(records);
         settingsPanelModel->update(settings);
-        //if(started) startEquipment(false, true, true);
         break;
 
     case DBSelector_ReplaceSettingsItem: // Изменена настройка оператором:
@@ -414,7 +405,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
         break;
 
     case DBSelector_GetAuthorizationUserByName: // Получен результат поиска пользователя по введеному имени при авторизации:
-        checkAuthorization(records);
+        stopAuthorization(records);
         break;
 
     case DBSelector_GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
@@ -424,10 +415,10 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
 
     case DBSelector_GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
         if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
-            emit showMessageBox("Описание товара", records[0][ResourceDBTable::Value].toString(), true);
+            showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
         break;
 
-    case DBSelector_GetUsers: // Отображение имен пользователей при авторизации:
+    case DBSelector_GetAuthorizationUsers: // Отображение имен пользователей при авторизации:
         showUsers(records);
         break;
 
@@ -441,7 +432,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
 
     case DBSelector_SetProductByInputCode: // Отображение товара с заданным кодом:
         if(records.isEmpty())
-            emit showMessageBox("", "Товар не найден!", true);
+            showMessage("", "Товар не найден!");
         else
         {
             emit closeInputProductPanel();
@@ -571,7 +562,7 @@ void AppManager::onInfoClicked()
 {
     Tools::debugLog("@@@@@ AppManager::onInfoClicked ");
     onUserAction();
-    emit showMessageBox("Инфо", appInfo.all(EOL), true);
+    showMessage("Инфо", appInfo.all(EOL));
 }
 
 void AppManager::onTableResultClicked(const int index)
@@ -612,7 +603,7 @@ void AppManager::onSettingsItemClicked(const int index)
         emit showSettingsPanel(settings.getCurrentGroupName());
         break;
     case SettingType_ReadOnly:
-        emit showMessageBox(name, "Редактирование запрещено", true);
+        showMessage(name, "Редактирование запрещено");
         break;
     case SettingType_InputNumber:
     case SettingType_InputText:
@@ -645,7 +636,7 @@ void AppManager::onSettingsItemClicked(const int index)
 void AppManager::clearLog()
 {
     Tools::debugLog("@@@@@ AppManager::clearLog");
-    emit showConfirmationBox(DialogSelector::DialogSelector_ClearLog, "Подтверждение", "Вы хотите очистить лог?");
+    showConfirmation(DialogSelector::DialogSelector_ClearLog, "Подтверждение", "Вы хотите очистить лог?");
 }
 
 void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
@@ -654,7 +645,7 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     const QString& name = settings.getItemName(r);
     Tools::debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(QString::number(code), name));
 
-    if (code == SettingCode_Equipment) stopEquipment(false);
+    if (code == SettingCode_Equipment) stopEquipment();
 
     switch (code)
     {
@@ -670,18 +661,18 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
         case 0: // Ошибок нет
             break;
         case -1:
-            emit showMessageBox(name, "ОШИБКА! Неизвестный параметр", true);
+            showMessage(name, "ОШИБКА! Неизвестный параметр");
             break;
         case -2:
-            emit showMessageBox(name, "ОШИБКА! Неверный вызов", true);
+            showMessage(name, "ОШИБКА! Неверный вызов");
             break;
         }
         break;
     default:
-        emit showMessageBox(name, "Не поддерживается", true);
+        showMessage(name, "Не поддерживается");
         return;
     }
-    if (code == SettingCode_Equipment) startEquipment(false);
+    if (code == SettingCode_Equipment) startEquipment();
 }
 
 void AppManager::onSettingsPanelCloseClicked()
@@ -741,14 +732,13 @@ void AppManager::updateTablePanel(const bool root)
 void AppManager::startAuthorization()
 {
     Tools::debugLog("@@@@@ AppManager::startAuthorization");
-    isStarted = false;
+    isAuthorizationOpened = true;
     stopEquipment();
-    QString info = appInfo.all();
+    const QString info = appInfo.all();
     Tools::debugLog("@@@@@ AppManager::startAuthorization " + info);
     emit showAuthorizationPanel(info);
-    isAuthorizationOpened = true;
     db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
-    db->select(DBSelector_GetUsers, "");
+    db->select(DBSelector_GetAuthorizationUsers, "");
     Tools::debugLog("@@@@@ AppManager::startAuthorization Done");
 }
 
@@ -762,60 +752,53 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     db->select(DBSelector_GetAuthorizationUserByName, normalizedLogin);
 }
 
-void AppManager::checkAuthorization(const DBRecordList& dbUsers)
+void AppManager::stopAuthorization(const DBRecordList& dbUsers)
 {
     // Введены логин и пароль. Проверка
+    const QString title = "Авторизация";
+    QString login = "";
 
-    Tools::debugLog("@@@@@ AppManager::checkAuthorization");
-    QString title = "Авторизация";
-    QString error = "";
-    QString login = user[UserDBTable::Name].toString();
-    QString password = user[UserDBTable::Password].toString();
-    bool isDefaultAdmin = dbUsers.isEmpty();
-
-    if(CHECK_AUTHORIZATION)
+    if(!CHECK_AUTHORIZATION) // Без проверки
     {
-        if (!isDefaultAdmin)
+        user = UserDBTable::defaultAdmin();
+        login = user[UserDBTable::Name].toString();
+        Tools::debugLog(QString("@@@@@ AppManager::stopAuthorization %1").arg(login));
+    }
+    else
+    {
+        login = user[UserDBTable::Name].toString();
+        const QString password = user[UserDBTable::Password].toString();
+        Tools::debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
+        if (!dbUsers.isEmpty())
         {
             if (login != dbUsers[0][UserDBTable::Name].toString() || password != dbUsers[0][UserDBTable::Password])
             {
-                error = "Неверные имя пользователя или пароль";
-                Tools::debugLog("@@@@@ AppManager::checkAuthorization ERROR");
-                emit showMessageBox(title, error, true);
+                Tools::debugLog("@@@@@ AppManager::stopAuthorization ERROR");
+                const QString error = "Неверные имя пользователя или пароль";
+                showMessage(title, error);
                 db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
+                onUserAction();
                 return;
             }
             user.clear();
             user.append(dbUsers[0]);
         }
     }
-    else
-    {
-        user = UserDBTable::defaultAdmin();
-        login = user[UserDBTable::Name].toString();
-    }
 
-    Tools::debugLog("@@@@@ AppManager::checkAuthorization OK");
+    Tools::debugLog("@@@@@ AppManager::stopAuthorization OK");
     QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
     db->saveLog(LogType_Warning, LogSource_User, s);
-    if(!isStarted)
-    {
-        Tools::debugLog("@@@@@ AppManager::checkAuthorization !isStarted");
-        isStarted = true;
-        startEquipment();
-        emit authorizationSucceded();
-        refreshAll();
-        resetProduct();
-        mainPageIndex = 0;
-        emit showMainPage(mainPageIndex);
-        setShowcaseSort(showcaseSort);
+    emit showAuthorizationSucceded();
 
-#ifdef SHOW_DB_PATH_MESSAGE
-        emit showMessageBox("БД", Tools::dataBaseFilePath(DB_PRODUCT_NAME), true);
-#endif
-        isAuthorizationOpened = false;
-        Tools::debugLog("@@@@@ AppManager::checkAuthorization Done");
-    }
+    startEquipment();
+    refreshAll();
+    resetProduct();
+    mainPageIndex = 0;
+    emit showMainPage(mainPageIndex);
+    isAuthorizationOpened = false;
+    if(SHOW_DB_PATH_MESSAGE) showMessage("БД", Tools::dataBaseFilePath(DB_PRODUCT_NAME));
+    onUserAction();
+    Tools::debugLog("@@@@@ AppManager::stopAuthorization Done");
 }
 
 void AppManager::setShowcaseSort(const int sort)
@@ -840,8 +823,21 @@ void AppManager::refreshAll()
 
 void AppManager::showToast(const QString &title, const QString &text, const int delaySec)
 {
+    Tools::debugLog(QString("@@@@@ AppManager::showToast %1 %2").arg(title, text));
     emit showMessageBox(title, text, false);
     QTimer::singleShot(delaySec * 1000, this, &AppManager::hideToast);
+}
+
+void AppManager::showMessage(const QString &title, const QString &text)
+{
+    Tools::debugLog(QString("@@@@@ AppManager::showMessage %1 %2").arg(title, text));
+    emit showMessageBox(title, text, true);
+}
+
+void AppManager::showConfirmation(const DialogSelector selector, const QString &title, const QString &text)
+{
+    Tools::debugLog(QString("@@@@@ AppManager::showConfirmation %1 %2 %3").arg(QString::number(selector), title, text));
+    emit showConfirmationBox(selector, title, text);
 }
 
 void AppManager::resetProduct()
@@ -856,6 +852,7 @@ void AppManager::resetProduct()
 
 void AppManager::startEquipment(const bool server, const bool weight, const bool printer)
 {
+    Tools::debugLog("@@@@@ AppManager::startEquipment");
     if (server)
     {
         const int serverPort = settings.getItemIntValue(SettingCode_TCPPort);
@@ -889,19 +886,22 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
         if (weight) e1 = weightManager->start(uris[0]);
         if (printer) e2 = printManager->start(uris[1]);
 
-        if(e1 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
-                                        arg(QString::number(e1), weightManager->getErrorDescription(e1)), true);
-        if(e2 != 0) emit showMessageBox("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
-                                        arg(QString::number(e2), printManager->getErrorDescription(e2)), true);
-        if(!message.isEmpty()) emit showMessageBox("ВНИМАНИЕ!", message, true);
+        if(e1 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
+                                arg(QString::number(e1), weightManager->getErrorDescription(e1)));
+        if(e2 != 0) showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
+                                arg(QString::number(e2), printManager->getErrorDescription(e2)));
+        if(!message.isEmpty()) showMessage("ВНИМАНИЕ!", message);
     }
+    Tools::debugLog("@@@@@ AppManager::startEquipment Done");
 }
 
 void AppManager::stopEquipment(const bool server, const bool weight, const bool printer)
 {
+    Tools::debugLog("@@@@@ AppManager::stopEquipment");
     if (server) netServer->stop();
     if (weight) weightManager->stop();
     if (printer) printManager->stop();
+    Tools::debugLog("@@@@@ AppManager::stopEquipment Done");
 }
 
 void AppManager::onUserAction()
@@ -927,14 +927,13 @@ void AppManager::showUsers(const DBRecordList& records)
         user.clear();
         user.append(users.at(0));
         emit setCurrentUser(0, user.at(UserDBTable::Name).toString());
-        return;
     }
-    for (int i = 0; i < users.count(); i++)
+    else for (int i = 0; i < users.count(); i++)
     {
         if(users.at(i).at(UserDBTable::Code).toInt() == user.at(UserDBTable::Code).toInt())
         {
             emit setCurrentUser(i, users.at(i).at(UserDBTable::Name).toString());
-            return;
+            break;
         }
     }
 }

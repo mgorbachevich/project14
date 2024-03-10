@@ -46,7 +46,8 @@ public:
     QList<DBTable*> tables;
 
 protected:
-    bool init();
+    bool startDB();
+    void emulation();
     bool open(QSqlDatabase&, const QString&);
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     bool createTable(const QSqlDatabase& db, DBTable*);

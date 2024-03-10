@@ -42,13 +42,13 @@ DataBase::~DataBase()
     if(REMOVE_TEMP_DB) Tools::removeFile(Tools::dataBaseFilePath(DB_TEMP_NAME));
 }
 
-bool DataBase::init()
+bool DataBase::startDB()
 {
-    Tools::debugLog("@@@@@ DataBase::init");
+    Tools::debugLog("@@@@@ DataBase::startDB");
     QString path = Tools::dataBaseFilePath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) QFile(path).remove();
     bool exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::init %1 %2").arg(path, Tools::boolToString(exists)));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(productDB, path);
     if(!exists && opened)
     {
@@ -71,7 +71,7 @@ bool DataBase::init()
     path = Tools::dataBaseFilePath(DB_SETTINGS_NAME);
     if(REMOVE_SETTINGS_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::init %1 %2").arg(path, Tools::boolToString(exists)));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(settingsDB, path);
     if(!exists && opened) opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
     if (!opened) return false;
@@ -79,22 +79,43 @@ bool DataBase::init()
     path = Tools::dataBaseFilePath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) QFile(path).remove();
     exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::init %1 %2").arg(path, Tools::boolToString(exists)));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(logDB, path);
     if(!exists && opened)
     {
         opened &= createTable(logDB, getTable(DBTABLENAME_LOG));
         opened &= createTable(logDB, getTable(DBTABLENAME_TRANSACTIONS));
     }
-    Tools::debugLog(QString("@@@@@ DataBase::init %1").arg(opened));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(opened));
     return opened;
+}
+
+void DataBase::emulation()
+{
+#ifdef DB_EMULATION
+    Tools::debugLog("@@@@@ DataBase::emulation");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('6', 'pictures/6.png', '', '', '')");
+    //executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('7', 'pictures/7.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('8', 'pictures/8.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('9', 'pictures/9.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('10', 'pictures/10.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('11', 'pictures/11.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('12', 'pictures/12.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('13', 'pictures/13.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('14', 'pictures/14.png', '', '', '')");
+    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '')");
+#endif
 }
 
 void DataBase::onStart()
 {
     Tools::debugLog("@@@@@ DataBase::onStart");
-    init();
-    if (opened) emit started();
+    startDB();
+    if (opened)
+    {
+        emulation();
+        emit started();
+    }
     else
     {
         Tools::debugLog("@@@@@ DataBase::onStart ERROR");
@@ -334,13 +355,13 @@ void DataBase::select(const DBSelector selector, const QString& param)
     DBRecordList resultRecords;
     switch(selector)
     {
-    case DBSelector_UpdateSettings:
+    case DBSelector_UpdateSettingsOnStart:
     case DBSelector_ChangeSettings:
     // Запрос списка настроек:
         selectAll(settingsDB, getTable(DBTABLENAME_SETTINGS), resultRecords);
         break;
 
-    case DBSelector_GetUsers:
+    case DBSelector_GetAuthorizationUsers:
     // Запрос списка пользователей для авторизации:
         selectAll(productDB, getTable(DBTABLENAME_USERS), resultRecords);
         Tools::sortByString(resultRecords, UserDBTable::Name);

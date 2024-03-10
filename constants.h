@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.89"
+#define APP_VERSION "1.90"
 //#define RELEASE
 
 #ifdef RELEASE
@@ -17,12 +17,14 @@
 #endif
 
 #define DEBUG_LOG
+//#define DB_EMULATION
 #define REMOVE_DEBUG_LOG_ON_START
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
 #define REMOVE_TEMP_DB true
 #define CHECK_AUTHORIZATION true
-//#define SHOW_DB_PATH_MESSAGE
+#define SHOW_DB_PATH_MESSAGE false
+#define DEBUG_ONTIMER_MESSAGE true
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
@@ -190,10 +192,10 @@ enum DBSelector
     DBSelector_GetProductsByFilteredCode,
     DBSelector_GetProductsByFilteredBarcode,
     DBSelector_GetItemsByCodes,
-    DBSelector_GetUsers,
+    DBSelector_GetAuthorizationUsers,
     DBSelector_GetAuthorizationUserByName,
     DBSelector_GetSettingsItemByCode,
-    DBSelector_UpdateSettings,
+    DBSelector_UpdateSettingsOnStart,
     DBSelector_GetLog,
     DBSelector_RefreshCurrentProduct,
     DBSelector_ReplaceSettingsItem,

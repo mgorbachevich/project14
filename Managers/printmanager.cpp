@@ -23,27 +23,29 @@ PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& global
 
 int PrintManager::start(const QString& url)
 {
-    Tools::debugLog("@@@@@ PrintManager::start " + url);
     int e = 0;
     if (slpa != nullptr && labelCreator != nullptr && !started)
     {
+        Tools::debugLog("@@@@@ PrintManager::start " + url);
         e = slpa->connectDevice(url);
+        Tools::debugLog("@@@@@ PrintManager::start connect device error " + QString::number(e));
         started = (e == 0);
         if(started) slpa->startPolling(200);
-        Tools::debugLog("@@@@@ PrintManager::start ERROR " + QString::number(e));
+        Tools::debugLog("@@@@@ PrintManager::start Done");
     }
     return e;
 }
 
 void PrintManager::stop()
 {
-    Tools::debugLog("@@@@@ PrintManager::stop");
     if (slpa != nullptr && started)
     {
+        Tools::debugLog("@@@@@ PrintManager::stop");
         slpa->stopPolling();
-        int error = slpa->disconnectDevice();
+        int e = slpa->disconnectDevice();
+        Tools::debugLog("@@@@@ PrintManager::stop disconnect device error " + QString::number(e));
         started = false;
-        Tools::debugLog("@@@@@ PrintManager::stop ERROR " + QString::number(error));
+        Tools::debugLog("@@@@@ PrintManager::stop Done");
     }
 }
 
@@ -157,8 +159,8 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
         pd.shop = settings.getItemStringValue(SettingCode_ShopName);
         pd.operatorcode = user[UserDBTable::Code].toString();
         pd.operatorname = user[UserDBTable::Name].toString();
-        pd.date = Tools::dateFromUInt(dateTime);
-        pd.time = Tools::timeFromUInt(dateTime);
+        pd.date = Tools::dateFromUInt(dateTime, "dd.MM.yyyy");
+        pd.time = Tools::timeFromUInt(dateTime, "hh:mm:ss");
         pd.labelnumber = QString::number(labelNumber);
         pd.scalesnumber = settings.getItemStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo

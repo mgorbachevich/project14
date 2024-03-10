@@ -19,10 +19,10 @@ Popup
     onOpened: app.onPopupOpened()
     onClosed: app.onPopupClosed()
 
-    Connections // Slot for signal AppManager::authorizationSucceded:
+    Connections // Slot for signal AppManager::showAuthorizationSucceded:
     {
         target: app
-        function onAuthorizationSucceded()
+        function onShowAuthorizationSucceded()
         {
             app.onUserAction();
             authorizationPanel.close()

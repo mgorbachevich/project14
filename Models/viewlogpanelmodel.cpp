@@ -9,7 +9,7 @@ void ViewLogPanelModel::update(const DBRecordList& records)
     for (int i = 0; i < records.count(); i++)
     {
         DBRecord ri = records[i];
-        QString dateTime = Tools::dateTimeFromUInt(ri[LogDBTable::DateTime].toLongLong());
+        QString dateTime = Tools::dateTimeFromUInt(ri[LogDBTable::DateTime].toLongLong(), "%1 %2", "dd.MM.yyyy", "hh:mm:ss");
         QString comment = ri[LogDBTable::Comment].toString();
         QString source = ri[LogDBTable::Source].toString();
         QString type = ri[LogDBTable::Type].toString();

@@ -11,19 +11,19 @@ class Tools
 {
 public:
     explicit Tools(QApplication* a) { app = a; }
-    static QString boolToString(const bool value) { return QVariant(value).toString(); }
-    static QString moneyToText(const double& value, const int pointPosition) { return QString("%1").arg(value, 0, 'f', pointPosition); }
+    static QString boolToString(const bool);
+    static QString moneyToText(const double&, const int);
     static double priceToDouble(const QString&, const int);
     static QString readTextFile(const QString&);
     static QString jsonToString(const QJsonObject&);
     static QJsonObject stringToJson(const QString&);
     static int stringToInt(const QString&, const int defaultValue = 0);
-    static int stringToInt(const QVariant &v, const int defaultValue = 0) { return stringToInt(v.toString(), defaultValue); }
+    static int stringToInt(const QVariant &v, const int defaultValue = 0);
     static double stringToDouble(const QString&, const double defaultValue = 0);
-    static quint64 currentDateTimeToUInt() { return QDateTime::currentMSecsSinceEpoch(); }
-    static QString dateTimeFromUInt(quint64 v) { return QString("%1 %2").arg(dateFromUInt(v), timeFromUInt(v)); }
-    static QString dateFromUInt(quint64 v) { return QDateTime::fromMSecsSinceEpoch(v).toString("dd.MM.yyyy"); }
-    static QString timeFromUInt(quint64 v) { return QDateTime::fromMSecsSinceEpoch(v).toString("HH:mm:ss"); }
+    static quint64 currentDateTimeToUInt();
+    static QString dateTimeFromUInt(quint64, const QString&, const QString&, const QString&);
+    static QString dateFromUInt(quint64, const QString&);
+    static QString timeFromUInt(quint64, const QString&);
     static NetParams getNetParams();
     //static void memoryCheck();
     static bool writeBinaryFile(const QString&, const QByteArray& data);

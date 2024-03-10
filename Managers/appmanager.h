@@ -73,28 +73,29 @@ public:
     Q_INVOKABLE void onZeroClicked();
 
 private:
+    QString amountAsString(const DBRecord&);
+    void filteredSearch();
+    QString getImageFileWithQmlPath(const DBRecord&);
     double price(const DBRecord&);
     QString priceAsString(const DBRecord&);
-    QString amountAsString(const DBRecord&);
-    QString quantityAsString(const DBRecord&);
-    void setProduct(const DBRecord&);
-    void filteredSearch();
-    void updateTablePanel(const bool);
-    void updateStatus();
-    void startAuthorization();
-    void checkAuthorization(const DBRecordList&);
-    void showUsers(const DBRecordList&);
-    void refreshAll();
-    void showToast(const QString&, const QString&, const int delaySec = 5);
-    void resetProduct();
-    void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
-    void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
     void print();
-    QString getImageFileWithQmlPath(const DBRecord&);
+    QString quantityAsString(const DBRecord&);
+    void refreshAll();
+    void resetProduct();
     void onCustomSettingsItemClicked(const DBRecord&);
+    void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
+    void showConfirmation(const DialogSelector, const QString&, const QString&);
+    void showMessage(const QString&, const QString&);
+    void showToast(const QString&, const QString&, const int delaySec = 5);
+    void showUsers(const DBRecordList&);
+    void startAuthorization();
+    void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void stopAuthorization(const DBRecordList&);
+    void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void updateStatus();
+    void updateTablePanel(const bool);
 
-    bool isStarted = false;
     AppInfo appInfo;
 
     // БД:
@@ -137,7 +138,6 @@ private:
     InputProductCodePanelModel* inputProductCodePanelModel = nullptr;
 
 signals:
-    void authorizationSucceded();
     void closeLogView();
     void closeSettings();
     void closeInputProductPanel();
@@ -148,6 +148,7 @@ signals:
     void setCurrentUser(const int, const QString&);
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
+    void showAuthorizationSucceded();
     void showConfirmationBox(const int, const QString&, const QString&);
     void showGroupHierarchyRoot(const bool);
     void showMainPage(const int);
@@ -169,15 +170,15 @@ signals:
     void start();
 
 public slots:
-    void onNetAction(const int);
     void onDBRequestResult(const DBSelector, const DBRecordList&, const bool);
     void onDBStarted();
-    void onEquipmentParamChanged(const int, const int);
-    void onPrinted(const DBRecord&);
-    void onTimer();
-    void onShowMessage(const QString &title, const QString &text) { emit showMessageBox(title, text, true); }
     void onEnterChar(const QChar) { clickSound(); onUserAction(); }
     void onEnterKey(const Qt::Key) { clickSound(); onUserAction(); }
+    void onEquipmentParamChanged(const int, const int);
+    void onNetAction(const int);
+    void onPrinted(const DBRecord&);
+    void onShowMessage(const QString &title, const QString &text) { showMessage(title, text); }
+    void onTimer();
 };
 
 #endif // APPMANAGER_H

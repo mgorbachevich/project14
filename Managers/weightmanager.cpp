@@ -18,27 +18,29 @@ WeightManager::WeightManager(QObject *parent, const bool demo): QObject(parent)
 
 int WeightManager::start(const QString& url) // return error
 {
-    Tools::debugLog("@@@@@ WeightManager::start " + url);
-    int error = 0;
+    int e = 0;
     if (wm100 != nullptr && !started)
     {
-        error = wm100->connectDevice(url);
-        Tools::debugLog("@@@@@ WeightManager::start error " + QString::number(error));
-        started = (error == 0);
+        Tools::debugLog("@@@@@ WeightManager::start " + url);
+        e = wm100->connectDevice(url);
+        Tools::debugLog("@@@@@ WeightManager::start connect device error " + QString::number(e));
+        started = (e == 0);
         if(started) wm100->startPolling(200);
+        Tools::debugLog("@@@@@ WeightManager::start Done");
     }
-    return error;
+    return e;
 }
 
 void WeightManager::stop()
 {
-    Tools::debugLog("@@@@@ WeightManager::stop");
     if (wm100 != nullptr && started)
     {
+        Tools::debugLog("@@@@@ WeightManager::stop");
         wm100->stopPolling();
         int e = wm100->disconnectDevice();
+        Tools::debugLog("@@@@@ WeightManager::stop disconnect device error " + QString::number(e));
         started = false;
-        Tools::debugLog("@@@@@ WeightManager::stop error " + QString::number(e));
+        Tools::debugLog("@@@@@ WeightManager::stop Done");
     }
 }
 
