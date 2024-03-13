@@ -8,7 +8,7 @@ import RegisteredTypes
 ApplicationWindow
 {
     id: mainWindow
-    title: qsTr("Project14")
+    title: qsTr("ShtrihPrint6")
     visible: true
     Material.theme: Material.Light
     Material.background: Material.color(Material.Grey, Material.Shade100)

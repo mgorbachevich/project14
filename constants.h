@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.90"
+#define APP_VERSION "1.92"
 //#define RELEASE
 
 #ifdef RELEASE
@@ -23,7 +23,7 @@
 #define REMOVE_LOG_DB_ON_START false
 #define REMOVE_TEMP_DB true
 #define CHECK_AUTHORIZATION true
-#define SHOW_DB_PATH_MESSAGE false
+#define SHOW_PATH_MESSAGE false
 #define DEBUG_ONTIMER_MESSAGE true
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
@@ -41,8 +41,8 @@
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
-#define EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
-#define DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
+#define ANDROID_EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
+#define ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
 #define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define SHOWCASE_ROW_IMAGES 5

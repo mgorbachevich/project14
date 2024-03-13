@@ -1,4 +1,4 @@
-package ru.shtrih_m.project14;
+package ru.shtrih_m.shtrihprint6;
 
 import android.content.Context;
 import android.content.Intent;

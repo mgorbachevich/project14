@@ -333,7 +333,7 @@ android {
 
     DISTFILES += \
         Android/AndroidManifest.xml \
-        Android/src/ru/shtrih_m/project14/AndroidNative.java
+        Android/src/ru/shtrih_m/shtrihprint6/AndroidNative.java
 
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
 }

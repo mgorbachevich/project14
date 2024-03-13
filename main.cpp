@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("app", appManager);
 
 #ifdef RECOMENDED
-    const QUrl url(u"qrc:/Project14/main.qml"_qs);
+    const QUrl url(u"qrc:/ShtrihPrint6/main.qml"_qs);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &application, [url](QObject *obj, const QUrl &objUrl)
     {
         if (!obj && url == objUrl) QCoreApplication::exit(-1);

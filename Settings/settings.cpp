@@ -166,7 +166,7 @@ int Settings::nativeSettings(const int code) // return error
         //https://stackoverflow.com/questions/3872063/how-to-launch-an-activity-from-another-application-in-android
         //https://developer.android.com/training/package-visibility
         jint result = QJniObject::callStaticMethod<jint>(
-                    "ru.shtrih_m.project14/AndroidNative",
+                    "ru.shtrih_m.shtrihprint6/AndroidNative",
                     "nativeMethod",
                     "(Landroid/content/Context;I)I",
                     QNativeInterface::QAndroidApplication::context(), code);

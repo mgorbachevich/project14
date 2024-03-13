@@ -43,7 +43,6 @@ public:
 
 private:
     static QString makeFullPath(const QString&, const QString&);
-    static QString rootDir();
 
     static QApplication* app;
 };

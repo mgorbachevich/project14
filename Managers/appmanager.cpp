@@ -483,6 +483,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
     {
         QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
         emit showProductImage(imagePath);
+        Tools::debugLog("@@@@@ AppManager::onDBRequestResult showProductImage " + imagePath);
         //showMessage("Image file path", imagePath);
         break;
     }
@@ -796,7 +797,7 @@ void AppManager::stopAuthorization(const DBRecordList& dbUsers)
     mainPageIndex = 0;
     emit showMainPage(mainPageIndex);
     isAuthorizationOpened = false;
-    if(SHOW_DB_PATH_MESSAGE) showMessage("БД", Tools::dataBaseFilePath(DB_PRODUCT_NAME));
+    if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dataBaseFilePath(DB_PRODUCT_NAME));
     onUserAction();
     Tools::debugLog("@@@@@ AppManager::stopAuthorization Done");
 }
@@ -861,15 +862,16 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
     }
     if (weight || printer)
     {
-        QList<QString> uris = settings.parseEquipmentConfig(EQUIPMENT_CONFIG_FILE);
-        if(uris.size() < 2) uris = settings.parseEquipmentConfig(DEFAULT_EQUIPMENT_CONFIG_FILE);
+#ifdef Q_OS_ANDROID // --------------------------------------------------------
+        QString message = "";
+        QList<QString> uris = settings.parseEquipmentConfig(ANDROID_EQUIPMENT_CONFIG_FILE);
+        if(uris.size() < 2) uris = settings.parseEquipmentConfig(ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE);
         if(uris.size() < 2)
         {
             uris.clear();
             uris.append("");
             uris.append("");
         }
-        QString message = "";
         if(WM_DEMO || uris[0].isEmpty())
         {
             uris[0] = WEIGHT_DEMO_URI;
@@ -880,6 +882,12 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
             uris[1] = PRINTER_DEMO_URI;
             message += "\nДемо-режим принтера";
         }
+#else
+        QString message = "\nДемо-режим весового модуля\nДемо-режим принтера";
+        QList<QString> uris;
+        uris.append(WEIGHT_DEMO_URI);
+        uris.append(PRINTER_DEMO_URI);
+#endif // Q_OS_ANDROID --------------------------------------------------------
         Tools::debugLog("@@@@@ AppManager::startEquipment uris "+ uris.join(", "));
 
         int e1 = 0, e2 = 0;

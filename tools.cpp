@@ -165,7 +165,14 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
     if(localPath.isEmpty()) return "";
     const QStringList dirs = QString(subDir + "/" + localPath).split("/");
     QDir dir;
-    QString path = rootDir();
+
+    // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
+#ifdef Q_OS_ANDROID // --------------------------------------------------------
+    QString path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+#else
+    QString path = app->applicationDirPath(); // Returns the directory that contains the application executable.
+#endif // Q_OS_ANDROID --------------------------------------------------------
+
     for(int i = 0; i < dirs.size() - 1; i++)
     {
         if(dirs.at(i).isEmpty()) continue;
@@ -210,11 +217,6 @@ QString Tools::qmlFilePath(const QString& localPath)
     return localPath.isEmpty() ? "" : path;
 }
 
-QString Tools::dataBaseFilePath(const QString& localPath)
-{
-    return makeFullPath("", localPath);
-}
-
 bool Tools::copyFile(const QString& from, const QString& to)
 {
     debugLog(QString("@@@@@ DataBase::copyFile %1 >> %2").arg(from, to));
@@ -229,6 +231,11 @@ bool Tools::removeFile(const QString &path)
     return QFile::exists(path) ? QFile::remove(path) : true;
 }
 
+QString Tools::dataBaseFilePath(const QString& localFilePath)
+{
+    return makeFullPath("", localFilePath);
+}
+
 QString Tools::downloadFilePath(const QString& localPath)
 {
     return makeFullPath(DOWNLOAD_SUBDIR, localPath);
@@ -238,16 +245,6 @@ void Tools::pause(const int msec, const QString& comment)
 {
     debugLog(QString("@@@@@ Tools::pause %1 %2").arg(QString::number(msec), comment));
     QThread::currentThread()->msleep(msec);
-}
-
-QString Tools::rootDir()
-{
-    // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
-#ifdef Q_OS_ANDROID // --------------------------------------------------------
-    return QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#else
-    return app->applicationDirPath(); // Returns the directory that contains the application executable.
-#endif // Q_OS_ANDROID --------------------------------------------------------
 }
 
 void Tools::sortByInt(DBRecordList& records, const int field, const bool increase)
