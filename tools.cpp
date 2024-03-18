@@ -9,6 +9,9 @@
 #include <QAudioOutput>
 #include <QApplication>
 #include "tools.h"
+#ifdef Q_OS_ANDROID
+#include <QtCore/private/qandroidextras_p.h>
+#endif
 
 quint64 soundTime = 0;
 QMediaPlayer mediaPlayer;
@@ -39,6 +42,11 @@ QString Tools::jsonToString(const QJsonObject &jo)
 {
     QJsonDocument jd(jo);
     return QString(jd.toJson());
+}
+
+QString Tools::intToString(const int v)
+{
+    return QString::number(v);
 }
 
 QJsonObject Tools::stringToJson(const QString &s)
@@ -112,13 +120,13 @@ NetParams Tools::getNetParams()
         if (address.protocol() == QAbstractSocket::IPv4Protocol && address.isLoopback() == false)
             np.localHostIP = address.toString();
     }
-    foreach (const QNetworkInterface& networkInterface, QNetworkInterface::allInterfaces())
+    foreach (const QNetworkInterface& ni, QNetworkInterface::allInterfaces())
     {
-        foreach (const QNetworkAddressEntry& entry, networkInterface.addressEntries())
+        foreach (const QNetworkAddressEntry& entry, ni.addressEntries())
         {
             if (entry.ip().toString() == np.localHostIP)
             {
-                np.localMacAddress = networkInterface.hardwareAddress();
+                np.localMacAddress = ni.hardwareAddress();
                 np.localNetMask = entry.netmask().toString();
                 break;
             }
@@ -167,11 +175,11 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
     QDir dir;
 
     // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
-#ifdef Q_OS_ANDROID // --------------------------------------------------------
+#ifdef Q_OS_ANDROID
     QString path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
 #else
     QString path = app->applicationDirPath(); // Returns the directory that contains the application executable.
-#endif // Q_OS_ANDROID --------------------------------------------------------
+#endif // Q_OS_ANDROID
 
     for(int i = 0; i < dirs.size() - 1; i++)
     {
@@ -208,11 +216,11 @@ bool Tools::isFileExistInDownloadPath(const QString &localPath)
 
 QString Tools::qmlFilePath(const QString& localPath)
 {
-#ifdef Q_OS_ANDROID // --------------------------------------------------------
+#ifdef Q_OS_ANDROID
     QString path = QString("file:%1/%2").arg(DOWNLOAD_SUBDIR, localPath).replace(":/", ":").replace("//", "/");
 #else
     QString path = QString("file:///%1").arg(downloadFilePath(localPath));
-#endif // Q_OS_ANDROID --------------------------------------------------------
+#endif // Q_OS_ANDROID
     //qDebug() << "@@@@@ Tools::qmlFilePath " << path;
     return localPath.isEmpty() ? "" : path;
 }
@@ -311,9 +319,48 @@ QString Tools::timeFromUInt(quint64 v, const QString& format)
     return QDateTime::fromMSecsSinceEpoch(v).toString(format);
 }
 
+bool Tools::isEnvironment(const EnvironmentType interface)
+{
+    bool result = false;
+    switch(interface)
+    {
+    case EnvironmentType_WiFi:
+    {
+        // https://stackoverflow.com/questions/58168915/qt-api-to-check-if-wifi-is-enabled-disabled
+        for(const QNetworkInterface& ni : QNetworkInterface::allInterfaces())
+        {
+            if (ni.type() == QNetworkInterface::Wifi)
+            {
+                result = ni.flags().testFlag(QNetworkInterface::IsRunning);
+                /*
+                qDebug() << iface.humanReadableName() << "(" << iface.name() << ")"
+                         << "is up:" << iface.flags().testFlag(QNetworkInterface::IsUp)
+                         << "is running:" << iface.flags().testFlag(QNetworkInterface::IsRunning);
+                */
+            }
+        }
+        break;
+    }
 
+#ifdef Q_OS_ANDROID
+    case EnvironmentType_Bluetooth:
+    case EnvironmentType_USB:
+    case EnvironmentType_SDCard:
+    {
+        jint jresult = QJniObject::callStaticMethod<jint>(
+                    "ru.shtrih_m.shtrihprint6/AndroidNative",
+                    "isNativeEnvironment", "(I)I", interface);
+        result = jresult == 0;
+        break;
+    }
+#endif // Q_OS_ANDROID
 
+    default: break;
+    }
 
+    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(QString::number(interface), Tools::boolToString(result)));
+    return result;
+}
 
 
 

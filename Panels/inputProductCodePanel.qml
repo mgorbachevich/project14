@@ -101,12 +101,12 @@ Popup
                     onTextChanged:
                     {
                         if (parseInt(text) <= 0) text = "";
-                        console.debug("@@@@@ inputProductCodePanelText onTextChanged ", text)
+                        app.debugLog("@@@@@ inputProductCodePanelText onTextChanged %1".arg(text))
                         app.onProductCodeEdited(text);
                     }
                     Keys.onPressed: (event) =>
                     {
-                        console.debug("@@@@@ inputProductCodePanelText Keys.onPressed ", JSON.stringify(event))
+                        app.debugLog("@@@@@ inputProductCodePanelText Keys.onPressed %1".arg(JSON.stringify(event)))
                         event.accepted = true;
                         app.clickSound();
                         app.onUserAction();

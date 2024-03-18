@@ -12,7 +12,7 @@ Rectangle
     focus: true
     Keys.onPressed: (event) =>
     {
-        console.debug("@@@@@ tablePanel Keys.onPressed ", JSON.stringify(event));
+        app.debugLog("@@@@@ tablePanel Keys.onPressed %1".arg(JSON.stringify(event)))
         event.accepted = true;
         app.clickSound();
         app.onUserAction();
@@ -59,7 +59,7 @@ Rectangle
         {
             if (index === 1)
             {
-                console.debug("@@@@@ tablePanel onShowMainPage");
+                app.debugLog("@@@@@ tablePanel onShowMainPage");
                 tablePanel.forceActiveFocus()
             }
         }
@@ -76,7 +76,7 @@ Rectangle
         target: app
         function onShowGroupHierarchyRoot(value)
         {
-            console.debug("@@@@@ tablePanel.onShowGroupHierarchyRoot " , value);
+            app.debugLog("@@@@@ tablePanel.onShowGroupHierarchyRoot %1".arg(value))
             tablePanelBackButton.icon.source = value ? "../Icons/empty" : "../Icons/arrow_up"
         }
     }

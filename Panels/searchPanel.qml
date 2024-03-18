@@ -18,7 +18,7 @@ Rectangle
         {
             if (index === 2)
             {
-                console.debug("@@@@@ searchPanel onShowMainPage");
+                app.debugLog("@@@@@ searchPanel onShowMainPage");
                 searchPanelTextField.forceActiveFocus()
             }
         }
@@ -136,13 +136,13 @@ Rectangle
             onTextEdited: app.onUserAction();
             onTextChanged:
             {
-                console.debug("@@@@@ searchPanelTextField onTextChanged ", text)
+                app.debugLog("@@@@@ searchPanelTextField onTextChanged %1".arg(text))
                 app.onSearchFilterEdited(text);
             }
             focus: true
             Keys.onPressed: (event) =>
             {
-                console.debug("@@@@@ searchPanelTextField Keys.onPressed ", JSON.stringify(event));
+                app.debugLog("@@@@@ searchPanelTextField Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();

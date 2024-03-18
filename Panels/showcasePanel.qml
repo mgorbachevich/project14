@@ -21,7 +21,7 @@ Rectangle
         {
             if (index === 0)
             {
-                console.debug("@@@@@ showcasePanel onShowMainPage");
+                app.debugLog("@@@@@ showcasePanel onShowMainPage");
                 showcasePanel.forceActiveFocus()
             }
         }
@@ -32,7 +32,7 @@ Rectangle
         target: app
         function onShowShowcaseSort(value)
         {
-            console.debug("@@@@@ showcasePanel onSetShowcaseSort");
+            app.debugLog("@@@@@ showcasePanel onSetShowcaseSort");
             switch (value)
             {
                 case 0:
@@ -49,7 +49,7 @@ Rectangle
 
     Keys.onPressed: (event) =>
     {
-        console.debug("@@@@@ showcasePanel Keys.onPressed ", JSON.stringify(event));
+        app.debugLog("@@@@@ showcasePanel Keys.onPressed %1".arg(JSON.stringify(event)))
         event.accepted = true;
         app.clickSound();
         app.onUserAction();

@@ -93,11 +93,11 @@ Popup
                             text = 1;
                             app.beepSound();
                         }
-                        console.debug("@@@@@ inputPiecesPanelText onTextChanged ", text)
+                        app.debugLog("@@@@@ inputPiecesPanelText onTextChanged %1".arg(text))
                     }
                     Keys.onPressed: (event) =>
                     {
-                        console.debug("@@@@@ inputPiecesPanelText Keys.onPressed ", JSON.stringify(event))
+                        app.debugLog("@@@@@ inputPiecesPanelText Keys.onPressed %1".arg(JSON.stringify(event)))
                         event.accepted = true;
                         app.clickSound();
                         app.onUserAction();

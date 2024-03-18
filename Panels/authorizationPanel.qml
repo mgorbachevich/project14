@@ -16,14 +16,50 @@ Popup
     Material.background: Material.color(Material.Grey, Material.Shade100)
     property string versionValue: "Version"
     property int flagSize: screenManager.flagSize()
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
+    onOpened:
+    {
+        app.onAuthorizationOpened(true)
+        app.onPopupOpened()
+    }
+    onClosed:
+    {
+        app.onAuthorizationOpened(false)
+        app.onPopupClosed()
+    }
+
+    Connections // Slot for signal AppManager::showEnvironmentStatus
+    {
+        target: app
+        function onShowEnvironmentStatus(value1, value2, value3, value4)
+        {
+            app.debugLog("@@@@@ authorizationPanel.onShowEnvironmentStatus");
+            if(value1) usbIcon.Material.foreground = Constants.colorBlack;
+            else       usbIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
+            if(value2) bluetoothIcon.Material.foreground = Constants.colorBlack;
+            else       bluetoothIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
+            if(value3) wifiIcon.Material.foreground = Constants.colorBlack;
+            else       wifiIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
+            if(value4) sdcardIcon.Material.foreground = Constants.colorBlack;
+            else       sdcardIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
+        }
+    }
+
+    Connections // Slot for signal AppManager::showDateTime:
+    {
+        target: app
+        function onShowDateTime(value)
+        {
+            app.debugLog("@@@@@ authorizationPanel.onShowDateTime")
+            dateTimeText.text = value
+        }
+    }
 
     Connections // Slot for signal AppManager::showAuthorizationSucceded:
     {
         target: app
         function onShowAuthorizationSucceded()
         {
+            app.debugLog("@@@@@ authorizationPanel.onShowAuthorizationSucceded")
             app.onUserAction();
             authorizationPanel.close()
         }
@@ -34,6 +70,7 @@ Popup
         target: app
         function onSetCurrentUser(index, name)
         {
+            app.debugLog("@@@@@ authorizationPanel.onSetCurrentUser")
             loginComboBox.currentIndex = index
             loginComboBox.displayText = name
         }
@@ -49,7 +86,11 @@ Popup
         MouseArea
         {
             anchors.fill: parent
-            onClicked: app.onInfoClicked()
+            onClicked:
+            {
+                app.debugLog("@@@@@ searchPanelTextField on clicked image")
+                app.onInfoClicked()
+            }
         }
     }
 
@@ -60,36 +101,45 @@ Popup
         spacing: screenManager.spacer()
         visible: true
 
-        Image
+        Text
+        {
+            id: versionText
+            color: Material.color(Material.BlueGrey, Material.Shade900)
+            font { pointSize: screenManager.normalFontSize() }
+            text: versionValue
+            visible: false // todo
+        }
+
+        Text
+        {
+            id: dateTimeText
+            anchors.verticalCenter: parent.verticalCenter
+            color: Material.color(Material.BlueGrey, Material.Shade900)
+            font { pointSize: screenManager.normalFontSize() }
+        }
+
+        SmallIconButton
         {
             id: usbIcon
-            width: flagSize
-            height: flagSize
-            source: "../Icons/usb"
+            icon.source: "../Icons/usb"
         }
 
-        Image
+        SmallIconButton
         {
             id: bluetoothIcon
-            width: flagSize
-            height: flagSize
-            source: "../Icons/bluetooth"
+            icon.source: "../Icons/bluetooth"
         }
 
-        Image
+        SmallIconButton
         {
             id: wifiIcon
-            width: flagSize
-            height: flagSize
-            source: "../Icons/wifi"
+            icon.source: "../Icons/wifi"
         }
 
-        Image
+        SmallIconButton
         {
             id: sdcardIcon
-            width: flagSize
-            height: flagSize
-            source: "../Icons/sdcard"
+            icon.source: "../Icons/sdcard"
         }
     }
 
@@ -98,15 +148,6 @@ Popup
         id: authorizationPanelLayout
         anchors.centerIn: parent
         spacing: 0
-
-        Text
-        {
-            id: versionText
-            color: Material.color(Material.BlueGrey, Material.Shade600)
-            font { pointSize: screenManager.normalFontSize() }
-            text: versionValue
-            visible: false
-        }
 
         Text
         {
@@ -150,7 +191,7 @@ Popup
                     anchors.fill: parent
                     onClicked:
                     {
-                        console.debug("@@@@@ authorizationPanel.loginComboBox.onClicked ", index)
+                        app.debugLog("@@@@@ authorizationPanel.loginComboBox.onClicked %1".arg(index))
                         app.onUserAction();
                         loginComboBox.currentIndex = index
                         loginComboBox.displayText = text
@@ -187,7 +228,7 @@ Popup
 
             Keys.onPressed: (event) =>
             {
-                console.debug("@@@@@ passwordTextField Keys.onPressed ", JSON.stringify(event))
+                app.debugLog("@@@@@ authorizationPanel.passwordTextField Keys.onPressed %1".arg(JSON.stringify(event)))
                 app.clickSound();
                 app.onUserAction();
                 event.accepted = true;

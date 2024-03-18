@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="ru.shtrih_m.shtrihprint6" android:installLocation="auto" android:versionCode="1092" android:versionName="1.92">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="ru.shtrih_m.shtrihprint6" android:installLocation="auto" android:versionCode="2000" android:versionName="2.0">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" android:required="false"/>
 
     <queries>
         <package android:name="ru.shtrih_m.SettingsMng"/>
@@ -17,6 +18,7 @@
         <activity android:name="org.qtproject.qt.android.bindings.QtActivity" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:label="ShtrihPrint6" android:launchMode="singleTop" android:screenOrientation="landscape" android:exported="true" android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <category android:name="android.intent.category.HOME"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -24,6 +24,7 @@ public:
     bool isDemoMode() const { return slpa == nullptr; }
     void feed();
     QString getErrorDescription(const int) const;
+    int setParams(const int, const int);
 
 private:
     bool isFlag(uint16_t v, int shift) const { return (v & (0x00000001 << shift)) != 0; }

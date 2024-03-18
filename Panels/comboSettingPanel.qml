@@ -38,7 +38,7 @@ Popup
             focus: true
             Keys.onPressed: (event) =>
             {
-                console.debug("@@@@@ comboSettingPanel Keys.onPressed ", JSON.stringify(event))
+                app.debugLog("@@@@@ comboSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
@@ -105,7 +105,7 @@ Popup
                         anchors.fill: parent
                         onClicked:
                         {
-                            console.debug("@@@@@ comboSettingPanel.settingItemComboBox.onClicked ", index)
+                            app.debugLog("@@@@@ comboSettingPanel.settingItemComboBox.onClicked %1".arg(index))
                             app.onUserAction();
                             settingItemComboBox.currentIndex = index
                             settingItemComboBox.displayText = text

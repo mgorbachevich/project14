@@ -59,7 +59,6 @@ void PrintManager::feed()
     Tools::debugLog("@@@@@ PrintManager::feed");
     if(!started || slpa == nullptr) return;
     slpa->feed();
-    // int e = slpa->feed(); todo
 }
 
 bool PrintManager::isStateError(uint16_t s) const
@@ -86,6 +85,15 @@ QString PrintManager::getErrorDescription(const int e) const
     case 1008: return "Ошибка памяти принтера!";
     }
     return slpa == nullptr ? "" : slpa->errorDescription(e);
+}
+
+int PrintManager::setParams(const int brightness, const int offset) // -7 .. +7
+{
+    Tools::debugLog(QString("@@@@@ PrintManager::setParams %1 %2").arg(QString::number(brightness), QString::number(offset)));
+    if(!started || slpa == nullptr) return 0;
+    int e = slpa->setBrightness(brightness + 8);
+    if(e >= 0) e = slpa->setOffset(offset + 8);
+    return e;
 }
 
 void PrintManager::onStatusChanged(uint16_t s)

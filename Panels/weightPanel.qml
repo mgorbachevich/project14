@@ -30,12 +30,12 @@ Rectangle
             switch (param)
             {
             case 1: // TareFlag >T<
-                if (value === 'true') productPanelTareIcon.source = "../Icons/tare_flag"
-                else productPanelTareIcon.source = "../Icons/empty_flag"
+                if (value === 'true') productPanelTareIcon.Material.foreground = Constants.colorWhite
+                else                  productPanelTareIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
                 break
             case 2: // ZeroFlag >0<
-                if (value === 'true') productPanelZeroIcon.source = "../Icons/zero_flag"
-                else productPanelZeroIcon.source = "../Icons/empty_flag"
+                if (value === 'true') productPanelZeroIcon.Material.foreground = Constants.colorWhite
+                else                  productPanelZeroIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
                 break
             case 3: // TareValue todo
                 break
@@ -67,16 +67,16 @@ Rectangle
                 weightPanelAmountTitle.text = value
                 break
             case 13: // WeightError
-                if (value === 'true') productPanelErrorIcon.source = "../Icons/error_flag"
-                else productPanelErrorIcon.source = "../Icons/empty_flag"
+                if (value === 'true') productPanelErrorIcon.Material.foreground = Constants.colorError
+                else                  productPanelErrorIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
                 break
             case 14: // WeightFixed
             case 15: // PrintError
                 break
             case 16: // AutoPrint
-                if (value === '1') productPanelAutoPrintIcon.source = "../Icons/auto_flag_green"
-                else if (value === '2') productPanelAutoPrintIcon.source = "../Icons/auto_flag_orange"
-                else productPanelAutoPrintIcon.source = "../Icons/empty_flag"
+                if (value === '1')      productPanelAutoPrintIcon.Material.foreground = Constants.colorWhite
+                else if (value === '2') productPanelAutoPrintIcon.Material.foreground = Constants.colorAuto
+                else                    productPanelAutoPrintIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
                 break
             }
         }
@@ -100,41 +100,41 @@ Rectangle
                 spacing: 0
                 padding: 0
 
-                Image
+                SmallIconButton
                 {
                     id: productPanelErrorIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag"
+                    icon.source: "../Icons/error"
                 }
 
-                Image
+                SmallIconButton
                 {
                     id: productPanelAutoPrintIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag"
+                    icon.source: "../Icons/auto"
                 }
 
-                Image
+                SmallIconButton
                 {
                     id: productPanelTareIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag"
+                    icon.source: "../Icons/tare"
                 }
 
-                Image
+                SmallIconButton
                 {
                     id: productPanelZeroIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/empty_flag"
-                }
+                    icon.source: "../Icons/zero"
+                 }
             }
         }
 

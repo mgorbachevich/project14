@@ -1,19 +1,17 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define APP_VERSION "1.92"
-//#define RELEASE
+#include <qglobal.h>
 
-#ifdef RELEASE
+#define APP_VERSION "2.3"
+#define RELEASE
+
+#if defined(Q_OS_ANDROID) && defined(RELEASE)
 #define WM_DEMO false
 #define PRINTER_DEMO false
-#define WAIT_NET_ACTION_MSEC 30000
-#define REMOVE_SETTINGS_DB_ON_START false
 #else
 #define WM_DEMO true
 #define PRINTER_DEMO true
-#define WAIT_NET_ACTION_MSEC 10000
-#define REMOVE_SETTINGS_DB_ON_START true
 #endif
 
 #define DEBUG_LOG
@@ -21,6 +19,7 @@
 #define REMOVE_DEBUG_LOG_ON_START
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
+#define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_TEMP_DB true
 #define CHECK_AUTHORIZATION true
 #define SHOW_PATH_MESSAGE false
@@ -30,6 +29,7 @@
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define WAIT_SOUND_MSEC 500
+#define WAIT_NET_ACTION_MSEC 30000
 #define EOL "\r\n"
 #define DEBUG_LOG_NAME "DebugLog.txt"
 #define DB_LOG_NAME "Log.db"
@@ -218,6 +218,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_PointPositionQuantity = 43, // todo
     SettingCode_SearchCodeSymbols = 44,
     SettingCode_SearchBarcodeSymbols = 45,
+    SettingCode_SearchNameSymbols = 46, // todo
     SettingCode_SearchEquality = 47, // todo
     SettingCode_ShopName = 202,
     SettingCode_PrintAutoWeight = 203,
@@ -243,8 +244,8 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_Help = 1015, // todo
     SettingCode_Verification = 1016, // todo
     SettingCode_ReportsDuration = 1017, // todo
-    SettingCode_Brightness = 1018, // todo
-    SettingCode_SoundVolume = 1019, // todo
+    //SettingCode_Brightness = 1018, // todo
+    SettingCode_KeyboardSoundVolume = 1019,
     SettingCode_TimeFormat = 1020, // todo
     SettingCode_Time = 1021, // todo
     SettingCode_DateFormat = 1022, // todo
@@ -287,6 +288,14 @@ enum Sort
 {
     Sort_Code = 0,
     Sort_Name = 1,
+};
+
+enum EnvironmentType
+{
+    EnvironmentType_USB = 0,
+    EnvironmentType_Bluetooth = 1,
+    EnvironmentType_WiFi = 2,
+    EnvironmentType_SDCard = 3,
 };
 
 #endif // CONSTANTS_H

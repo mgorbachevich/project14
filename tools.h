@@ -16,6 +16,7 @@ public:
     static double priceToDouble(const QString&, const int);
     static QString readTextFile(const QString&);
     static QString jsonToString(const QJsonObject&);
+    static QString intToString(const int);
     static QJsonObject stringToJson(const QString&);
     static int stringToInt(const QString&, const int defaultValue = 0);
     static int stringToInt(const QVariant &v, const int defaultValue = 0);
@@ -40,6 +41,7 @@ public:
     static void sortByString(DBRecordList&, const int, const bool increase = true);
     static void debugLog(const QString&);
     static void removeDebugLog();
+    static bool isEnvironment(const EnvironmentType);
 
 private:
     static QString makeFullPath(const QString&, const QString&);

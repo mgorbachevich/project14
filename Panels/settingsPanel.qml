@@ -37,7 +37,7 @@ Popup
 
         Keys.onPressed: (event) =>
         {
-            console.debug("@@@@@ settingPanel Keys.onPressed ", JSON.stringify(event))
+            app.debugLog("@@@@@ settingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
             event.accepted = true;
             app.clickSound();
             app.onUserAction();

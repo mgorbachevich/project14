@@ -8,7 +8,7 @@ import RegisteredTypes
 RoundButton
 {
     height: screenManager.buttonSize()
-    Layout.preferredHeight: screenManager.buttonSize()
+    Layout.preferredHeight: height
     radius: screenManager.spacer()
     leftInset: screenManager.spacer() / 4
     topInset: screenManager.spacer() / 4

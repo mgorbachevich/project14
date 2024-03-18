@@ -239,14 +239,12 @@ RESOURCES += \
     Fonts/times.ttf \
     Icons/arrow_left.png \
     Icons/arrow_up.png \
-    Icons/auto_flag_green.png \
-    Icons/auto_flag_orange.png \
+    Icons/auto.png \
     Icons/backspace.png \
     Icons/bluetooth.png \
     Icons/close.png \
     Icons/empty.png \
-    Icons/empty_flag.png \
-    Icons/error_flag.png \
+    Icons/error.png \
     Icons/info_outline.png \
     Icons/keyboard.png \
     Icons/lock.png \
@@ -257,10 +255,10 @@ RESOURCES += \
     Icons/red.png \
     Icons/sdcard.png \
     Icons/settings.png \
-    Icons/tare_flag.png \
+    Icons/tare.png \
     Icons/usb.png \
     Icons/wifi.png \
-    Icons/zero_flag.png \
+    Icons/zero.png \
     Icons/a.png \
     Icons/folder.png \
     Icons/n.png \
@@ -312,6 +310,7 @@ RESOURCES += \
     Panels/searchPanel.qml \
     Panels/settingsPanel.qml \
     Panels/showcasePanel.qml \
+    Panels/SmallIconButton.qml \
     Panels/tablePanel.qml \
     Panels/viewLogPanel.qml \
     Panels/VirtualKeyboardNumeric.qml \

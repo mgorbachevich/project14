@@ -451,8 +451,13 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(SettingCode_SearchType) &&
-            p.size() < settings.getItemIntValue(SettingCode_SearchCodeSymbols)) break;
+        if (!settings.getItemBoolValue(SettingCode_SearchType))
+        {
+            const int n1 = p.size();
+            const int n2 = settings.getItemIntValue(SettingCode_SearchCodeSymbols);
+            Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredCode %1 %2").arg(QString::number(n1), QString::number(n2)));
+            if(n1 < n2) break;
+        }
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '%" + p + "%'";
@@ -467,8 +472,13 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(SettingCode_SearchType) &&
-            p.size() < settings.getItemIntValue(SettingCode_SearchBarcodeSymbols)) break;
+        if (!settings.getItemBoolValue(SettingCode_SearchType))
+        {
+            const int n1 = p.size();
+            const int n2 = settings.getItemIntValue(SettingCode_SearchBarcodeSymbols);
+            Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredBarcode %1 %2").arg(QString::number(n1), QString::number(n2)));
+            if(n1 < n2) break;
+        }
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += " WHERE " + t->columnName(ProductDBTable::Barcode) + " LIKE '%" + p + "%'";

@@ -40,7 +40,7 @@ Popup
             focus: true
             Keys.onPressed: (event) =>
             {
-                console.debug("@@@@@ sliderSettingPanel Keys.onPressed ", JSON.stringify(event))
+                app.debugLog("@@@@@ sliderSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();

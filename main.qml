@@ -26,7 +26,7 @@ ApplicationWindow
         target: app
         function onStart()
         {
-            console.debug("@@@@@ mainWindow.onStart ", screenManager.screenWidth(), screenManager.screenHeight());
+            app.debugLog("@@@@@ mainWindow.onStart %1 %2".arg(screenManager.screenWidth()).arg(screenManager.screenHeight()));
             if (Qt.platform.os === "android") mainWindow.visibility = Window.FullScreen
             mainWindow.width = screenManager.screenWidth()
             mainWindow.height = screenManager.screenHeight()
@@ -38,7 +38,7 @@ ApplicationWindow
         target: app
         function onShowMainPage(value)
         {
-            console.debug("@@@@@ mainWindow.onShowMainPage");
+            app.debugLog("@@@@@ mainWindow.onShowMainPage %1".arg(value));
             mainWindowLayout.visible = true
             mainSwipeView.setCurrentIndex(value)
         }
@@ -49,7 +49,7 @@ ApplicationWindow
         target: app
         function onShowAuthorizationPanel(title)
         {
-            console.debug("@@@@@ mainWindow.onShowAuthorizationPanel");
+            app.debugLog("@@@@@ mainWindow.onShowAuthorizationPanel %1".arg(title));
             Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: title
@@ -62,7 +62,7 @@ ApplicationWindow
         target: app
         function onShowAdminMenu(show)
         {
-            console.debug("@@@@@ mainWindow.onShowAdminMenu");
+            app.debugLog("@@@@@ mainWindow.onShowAdminMenu");
             adminMenuWidth = show ? screenManager.buttonSize() + screenManager.spacer() : 0
             adminMenuPanel.visible = show
         }
@@ -73,7 +73,7 @@ ApplicationWindow
         target: app
         function onShowSettingInputBox(code, name, value)
         {
-            console.debug("@@@@@ mainWindow.onShowSettingInputBox ", code, " ", name, " ", value);
+            app.debugLog("@@@@@ mainWindow.onShowSettingInputBox %1 %2 %3".arg(code).arg(name).arg(value));
             Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height,
@@ -87,7 +87,7 @@ ApplicationWindow
         target: app
         function onShowSettingComboBox(code, name, index, value)
         {
-            console.debug("@@@@@ mainWindow.onShowSettingComboBox ", code, " ", name, " ", index, " ", value);
+            app.debugLog("@@@@@ mainWindow.onShowSettingComboBox %1 %2 %3 %4".arg(code).arg(name).arg(index).arg(value));
             Qt.createComponent("Panels/comboSettingPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight,
@@ -101,7 +101,7 @@ ApplicationWindow
         target: app
         function onShowSettingSlider(code, name, from, to, step, value)
         {
-            console.debug("@@@@@ mainWindow.onShowSettingSlider ", code, " ", name);
+            app.debugLog("@@@@@ mainWindow.onShowSettingSlider %1 %2".arg(code).arg(name));
             Qt.createComponent("Panels/sliderSettingPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight,
@@ -116,7 +116,7 @@ ApplicationWindow
         target: app
         function onShowProductCodeInputBox(value)
         {
-            console.debug("@@@@@ mainWindow.onShowProductCodeInputBox ", value);
+            app.debugLog("@@@@@ mainWindow.onShowProductCodeInputBox %1".arg(value));
             Qt.createComponent("Panels/inputProductCodePanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: screenManager.spacer() * 2,
@@ -131,7 +131,7 @@ ApplicationWindow
         target: app
         function onShowPiecesInputBox(value)
         {
-            console.debug("@@@@@ mainWindow.onShowPiecesInputBox ", value);
+            app.debugLog("@@@@@ mainWindow.onShowPiecesInputBox %1".arg(value));
             Qt.createComponent("Panels/inputPiecesPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value
@@ -144,7 +144,7 @@ ApplicationWindow
         target: app
         function onShowViewLogPanel()
         {
-            console.debug("@@@@@ mainWindow.onShowViewLogPanel");
+            app.debugLog("@@@@@ mainWindow.onShowViewLogPanel");
             Qt.createComponent("Panels/viewLogPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: mainWeightPanel.height, width: mainWindow.width,
@@ -158,7 +158,7 @@ ApplicationWindow
         target: app
         function onShowMessageBox(titleText, messageText, showButton)
         {
-            console.debug("@@@@@ mainWindow.onShowMessageBox ", titleText, " ", messageText);
+            app.debugLog("@@@@@ mainWindow.onShowMessageBox %1 %2".arg(titleText).arg(messageText));
             Qt.createComponent("Panels/messagePanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
@@ -172,7 +172,7 @@ ApplicationWindow
         target: app
         function onShowConfirmationBox(selector, titleText, messageText)
         {
-            console.debug("@@@@@ mainWindow.onShowConfirmationBox ", selector, " ", titleText, " ", messageText);
+            app.debugLog("@@@@@ mainWindow.onShowConfirmationBox %1 %2 %3".arg(selector).arg(titleText).arg(messageText));
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
@@ -186,7 +186,7 @@ ApplicationWindow
         target: app
         function onShowSettingsPanel(title)
         {
-            console.debug("@@@@@ mainWindow.onShowSettingsPanel ", title);
+            app.debugLog("@@@@@ mainWindow.onShowSettingsPanel %1".arg(title));
             Qt.createComponent("Panels/settingsPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, panelTitle: title
@@ -199,7 +199,7 @@ ApplicationWindow
         target: app
         function onShowProductPanel(name, isPieceProduct)
         {
-            console.debug("@@@@@ mainWindow.onShowProductPanel");
+            app.debugLog("@@@@@ mainWindow.onShowProductPanel");
             Qt.createComponent("Panels/productPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: mainWeightPanel.height,

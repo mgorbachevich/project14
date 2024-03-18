@@ -28,7 +28,8 @@ int Settings::getItemIntValue(const SettingCode code)
 
 int Settings::getItemIntValue(const DBRecord& r)
 {
-    return Tools::stringToInt((r.at(SettingDBTable::Value)).toString());
+    //return Tools::stringToInt((r.at(SettingDBTable::Value)).toString());
+    return Tools::stringToInt(getItemStringValue(r));
 }
 
 bool Settings::getItemBoolValue(const SettingCode code)
@@ -155,7 +156,7 @@ int Settings::nativeSettings(const int code) // return error
 {
     Tools::debugLog("@@@@@ Settings::nativeSettings " + QString::number(code));
 
-#ifdef Q_OS_ANDROID // --------------------------------------------------------
+#ifdef Q_OS_ANDROID
     switch (code)
     {
     case SettingCode_WiFi:
@@ -167,7 +168,7 @@ int Settings::nativeSettings(const int code) // return error
         //https://developer.android.com/training/package-visibility
         jint result = QJniObject::callStaticMethod<jint>(
                     "ru.shtrih_m.shtrihprint6/AndroidNative",
-                    "nativeMethod",
+                    "startNativeActivity",
                     "(Landroid/content/Context;I)I",
                     QNativeInterface::QAndroidApplication::context(), code);
         Tools::debugLog("@@@@@ Settings::nativeSettings SettingCode_Equipment result " + QString::number(result));
@@ -177,7 +178,7 @@ int Settings::nativeSettings(const int code) // return error
         qDebug("@@@@@ Settings::nativeSettings: Unknown code");
         return -1;
     }
-#endif // Q_OS_ANDROID --------------------------------------------------------
+#endif // Q_OS_ANDROID
 
     qDebug("@@@@@ Settings::nativeSettings: Unknown param");
     return -1;

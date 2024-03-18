@@ -9,8 +9,8 @@ RoundButton
 {
     width: screenManager.buttonSize()
     height: screenManager.buttonSize()
-    Layout.preferredWidth: screenManager.buttonSize()
-    Layout.preferredHeight: screenManager.buttonSize()
+    Layout.preferredWidth: width
+    Layout.preferredHeight: height
     radius: screenManager.spacer()
     leftInset: screenManager.spacer() / 4
     topInset: screenManager.spacer() / 4

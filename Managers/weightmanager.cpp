@@ -23,10 +23,9 @@ int WeightManager::start(const QString& url) // return error
     {
         Tools::debugLog("@@@@@ WeightManager::start " + url);
         e = wm100->connectDevice(url);
-        Tools::debugLog("@@@@@ WeightManager::start connect device error " + QString::number(e));
         started = (e == 0);
         if(started) wm100->startPolling(200);
-        Tools::debugLog("@@@@@ WeightManager::start Done");
+        Tools::debugLog("@@@@@ WeightManager::start error " + QString::number(e));
     }
     return e;
 }
@@ -36,11 +35,10 @@ void WeightManager::stop()
     if (wm100 != nullptr && started)
     {
         Tools::debugLog("@@@@@ WeightManager::stop");
+        started = false;
         wm100->stopPolling();
         int e = wm100->disconnectDevice();
-        Tools::debugLog("@@@@@ WeightManager::stop disconnect device error " + QString::number(e));
-        started = false;
-        Tools::debugLog("@@@@@ WeightManager::stop Done");
+        Tools::debugLog("@@@@@ WeightManager::stop error " + QString::number(e));
     }
 }
 
@@ -86,14 +84,15 @@ QString WeightManager::getErrorDescription(const int e) const
 {
     switch(e)
     {
-    case 0: return "Ошибок нет";
+    case 0:    return "Ошибок нет";
     case 5003: return "Ошибка автонуля при включении";
     case 5004: return "Перегрузка по весу";
     case 5005: return "Ошибка при получении измерения";
     case 5006: return "Весы недогружены";
     case 5007: return "Ошибка: нет ответа от АЦП";
+    //default: return "Неизвестная ошибка";
     }
-    return wm100 == nullptr ? "" : wm100->errorDescription(e);
+    return wm100 == nullptr ? "Весовой модуль не подключен" : wm100->errorDescription(e);
 }
 
 void WeightManager::onStatusChanged(Wm100Protocol::channel_status &s)

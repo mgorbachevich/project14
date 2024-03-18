@@ -27,7 +27,7 @@ Popup
         target: app
         function onShowPrinterMessage(value)
         {
-            console.debug("@@@@@ productPanel onShowPrinterMessage ", value)
+            app.debugLog("@@@@@ productPanel onShowPrinterMessage %1".arg(value))
             productPanelPrintMessage.text = value
         }
     }
@@ -37,7 +37,7 @@ Popup
         target: app
         function onShowProductImage(value)
         {
-            console.debug("@@@@@ productPanel onShowProductImage ", value)
+            app.debugLog("@@@@@ productPanel onShowProductImage %1".arg(value))
             productPanelImage.source = value
         }
     }
@@ -47,7 +47,7 @@ Popup
         target: app
         function onEnableManualPrint(value)
         {
-            console.debug("@@@@@ productPanel onEnableManualPrint ", value)
+            app.debugLog("@@@@@ productPanel onEnableManualPrint %1".arg(value))
             productPanelPrintButton.visible = value
         }
     }
@@ -57,7 +57,7 @@ Popup
         target: app
         function onResetCurrentProduct()
         {
-            console.debug("@@@@@ productPanel onResetCurrentProduct ")
+            app.debugLog("@@@@@ productPanel onResetCurrentProduct ")
             productPanel.close()
         }
     }
@@ -75,7 +75,7 @@ Popup
         focus: true
         Keys.onPressed: (event) =>
         {
-            console.debug("@@@@@ productPanel Keys.onPressed ", JSON.stringify(event))
+            app.debugLog("@@@@@ productPanel Keys.onPressed %1".arg(JSON.stringify(event)))
             event.accepted = true;
             app.clickSound();
             app.onUserAction();

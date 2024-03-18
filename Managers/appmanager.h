@@ -37,7 +37,9 @@ public:
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
     Q_INVOKABLE void clickSound();
+    Q_INVOKABLE void debugLog(const QString&);
     Q_INVOKABLE void onAdminSettingsClicked();
+    Q_INVOKABLE void onAuthorizationOpened(const bool);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
     Q_INVOKABLE void onInfoClicked();
@@ -88,12 +90,13 @@ private:
     void showConfirmation(const DialogSelector, const QString&, const QString&);
     void showMessage(const QString&, const QString&);
     void showToast(const QString&, const QString&, const int delaySec = 5);
+    void updateSystemStatus();
     void showUsers(const DBRecordList&);
     void startAuthorization();
     void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
     void stopAuthorization(const DBRecordList&);
     void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
-    void updateStatus();
+    void updateWeightStatus();
     void updateTablePanel(const bool);
 
     AppInfo appInfo;
@@ -146,10 +149,12 @@ signals:
     void hideToast();
     void resetCurrentProduct();
     void setCurrentUser(const int, const QString&);
+    void showDateTime(const QString&);
     void showAdminMenu(bool);
     void showAuthorizationPanel(const QString&);
     void showAuthorizationSucceded();
     void showConfirmationBox(const int, const QString&, const QString&);
+    void showEnvironmentStatus(const bool, const bool, const bool, const bool);
     void showGroupHierarchyRoot(const bool);
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);

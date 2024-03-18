@@ -40,7 +40,7 @@ Popup
             focus: true
             Keys.onPressed: (event) =>
             {
-                console.debug("@@@@@ confirmationPanel Keys.onPressed ", JSON.stringify(event))
+                app.debugLog("@@@@@ confirmationPanel Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
