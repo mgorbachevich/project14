@@ -39,13 +39,13 @@ DataBase::~DataBase()
     close(settingsDB);
     close(logDB);
     close(tempDB);
-    if(REMOVE_TEMP_DB) Tools::removeFile(Tools::dataBaseFilePath(DB_TEMP_NAME));
+    if(REMOVE_TEMP_DB) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
 }
 
 bool DataBase::startDB()
 {
     Tools::debugLog("@@@@@ DataBase::startDB");
-    QString path = Tools::dataBaseFilePath(DB_PRODUCT_NAME);
+    QString path = Tools::dbPath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
@@ -65,10 +65,10 @@ bool DataBase::startDB()
     if (!opened) return false;
 
     copyDBFiles(DB_PRODUCT_NAME, DB_TEMP_NAME);
-    opened = addAndOpen(tempDB, Tools::dataBaseFilePath(DB_TEMP_NAME), false);
+    opened = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
     if (!opened) return false;
 
-    path = Tools::dataBaseFilePath(DB_SETTINGS_NAME);
+    path = Tools::dbPath(DB_SETTINGS_NAME);
     if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
@@ -76,7 +76,7 @@ bool DataBase::startDB()
     if(!exists && opened) opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
     if (!opened) return false;
 
-    path = Tools::dataBaseFilePath(DB_LOG_NAME);
+    path = Tools::dbPath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
@@ -126,7 +126,7 @@ void DataBase::onStart()
 bool DataBase::open(QSqlDatabase& db, const QString& name)
 {
     if (!opened) return false;
-    const QString path = Tools::dataBaseFilePath(name);
+    const QString path = Tools::dbPath(name);
     Tools::debugLog("@@@@@ DataBase::open " + path);
     if(!QFile(path).exists()) return false;
     return db.isOpen() ? true : db.open();
@@ -302,9 +302,7 @@ bool DataBase::insertSettingsRecord(const DBRecord &r)
 bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 {
     Tools::debugLog(QString("@@@@@ DataBase::copyDBFiles %1 %2").arg(fromName, toName));
-    QString from = Tools::dataBaseFilePath(fromName);
-    QString to = Tools::dataBaseFilePath(toName);
-    if(Tools::copyFile(from, to)) return true;
+    if(Tools::copyFile(Tools::dbPath(fromName), Tools::dbPath(toName))) return true;
     Tools::debugLog("@@@@@ DataBase::copyDBFiles ERROR");
     return false;
 }

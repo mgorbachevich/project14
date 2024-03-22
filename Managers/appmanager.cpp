@@ -41,7 +41,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     KeyEmitter* keyEmitter = new KeyEmitter(this);
     context->setContextProperty("keyEmitter", keyEmitter);
 
-    if(CREATE_DEFAULT_DATA_ON_START && !Tools::isFile(DB_PRODUCT_NAME)) createDefaultData();
+    if(CREATE_DEFAULT_DATA_ON_START && !Tools::isFileExists(DB_PRODUCT_NAME)) createDefaultData();
 
     db = new DataBase(settings, this);
     user = UserDBTable::defaultAdmin();
@@ -133,9 +133,11 @@ void AppManager::onNetAction(const int action)
 void AppManager::onTimer()
 {
     if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer");
+    if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
+
     const quint64 now = Tools::currentDateTimeToUInt();
     updateSystemStatus();
-    updateWeightStatus(); // ?
+    //updateWeightStatus(); // ?
 
     // Блокировка:
     quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
@@ -188,21 +190,21 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
 void AppManager::createDefaultData()
 {
     debugLog("@@@@@ AppManager::createDefaultData");
-    Tools::removeFile(Tools::dataBaseFilePath(DB_PRODUCT_NAME));
-    Tools::removeFile(Tools::dataBaseFilePath(DB_LOG_NAME));
-    Tools::removeFile(Tools::dataBaseFilePath(DB_SETTINGS_NAME));
-    Tools::removeFile(Tools::dataBaseFilePath(DB_TEMP_NAME));
-    Tools::removeFile(Tools::dataBaseFilePath(DEBUG_LOG_NAME));
+    Tools::removeFile(Tools::dbPath(DB_PRODUCT_NAME));
+    Tools::removeFile(Tools::dbPath(DB_LOG_NAME));
+    Tools::removeFile(Tools::dbPath(DB_SETTINGS_NAME));
+    Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
+    Tools::removeFile(Tools::dbPath(DEBUG_LOG_NAME));
 
     QStringList images = { "1.png", "2.png", "3.jpg", "4.png", "5.png", "6.png", "8.png",
                            "9.png", "10.png", "11.png", "12.png", "15.png" };
     for (int i = 0; i < images.count(); i++)
     {
         Tools::copyFile(QString(":/Default/%1").arg(images[i]),
-                        Tools::dataBaseFilePath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
+                        Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
     }
     Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME),
-                    Tools::dataBaseFilePath(DB_PRODUCT_NAME));
+                    Tools::dbPath(DB_PRODUCT_NAME));
 }
 
 double AppManager::price(const DBRecord& productRecord)
@@ -519,7 +521,7 @@ QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
     if (r.count() > i)
     {
         QString localFilePath = r[i].toString();
-        if(Tools::isFileExistInDownloadPath(localFilePath))
+        if(Tools::isFileExistsInDownloadPath(localFilePath))
             path = Tools::qmlFilePath(localFilePath);
     }
     return path;
@@ -813,7 +815,7 @@ void AppManager::stopAuthorization(const DBRecordList& dbUsers)
     resetProduct();
     updateWeightStatus();
     onUserAction();
-    if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dataBaseFilePath(DB_PRODUCT_NAME));
+    if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
     debugLog("@@@@@ AppManager::stopAuthorization Done");
 }
 
@@ -946,6 +948,7 @@ void AppManager::stopEquipment(const bool server, const bool weight, const bool 
 void AppManager::onUserAction()
 {
     debugLog("@@@@@ AppManager::onUserAction");
+    if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
     userActionTime = Tools::currentDateTimeToUInt();
     secret = 0;
 }

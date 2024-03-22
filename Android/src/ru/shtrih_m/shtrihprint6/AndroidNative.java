@@ -87,4 +87,24 @@ public class AndroidNative
         }
         return -1;
     }
+
+    public static int getMemory(int type) // 0 - maxHeap, 1 - availableHeap, 2 - used
+    {
+        // https://stackoverflow.com/questions/3170691/how-to-get-current-memory-usage-in-android
+        try
+        {
+            Runtime r = Runtime.getRuntime();
+            switch(type)
+            {
+                case 0: return (int)(r.maxMemory() / 1024); // Kb
+                case 1: return (int)((r.maxMemory() - r.totalMemory() + r.freeMemory()) / 1024);
+                case 2: return (int)((r.totalMemory() - r.freeMemory())  / 1024);
+            }
+        }
+        catch (Exception e)
+        {
+            return -1;
+        }
+        return -2;
+    }
 }

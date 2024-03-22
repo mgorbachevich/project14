@@ -131,7 +131,7 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
                 Tools::debugLog(QString("@@@@@ RequestParser::parseSetRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header));
 
-                // Content-Disposition: form-data; name="value"
+                // Content-Disposition: form-data; name="value"
                 QByteArray nameItemValue = parseHeaderItem(header, "name");
                 if(nameItemValue == "value")
                 {
@@ -185,7 +185,7 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
                         // Write data file:
                         QByteArray fileData = request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d * 2);
                         Tools::debugLog("@@@@@ RequestParser::parseSetRequest. File data length " + QString::number( fileData.length()));
-                        QString fullFilePath = Tools::downloadFilePath(localFilePath);
+                        QString fullFilePath = Tools::downloadPath(localFilePath);
                         Tools::debugLog("@@@@@ RequestParser::parseSetRequest. Full file path " + fullFilePath);
                         if(Tools::writeBinaryFile(fullFilePath, fileData))
                         {

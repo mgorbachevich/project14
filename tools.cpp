@@ -197,9 +197,9 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
     return path;
 }
 
-bool Tools::isFileExistInDownloadPath(const QString &localPath)
+bool Tools::isFileExistsInDownloadPath(const QString &localPath)
 {
-    QString path = downloadFilePath(localPath);
+    QString path = downloadPath(localPath);
     bool ok = false;
     if (QFileInfo::exists(path) && QFileInfo(path).isFile())
     {
@@ -210,7 +210,7 @@ bool Tools::isFileExistInDownloadPath(const QString &localPath)
             ok = true;
         }
     }
-    debugLog(QString("@@@@@ Tools::isFileExistInDownloadPath %1 %2").arg(Tools::boolToString(ok), localPath));
+    debugLog(QString("@@@@@ Tools::isFileExistsInDownloadPath %1 %2").arg(Tools::boolToString(ok), localPath));
     return ok;
 }
 
@@ -228,7 +228,7 @@ QString Tools::qmlFilePath(const QString& localPath)
 bool Tools::copyFile(const QString& from, const QString& to)
 {
     debugLog(QString("@@@@@ DataBase::copyFile %1 >> %2").arg(from, to));
-    if (!isFile(from)) return false;
+    if (!isFileExists(from)) return false;
     removeFile(to);
     return QFile::copy(from, to);
 }
@@ -236,20 +236,20 @@ bool Tools::copyFile(const QString& from, const QString& to)
 bool Tools::removeFile(const QString &path)
 {
     debugLog("@@@@@ Tools::removeFile " + path);
-    return isFile(path) ? QFile::remove(path) : true;
+    return isFileExists(path) ? QFile::remove(path) : true;
 }
 
-bool Tools::isFile(const QString &path)
+bool Tools::isFileExists(const QString &path)
 {
     return QFile::exists(path);
 }
 
-QString Tools::dataBaseFilePath(const QString& localFilePath)
+QString Tools::dbPath(const QString& localFilePath)
 {
     return makeFullPath("", localFilePath);
 }
 
-QString Tools::downloadFilePath(const QString& localPath)
+QString Tools::downloadPath(const QString& localPath)
 {
     return makeFullPath(DOWNLOAD_SUBDIR, localPath);
 }
@@ -291,7 +291,7 @@ void Tools::debugLog(const QString &text)
     QString s = text;
     qDebug() << s.replace("\n", " ").replace("\r", " ");
 #ifdef DEBUG_LOG
-    QFile f(dataBaseFilePath(DEBUG_LOG_NAME));
+    QFile f(dbPath(DEBUG_LOG_NAME));
     if (f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
     {
          QTextStream out(&f);
@@ -305,7 +305,7 @@ void Tools::removeDebugLog()
 {
     if(REMOVE_DEBUG_LOG_ON_START)
     {
-        removeFile(dataBaseFilePath(DEBUG_LOG_NAME));
+        removeFile(dbPath(DEBUG_LOG_NAME));
         debugLog("@@@@@ Tools::removeDebugLog");
     }
 }
@@ -325,10 +325,10 @@ QString Tools::timeFromUInt(quint64 v, const QString& format)
     return QDateTime::fromMSecsSinceEpoch(v).toString(format);
 }
 
-bool Tools::isEnvironment(const EnvironmentType interface)
+bool Tools::isEnvironment(const EnvironmentType type)
 {
     bool result = false;
-    switch(interface)
+    switch(type)
     {
     case EnvironmentType_WiFi:
     {
@@ -353,10 +353,9 @@ bool Tools::isEnvironment(const EnvironmentType interface)
     case EnvironmentType_USB:
     case EnvironmentType_SDCard:
     {
-        jint jresult = QJniObject::callStaticMethod<jint>(
-                    "ru.shtrih_m.shtrihprint6/AndroidNative",
-                    "isNativeEnvironment", "(I)I", interface);
-        result = jresult == 0;
+        jint jresult = QJniObject::callStaticMethod<jint>(ANDROID_NATIVE_CLASS_NAME,
+                    "isNativeEnvironment", "(I)I", type);
+        result = (jresult == 0);
         break;
     }
 #endif // Q_OS_ANDROID
@@ -364,11 +363,27 @@ bool Tools::isEnvironment(const EnvironmentType interface)
     default: break;
     }
 
-    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(QString::number(interface), Tools::boolToString(result)));
+    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(QString::number(type), Tools::boolToString(result)));
     return result;
 }
 
+int Tools::getMemory(const MemoryType type)
+{
+    //debugLog(QString("@@@@@ Tools::getMemory %1").arg(QString::number(type)));
+#ifdef Q_OS_ANDROID
+    return QJniObject::callStaticMethod<jint>(ANDROID_NATIVE_CLASS_NAME, "getMemory", "(I)I", type);
+#endif // Q_OS_ANDROID
+    return -3;
+}
 
-
+void Tools::debugMemory()
+{
+#ifdef Q_OS_ANDROID
+    debugLog(QString("@@@@@ Tools::debugMemory %1 %2 %3").arg(
+                 Tools::intToString(Tools::getMemory(MemoryType_Max)),
+                 Tools::intToString(Tools::getMemory(MemoryType_Available)),
+                 Tools::intToString(Tools::getMemory(MemoryType_Used))));
+#endif // Q_OS_ANDROID
+}
 
 

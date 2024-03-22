@@ -3,7 +3,7 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.7"
+#define APP_VERSION "2.8"
 #define RELEASE
 
 #if defined(Q_OS_ANDROID) && defined(RELEASE)
@@ -25,6 +25,7 @@
 #define CHECK_AUTHORIZATION true
 #define SHOW_PATH_MESSAGE false
 #define DEBUG_ONTIMER_MESSAGE true
+#define DEBUG_MEMORY_MESSAGE true
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
@@ -46,6 +47,7 @@
 #define ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
 #define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
+#define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
 
@@ -297,6 +299,13 @@ enum EnvironmentType
     EnvironmentType_Bluetooth = 1,
     EnvironmentType_WiFi = 2,
     EnvironmentType_SDCard = 3,
+};
+
+enum MemoryType
+{
+    MemoryType_Max = 0,
+    MemoryType_Available = 1,
+    MemoryType_Used = 2
 };
 
 #endif // CONSTANTS_H
