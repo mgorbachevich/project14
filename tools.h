@@ -35,6 +35,7 @@ public:
     static QString downloadFilePath(const QString&);
     static bool copyFile(const QString&, const QString&);
     static bool removeFile(const QString&);
+    static bool isFile(const QString&);
     static void pause(const int, const QString& comment = "");
     static void sound(const QString&, const int);
     static void sortByInt(DBRecordList&, const int, const bool increase = true);

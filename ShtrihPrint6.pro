@@ -219,6 +219,19 @@ SOURCES += \
 RESOURCES += \
     constants.js \
     main.qml \
+    Default/1.png \
+    Default/2.png \
+    Default/3.jpg \
+    Default/4.png \
+    Default/5.png \
+    Default/6.png \
+    Default/8.png \
+    Default/9.png \
+    Default/10.png \
+    Default/11.png \
+    Default/12.png \
+    Default/15.png \
+    Default/ShtrihScale.db \
     Fonts/LeagueGothic-CondensedRegular.otf \
     Fonts/LeagueGothic-Regular.otf \
     Fonts/Roboto-Bold.ttf \
@@ -237,32 +250,40 @@ RESOURCES += \
     Fonts/impact.ttf \
     Fonts/sserifer.fon \
     Fonts/times.ttf \
+    Icons/a.png \
     Icons/arrow_left.png \
     Icons/arrow_up.png \
     Icons/auto.png \
+    Icons/auto_white.png \
     Icons/backspace.png \
     Icons/bluetooth.png \
+    Icons/bluetooth_white.png \
     Icons/close.png \
     Icons/empty.png \
     Icons/error.png \
+    Icons/error_white.png \
+    Icons/folder.png \
     Icons/info_outline.png \
     Icons/keyboard.png \
     Icons/lock.png \
     Icons/log.png \
     Icons/menu.png \
+    Icons/n.png \
     Icons/ok_outline.png \
     Icons/print.png \
     Icons/red.png \
     Icons/sdcard.png \
+    Icons/sdcard_white.png \
     Icons/settings.png \
-    Icons/tare.png \
-    Icons/usb.png \
-    Icons/wifi.png \
-    Icons/zero.png \
-    Icons/a.png \
-    Icons/folder.png \
-    Icons/n.png \
     Icons/star.png \
+    Icons/tare.png \
+    Icons/tare_white.png \
+    Icons/usb.png \
+    Icons/usb_white.png \
+    Icons/wifi.png \
+    Icons/wifi_white.png \
+    Icons/zero.png \
+    Icons/zero_white.png \
     Images/image_dummy.png \
     Images/logo.png \
     Labels/60x30.dat/0.bmp \
@@ -310,7 +331,6 @@ RESOURCES += \
     Panels/searchPanel.qml \
     Panels/settingsPanel.qml \
     Panels/showcasePanel.qml \
-    Panels/SmallIconButton.qml \
     Panels/tablePanel.qml \
     Panels/viewLogPanel.qml \
     Panels/VirtualKeyboardNumeric.qml \

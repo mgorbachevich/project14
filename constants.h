@@ -3,7 +3,7 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.3"
+#define APP_VERSION "2.7"
 #define RELEASE
 
 #if defined(Q_OS_ANDROID) && defined(RELEASE)
@@ -16,7 +16,8 @@
 
 #define DEBUG_LOG
 //#define DB_EMULATION
-#define REMOVE_DEBUG_LOG_ON_START
+#define CREATE_DEFAULT_DATA_ON_START true
+#define REMOVE_DEBUG_LOG_ON_START false
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false

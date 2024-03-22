@@ -5,27 +5,12 @@ import QtQuick.Layouts
 import "../constants.js" as Constants
 import RegisteredTypes
 
-Popup
+Rectangle
 {
     id: authorizationPanel
-    padding: screenManager.spacer()
-    closePolicy: Popup.NoAutoClose
-    focus: true
-    modal: true
-    dim: true
+    anchors.fill: parent
     Material.background: Material.color(Material.Grey, Material.Shade100)
-    property string versionValue: "Version"
     property int flagSize: screenManager.flagSize()
-    onOpened:
-    {
-        app.onAuthorizationOpened(true)
-        app.onPopupOpened()
-    }
-    onClosed:
-    {
-        app.onAuthorizationOpened(false)
-        app.onPopupClosed()
-    }
 
     Connections // Slot for signal AppManager::showEnvironmentStatus
     {
@@ -33,14 +18,14 @@ Popup
         function onShowEnvironmentStatus(value1, value2, value3, value4)
         {
             app.debugLog("@@@@@ authorizationPanel.onShowEnvironmentStatus");
-            if(value1) usbIcon.Material.foreground = Constants.colorBlack;
-            else       usbIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
-            if(value2) bluetoothIcon.Material.foreground = Constants.colorBlack;
-            else       bluetoothIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
-            if(value3) wifiIcon.Material.foreground = Constants.colorBlack;
-            else       wifiIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
-            if(value4) sdcardIcon.Material.foreground = Constants.colorBlack;
-            else       sdcardIcon.Material.foreground = Material.color(Material.BlueGrey, Material.Shade200)
+            if(value1) usbIcon.source = "../Icons/usb";
+            else       usbIcon.source = "../Icons/usb_white"
+            if(value2) bluetoothIcon.source = "../Icons/bluetooth";
+            else       bluetoothIcon.source = "../Icons/bluetooth_white";
+            if(value3) wifiIcon.source = "../Icons/wifi";
+            else       wifiIcon.source = "../Icons/wifi_white";
+            if(value4) sdcardIcon.source = "../Icons/sdcard";
+            else       sdcardIcon.source = "../Icons/sdcard_white";
         }
     }
 
@@ -51,17 +36,6 @@ Popup
         {
             app.debugLog("@@@@@ authorizationPanel.onShowDateTime")
             dateTimeText.text = value
-        }
-    }
-
-    Connections // Slot for signal AppManager::showAuthorizationSucceded:
-    {
-        target: app
-        function onShowAuthorizationSucceded()
-        {
-            app.debugLog("@@@@@ authorizationPanel.onShowAuthorizationSucceded")
-            app.onUserAction();
-            authorizationPanel.close()
         }
     }
 
@@ -76,11 +50,24 @@ Popup
         }
     }
 
+    Connections // Slot for signal AppManager::showMainPage:
+    {
+        target: app
+        function onShowMainPage(index)
+        {
+            if (index === -1)
+            {
+                app.debugLog("@@@@@ authorizationPanel onShowMainPage");
+                passwordTextField.forceActiveFocus()
+            }
+        }
+    }
+
     Image
     {
         anchors.left: parent.left
-        width: screenManager.buttonSize() * 3 / 2
-        height: screenManager.buttonSize() * 3 / 2
+        width: screenManager.buttonSize()
+        height: screenManager.buttonSize()
         source: "../Images/logo"
 
         MouseArea
@@ -96,19 +83,9 @@ Popup
 
     Row
     {
-        id: flags
         anchors.right: parent.right
         spacing: screenManager.spacer()
         visible: true
-
-        Text
-        {
-            id: versionText
-            color: Material.color(Material.BlueGrey, Material.Shade900)
-            font { pointSize: screenManager.normalFontSize() }
-            text: versionValue
-            visible: false // todo
-        }
 
         Text
         {
@@ -118,28 +95,36 @@ Popup
             font { pointSize: screenManager.normalFontSize() }
         }
 
-        SmallIconButton
+        Image
         {
             id: usbIcon
-            icon.source: "../Icons/usb"
+            width: screenManager.flagSize()
+            height: screenManager.flagSize()
+            source: "../Icons/usb"
         }
 
-        SmallIconButton
+        Image
         {
             id: bluetoothIcon
-            icon.source: "../Icons/bluetooth"
+            width: screenManager.flagSize()
+            height: screenManager.flagSize()
+            source: "../Icons/bluetooth"
         }
 
-        SmallIconButton
+        Image
         {
             id: wifiIcon
-            icon.source: "../Icons/wifi"
+            width: screenManager.flagSize()
+            height: screenManager.flagSize()
+            source: "../Icons/wifi"
         }
 
-        SmallIconButton
+        Image
         {
             id: sdcardIcon
-            icon.source: "../Icons/sdcard"
+            width: screenManager.flagSize()
+            height: screenManager.flagSize()
+            source: "../Icons/sdcard"
         }
     }
 

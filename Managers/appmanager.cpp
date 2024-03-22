@@ -41,6 +41,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     KeyEmitter* keyEmitter = new KeyEmitter(this);
     context->setContextProperty("keyEmitter", keyEmitter);
 
+    if(CREATE_DEFAULT_DATA_ON_START && !Tools::isFile(DB_PRODUCT_NAME)) createDefaultData();
+
     db = new DataBase(settings, this);
     user = UserDBTable::defaultAdmin();
     netServer = new NetServer(this, db);
@@ -131,12 +133,13 @@ void AppManager::onNetAction(const int action)
 void AppManager::onTimer()
 {
     if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer");
-    updateSystemStatus();
     const quint64 now = Tools::currentDateTimeToUInt();
+    updateSystemStatus();
+    updateWeightStatus(); // ?
 
     // Блокировка:
     quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
-    if(!isAuthorizationOpened && userActionTime > 0 && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
+    if(mainPageIndex >= 0 && userActionTime > 0 && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
     {
         debugLog("@@@@@ AppManager::onTimer userActionTime");
         userActionTime = 0;
@@ -180,6 +183,26 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
     else if(!weightManager->isError())
         q = weightManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
     return Tools::moneyToText(q * price(productRecord), settings.getItemIntValue(SettingCode_PointPosition));
+}
+
+void AppManager::createDefaultData()
+{
+    debugLog("@@@@@ AppManager::createDefaultData");
+    Tools::removeFile(Tools::dataBaseFilePath(DB_PRODUCT_NAME));
+    Tools::removeFile(Tools::dataBaseFilePath(DB_LOG_NAME));
+    Tools::removeFile(Tools::dataBaseFilePath(DB_SETTINGS_NAME));
+    Tools::removeFile(Tools::dataBaseFilePath(DB_TEMP_NAME));
+    Tools::removeFile(Tools::dataBaseFilePath(DEBUG_LOG_NAME));
+
+    QStringList images = { "1.png", "2.png", "3.jpg", "4.png", "5.png", "6.png", "8.png",
+                           "9.png", "10.png", "11.png", "12.png", "15.png" };
+    for (int i = 0; i < images.count(); i++)
+    {
+        Tools::copyFile(QString(":/Default/%1").arg(images[i]),
+                        Tools::dataBaseFilePath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
+    }
+    Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME),
+                    Tools::dataBaseFilePath(DB_PRODUCT_NAME));
 }
 
 double AppManager::price(const DBRecord& productRecord)
@@ -314,14 +337,6 @@ void AppManager::onAdminSettingsClicked()
     emit showSettingsPanel(settings.getCurrentGroupName());
 }
 
-void AppManager::onAuthorizationOpened(const bool open)
-{
-    debugLog(QString("@@@@@ AppManager::onAuthorizationOpened %1").arg(Tools::boolToString(open)));
-    isAuthorizationOpened = open;
-    if(open) updateSystemStatus();
-    else updateWeightStatus();
-}
-
 void AppManager::onLockClicked()
 {
     debugLog("@@@@@ AppManager::onLockClicked");
@@ -329,17 +344,13 @@ void AppManager::onLockClicked()
     showConfirmation(DialogSelector::DialogSelector_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
-void AppManager::onMainPageChanged(const int index)
-{
-    debugLog("@@@@@ AppManager::onMainPageChanged " + QString::number( index));
-    mainPageIndex = index;
-    emit showMainPage(mainPageIndex);
-}
-
 void AppManager::onNumberClicked(const QString &s)
 {
-    debugLog("@@@@@ AppManager::onNumberClicked " + s);
-    emit showProductCodeInputBox(s);
+    if(mainPageIndex >= 0)
+    {
+        debugLog("@@@@@ AppManager::onNumberClicked " + s);
+        emit showProductCodeInputBox(s);
+    }
 }
 
 void AppManager::onPiecesInputClosed(const QString &value)
@@ -717,15 +728,16 @@ void AppManager::onShowcaseClicked(const int index)
 
 void AppManager::onShowcaseSortClicked(const int sort)
 {
-    debugLog("@@@@@ AppManager::onShowcaseCodeClicked ");
+    debugLog(QString("@@@@@ AppManager::onShowcaseSortClicked %1").arg(Tools::intToString(sort)));
     onUserAction();
     setShowcaseSort(sort);
 }
 
-void AppManager::onSwipeMainPage(const int page)
+void AppManager::onMainPageSwiped(const int index)
 {
-    debugLog("@@@@@ AppManager::onSwipeMainPage " + QString::number(page));
-    emit showMainPage(page);
+    debugLog("@@@@@ AppManager::onMainPageSwiped " + QString::number(index));
+    mainPageIndex = index;
+    emit showMainPage(mainPageIndex);
 }
 
 void AppManager::updateTablePanel(const bool root)
@@ -738,18 +750,6 @@ void AppManager::updateTablePanel(const bool root)
     db->select(DBSelector_GetProductsByGroupCodeIncludeGroups, currentGroupCode);
 }
 
-void AppManager::startAuthorization()
-{
-    debugLog("@@@@@ AppManager::startAuthorization");
-    stopEquipment();
-    const QString info = appInfo.all();
-    debugLog("@@@@@ AppManager::startAuthorization " + info);
-    emit showAuthorizationPanel(info);
-    db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
-    db->select(DBSelector_GetAuthorizationUsers, "");
-    debugLog("@@@@@ AppManager::startAuthorization Done");
-}
-
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
 {
     onUserAction();
@@ -758,6 +758,17 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     user[UserDBTable::Name] = normalizedLogin;
     user[UserDBTable::Password] = password;
     db->select(DBSelector_GetAuthorizationUserByName, normalizedLogin);
+}
+
+void AppManager::startAuthorization()
+{
+    debugLog("@@@@@ AppManager::startAuthorization");
+    stopEquipment();
+    onMainPageSwiped(-1);
+    updateSystemStatus();
+    db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
+    db->select(DBSelector_GetAuthorizationUsers, "");
+    debugLog("@@@@@ AppManager::startAuthorization Done");
 }
 
 void AppManager::stopAuthorization(const DBRecordList& dbUsers)
@@ -796,15 +807,13 @@ void AppManager::stopAuthorization(const DBRecordList& dbUsers)
     debugLog("@@@@@ AppManager::stopAuthorization OK");
     QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
     db->saveLog(LogType_Warning, LogSource_User, s);
-    emit showAuthorizationSucceded();
-
+    onMainPageSwiped(0);
     startEquipment();
     refreshAll();
     resetProduct();
-    mainPageIndex = 0;
-    emit showMainPage(mainPageIndex);
-    if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dataBaseFilePath(DB_PRODUCT_NAME));
+    updateWeightStatus();
     onUserAction();
+    if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dataBaseFilePath(DB_PRODUCT_NAME));
     debugLog("@@@@@ AppManager::stopAuthorization Done");
 }
 
@@ -837,7 +846,6 @@ void AppManager::showToast(const QString &title, const QString &text, const int 
 
 void AppManager::updateSystemStatus()
 {
-    if(!isAuthorizationOpened) return;
     QString dateTime = Tools::dateTimeFromUInt(Tools::currentDateTimeToUInt(), "%1 %2", "dd.MM", "hh:mm");
     debugLog(QString("@@@@@ AppManager::updateSystemStatus %1").arg(dateTime));
     emit showDateTime(dateTime);
@@ -1025,7 +1033,6 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 
 void AppManager::updateWeightStatus()
 {
-    if(isAuthorizationOpened) return;
     debugLog("@@@@@ AppManager::updateWeightStatus");
 
     const bool isProduct = !product.empty();

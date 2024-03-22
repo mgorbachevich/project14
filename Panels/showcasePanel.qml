@@ -69,10 +69,10 @@ Rectangle
                 app.onZeroClicked()
                 break
             case Qt.Key_Right:
-                app.onSwipeMainPage(1)
+                app.onMainPageSwiped(1)
                 break;
             case Qt.Key_Q:
-                app.onSwipeMainPage(2)
+                app.onMainPageSwiped(2)
                 break;
             case Qt.Key_Up:
                 if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, Constants.flickVelocity)

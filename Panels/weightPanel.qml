@@ -30,12 +30,12 @@ Rectangle
             switch (param)
             {
             case 1: // TareFlag >T<
-                if (value === 'true') productPanelTareIcon.Material.foreground = Constants.colorWhite
-                else                  productPanelTareIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
+                if (value === 'true') weightPanelTareIcon.source = "../Icons/tare_white"
+                else                  weightPanelTareIcon.source = "../Icons/tare"
                 break
             case 2: // ZeroFlag >0<
-                if (value === 'true') productPanelZeroIcon.Material.foreground = Constants.colorWhite
-                else                  productPanelZeroIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
+                if (value === 'true') weightPanelZeroIcon.source = "../Icons/zero_white"
+                else                  weightPanelZeroIcon.source = "../Icons/zero"
                 break
             case 3: // TareValue todo
                 break
@@ -67,16 +67,16 @@ Rectangle
                 weightPanelAmountTitle.text = value
                 break
             case 13: // WeightError
-                if (value === 'true') productPanelErrorIcon.Material.foreground = Constants.colorError
-                else                  productPanelErrorIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
+                if (value === 'true') weightPanelErrorIcon.source = "../Icons/error_white"
+                else                  weightPanelErrorIcon.source = "../Icons/error"
                 break
             case 14: // WeightFixed
             case 15: // PrintError
                 break
             case 16: // AutoPrint
-                if (value === '1')      productPanelAutoPrintIcon.Material.foreground = Constants.colorWhite
-                else if (value === '2') productPanelAutoPrintIcon.Material.foreground = Constants.colorAuto
-                else                    productPanelAutoPrintIcon.Material.foreground = Material.color(Material.Grey, Material.Shade800)
+                if (value === '1')      weightPanelAutoIcon.source = "../Icons/auto_white"
+                else if (value === '2') weightPanelAutoIcon.source = "../Icons/auto_white"
+                else                    weightPanelAutoIcon.source = "../Icons/auto"
                 break
             }
         }
@@ -100,41 +100,41 @@ Rectangle
                 spacing: 0
                 padding: 0
 
-                SmallIconButton
+                Image
                 {
-                    id: productPanelErrorIcon
+                    id: weightPanelErrorIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    icon.source: "../Icons/error"
+                    source: "../Icons/error"
                 }
 
-                SmallIconButton
+                Image
                 {
-                    id: productPanelAutoPrintIcon
+                    id: weightPanelAutoIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    icon.source: "../Icons/auto"
+                    source: "../Icons/auto"
                 }
 
-                SmallIconButton
+                Image
                 {
-                    id: productPanelTareIcon
+                    id: weightPanelTareIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    icon.source: "../Icons/tare"
+                    source: "../Icons/tare"
                 }
 
-                SmallIconButton
+                Image
                 {
-                    id: productPanelZeroIcon
+                    id: weightPanelZeroIcon
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    icon.source: "../Icons/zero"
-                 }
+                    source: "../Icons/zero"
+                }
             }
         }
 

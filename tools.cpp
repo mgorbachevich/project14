@@ -228,15 +228,20 @@ QString Tools::qmlFilePath(const QString& localPath)
 bool Tools::copyFile(const QString& from, const QString& to)
 {
     debugLog(QString("@@@@@ DataBase::copyFile %1 >> %2").arg(from, to));
-    if (!QFile::exists(from)) return false;
-    if (QFile::exists(to)) QFile::remove(to);
+    if (!isFile(from)) return false;
+    removeFile(to);
     return QFile::copy(from, to);
 }
 
 bool Tools::removeFile(const QString &path)
 {
     debugLog("@@@@@ Tools::removeFile " + path);
-    return QFile::exists(path) ? QFile::remove(path) : true;
+    return isFile(path) ? QFile::remove(path) : true;
+}
+
+bool Tools::isFile(const QString &path)
+{
+    return QFile::exists(path);
 }
 
 QString Tools::dataBaseFilePath(const QString& localFilePath)
@@ -298,10 +303,11 @@ void Tools::debugLog(const QString &text)
 
 void Tools::removeDebugLog()
 {
-#ifdef REMOVE_DEBUG_LOG_ON_START
-    removeFile(dataBaseFilePath(DEBUG_LOG_NAME));
-    debugLog("@@@@@ Tools::removeDebugLog");
-#endif
+    if(REMOVE_DEBUG_LOG_ON_START)
+    {
+        removeFile(dataBaseFilePath(DEBUG_LOG_NAME));
+        debugLog("@@@@@ Tools::removeDebugLog");
+    }
 }
 
 QString Tools::dateTimeFromUInt(quint64 v, const QString& format, const QString& dateFormat, const QString& timeFormat)

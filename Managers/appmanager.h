@@ -39,12 +39,11 @@ public:
     Q_INVOKABLE void clickSound();
     Q_INVOKABLE void debugLog(const QString&);
     Q_INVOKABLE void onAdminSettingsClicked();
-    Q_INVOKABLE void onAuthorizationOpened(const bool);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
     Q_INVOKABLE void onInfoClicked();
     Q_INVOKABLE void onLockClicked();
-    Q_INVOKABLE void onMainPageChanged(const int);
+    Q_INVOKABLE void onMainPageSwiped(const int);
     Q_INVOKABLE void onNumberClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
     Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
@@ -64,7 +63,6 @@ public:
     Q_INVOKABLE void onSettingsPanelCloseClicked();
     Q_INVOKABLE void onShowcaseClicked(const int);
     Q_INVOKABLE void onShowcaseSortClicked(const int);
-    Q_INVOKABLE void onSwipeMainPage(const int);
     Q_INVOKABLE void onTableBackClicked();
     Q_INVOKABLE void onTableResultClicked(const int);
     Q_INVOKABLE void onTareClicked();
@@ -76,6 +74,7 @@ public:
 
 private:
     QString amountAsString(const DBRecord&);
+    void createDefaultData();
     void filteredSearch();
     QString getImageFileWithQmlPath(const DBRecord&);
     double price(const DBRecord&);
@@ -90,14 +89,14 @@ private:
     void showConfirmation(const DialogSelector, const QString&, const QString&);
     void showMessage(const QString&, const QString&);
     void showToast(const QString&, const QString&, const int delaySec = 5);
-    void updateSystemStatus();
     void showUsers(const DBRecordList&);
     void startAuthorization();
     void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
     void stopAuthorization(const DBRecordList&);
     void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
-    void updateWeightStatus();
+    void updateSystemStatus();
     void updateTablePanel(const bool);
+    void updateWeightStatus();
 
     AppInfo appInfo;
 
@@ -122,9 +121,8 @@ private:
     QQmlContext* context = nullptr;
     quint64 userActionTime = 0;
     int openedPopupCount = 0;
-    int mainPageIndex = 0;
+    int mainPageIndex = -1; // Авторизация
     int secret = 0;
-    bool isAuthorizationOpened = false;
     int showcaseSort = Sort_Name;
 
     // UI Models:
@@ -151,8 +149,6 @@ signals:
     void setCurrentUser(const int, const QString&);
     void showDateTime(const QString&);
     void showAdminMenu(bool);
-    void showAuthorizationPanel(const QString&);
-    void showAuthorizationSucceded();
     void showConfirmationBox(const int, const QString&, const QString&);
     void showEnvironmentStatus(const bool, const bool, const bool, const bool);
     void showGroupHierarchyRoot(const bool);

@@ -46,7 +46,7 @@ bool DataBase::startDB()
 {
     Tools::debugLog("@@@@@ DataBase::startDB");
     QString path = Tools::dataBaseFilePath(DB_PRODUCT_NAME);
-    if(REMOVE_PRODUCT_DB_ON_START) QFile(path).remove();
+    if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(productDB, path);
@@ -69,7 +69,7 @@ bool DataBase::startDB()
     if (!opened) return false;
 
     path = Tools::dataBaseFilePath(DB_SETTINGS_NAME);
-    if(REMOVE_SETTINGS_DB_ON_START) QFile(path).remove();
+    if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(settingsDB, path);
@@ -77,7 +77,7 @@ bool DataBase::startDB()
     if (!opened) return false;
 
     path = Tools::dataBaseFilePath(DB_LOG_NAME);
-    if(REMOVE_LOG_DB_ON_START) QFile(path).remove();
+    if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(logDB, path);

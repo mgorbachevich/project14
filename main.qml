@@ -39,21 +39,9 @@ ApplicationWindow
         function onShowMainPage(value)
         {
             app.debugLog("@@@@@ mainWindow.onShowMainPage %1".arg(value));
-            mainWindowLayout.visible = true
-            mainSwipeView.setCurrentIndex(value)
-        }
-    }
-
-    Connections // Slot for signal AppManager::showAuthorizationPanel:
-    {
-        target: app
-        function onShowAuthorizationPanel(title)
-        {
-            app.debugLog("@@@@@ mainWindow.onShowAuthorizationPanel %1".arg(title));
-            Qt.createComponent("Panels/authorizationPanel.qml").createObject(mainWindow,
-            {
-                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, versionValue: title
-            }).open()
+            mainWindowLayout.visible = (value >= 0)
+            authorizationPanel.visible = (value < 0)
+            if(value >= 0) mainSwipeView.setCurrentIndex(value)
         }
     }
 
@@ -209,6 +197,14 @@ ApplicationWindow
         }
     }
 
+    Loader
+    {
+        id: authorizationPanel
+        width: parent.width
+        height: parent.height
+        source: "Panels/authorizationPanel.qml"
+    }
+
     Column
     {
         id: mainWindowLayout
@@ -263,7 +259,7 @@ ApplicationWindow
                         anchors.fill: parent
                         clip: true
                         currentIndex: 0
-                        onCurrentIndexChanged: app.onMainPageChanged(currentIndex);
+                        onCurrentIndexChanged: app.onMainPageSwiped(currentIndex);
                         focus: true
 
                         Loader

@@ -7,7 +7,7 @@ import RegisteredTypes
 
 Rectangle
 {
-    id:  tablePanel
+    id: tablePanel
     color: Material.background
     focus: true
     Keys.onPressed: (event) =>
@@ -32,11 +32,11 @@ Rectangle
                 app.onZeroClicked()
                 break
             case Qt.Key_Left:
-                app.onSwipeMainPage(0)
+                app.onMainPageSwiped(0)
                 break;
             case Qt.Key_Right:
             case Qt.Key_Q:
-                app.onSwipeMainPage(2)
+                app.onMainPageSwiped(2)
                 break;
             case Qt.Key_Up:
                 if (!tablePanelResultList.atYBeginning) tablePanelResultList.flick(0, Constants.flickVelocity)

@@ -159,7 +159,7 @@ Rectangle
                         text = ""
                         break;
                     case Qt.Key_Left:
-                        app.onSwipeMainPage(1)
+                        app.onMainPageSwiped(1)
                         break;
                     case Qt.Key_F9: // Ключ
                         app.onLockClicked()

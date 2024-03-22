@@ -8,7 +8,7 @@ class AppInfo
 {
 public:
     AppInfo() {}
-    QString all(const QString delimeter = " ")
+    QString all(const QString delimeter)
     {
         return QString("Штрих ПРИНТ 6А %1.%2БД %3.%4ВМ %5.%6Принтер %7.%8Сервер %9.%10IP %11").
                 arg(appVersion, delimeter,
