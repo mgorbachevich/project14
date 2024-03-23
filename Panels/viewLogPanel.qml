@@ -15,8 +15,6 @@ Popup
     focus: true
     modal: true
     dim: true
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
     Connections // Slot for signal AppManager::closeLogView
     {

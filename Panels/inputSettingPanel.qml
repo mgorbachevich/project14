@@ -20,8 +20,6 @@ Popup
     property string inputText: "Input"
     property int settingItemCode: 0
     property int virtualKeyboardSet: 2
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
     Connections // Slot for signal KeyEmitter::enterChar
     {

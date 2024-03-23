@@ -18,8 +18,6 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
     property bool buttonVisibility: true
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
     Connections // Slot for signal AppManager::hideToast
     {

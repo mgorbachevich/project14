@@ -3,7 +3,7 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.8"
+#define APP_VERSION "2.9"
 #define RELEASE
 
 #if defined(Q_OS_ANDROID) && defined(RELEASE)
@@ -50,6 +50,7 @@
 #define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
+#define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320

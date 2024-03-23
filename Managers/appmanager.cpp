@@ -92,8 +92,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("settingItemListModel", settingItemListModel);
     context->setContextProperty("inputProductCodePanelModel", inputProductCodePanelModel);
 
-    QTimer::singleShot(100, this, &AppManager::start);
     onUserAction();
+    QTimer::singleShot(100, this, &AppManager::start);
     timer->start(APP_TIMER_MSEC);
 
     debugLog("@@@@@ AppManager::AppManager Done");
@@ -136,16 +136,29 @@ void AppManager::onTimer()
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
 
     const quint64 now = Tools::currentDateTimeToUInt();
-    updateSystemStatus();
-    //updateWeightStatus(); // ?
-
-    // Блокировка:
-    quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
-    if(mainPageIndex >= 0 && userActionTime > 0 && waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
+    if(isSettingsOpened())
     {
-        debugLog("@@@@@ AppManager::onTimer userActionTime");
-        userActionTime = 0;
-        startAuthorization();
+        userActionTime = now;
+        return;
+    }
+    if(isAuthorizationOpened()) // Авторизация
+    {
+        userActionTime = now;
+        updateSystemStatus();
+    }
+    else
+    {
+        // Блокировка:
+        quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
+        if(waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
+        {
+            debugLog("@@@@@ AppManager::onTimer userActionTime");
+            userActionTime = now;
+            if(!product.isEmpty()) resetProduct();
+            startAuthorization();
+            return;
+        }
+        updateWeightStatus();
     }
 
     // Ожидание окончания сетевых запросов:
@@ -229,6 +242,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
 
     if (settings.getItemIntValue(SettingCode_ProductReset) ==  ProductReset_Time)
     {
+        debugLog("@@@@@ AppManager::setProduct product reset");
         int resetTime = settings.getItemIntValue(SettingCode_ProductResetTime);
         if (resetTime > 0) QTimer::singleShot(resetTime * 1000, this, &AppManager::resetProduct);
     }
@@ -333,10 +347,7 @@ void AppManager::onAdminSettingsClicked()
 {
     debugLog("@@@@@ AppManager::onAdminSettingsClicked");
     onUserAction();
-    stopEquipment();
-    db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
-    settingsPanelModel->update(settings);
-    emit showSettingsPanel(settings.getCurrentGroupName());
+    startSettings();
 }
 
 void AppManager::onLockClicked()
@@ -348,7 +359,7 @@ void AppManager::onLockClicked()
 
 void AppManager::onNumberClicked(const QString &s)
 {
-    if(mainPageIndex >= 0)
+    if(!isAuthorizationOpened() && !isSettingsOpened())
     {
         debugLog("@@@@@ AppManager::onNumberClicked " + s);
         emit showProductCodeInputBox(s);
@@ -380,22 +391,6 @@ void AppManager::onProductCodeEdited(const QString &value)
     debugLog("@@@@@ AppManager::onProductCodeEdited " + value);
     db->select(DBSelector_GetProductByInputCode, value);
     db->select(DBSelector_GetProductsByInputCode, value);
-}
-
-void AppManager::onPopupClosed()
-{
-    if (--openedPopupCount <= 0)
-    {
-        openedPopupCount = 0;
-        emit showMainPage(mainPageIndex);
-    }
-    debugLog("@@@@@ AppManager::onPopupClosed " + QString::number(openedPopupCount));
-}
-
-void AppManager::onPopupOpened()
-{
-    openedPopupCount++;
-    debugLog("@@@@@ AppManager::onPopupOpened " + QString::number(openedPopupCount));
 }
 
 void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList& records, const bool ok)
@@ -537,14 +532,14 @@ void AppManager::onViewLogClicked()
 
 void AppManager::onVirtualKeyboardSet(const int v)
 {
-    debugLog("@@@@@ AppManager::onVirtualKeyboardSet " + QString::number(v));
+    debugLog("@@@@@ AppManager::onVirtualKeyboardSet " + Tools::intToString(v));
     onUserAction();
     emit showVirtualKeyboard(v);
 }
 
 void AppManager::onWeightPanelClicked(const int param)
 {
-    debugLog("@@@@@ AppManager::onWeightPanelClicked " + QString::number(param));
+    debugLog("@@@@@ AppManager::onWeightPanelClicked " + Tools::intToString(param));
     if(param == 1) QTimer::singleShot(WAIT_SECRET_MSEC, this, &AppManager::onUserAction);
     if(param == secret + 1 && ++secret == 3) onLockClicked();
 }
@@ -567,7 +562,7 @@ void AppManager::onZeroClicked()
 
 void AppManager::onConfirmationClicked(const int selector)
 {
-    debugLog("@@@@@ AppManager::onConfirmationClicked " + QString::number(selector));
+    debugLog("@@@@@ AppManager::onConfirmationClicked " + Tools::intToString(selector));
     onUserAction();
     switch (selector)
     {
@@ -609,14 +604,14 @@ void AppManager::onSettingsItemClicked(const int index)
     DBRecord* r = settings.getItemByIndexInCurrentGroup(index);
     if(r == nullptr || r->empty())
     {
-        debugLog("@@@@@ AppManager::onSettingsItemClicked ERROR " + QString::number(index));
+        debugLog("@@@@@ AppManager::onSettingsItemClicked ERROR " + Tools::intToString(index));
         return;
     }
 
     const int code = settings.getItemCode(*r);
     const QString& name = settings.getItemName(*r);
     const int type = settings.getItemType(*r);
-    debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(QString::number(code), name, QString::number(type)));
+    debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::intToString(code), name, QString::number(type)));
 
     switch (type)
     {
@@ -666,7 +661,7 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
 {
     const int code = settings.getItemCode(r);
     const QString& name = settings.getItemName(r);
-    debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(QString::number(code), name));
+    debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::intToString(code), name));
 
     switch (code)
     {
@@ -697,48 +692,55 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
 
 void AppManager::onSettingsPanelCloseClicked()
 {
-    debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked " + QString::number(settings.currentGroupCode));
+    debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked " + Tools::intToString(settings.currentGroupCode));
     onUserAction();
-    emit closeSettings();
+    emit previousSettings();
     if(settings.currentGroupCode != 0)
     {
         DBRecord* r = settings.getItemByCode(settings.currentGroupCode);
         if(r != nullptr && !r->empty() && settings.isGroupItem(*r))
         {
+            // Переход вверх:
             settings.currentGroupCode = r->at(SettingDBTable::GroupCode).toInt();
             settingsPanelModel->update(settings);
             emit showSettingsPanel(settings.getCurrentGroupName());
             return;
         }
     }
-    startEquipment();
+    stopSettings();
 }
 
 void AppManager::onSearchResultClicked(const int index)
 {
-    debugLog("@@@@@ AppManager::onSearchResultClicked " + QString::number(index));
+    debugLog("@@@@@ AppManager::onSearchResultClicked " + Tools::intToString(index));
     onUserAction();
     setProduct(searchPanelModel->productByIndex(index));
 }
 
 void AppManager::onShowcaseClicked(const int index)
 {
-    debugLog("@@@@@ AppManager::onShowcaseClicked " + QString::number(index));
+    debugLog("@@@@@ AppManager::onShowcaseClicked " + Tools::intToString(index));
     onUserAction();
     setProduct(showcasePanelModel->productByIndex(index));
 }
 
 void AppManager::onShowcaseSortClicked(const int sort)
 {
-    debugLog(QString("@@@@@ AppManager::onShowcaseSortClicked %1").arg(Tools::intToString(sort)));
+    debugLog("@@@@@ AppManager::onShowcaseSortClicked " + Tools::intToString(sort));
     onUserAction();
     setShowcaseSort(sort);
 }
 
-void AppManager::onMainPageSwiped(const int index)
+void AppManager::onMainPageSwiped(const int i)
 {
-    debugLog("@@@@@ AppManager::onMainPageSwiped " + QString::number(index));
-    mainPageIndex = index;
+    debugLog("@@@@@ AppManager::onMainPageSwiped " + Tools::intToString(i));
+    setMainPage(i);
+}
+
+void AppManager::setMainPage(const int i)
+{
+    debugLog("@@@@@ AppManager::setMainPage " + Tools::intToString(i));
+    mainPageIndex = i;
     emit showMainPage(mainPageIndex);
 }
 
@@ -762,11 +764,28 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     db->select(DBSelector_GetAuthorizationUserByName, normalizedLogin);
 }
 
+void AppManager::startSettings()
+{
+    debugLog("@@@@@ AppManager::startSettings");
+    isSettings = true;
+    stopEquipment();
+    db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
+    settingsPanelModel->update(settings);
+    emit showSettingsPanel(settings.getCurrentGroupName());
+}
+
+void AppManager::stopSettings()
+{
+    debugLog("@@@@@ AppManager::stopSettings");
+    startEquipment();
+    isSettings = false;
+}
+
 void AppManager::startAuthorization()
 {
     debugLog("@@@@@ AppManager::startAuthorization");
     stopEquipment();
-    onMainPageSwiped(-1);
+    setMainPage(-1);
     updateSystemStatus();
     db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
     db->select(DBSelector_GetAuthorizationUsers, "");
@@ -809,7 +828,7 @@ void AppManager::stopAuthorization(const DBRecordList& dbUsers)
     debugLog("@@@@@ AppManager::stopAuthorization OK");
     QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
     db->saveLog(LogType_Warning, LogSource_User, s);
-    onMainPageSwiped(0);
+    setMainPage(0);
     startEquipment();
     refreshAll();
     resetProduct();
@@ -1013,7 +1032,8 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
 void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 {
     // Изменился параметр оборудования
-    debugLog(QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(param, errorCode));
+    debugLog(QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(
+                 Tools::intToString(param), Tools::intToString(errorCode)));
 
     switch (param)
     {

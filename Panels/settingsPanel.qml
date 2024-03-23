@@ -16,13 +16,11 @@ Popup
     dim: true
     Material.background: Material.color(Material.Grey, Material.Shade100)
     property string panelTitle: ""
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
-    Connections // Slot for signal AppManager::closeSettings
+    Connections // Slot for signal AppManager::previousSettings
     {
         target: app
-        function onCloseSettings() { settingPanel.close() }
+        function onPreviousSettings() { settingPanel.close() }
     }
 
     GridLayout

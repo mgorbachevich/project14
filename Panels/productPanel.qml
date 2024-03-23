@@ -19,8 +19,6 @@ Popup
     property int printButtonSize: screenManager.buttonSize() * 2 + screenManager.spacer()
     property bool isPiece: false
     property string productName: ""
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
     Connections // Slot for signal AppManager::showPrinterMessage:
     {

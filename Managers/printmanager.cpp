@@ -98,7 +98,7 @@ int PrintManager::setParams(const int brightness, const int offset) // -7 .. +7
 
 void PrintManager::onStatusChanged(uint16_t s)
 {
-    Tools::debugLog(QString("@@@@@ PrintManager::onStatusChanged %1").arg(s));
+    Tools::debugLog(QString("@@@@@ PrintManager::onStatusChanged %1b").arg(QString::number(s, 2)));
     if(slpa == nullptr)
     {
         status = 0;
@@ -131,7 +131,7 @@ void PrintManager::onStatusChanged(uint16_t s)
 
 void PrintManager::onErrorStatusChanged(int e)
 {
-    Tools::debugLog("@@@@@ PrintManager::onErrorStatusChanged " + QString::number(e));
+    Tools::debugLog(QString("@@@@@ PrintManager::onErrorStatusChanged %1").arg(QString::number(e)));
     if(slpa != nullptr && errorCode != e)
     {
         errorCode = e;

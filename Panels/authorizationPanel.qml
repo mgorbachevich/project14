@@ -59,6 +59,7 @@ Rectangle
             {
                 app.debugLog("@@@@@ authorizationPanel onShowMainPage");
                 passwordTextField.forceActiveFocus()
+                passwordTextField.text = ""
             }
         }
     }

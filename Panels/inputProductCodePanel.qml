@@ -16,8 +16,6 @@ Popup
     dim: true
     Material.background: "transparent"
     property string inputText: "Input"
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
     Connections // Slot for signal AppManager::closeInputProductPanel
     {

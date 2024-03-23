@@ -173,19 +173,19 @@ bool DataBase::createTable(const QSqlDatabase& db, DBTable* table)
     return executeSQL(db, sql);
 }
 
-bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql)
+bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql, const bool log)
 {
     if (!opened) return false;
     Tools::debugLog(QString("@@@@@ DataBase::executeSQL %1").arg(sql));
-
     QSqlQuery q(db);
-    if (!q.exec(sql))
+    if (q.exec(sql)) return true;
+    if(log)
     {
         Tools::debugLog(QString("@@@@@ DataBase::executeSQL ERROR %1").arg(q.lastError().text()));
         //saveLog(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql);
-        return false;
     }
-    return true;
+    return false;
+
 }
 
 bool DataBase::executeSelectSQL(const QSqlDatabase& db, DBTable* table, const QString& sql, DBRecordList& resultRecords)
@@ -257,7 +257,7 @@ bool DataBase::removeRecord(const QSqlDatabase& db, DBTable* table, const QStrin
     return executeSQL(db, sql);
 }
 
-bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBRecord& record)
+bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBRecord& record, const bool select)
 {
     Tools::debugLog("@@@@@ DataBase::insertRecord");
     if (!opened)
@@ -277,7 +277,8 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
     QString sql;
     DBRecord r;
     Tools::debugLog(QString("@@@@@ DataBase::insertRecord %1 %2").arg(table->name, code));
-    if (selectById(sqlDb, table, code, r)) removeRecord(sqlDb, table, code);
+    if (select && selectById(sqlDb, table, code, r))
+        removeRecord(sqlDb, table, code);
     sql = "INSERT INTO " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
     {
@@ -315,7 +316,7 @@ void DataBase::saveLog(const int type, const int source, const QString &comment)
     {
         Tools::debugLog(QString("@@@@@ DataBase::saveLog %1 %2 %3").arg(QString::number(type), QString::number(source), comment));
         LogDBTable* t = (LogDBTable*)getTable(DBTABLENAME_LOG);
-        if (t != nullptr && insertRecord(logDB, t, t->createRecord(type, source, comment)))
+        if (t != nullptr && insertRecord(logDB, t, t->createRecord(type, source, comment), false))
             removeOldLogRecords();
         else
             Tools::debugLog("@@@@@ DataBase::saveLog ERROR");
@@ -328,13 +329,16 @@ void DataBase::removeOldLogRecords()
     Tools::debugLog("@@@@@ DataBase::removeOldLogRecords");
     DBTable* t = getTable(DBTABLENAME_LOG);
     quint64 logDuration = settings.getItemIntValue(SettingCode_LogDuration);
-    if(t != nullptr && logDuration > 0) // Remove old records
+    if(t == nullptr || logDuration <= 0) return;
+    if(removeOldLogRecordsCounter == 0)
     {
         quint64 first = Tools::currentDateTimeToUInt() - logDuration * 24 * 60 * 60 * 1000;
         QString sql = QString("DELETE FROM %1 WHERE %2 < '%3'").
             arg(t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
-        logDB.exec(sql);
+        if(!executeSQL(logDB, sql, false))
+            Tools::debugLog("@@@@@ DataBase::removeOldLogRecords ERROR");
     }
+    if((++removeOldLogRecordsCounter) >= MAX_REMOVE_OLD_LOG_RECORDS_COUNTER) removeOldLogRecordsCounter = 0;
 }
 
 void DataBase::clearLog()
@@ -342,7 +346,10 @@ void DataBase::clearLog()
     if (!opened) return;
     Tools::debugLog("@@@@@ DataBase::clearLog");
     DBTable* t = getTable(DBTABLENAME_LOG);
-    if(t != nullptr) logDB.exec(QString("DELETE FROM %1").arg(t->name));
+    if(t == nullptr) return;
+    QString sql = QString("DELETE FROM %1").arg(t->name);
+    if(!executeSQL(logDB, sql, false))
+        Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
 }
 
 void DataBase::select(const DBSelector selector, const QString& param)
@@ -556,7 +563,7 @@ void DataBase::updateSettingsRecord(const DBSelector selector, const DBRecord& r
 void DataBase::saveTransaction(const DBRecord& t)
 {
     Tools::debugLog("@@@@@ DataBase::saveTransaction");
-    insertRecord(logDB, getTable(DBTABLENAME_TRANSACTIONS), t);
+    insertRecord(logDB, getTable(DBTABLENAME_TRANSACTIONS), t, false);
 }
 
 QString DataBase::netDelete(const QString& tableName, const QString& codeList)

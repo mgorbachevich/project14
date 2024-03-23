@@ -48,8 +48,6 @@ public:
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
     Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
     Q_INVOKABLE void onProductCodeEdited(const QString&);
-    Q_INVOKABLE void onPopupClosed();
-    Q_INVOKABLE void onPopupOpened();
     Q_INVOKABLE void onPrintClicked();
     Q_INVOKABLE void onProductDescriptionClicked();
     Q_INVOKABLE void onProductPanelCloseClicked();
@@ -76,6 +74,8 @@ private:
     QString amountAsString(const DBRecord&);
     void createDefaultData();
     void filteredSearch();
+    bool isAuthorizationOpened() { return mainPageIndex < 0; }
+    bool isSettingsOpened() { return isSettings; }
     QString getImageFileWithQmlPath(const DBRecord&);
     double price(const DBRecord&);
     QString priceAsString(const DBRecord&);
@@ -84,6 +84,7 @@ private:
     void refreshAll();
     void resetProduct();
     void onCustomSettingsItemClicked(const DBRecord&);
+    void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
     void showConfirmation(const DialogSelector, const QString&, const QString&);
@@ -92,8 +93,10 @@ private:
     void showUsers(const DBRecordList&);
     void startAuthorization();
     void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void startSettings();
     void stopAuthorization(const DBRecordList&);
     void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void stopSettings();
     void updateSystemStatus();
     void updateTablePanel(const bool);
     void updateWeightStatus();
@@ -120,10 +123,10 @@ private:
     // UI:
     QQmlContext* context = nullptr;
     quint64 userActionTime = 0;
-    int openedPopupCount = 0;
     int mainPageIndex = -1; // Авторизация
     int secret = 0;
     int showcaseSort = Sort_Name;
+    bool isSettings = false;
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
@@ -140,11 +143,11 @@ private:
 
 signals:
     void closeLogView();
-    void closeSettings();
     void closeInputProductPanel();
     void enableManualPrint(const bool);
     void enableSetProductByInputCode(const bool);
     void hideToast();
+    void previousSettings();
     void resetCurrentProduct();
     void setCurrentUser(const int, const QString&);
     void showDateTime(const QString&);

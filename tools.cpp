@@ -219,7 +219,7 @@ QString Tools::qmlFilePath(const QString& localPath)
 #ifdef Q_OS_ANDROID
     QString path = QString("file:%1/%2").arg(DOWNLOAD_SUBDIR, localPath).replace(":/", ":").replace("//", "/");
 #else
-    QString path = QString("file:///%1").arg(downloadFilePath(localPath));
+    QString path = QString("file:///%1").arg(downloadPath(localPath));
 #endif // Q_OS_ANDROID
     //qDebug() << "@@@@@ Tools::qmlFilePath " << path;
     return localPath.isEmpty() ? "" : path;

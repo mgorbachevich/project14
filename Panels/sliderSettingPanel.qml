@@ -21,8 +21,6 @@ Popup
     property int sliderTo: 1
     property int sliderStep: 1
     property int sliderValue: 1
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
     Rectangle
     {

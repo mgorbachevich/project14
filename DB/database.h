@@ -55,11 +55,11 @@ protected:
     bool copyDBFiles(const QString&, const QString&);
     void removeTempDb();
     bool removeAll(const QSqlDatabase&, DBTable*);
-    bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
+    bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&, const bool select = true);
     void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
     bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
     bool selectById(const QSqlDatabase&, DBTable*, const QString&, DBRecord&);
-    bool executeSQL(const QSqlDatabase&, const QString&);
+    bool executeSQL(const QSqlDatabase&, const QString&, const bool log = true);
     bool executeSelectSQL(const QSqlDatabase&, DBTable*, const QString&, DBRecordList&);
     bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
     void removeOldLogRecords();
@@ -69,6 +69,7 @@ protected:
     QSqlDatabase tempDB;
     QSqlDatabase settingsDB;
     QSqlDatabase logDB;
+    int removeOldLogRecordsCounter = 0;
 
 signals:
     void requestResult(const DBSelector, const DBRecordList&, const bool);

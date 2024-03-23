@@ -19,8 +19,6 @@ Popup
     property int settingItemCode: 0
     property int comboIndex: 0
     property string comboText: ""
-    onOpened: app.onPopupOpened()
-    onClosed: app.onPopupClosed()
 
     Rectangle
     {
