@@ -26,6 +26,7 @@ public:
     void start(const int);
     void stop();
     QString version() { return SERVER_VERSION; }
+    bool isStarted() { return server != nullptr; }
 
 protected:
     QHttpServer* server = nullptr;

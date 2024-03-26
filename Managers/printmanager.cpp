@@ -30,6 +30,7 @@ int PrintManager::start(const QString& url)
         e = slpa->connectDevice(url);
         Tools::debugLog("@@@@@ PrintManager::start connect device error " + QString::number(e));
         started = (e == 0);
+        slpa->blockSignals(!started);
         if(started) slpa->startPolling(200);
         Tools::debugLog("@@@@@ PrintManager::start Done");
     }
@@ -41,6 +42,7 @@ void PrintManager::stop()
     if (slpa != nullptr && started)
     {
         Tools::debugLog("@@@@@ PrintManager::stop");
+        slpa->blockSignals(true);
         slpa->stopPolling();
         int e = slpa->disconnectDevice();
         Tools::debugLog("@@@@@ PrintManager::stop disconnect device error " + QString::number(e));

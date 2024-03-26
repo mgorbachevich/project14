@@ -48,7 +48,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     netServer = new NetServer(this, db);
     weightManager = new WeightManager(this, WM_DEMO);
     printManager = new PrintManager(this, db, settings, PRINTER_DEMO);
-    QTimer *timer = new QTimer(this);
+    timer = new QTimer(this);
 
     // Versions:
     appInfo.appVersion = APP_VERSION;
@@ -93,9 +93,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("inputProductCodePanelModel", inputProductCodePanelModel);
 
     onUserAction();
-    QTimer::singleShot(100, this, &AppManager::start);
-    timer->start(APP_TIMER_MSEC);
-
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, &AppManager::start);
     debugLog("@@@@@ AppManager::AppManager Done");
 }
 
@@ -105,6 +103,7 @@ void AppManager::onDBStarted()
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
     db->select(DBSelector_UpdateSettingsOnStart, "");
+    timer->start(APP_TIMER_MSEC);
     debugLog("@@@@@ AppManager::onDBStarted Done");
 }
 
@@ -134,35 +133,28 @@ void AppManager::onTimer()
 {
     if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer");
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
-
     const quint64 now = Tools::currentDateTimeToUInt();
-    if(isSettingsOpened())
-    {
-        userActionTime = now;
-        return;
-    }
+
     if(isAuthorizationOpened()) // Авторизация
     {
-        userActionTime = now;
         updateSystemStatus();
     }
-    else
+    else if(!isSettingsOpened())
     {
         // Блокировка:
         quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
         if(waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
         {
-            debugLog("@@@@@ AppManager::onTimer userActionTime");
+            debugLog("@@@@@ AppManager::onTimer blocking");
             userActionTime = now;
             if(!product.isEmpty()) resetProduct();
             startAuthorization();
-            return;
         }
-        updateWeightStatus();
+        else updateWeightStatus();
     }
 
     // Ожидание окончания сетевых запросов:
-    if(netActionTime > 0 && netRoutes == 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
+    if(netServer->isStarted() && netActionTime > 0 && netRoutes == 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
     {
         debugLog("@@@@@ AppManager::onTimer netActionTime");
         netActionTime = 0;
@@ -347,7 +339,11 @@ void AppManager::onAdminSettingsClicked()
 {
     debugLog("@@@@@ AppManager::onAdminSettingsClicked");
     onUserAction();
-    startSettings();
+    isSettings = true;
+    stopEquipment();
+    db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
+    settingsPanelModel->update(settings);
+    emit showSettingsPanel(settings.getCurrentGroupName());
 }
 
 void AppManager::onLockClicked()
@@ -707,7 +703,12 @@ void AppManager::onSettingsPanelCloseClicked()
             return;
         }
     }
-    stopSettings();
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    {
+        debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked wait " + Tools::intToString(WAIT_DRAWING_MSEC));
+        startEquipment();
+        isSettings = false;
+    });
 }
 
 void AppManager::onSearchResultClicked(const int index)
@@ -764,32 +765,18 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     db->select(DBSelector_GetAuthorizationUserByName, normalizedLogin);
 }
 
-void AppManager::startSettings()
-{
-    debugLog("@@@@@ AppManager::startSettings");
-    isSettings = true;
-    stopEquipment();
-    db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
-    settingsPanelModel->update(settings);
-    emit showSettingsPanel(settings.getCurrentGroupName());
-}
-
-void AppManager::stopSettings()
-{
-    debugLog("@@@@@ AppManager::stopSettings");
-    startEquipment();
-    isSettings = false;
-}
-
 void AppManager::startAuthorization()
 {
     debugLog("@@@@@ AppManager::startAuthorization");
     stopEquipment();
     setMainPage(-1);
-    updateSystemStatus();
-    db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
-    db->select(DBSelector_GetAuthorizationUsers, "");
-    debugLog("@@@@@ AppManager::startAuthorization Done");
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    {
+        updateSystemStatus();
+        db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
+        db->select(DBSelector_GetAuthorizationUsers, "");
+        debugLog("@@@@@ AppManager::startAuthorization Done");
+    });
 }
 
 void AppManager::stopAuthorization(const DBRecordList& dbUsers)
@@ -829,13 +816,17 @@ void AppManager::stopAuthorization(const DBRecordList& dbUsers)
     QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
     db->saveLog(LogType_Warning, LogSource_User, s);
     setMainPage(0);
-    startEquipment();
-    refreshAll();
-    resetProduct();
-    updateWeightStatus();
-    onUserAction();
-    if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
-    debugLog("@@@@@ AppManager::stopAuthorization Done");
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    {
+        debugLog("@@@@@ AppManager::stopAuthorization wait " + Tools::intToString(WAIT_DRAWING_MSEC));
+        startEquipment();
+        refreshAll();
+        resetProduct();
+        updateWeightStatus();
+        onUserAction();
+        if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
+        debugLog("@@@@@ AppManager::stopAuthorization Done");
+    });
 }
 
 void AppManager::setShowcaseSort(const int sort)
@@ -848,7 +839,6 @@ void AppManager::setShowcaseSort(const int sort)
 void AppManager::refreshAll()
 {
     // Обновить всё на экране
-
     debugLog("@@@@@ AppManager::refreshAll");
     emit showAdminMenu(UserDBTable::isAdmin(user));
     setShowcaseSort(showcaseSort);
@@ -937,27 +927,33 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
 #endif // Q_OS_ANDROID
         debugLog("@@@@@ AppManager::startEquipment uris "+ uris.join(", "));
 
-        int e1 = 0, e2 = 0;
-        if (weight) e1 = weightManager->start(uris[0]);
+        if (weight)
+        {
+            int e1 = weightManager->start(uris[0]);
+            if(e1) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
+                               arg(QString::number(e1), weightManager->getErrorDescription(e1)));
+        }
         if (printer)
         {
-            e2 = printManager->start(uris[1]);
-            if(e2 == 0) e2 = printManager->setParams(settings.getItemIntValue(SettingCode_PrinterBrightness),
-                                                     settings.getItemIntValue(SettingCode_PrintOffset));
-        }
-
-        if(e1 < 0) showMessage("ВНИМАНИЕ!", QString("Ошибка весового модуля %1!\n%2").
-                               arg(QString::number(e1), weightManager->getErrorDescription(e1)));
-        if(e2 < 0) showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
+            int e2 = printManager->start(uris[1]);
+            if(!e2) e2 = printManager->setParams(settings.getItemIntValue(SettingCode_PrinterBrightness),
+                                                 settings.getItemIntValue(SettingCode_PrintOffset));
+            if(e2) showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
                                arg(QString::number(e2), printManager->getErrorDescription(e2)));
+        }
         if(!message.isEmpty()) showMessage("ВНИМАНИЕ!", message);
     }
-    debugLog("@@@@@ AppManager::startEquipment Done");
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    {
+        timer->blockSignals(false);
+        debugLog("@@@@@ AppManager::startEquipment Done");
+    });
 }
 
 void AppManager::stopEquipment(const bool server, const bool weight, const bool printer)
 {
     debugLog("@@@@@ AppManager::stopEquipment");
+    timer->blockSignals(true);
     if (server) netServer->stop();
     if (weight) weightManager->stop();
     if (printer) printManager->stop();

@@ -93,15 +93,14 @@ private:
     void showUsers(const DBRecordList&);
     void startAuthorization();
     void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
-    void startSettings();
     void stopAuthorization(const DBRecordList&);
     void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
-    void stopSettings();
     void updateSystemStatus();
     void updateTablePanel(const bool);
     void updateWeightStatus();
 
     AppInfo appInfo;
+    QTimer *timer = nullptr;
 
     // БД:
     DataBase* db = nullptr;

@@ -90,30 +90,24 @@ bool DataBase::startDB()
     return opened;
 }
 
-void DataBase::emulation()
-{
-#ifdef DB_EMULATION
-    Tools::debugLog("@@@@@ DataBase::emulation");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('6', 'pictures/6.png', '', '', '')");
-    //executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('7', 'pictures/7.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('8', 'pictures/8.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('9', 'pictures/9.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('10', 'pictures/10.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('11', 'pictures/11.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('12', 'pictures/12.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('13', 'pictures/13.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('14', 'pictures/14.png', '', '', '')");
-    executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '')");
-#endif
-}
-
 void DataBase::onStart()
 {
     Tools::debugLog("@@@@@ DataBase::onStart");
     startDB();
     if (opened)
     {
-        emulation();
+#ifdef DB_EMULATION
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('6', 'pictures/6.png', '', '', '')");
+        //executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('7', 'pictures/7.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('8', 'pictures/8.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('9', 'pictures/9.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('10', 'pictures/10.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('11', 'pictures/11.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('12', 'pictures/12.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('13', 'pictures/13.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('14', 'pictures/14.png', '', '', '')");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '')");
+#endif
         emit started();
     }
     else

@@ -5,16 +5,17 @@
 #include "Slpa100uProtocolUsb.h"
 #include "Slpa100uProtocolHttp.h"
 #include "Slpa100uProtocolDemo.h"
+#include "tools.h"
 
-
-Slpa100u::Slpa100u(QObject *parent)
-    : QObject{parent}
+Slpa100u::Slpa100u(QObject *parent) : QObject{parent}
 {
+    //Tools::debugLog("@@@@@ Slpa100u::Slpa100u");
     disconnectDevice();
 }
 
 int Slpa100u::connectDevice(const QString &uri)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::connectDevice " + uri);
     disconnectDevice();
     if (Slpa100uProtocolCom::checkUri(uri)) protocol = new Slpa100uProtocolCom(this);
     else if (Slpa100uProtocolUsb::checkUri(uri)) protocol = new Slpa100uProtocolUsb(this);
@@ -33,6 +34,7 @@ int Slpa100u::connectDevice(const QString &uri)
 
 int Slpa100u::disconnectDevice()
 {
+    //Tools::debugLog("@@@@@ Slpa100u::disconnectDevice ");
     stopPolling();
     lastStatusError = 0;
     lastStatus = 0;
@@ -43,6 +45,7 @@ int Slpa100u::disconnectDevice()
 
 void Slpa100u::startPolling(int time)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::startPolling " + Tools::intToString(time));
     if (time)
     {
         timerInterval = time;
@@ -52,6 +55,7 @@ void Slpa100u::startPolling(int time)
 
 void Slpa100u::stopPolling()
 {
+    //Tools::debugLog("@@@@@ Slpa100u::stopPolling ");
     timerInterval = 0;
     killTimer(timerid);
     timerid = 0;
@@ -107,11 +111,13 @@ QString Slpa100u::errorDescription(const int err) const
     case 110: desc = "Ошибка при открытии проекта этикетки"; break;
     default:  desc = "Неизвестная ошибка";
     }
+    //Tools::debugLog(QString("@@@@@ Slpa100u::errorDescription %1 %2").arg(Tools::intToString(err), desc));
     return desc;
 }
 
 int Slpa100u::print(QImage &p)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::print ");
     if (!isConnected()) return -20;
     killTimer(timerid);
     p.convertTo(QImage::Format_Mono);
@@ -137,6 +143,7 @@ int Slpa100u::print(QImage &p)
 
 int Slpa100u::printTest(int lines)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::printTest ");
     if (!isConnected()) return -20;
     Slpa100uProtocol::prnanswer status;
     return protocol->cPrintTest(lines, &status);
@@ -144,6 +151,7 @@ int Slpa100u::printTest(int lines)
 
 int Slpa100u::feed()
 {
+    //Tools::debugLog("@@@@@ Slpa100u::feed ");
     if (!isConnected()) return -20;
     Slpa100uProtocol::prnanswer status;
     return protocol->cFeed(&status);
@@ -157,18 +165,21 @@ int Slpa100u::getStatus(Slpa100uProtocol::prnanswer *status, const int isPE)
 
 int Slpa100u::reset()
 {
+    //Tools::debugLog("@@@@@ Slpa100u::reset ");
     if (!isConnected()) return -20;
     return protocol->cReset();
 }
 
 int Slpa100u::setBrightness(int value)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::setBrightness " + Tools::intToString(value));
     if (!isConnected()) return -20;
     return protocol->cSetBrightness(value);
 }
 
 int Slpa100u::setOffset(int value)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::setBrightness " + Tools::intToString(value));
     if (!isConnected()) return -20;
     if (value<0 || value>15) return -9;
     if (protocol->getPrinterVersion() < 0x0207) return protocol->cSetOffset(value);
@@ -177,12 +188,14 @@ int Slpa100u::setOffset(int value)
 
 int Slpa100u::setPaper(Slpa100uProtocol::papertype value)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::setPaper " + Tools::intToString(value));
     if (!isConnected()) return -20;
     return protocol->cSetPaperType(value);
 }
 
 int Slpa100u::setSensor(bool value)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::setSensor " + Tools::intToString(value));
     if (!isConnected()) return -20;
     return protocol->cSensorControl(value);
 }
@@ -205,6 +218,7 @@ int Slpa100u::getPrinterVersion()
 
 void Slpa100u::timerEvent(QTimerEvent *event)
 {
+    //Tools::debugLog("@@@@@ Slpa100u::timerEvent ");
     if (timerid == event->timerId())
     {
         killTimer(timerid);

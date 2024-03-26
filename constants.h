@@ -3,19 +3,11 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.9"
-#define RELEASE
+#define APP_VERSION "2.10"
 
-#if defined(Q_OS_ANDROID) && defined(RELEASE)
 #define WM_DEMO false
 #define PRINTER_DEMO false
-#else
-#define WM_DEMO true
-#define PRINTER_DEMO true
-#endif
-
 #define DEBUG_LOG
-//#define DB_EMULATION
 #define CREATE_DEFAULT_DATA_ON_START true
 #define REMOVE_DEBUG_LOG_ON_START false
 #define REMOVE_PRODUCT_DB_ON_START false
@@ -31,6 +23,7 @@
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define WAIT_SOUND_MSEC 500
+#define WAIT_DRAWING_MSEC 150
 #define WAIT_NET_ACTION_MSEC 30000
 #define EOL "\r\n"
 #define DEBUG_LOG_NAME "DebugLog.txt"
@@ -51,6 +44,7 @@
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
+//#define DB_EMULATION
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320

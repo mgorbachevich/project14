@@ -47,7 +47,6 @@ public:
 
 protected:
     bool startDB();
-    void emulation();
     bool open(QSqlDatabase&, const QString&);
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     bool createTable(const QSqlDatabase& db, DBTable*);

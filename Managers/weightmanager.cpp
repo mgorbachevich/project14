@@ -24,6 +24,7 @@ int WeightManager::start(const QString& url) // return error
         Tools::debugLog("@@@@@ WeightManager::start " + url);
         e = wm100->connectDevice(url);
         started = (e == 0);
+        wm100->blockSignals(!started);
         if(started) wm100->startPolling(200);
         Tools::debugLog("@@@@@ WeightManager::start error " + QString::number(e));
     }
@@ -36,6 +37,7 @@ void WeightManager::stop()
     {
         Tools::debugLog("@@@@@ WeightManager::stop");
         started = false;
+        wm100->blockSignals(true);
         wm100->stopPolling();
         int e = wm100->disconnectDevice();
         Tools::debugLog("@@@@@ WeightManager::stop error " + QString::number(e));
