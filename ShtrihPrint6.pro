@@ -314,6 +314,7 @@ RESOURCES += \
     Panels/KeyboardCharButton.qml \
     Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
+    Panels/calendarPanel.qml \
     Panels/CardText.qml \
     Panels/CardTitleText.qml \
     Panels/comboSettingPanel.qml \

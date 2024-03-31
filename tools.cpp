@@ -144,7 +144,7 @@ bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
     {
         quint64 n1 = file.write(data);
         quint64 n2 = file.size();
-        Tools::debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(QString::number(n1), QString::number(n2)));
+        Tools::debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(intToString(n1), intToString(n2)));
         file.close();
         return true;
     }
@@ -256,7 +256,7 @@ QString Tools::downloadPath(const QString& localPath)
 
 void Tools::pause(const int msec, const QString& comment)
 {
-    debugLog(QString("@@@@@ Tools::pause %1 %2").arg(QString::number(msec), comment));
+    debugLog(QString("@@@@@ Tools::pause %1 %2").arg(intToString(msec), comment));
     QThread::currentThread()->msleep(msec);
 }
 
@@ -363,13 +363,13 @@ bool Tools::isEnvironment(const EnvironmentType type)
     default: break;
     }
 
-    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(QString::number(type), Tools::boolToString(result)));
+    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(intToString(type), boolToString(result)));
     return result;
 }
 
 int Tools::getMemory(const MemoryType type)
 {
-    //debugLog(QString("@@@@@ Tools::getMemory %1").arg(QString::number(type)));
+    //debugLog(QString("@@@@@ Tools::getMemory %1").arg(intToString(type)));
 #ifdef Q_OS_ANDROID
     return QJniObject::callStaticMethod<jint>(ANDROID_NATIVE_CLASS_NAME, "getMemory", "(I)I", type);
 #endif // Q_OS_ANDROID
@@ -380,9 +380,9 @@ void Tools::debugMemory()
 {
 #ifdef Q_OS_ANDROID
     debugLog(QString("@@@@@ Tools::debugMemory %1 %2 %3").arg(
-                 Tools::intToString(Tools::getMemory(MemoryType_Max)),
-                 Tools::intToString(Tools::getMemory(MemoryType_Available)),
-                 Tools::intToString(Tools::getMemory(MemoryType_Used))));
+                 Tools::intToString(getMemory(MemoryType_Max)),
+                 Tools::intToString(getMemory(MemoryType_Available)),
+                 Tools::intToString(getMemory(MemoryType_Used))));
 #endif // Q_OS_ANDROID
 }
 

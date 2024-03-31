@@ -305,7 +305,7 @@ bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 void DataBase::saveLog(const int type, const int source, const QString &comment)
 {
     if (!opened) return;
-    int logging = settings.getItemIntValue(SettingCode_Logging);
+    int logging = settings.getIntValue(SettingCode_Logging);
     if (type > 0 && type <= logging)
     {
         Tools::debugLog(QString("@@@@@ DataBase::saveLog %1 %2 %3").arg(QString::number(type), QString::number(source), comment));
@@ -322,7 +322,7 @@ void DataBase::removeOldLogRecords()
     if (!opened) return;
     Tools::debugLog("@@@@@ DataBase::removeOldLogRecords");
     DBTable* t = getTable(DBTABLENAME_LOG);
-    quint64 logDuration = settings.getItemIntValue(SettingCode_LogDuration);
+    quint64 logDuration = settings.getIntValue(SettingCode_LogDuration);
     if(t == nullptr || logDuration <= 0) return;
     if(removeOldLogRecordsCounter == 0)
     {
@@ -450,10 +450,10 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(SettingCode_SearchType))
+        if (!settings.getBoolValue(SettingCode_SearchType))
         {
             const int n1 = p.size();
-            const int n2 = settings.getItemIntValue(SettingCode_SearchCodeSymbols);
+            const int n2 = settings.getIntValue(SettingCode_SearchCodeSymbols);
             Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredCode %1 %2").arg(QString::number(n1), QString::number(n2)));
             if(n1 < n2) break;
         }
@@ -471,10 +471,10 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getItemBoolValue(SettingCode_SearchType))
+        if (!settings.getBoolValue(SettingCode_SearchType))
         {
             const int n1 = p.size();
-            const int n2 = settings.getItemIntValue(SettingCode_SearchBarcodeSymbols);
+            const int n2 = settings.getIntValue(SettingCode_SearchBarcodeSymbols);
             Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredBarcode %1 %2").arg(QString::number(n1), QString::number(n2)));
             if(n1 < n2) break;
         }
@@ -569,7 +569,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = settings.getItemIntValue(SettingCode_Logging);
+    int logging = settings.getIntValue(SettingCode_Logging);
     bool detailedLog = logging >= LogType_Info;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -633,7 +633,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    bool detailedLog = settings.getItemIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings.getIntValue(SettingCode_Logging) >= LogType_Info;
     DBRecordList records;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -699,7 +699,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
 {
     Tools::debugLog("@@@@@ DataBase::netDownload");
     if(!open(tempDB, DB_TEMP_NAME)) return;
-    bool detailedLog = settings.getItemIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings.getIntValue(SettingCode_Logging) >= LogType_Info;
     QList tables = records.keys();
     for (DBTable* table : tables)
     {

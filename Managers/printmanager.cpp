@@ -28,11 +28,10 @@ int PrintManager::start(const QString& url)
     {
         Tools::debugLog("@@@@@ PrintManager::start " + url);
         e = slpa->connectDevice(url);
-        Tools::debugLog("@@@@@ PrintManager::start connect device error " + QString::number(e));
         started = (e == 0);
         slpa->blockSignals(!started);
         if(started) slpa->startPolling(200);
-        Tools::debugLog("@@@@@ PrintManager::start Done");
+        Tools::debugLog("@@@@@ PrintManager::start error " + QString::number(e));
     }
     return e;
 }
@@ -166,13 +165,13 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
         pd.price2 = product[ProductDBTable::Price2].toString();
         pd.certificate = product[ProductDBTable::Certificate].toString();
         pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
-        pd.shop = settings.getItemStringValue(SettingCode_ShopName);
+        pd.shop = settings.getStringValue(SettingCode_ShopName);
         pd.operatorcode = user[UserDBTable::Code].toString();
         pd.operatorname = user[UserDBTable::Name].toString();
         pd.date = Tools::dateFromUInt(dateTime, "dd.MM.yyyy");
         pd.time = Tools::timeFromUInt(dateTime, "hh:mm:ss");
         pd.labelnumber = QString::number(labelNumber);
-        pd.scalesnumber = settings.getItemStringValue(SettingCode_ScalesNumber),
+        pd.scalesnumber = settings.getStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo
         pd.textfile = ""; // todo
 

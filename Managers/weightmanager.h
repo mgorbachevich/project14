@@ -23,6 +23,8 @@ public:
     bool isTareFlag() const { return isFlag(status, 3); }
     bool isDemoMode() const { return wm100 == nullptr; }
 
+    bool setSystemDateTime = false;
+
 private:
     bool isFlag(Wm100Protocol::channel_status, int) const;
     bool isStateError(Wm100Protocol::channel_status) const;

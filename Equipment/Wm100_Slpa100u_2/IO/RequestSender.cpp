@@ -82,7 +82,7 @@ namespace Network
 		QObject::connect(&timer, &QTimer::timeout, reply, &QNetworkReply::abort);
 
 		timer.start();
-		loop.exec();
+        loop.exec(QEventLoop::ExcludeUserInputEvents);
 
 		QByteArray data;
 

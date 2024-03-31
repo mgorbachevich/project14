@@ -3,7 +3,14 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.10"
+#define APP_VERSION "2.12"
+#define RELEASE
+
+#ifdef RELEASE
+#define REMOVE_SETTINGS_DB_ON_START false
+#else
+#define REMOVE_SETTINGS_DB_ON_START false
+#endif
 
 #define WM_DEMO false
 #define PRINTER_DEMO false
@@ -12,7 +19,6 @@
 #define REMOVE_DEBUG_LOG_ON_START false
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
-#define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_TEMP_DB true
 #define CHECK_AUTHORIZATION true
 #define SHOW_PATH_MESSAGE false
@@ -61,11 +67,12 @@
 #define DBRecordList QList<QVariantList>
 #define StringPair QPair<QString, QString>
 
-enum DialogSelector
+enum ConfirmSelector
 {
-    DialogSelector_None = 0,
-    DialogSelector_Authorization,
-    DialogSelector_ClearLog,
+    ConfirmSelector_None = 0,
+    ConfirmSelector_Authorization,
+    ConfirmSelector_ClearLog,
+    ConfirmSelector_SetSystemDateTime,
 };
 
 enum LogType
@@ -244,10 +251,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_ReportsDuration = 1017, // todo
     //SettingCode_Brightness = 1018, // todo
     SettingCode_KeyboardSoundVolume = 1019,
-    SettingCode_TimeFormat = 1020, // todo
-    SettingCode_Time = 1021, // todo
-    SettingCode_DateFormat = 1022, // todo
-    SettingCode_Date = 1023, // todo
+    SettingCode_DateTime = 1020, // todo
     SettingCode_PrintOffset = 1024, // todo
     SettingCode_PrintLabelSensor = 1025, // todo
     SettingCode_PrintLabelHighlight = 1026, // todo

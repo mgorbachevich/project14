@@ -164,7 +164,7 @@ ApplicationWindow
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
-                messageText: messageText, dialogSelector: selector
+                messageText: messageText, confirmSelector: selector
             }).open()
         }
     }
@@ -193,6 +193,19 @@ ApplicationWindow
                 x: 0, y: mainWeightPanel.height,
                 width: mainWindow.width, height: mainWindow.height - mainWeightPanel.height,
                 isPiece: isPieceProduct, productName: name
+            }).open()
+        }
+    }
+
+    Connections // Slot for signal AppManager::showCalendarBox:
+    {
+        target: app
+        function onShowCalendarBox()
+        {
+            app.debugLog("@@@@@ mainWindow.onShowCalendarBox");
+            Qt.createComponent("Panels/calendarPanel.qml").createObject(mainWindow,
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight
             }).open()
         }
     }

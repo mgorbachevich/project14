@@ -17,7 +17,7 @@ Popup
     Material.background: "transparent"
     property string titleText: "Title"
     property string messageText: "Message"
-    property int dialogSelector: 0
+    property int confirmSelector: 0
 
     Rectangle
     {
@@ -48,7 +48,7 @@ Popup
                         confirmationPanel.close()
                         break
                     case Qt.Key_Enter: case Qt.Key_Return:
-                        app.onConfirmationClicked(dialogSelector)
+                        app.onConfirmationClicked(confirmSelector)
                         confirmationPanel.close()
                         break
                     default:
@@ -94,7 +94,7 @@ Popup
                     text: qsTr("ДА")
                     onClicked:
                     {
-                        app.onConfirmationClicked(dialogSelector)
+                        app.onConfirmationClicked(confirmSelector)
                         confirmationPanel.close()
                     }
                  }

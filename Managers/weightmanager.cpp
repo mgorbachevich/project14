@@ -25,8 +25,17 @@ int WeightManager::start(const QString& url) // return error
         e = wm100->connectDevice(url);
         started = (e == 0);
         wm100->blockSignals(!started);
-        if(started) wm100->startPolling(200);
-        Tools::debugLog("@@@@@ WeightManager::start error " + QString::number(e));
+        if(started)
+        {
+            if(setSystemDateTime)
+            {
+                Tools::debugLog("@@@@@ WeightManager::start setSystemDateTime");
+                wm100->setDateTime(QDateTime::currentDateTime(), url);
+            }
+            wm100->startPolling(200);
+        }
+        setSystemDateTime = false;
+        Tools::debugLog("@@@@@ WeightManager::start error " + Tools::intToString(e));
     }
     return e;
 }
@@ -40,8 +49,9 @@ void WeightManager::stop()
         wm100->blockSignals(true);
         wm100->stopPolling();
         int e = wm100->disconnectDevice();
-        Tools::debugLog("@@@@@ WeightManager::stop error " + QString::number(e));
+        Tools::debugLog("@@@@@ WeightManager::stop error " + Tools::intToString(e));
     }
+    setSystemDateTime = false;
 }
 
 QString WeightManager::version() const
@@ -49,14 +59,14 @@ QString WeightManager::version() const
     if (wm100 != nullptr)
     {
         Wm100Protocol::device_metrics dm;
-        if(wm100->getDeviceMetrics(&dm) >= 0) return QString::number(dm.protocol_version);
+        if(wm100->getDeviceMetrics(&dm) >= 0) return Tools::intToString(dm.protocol_version);
     }
     return "DEMO";
 }
 
 void WeightManager::setWeightParam(const int param)
 {
-    Tools::debugLog("@@@@@ WeightManager::onSetWeightParam " + QString::number(param));
+    Tools::debugLog("@@@@@ WeightManager::onSetWeightParam " + Tools::intToString(param));
     if (wm100 == nullptr || !started) return;
     switch (param)
     {

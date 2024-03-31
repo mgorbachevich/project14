@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QSslSocket>
 #include <QtConcurrent/QtConcurrent>
-#include "SettingItemListModel.h"
+#include "settingitemlistmodel.h"
 #include "appmanager.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
@@ -131,7 +131,8 @@ void AppManager::onNetAction(const int action)
 
 void AppManager::onTimer()
 {
-    if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer");
+    if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer " +
+                                       Tools::intToString((int)(userActionTime / 1000)));
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
     const quint64 now = Tools::currentDateTimeToUInt();
 
@@ -139,15 +140,28 @@ void AppManager::onTimer()
     {
         updateSystemStatus();
     }
-    else if(!isSettingsOpened())
+    else if(isSettingsOpened()) // Настройки
+    {}
+    else
     {
+        // Сброс товара при бездействии:
+        if (isProductOpened() && settings.getIntValue(SettingCode_ProductReset, true) == ProductReset_Time)
+        {
+            quint64 waitReset = settings.getIntValue(SettingCode_ProductResetTime); // секунды
+            if(waitReset > 0 && waitReset * 1000 < now - userActionTime)
+            {
+                debugLog("@@@@@ AppManager::onTimer reset product");
+                resetProduct();
+            }
+        }
+
         // Блокировка:
-        quint64 waitBlocking = settings.getItemIntValue(SettingCode_Blocking); // минуты
+        quint64 waitBlocking = settings.getIntValue(SettingCode_Blocking); // минуты
         if(waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
         {
             debugLog("@@@@@ AppManager::onTimer blocking");
             userActionTime = now;
-            if(!product.isEmpty()) resetProduct();
+            resetProduct();
             startAuthorization();
         }
         else updateWeightStatus();
@@ -179,7 +193,7 @@ QString AppManager::quantityAsString(const DBRecord& productRecord)
 
 QString AppManager::priceAsString(const DBRecord& productRecord)
 {
-    return Tools::moneyToText(price(productRecord), settings.getItemIntValue(SettingCode_PointPosition));
+    return Tools::moneyToText(price(productRecord), settings.getIntValue(SettingCode_PointPosition));
 }
 
 QString AppManager::amountAsString(const DBRecord& productRecord)
@@ -189,7 +203,7 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
         q = printStatus.pieces;
     else if(!weightManager->isError())
         q = weightManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
-    return Tools::moneyToText(q * price(productRecord), settings.getItemIntValue(SettingCode_PointPosition));
+    return Tools::moneyToText(q * price(productRecord), settings.getIntValue(SettingCode_PointPosition));
 }
 
 void AppManager::createDefaultData()
@@ -216,7 +230,7 @@ double AppManager::price(const DBRecord& productRecord)
 {
     const int p = ProductDBTable::Price;
     if (productRecord.count() <= p) return 0;
-    return Tools::priceToDouble(productRecord[p].toString(), settings.getItemIntValue(SettingCode_PointPosition));
+    return Tools::priceToDouble(productRecord[p].toString(), settings.getIntValue(SettingCode_PointPosition));
 }
 
 void AppManager::setProduct(const DBRecord& newProduct)
@@ -231,13 +245,6 @@ void AppManager::setProduct(const DBRecord& newProduct)
     db->select(DBSelector_GetImageByResourceCode, pictureCode);
     printStatus.onNewProduct();
     updateWeightStatus();
-
-    if (settings.getItemIntValue(SettingCode_ProductReset) ==  ProductReset_Time)
-    {
-        debugLog("@@@@@ AppManager::setProduct product reset");
-        int resetTime = settings.getItemIntValue(SettingCode_ProductResetTime);
-        if (resetTime > 0) QTimer::singleShot(resetTime * 1000, this, &AppManager::resetProduct);
-    }
 }
 
 void AppManager::onProductDescriptionClicked()
@@ -321,8 +328,8 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     // Настройка изменилась
 
     debugLog(QString("@@@@@ AppManager::onSettingInputClosed %1 %2").arg(QString::number(settingItemCode), value));
-    DBRecord* r = settings.getItemByCode(settingItemCode);
-    if (r != nullptr && settings.onManualInputItemValue(settingItemCode, value))
+    DBRecord* r = settings.getByCode(settingItemCode);
+    if (r != nullptr && settings.onManualInputValue(settingItemCode, value))
     {
         db->updateSettingsRecord(DBSelector_ReplaceSettingsItem, *r);
         QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
@@ -350,7 +357,7 @@ void AppManager::onLockClicked()
 {
     debugLog("@@@@@ AppManager::onLockClicked");
     onUserAction();
-    showConfirmation(DialogSelector::DialogSelector_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
+    showConfirmation(ConfirmSelector::ConfirmSelector_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
 }
 
 void AppManager::onNumberClicked(const QString &s)
@@ -562,12 +569,15 @@ void AppManager::onConfirmationClicked(const int selector)
     onUserAction();
     switch (selector)
     {
-    case DialogSelector::DialogSelector_Authorization:
+    case ConfirmSelector_Authorization:
         startAuthorization();
         break;
-    case DialogSelector::DialogSelector_ClearLog:
+    case ConfirmSelector_ClearLog:
         emit closeLogView();
         db->clearLog();
+        break;
+    case ConfirmSelector_SetSystemDateTime:
+        weightManager->setSystemDateTime = true;
         break;
     }
 }
@@ -581,7 +591,7 @@ void AppManager::onInfoClicked()
 
 void AppManager::onTableResultClicked(const int index)
 {
-    debugLog("@@@@@ AppManager::onTableResultClicked " + QString::number(index));
+    debugLog("@@@@@ AppManager::onTableResultClicked " + Tools::intToString(index));
     onUserAction();
     if (index < tablePanelModel->productCount())
     {
@@ -597,16 +607,16 @@ void AppManager::onTableResultClicked(const int index)
 void AppManager::onSettingsItemClicked(const int index)
 {
     onUserAction();
-    DBRecord* r = settings.getItemByIndexInCurrentGroup(index);
+    DBRecord* r = settings.getByIndexInCurrentGroup(index);
     if(r == nullptr || r->empty())
     {
         debugLog("@@@@@ AppManager::onSettingsItemClicked ERROR " + Tools::intToString(index));
         return;
     }
 
-    const int code = settings.getItemCode(*r);
-    const QString& name = settings.getItemName(*r);
-    const int type = settings.getItemType(*r);
+    const int code = settings.getCode(*r);
+    const QString& name = settings.getName(*r);
+    const int type = settings.getType(*r);
     debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::intToString(code), name, QString::number(type)));
 
     switch (type)
@@ -621,20 +631,20 @@ void AppManager::onSettingsItemClicked(const int index)
         break;
     case SettingType_InputNumber:
     case SettingType_InputText:
-        emit showSettingInputBox(code, name, settings.getItemStringValue(*r));
+        emit showSettingInputBox(code, name, settings.getStringValue(*r));
         break;
     case SettingType_List:
-        settingItemListModel->update(settings.getItemValueList(*r));
-        emit showSettingComboBox(code, name, settings.getItemIntValue(*r), settings.getItemStringValue(*r));
+        settingItemListModel->update(settings.getValueList(*r));
+        emit showSettingComboBox(code, name, settings.getIntValue(*r), settings.getStringValue(*r));
         break;
     case SettingType_IntervalNumber:
     {
-        QStringList list = settings.getItemValueList(*r);
+        QStringList list = settings.getValueList(*r);
         if(list.count() >= 2)
         {
             int from = Tools::stringToInt(list[0]);
             int to = Tools::stringToInt(list[1]);
-            int value = settings.getItemIntValue(*r);
+            int value = settings.getIntValue(*r);
             emit showSettingSlider(code, name, from, to, 1, value);
         }
         break;
@@ -650,19 +660,22 @@ void AppManager::onSettingsItemClicked(const int index)
 void AppManager::clearLog()
 {
     debugLog("@@@@@ AppManager::clearLog");
-    showConfirmation(DialogSelector::DialogSelector_ClearLog, "Подтверждение", "Вы хотите очистить лог?");
+    showConfirmation(ConfirmSelector_ClearLog, "Подтверждение", "Вы хотите очистить лог?");
 }
 
 void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
 {
-    const int code = settings.getItemCode(r);
-    const QString& name = settings.getItemName(r);
+    const int code = settings.getCode(r);
+    const QString& name = settings.getName(r);
     debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::intToString(code), name));
 
     switch (code)
     {
     case SettingCode_ClearLog:
         clearLog();
+        break;
+    case SettingCode_DateTime:
+        inputDateTime();
         break;
     case SettingCode_Equipment:
     case SettingCode_WiFi:
@@ -693,8 +706,8 @@ void AppManager::onSettingsPanelCloseClicked()
     emit previousSettings();
     if(settings.currentGroupCode != 0)
     {
-        DBRecord* r = settings.getItemByCode(settings.currentGroupCode);
-        if(r != nullptr && !r->empty() && settings.isGroupItem(*r))
+        DBRecord* r = settings.getByCode(settings.currentGroupCode);
+        if(r != nullptr && !r->empty() && settings.isGroup(*r))
         {
             // Переход вверх:
             settings.currentGroupCode = r->at(SettingDBTable::GroupCode).toInt();
@@ -703,6 +716,7 @@ void AppManager::onSettingsPanelCloseClicked()
             return;
         }
     }
+    emit showMainPage(mainPageIndex);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked wait " + Tools::intToString(WAIT_DRAWING_MSEC));
@@ -872,20 +886,22 @@ void AppManager::showMessage(const QString &title, const QString &text)
     emit showMessageBox(title, text, true);
 }
 
-void AppManager::showConfirmation(const DialogSelector selector, const QString &title, const QString &text)
+void AppManager::showConfirmation(const ConfirmSelector selector, const QString &title, const QString &text)
 {
     debugLog(QString("@@@@@ AppManager::showConfirmation %1 %2 %3").arg(QString::number(selector), title, text));
     emit showConfirmationBox(selector, title, text);
 }
 
-void AppManager::resetProduct()
+void AppManager::resetProduct() // Сбросить выбранный продукт
 {
-    // Сбросить выбранный продукт
-    debugLog("@@@@@ AppManager::resetProduct");
-    product.clear();
-    printStatus.onResetProduct();
-    emit resetCurrentProduct();
-    updateWeightStatus();
+    if(isProductOpened())
+    {
+        debugLog("@@@@@ AppManager::resetProduct");
+        product.clear();
+        printStatus.onResetProduct();
+        emit resetCurrentProduct();
+        updateWeightStatus();
+    }
 }
 
 void AppManager::startEquipment(const bool server, const bool weight, const bool printer)
@@ -893,7 +909,7 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
     debugLog("@@@@@ AppManager::startEquipment");
     if (server)
     {
-        const int serverPort = settings.getItemIntValue(SettingCode_TCPPort);
+        const int serverPort = settings.getIntValue(SettingCode_TCPPort);
         debugLog("@@@@@ AppManager::startEquipment serverPort = " + QString::number(serverPort));
         netServer->start(serverPort);
     }
@@ -902,9 +918,14 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
 #ifdef Q_OS_ANDROID
         QString message = "";
         QList<QString> uris = settings.parseEquipmentConfig(ANDROID_EQUIPMENT_CONFIG_FILE);
-        if(uris.size() < 2) uris = settings.parseEquipmentConfig(ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE);
         if(uris.size() < 2)
         {
+            debugLog("@@@@@ AppManager::startEquipment parse file ERROR");
+            uris = settings.parseEquipmentConfig(ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE);
+        }
+        if(uris.size() < 2)
+        {
+            debugLog("@@@@@ AppManager::startEquipment parse default file ERROR");
             uris.clear();
             uris.append("");
             uris.append("");
@@ -925,7 +946,8 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
         uris.append(WEIGHT_DEMO_URI);
         uris.append(PRINTER_DEMO_URI);
 #endif // Q_OS_ANDROID
-        debugLog("@@@@@ AppManager::startEquipment uris "+ uris.join(", "));
+        debugLog("@@@@@ AppManager::startEquipment WM uri "+ uris[0]);
+        debugLog("@@@@@ AppManager::startEquipment Printer uri "+ uris[1]);
 
         if (weight)
         {
@@ -936,8 +958,8 @@ void AppManager::startEquipment(const bool server, const bool weight, const bool
         if (printer)
         {
             int e2 = printManager->start(uris[1]);
-            if(!e2) e2 = printManager->setParams(settings.getItemIntValue(SettingCode_PrinterBrightness),
-                                                 settings.getItemIntValue(SettingCode_PrintOffset));
+            if(!e2) e2 = printManager->setParams(settings.getIntValue(SettingCode_PrinterBrightness),
+                                                 settings.getIntValue(SettingCode_PrintOffset));
             if(e2) showMessage("ВНИМАНИЕ!", QString("Ошибка принтера %1!\n%2").
                                arg(QString::number(e2), printManager->getErrorDescription(e2)));
         }
@@ -1021,7 +1043,7 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
                 newTransaction[TransactionDBTable::ItemCode].toString(),
                 newTransaction[TransactionDBTable::Weight].toString()));
     db->saveTransaction(newTransaction);
-    if (settings.getItemIntValue(SettingCode_ProductReset) ==  ProductReset_Print)
+    if (settings.getIntValue(SettingCode_ProductReset) ==  ProductReset_Print)
         resetProduct();
 }
 
@@ -1054,7 +1076,7 @@ void AppManager::updateWeightStatus()
 {
     debugLog("@@@@@ AppManager::updateWeightStatus");
 
-    const bool isProduct = !product.empty();
+    const bool isProduct = isProductOpened();
     const bool isPieceProduct = isProduct && ProductDBTable::isPiece(product);
     const int oldPieces = printStatus.pieces;
     if(isPieceProduct && printStatus.pieces < 1) printStatus.pieces = 1;
@@ -1065,8 +1087,8 @@ void AppManager::updateWeightStatus()
     const bool isPrintError = printManager->isError();
     const bool isFixed = weightManager->isWeightFixed();
 
-    const bool isAutoPrint = settings.getItemBoolValue(SettingCode_PrintAuto) &&
-           (!isPieceProduct || settings.getItemBoolValue(SettingCode_PrintAutoPcs));
+    const bool isAutoPrint = settings.getBoolValue(SettingCode_PrintAuto) &&
+           (!isPieceProduct || settings.getBoolValue(SettingCode_PrintAutoPcs));
     const QString passiveColor = "#424242";
     const QString activeColor = "#fafafa";
 
@@ -1123,7 +1145,7 @@ void AppManager::updateWeightStatus()
                 const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
                 if(wg > 0)
                 {
-                    if(wg >= settings.getItemIntValue(SettingCode_PrintAutoWeight)) print();
+                    if(wg >= settings.getIntValue(SettingCode_PrintAutoWeight)) print();
                     else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
                 }
             }
@@ -1159,18 +1181,25 @@ void AppManager::updateWeightStatus()
 
 void AppManager::beepSound()
 {
-    Tools::sound("qrc:/Sound/KeypressInvalid.mp3", settings.getItemIntValue(SettingCode_KeyboardSoundVolume));
+    Tools::sound("qrc:/Sound/KeypressInvalid.mp3", settings.getIntValue(SettingCode_KeyboardSoundVolume));
 }
 
 void AppManager::clickSound()
 {
-    Tools::sound("qrc:/Sound/KeypressStandard.mp3", settings.getItemIntValue(SettingCode_KeyboardSoundVolume));
+    Tools::sound("qrc:/Sound/KeypressStandard.mp3", settings.getIntValue(SettingCode_KeyboardSoundVolume));
 }
 
 void AppManager::debugLog(const QString& s)
 {
     Tools::debugLog(s);
 }
+
+void AppManager::inputDateTime()
+{
+    debugLog("@@@@@ AppManager::inputDateTime");
+    showConfirmation(ConfirmSelector_SetSystemDateTime, "Подтверждение", "Вы хотите установить системное время?");
+}
+
 
 
 

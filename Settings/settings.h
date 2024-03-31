@@ -8,22 +8,22 @@ class Settings
 {
 public:
     Settings() {}
-    int getItemCode(const DBRecord&);
-    int getItemType(const DBRecord&);
-    QString getItemName(const DBRecord&);
-    int getItemIntValue(const SettingCode);
-    int getItemIntValue(const DBRecord&);
-    bool getItemBoolValue(const SettingCode);
-    QString getItemStringValue(const SettingCode);
-    QString getItemStringValue(const DBRecord&);
-    QStringList getItemValueList(const DBRecord&);
-    DBRecord* getItemByCode(const int);
-    DBRecord* getItemByIndexInCurrentGroup(const int);
-    bool onManualInputItemValue(const int, const QString&);
-    QList<int> getCurrentGroupItemCodes();
+    int getCode(const DBRecord&);
+    int getType(const DBRecord&);
+    QString getName(const DBRecord&);
+    int getIntValue(const SettingCode, const bool listIndex = false);
+    int getIntValue(const DBRecord&, const bool listIndex = false);
+    bool getBoolValue(const SettingCode);
+    QString getStringValue(const SettingCode);
+    QString getStringValue(const DBRecord&);
+    QStringList getValueList(const DBRecord&);
+    DBRecord* getByCode(const int);
+    DBRecord* getByIndexInCurrentGroup(const int);
+    bool onManualInputValue(const int, const QString&);
+    QList<int> getCurrentGroupCodes();
     QString getCurrentGroupName();
     void update(const DBRecordList&);
-    bool isGroupItem(const DBRecord&);
+    bool isGroup(const DBRecord&);
     void sort();
     int nativeSettings(const int);
     QList<QString> parseEquipmentConfig(const QString&);

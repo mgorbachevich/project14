@@ -74,7 +74,9 @@ private:
     QString amountAsString(const DBRecord&);
     void createDefaultData();
     void filteredSearch();
+    void inputDateTime();
     bool isAuthorizationOpened() { return mainPageIndex < 0; }
+    bool isProductOpened() { return !product.isEmpty(); }
     bool isSettingsOpened() { return isSettings; }
     QString getImageFileWithQmlPath(const DBRecord&);
     double price(const DBRecord&);
@@ -87,7 +89,7 @@ private:
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
-    void showConfirmation(const DialogSelector, const QString&, const QString&);
+    void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showMessage(const QString&, const QString&);
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showUsers(const DBRecordList&);
@@ -100,7 +102,11 @@ private:
     void updateWeightStatus();
 
     AppInfo appInfo;
+
+    // Таймер
     QTimer *timer = nullptr;
+    quint64 netActionTime = 0;
+    quint64 userActionTime = 0;
 
     // БД:
     DataBase* db = nullptr;
@@ -110,7 +116,6 @@ private:
 
     // Сеть:
     NetServer* netServer = nullptr;
-    quint64 netActionTime = 0;
     bool isRefreshNeeded = false;
     int netRoutes = 0;
 
@@ -121,7 +126,6 @@ private:
 
     // UI:
     QQmlContext* context = nullptr;
-    quint64 userActionTime = 0;
     int mainPageIndex = -1; // Авторизация
     int secret = 0;
     int showcaseSort = Sort_Name;
@@ -149,6 +153,7 @@ signals:
     void previousSettings();
     void resetCurrentProduct();
     void setCurrentUser(const int, const QString&);
+    void showCalendarBox();
     void showDateTime(const QString&);
     void showAdminMenu(bool);
     void showConfirmationBox(const int, const QString&, const QString&);
