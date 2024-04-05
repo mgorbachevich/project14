@@ -15,6 +15,8 @@ Popup
     focus: true
     modal: true
     dim: true
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Connections // Slot for signal AppManager::closeLogView
     {
@@ -53,6 +55,9 @@ Popup
                     if (!viewLogPanelList.atYEnd) viewLogPanelList.flick(0, -Constants.flickVelocity)
                     else app.beepSound()
                     break;
+                case Qt.Key_F10: // Промотка
+                    app.onRewind()
+                    break
                 default:
                     app.beepSound();
                     break

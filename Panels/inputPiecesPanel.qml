@@ -16,6 +16,8 @@ Popup
     dim: true
     Material.background: "transparent"
     property string inputText: "Input"
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Rectangle
     {
@@ -108,6 +110,9 @@ Popup
                             case Qt.Key_Backspace: case Qt.Key_Delete: case Qt.Key_C:
                                 if(text.length > 0) text = text.substring(0, text.length - 1);
                                 break;
+                            case Qt.Key_F10: // Промотка
+                                app.onRewind()
+                                break
                             case Qt.Key_Escape:
                                 text = 1
                                 break;

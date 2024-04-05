@@ -16,6 +16,8 @@ Popup
     dim: true
     Material.background: Material.color(Material.Grey, Material.Shade100)
     property string panelTitle: ""
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Connections // Slot for signal AppManager::previousSettings
     {
@@ -51,6 +53,9 @@ Popup
                     break;
                 case Qt.Key_Escape: // Круглая стрелка
                     settingPanel.close()
+                    break
+                case Qt.Key_F10: // Промотка
+                    app.onRewind()
                     break
                 default:
                     app.beepSound();

@@ -178,6 +178,9 @@ Rectangle
                         if (!searchPanelResultList.atYEnd) searchPanelResultList.flick(0, -Constants.flickVelocity)
                         else app.beepSound()
                         break;
+                    case Qt.Key_F10: // Промотка
+                        app.onRewind()
+                        break
                     default:
                         app.beepSound();
                         break;

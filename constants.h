@@ -3,20 +3,22 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.12"
+#define APP_VERSION "2.16"
 #define RELEASE
 
 #ifdef RELEASE
 #define REMOVE_SETTINGS_DB_ON_START false
-#else
-#define REMOVE_SETTINGS_DB_ON_START false
-#endif
-
 #define WM_DEMO false
 #define PRINTER_DEMO false
+#else
+#define REMOVE_SETTINGS_DB_ON_START true
+#define WM_DEMO true
+#define PRINTER_DEMO true
+#endif
+
 #define DEBUG_LOG
 #define CREATE_DEFAULT_DATA_ON_START true
-#define REMOVE_DEBUG_LOG_ON_START false
+#define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
 #define REMOVE_TEMP_DB true
@@ -24,6 +26,7 @@
 #define SHOW_PATH_MESSAGE false
 #define DEBUG_ONTIMER_MESSAGE true
 #define DEBUG_MEMORY_MESSAGE true
+#define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
@@ -42,10 +45,11 @@
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
-#define ANDROID_EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
-#define ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
-#define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
-#define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
+//#define ANDROID_EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
+//#define ANDROID_EQUIPMENT_EXCHANGE_FILE "/shtrihm/json_settingsfile.txt"
+//#define ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
+//#define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
+//#define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
@@ -183,6 +187,7 @@ enum SettingType
     SettingType_InputText = 4,
     SettingType_IntervalNumber = 5,
     SettingType_List = 6,
+    SettingType_Unsed = 7,
 };
 
 enum DBSelector
@@ -234,12 +239,13 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_PrintAutoPcs = 218,
     SettingCode_Logging = 606,
     SettingCode_LogDuration = 607,
+    SettingCode_Currency = 1002,
     SettingCode_TCPPort = 1003,
     SettingCode_SearchType = 1004,
     SettingCode_Manufacturer = 1005, // todo
-    //SettingCode_WMAddress = 1006,
-    //SettingCode_WMBaudrate = 1007,
-    //SettingCode_WMTimeout = 1008,
+    SettingCode_SetZeroTries = 1006,
+    SettingCode_GoToDescription = 1007,
+    SettingCode_Level = 1008,
     SettingCode_License = 1009, // todo
     //SettingCode_PrinterAddress = 1010,
     //SettingCode_PrinterBaudrate = 1011,
@@ -279,7 +285,6 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_Power = 17,
     SettingCode_Cursor = 10,
     SettingCode_Language = 1001,
-    SettingCode_Currency = 1002,
     SettingCode_SearchCode2Symbols = 46,
     SettingCode_PrintTitle = 201,
       */

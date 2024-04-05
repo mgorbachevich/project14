@@ -15,6 +15,8 @@ Popup
     modal: true
     dim: true
     Material.background: "transparent"
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Rectangle
     {
@@ -36,7 +38,15 @@ Popup
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
-                calendarPanel.close()
+                switch (event.key)
+                {
+                    case Qt.Key_F10: // Промотка
+                        app.onRewind()
+                        break
+                    default:
+                        calendarPanel.close()
+                        break
+                }
             }
 
             EmptyButton

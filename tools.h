@@ -13,6 +13,7 @@ public:
     explicit Tools(QApplication* a) { app = a; }
 
     static QString boolToString(const bool);
+    static bool checkPermission(const QString&);
     static bool copyFile(const QString&, const QString&);
     static quint64 currentDateTimeToUInt();
     static QString dateFromUInt(quint64, const QString&);
@@ -21,6 +22,7 @@ public:
     static void debugLog(const QString&);
     static void debugMemory();
     static QString downloadPath(const QString&);
+    static QString exchangePath(const QString&);
     static QString intToString(const int);
     static bool isEnvironment(const EnvironmentType);
     static bool isFileExists(const QString&);

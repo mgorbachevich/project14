@@ -18,6 +18,8 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
     property int confirmSelector: 0
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Rectangle
     {
@@ -44,6 +46,9 @@ Popup
                 app.onUserAction();
                 switch (event.key)
                 {
+                    case Qt.Key_F10: // Промотка
+                        app.onRewind()
+                        break
                     case Qt.Key_Escape: // Круглая стрелка
                         confirmationPanel.close()
                         break

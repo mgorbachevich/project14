@@ -16,6 +16,8 @@ Popup
     dim: true
     Material.background: "transparent"
     property string inputText: "Input"
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Connections // Slot for signal AppManager::closeInputProductPanel
     {
@@ -123,7 +125,10 @@ Popup
                             case Qt.Key_Enter: case Qt.Key_Return:
                                 if (inputProductCodePanelContinueButton.enabled) app.onSetProductByCodeClicked(text);
                                 break;
-                             default:
+                            case Qt.Key_F10: // Промотка
+                                app.onRewind()
+                                break
+                            default:
                                 app.beepSound();
                                 break;
                         }

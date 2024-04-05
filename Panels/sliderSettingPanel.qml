@@ -21,6 +21,8 @@ Popup
     property int sliderTo: 1
     property int sliderStep: 1
     property int sliderValue: 1
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Rectangle
     {
@@ -42,8 +44,16 @@ Popup
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
-                app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
-                sliderSettingPanel.close()
+                switch (event.key)
+                {
+                    case Qt.Key_F10: // Промотка
+                        app.onRewind()
+                        break
+                    default:
+                        app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
+                        sliderSettingPanel.close()
+                        break
+                }
             }
 
             EmptyButton

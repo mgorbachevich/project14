@@ -16,8 +16,16 @@ void SettingsPanelModel::update(Settings& settings)
         DBRecord* ri = settings.getByCode(itemCode);
         if(ri != nullptr)
         {
-            //qDebug() << "@@@@@ SettingsPanelModel::update addItem " << settings.getItemName(*ri) << settings.getItemStringValue(*ri);
-            addItem(settings.getName(*ri), settings.getStringValue(*ri));
+            QString color = "<font color='#263228'>";
+            switch (settings.getType(*ri))
+            {
+            case SettingType_ReadOnly:
+            case SettingType_Unsed:
+                color = "<font color='#78909c'>";
+                break;
+            }
+            addItem(color + settings.getName(*ri),
+                    color + settings.getStringValue(*ri));
         }
     }
     endResetModel();

@@ -4,6 +4,11 @@
 #include <QVariantList>
 #include "constants.h"
 
+typedef struct {
+    QString wmUri;
+    QString printerUri;
+} EquipmentUris;
+
 class Settings
 {
 public:
@@ -26,7 +31,7 @@ public:
     bool isGroup(const DBRecord&);
     void sort();
     int nativeSettings(const int);
-    QList<QString> parseEquipmentConfig(const QString&);
+    EquipmentUris parseEquipmentConfig(const QString&);
 
     int currentGroupCode = 0;
 

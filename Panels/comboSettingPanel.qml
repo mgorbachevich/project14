@@ -19,6 +19,8 @@ Popup
     property int settingItemCode: 0
     property int comboIndex: 0
     property string comboText: ""
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Rectangle
     {
@@ -40,8 +42,16 @@ Popup
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
-                app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
-                comboSettingPanel.close()
+                switch (event.key)
+                {
+                    case Qt.Key_F10: // Промотка
+                        app.onRewind()
+                        break
+                    default:
+                        app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
+                        comboSettingPanel.close()
+                        break
+                }
             }
 
             EmptyButton

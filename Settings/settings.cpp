@@ -167,18 +167,22 @@ int Settings::nativeSettings(const int code) // return error
     return -1;
 }
 
-QList<QString> Settings::parseEquipmentConfig(const QString& fileName)
+EquipmentUris Settings::parseEquipmentConfig(const QString& fileName)
 {
     Tools::debugLog("@@@@@ Settings::parseEquipmentConfig fileName " + fileName);
-    QList<QString> result;
-    if(QFileInfo::exists(fileName))
+    EquipmentUris eu;
+    if(!QFileInfo::exists(fileName))
+        Tools::debugLog("@@@@@ Settings::parseEquipmentConfig ERROR ");
+    else
     {
-        const QJsonObject jo = Tools::stringToJson(Tools::readTextFile(fileName));
-        result.append(jo["WmUri"].toString());
-        result.append(jo["PrinterUri"].toString());
+        QString s = Tools::readTextFile(fileName);
+        Tools::debugLog("@@@@@ Settings::parseEquipmentConfig read " + s);
+        const QJsonObject jo = Tools::stringToJson(s);
+        eu.wmUri = jo["WmUri"].toString();
+        eu.printerUri = jo["PrinterUri"].toString();
+        Tools::debugLog(QString("@@@@@ Settings::parseEquipmentConfig uris %1, %2").arg(eu.wmUri, eu.printerUri));
     }
-    Tools::debugLog("@@@@@ Settings::parseEquipmentConfig uris " + result.join(", "));
-    return result;
+    return eu;
 }
 
 

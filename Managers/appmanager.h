@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE void onNumberClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
     Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
+    Q_INVOKABLE void onPopupOpened(const bool);
     Q_INVOKABLE void onProductCodeEdited(const QString&);
     Q_INVOKABLE void onPrintClicked();
     Q_INVOKABLE void onProductDescriptionClicked();
@@ -76,7 +77,7 @@ private:
     void filteredSearch();
     void inputDateTime();
     bool isAuthorizationOpened() { return mainPageIndex < 0; }
-    bool isProductOpened() { return !product.isEmpty(); }
+    bool isProduct() { return !product.isEmpty(); }
     bool isSettingsOpened() { return isSettings; }
     QString getImageFileWithQmlPath(const DBRecord&);
     double price(const DBRecord&);
@@ -84,8 +85,8 @@ private:
     void print();
     QString quantityAsString(const DBRecord&);
     void refreshAll();
-    void resetProduct();
     void onCustomSettingsItemClicked(const DBRecord&);
+    void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
@@ -94,9 +95,11 @@ private:
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showUsers(const DBRecordList&);
     void startAuthorization();
-    void startEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void startEquipment();
+    void startSettings();
     void stopAuthorization(const DBRecordList&);
     void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void stopSettings();
     void updateSystemStatus();
     void updateTablePanel(const bool);
     void updateWeightStatus();
@@ -123,6 +126,7 @@ private:
     WeightManager* weightManager = nullptr;
     PrintStatus printStatus;
     PrintManager* printManager = nullptr;
+    bool isResetProductNeeded = false;
 
     // UI:
     QQmlContext* context = nullptr;
@@ -130,6 +134,7 @@ private:
     int secret = 0;
     int showcaseSort = Sort_Name;
     bool isSettings = false;
+    int popups = 0;
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;

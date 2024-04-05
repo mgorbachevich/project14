@@ -46,6 +46,9 @@ Rectangle
                 if (!tablePanelResultList.atYEnd) tablePanelResultList.flick(0, -Constants.flickVelocity)
                 else app.beepSound()
                 break;
+            case Qt.Key_F10: // Промотка
+                app.onRewind()
+                break
             default:
                 app.beepSound();
                 break;

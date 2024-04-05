@@ -62,17 +62,20 @@ int Wm100::disconnectDevice()
 
 int Wm100::getStatus(Wm100Protocol::channel_status *status)
 {
-    Tools::debugLog("@@@@@ Wm100::getStatus");
-    qDebug() << "getStatus - thread() =" << this->thread();
+    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE)
+    {
+        Tools::debugLog("@@@@@ Wm100::getStatus");
+        qDebug() << "getStatus - thread() =" << this->thread();
+    }
     if (!isConnected()) return -20;
     int res = protocol->cGetStatus(status);
-    qDebug() << "getStatus - res =" << res;
+    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) qDebug() << "getStatus - res =" << res;
     return res;
 }
 
 int Wm100::getStatusEx(Wm100Protocol::channel_status_ex *status)
 {
-    Tools::debugLog("@@@@@ Wm100::getStatusEx");
+    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) Tools::debugLog("@@@@@ Wm100::getStatusEx");
     if (!isConnected()) return -20;
     return protocol->cGetStatusEx(status);
 }
@@ -201,7 +204,8 @@ void Wm100::stopPolling()
 
 void Wm100::onTimer()
 {
-    Tools::debugLog(QString("@@@@@ Wm100::onTimer %1").arg(Tools::intToString(timerInterval)));
+    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE)
+        Tools::debugLog(QString("@@@@@ Wm100::onTimer %1").arg(Tools::intToString(timerInterval)));
     //qDebug() << "onTimer.killTimer timerid =" << timerid;
     //killTimer(timerid);
     //timerid = 0;
@@ -277,7 +281,7 @@ QString Wm100::errorDescription(const int err) const
 
 void Wm100::timerEvent(QTimerEvent *event)
 {
-    Tools::debugLog("@@@@@ Wm100::timerEvent");
+    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) Tools::debugLog("@@@@@ Wm100::timerEvent");
     qDebug() << "timerEvent - thread() =" << this->thread();
     if (timerid == event->timerId())
     {

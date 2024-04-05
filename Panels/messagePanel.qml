@@ -18,6 +18,8 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
     property bool buttonVisibility: true
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Connections // Slot for signal AppManager::hideToast
     {
@@ -45,7 +47,15 @@ Popup
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
-                messagePanel.close()
+                switch (event.key)
+                {
+                    case Qt.Key_F10: // Промотка
+                        app.onRewind()
+                        break
+                    default:
+                        messagePanel.close()
+                        break
+                }
             }
 
             EmptyButton

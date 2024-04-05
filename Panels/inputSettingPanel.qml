@@ -20,6 +20,8 @@ Popup
     property string inputText: "Input"
     property int settingItemCode: 0
     property int virtualKeyboardSet: 2
+    onOpened: app.onPopupOpened(true)
+    onClosed: app.onPopupOpened(false)
 
     Connections // Slot for signal KeyEmitter::enterChar
     {
@@ -123,7 +125,10 @@ Popup
                             app.onSettingInputClosed(settingItemCode, text)
                             inputSettingPanel.close()
                             break
-                         default:
+                        case Qt.Key_F10: // Промотка
+                            app.onRewind()
+                            break
+                        default:
                             app.beepSound();
                             break
                     }

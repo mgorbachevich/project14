@@ -144,7 +144,7 @@ bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
     {
         quint64 n1 = file.write(data);
         quint64 n2 = file.size();
-        Tools::debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(intToString(n1), intToString(n2)));
+        debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(intToString(n1), intToString(n2)));
         file.close();
         return true;
     }
@@ -227,7 +227,7 @@ QString Tools::qmlFilePath(const QString& localPath)
 
 bool Tools::copyFile(const QString& from, const QString& to)
 {
-    debugLog(QString("@@@@@ DataBase::copyFile %1 >> %2").arg(from, to));
+    debugLog(QString("@@@@@ Tools::copyFile %1 >> %2").arg(from, to));
     if (!isFileExists(from)) return false;
     removeFile(to);
     return QFile::copy(from, to);
@@ -252,6 +252,22 @@ QString Tools::dbPath(const QString& localFilePath)
 QString Tools::downloadPath(const QString& localPath)
 {
     return makeFullPath(DOWNLOAD_SUBDIR, localPath);
+}
+
+QString Tools::exchangePath(const QString &localPath)
+{
+    //https://forum.qt.io/topic/34940/does-qstandardpaths-work-with-sdcard-on-android/2
+    debugLog("@@@@@ Tools::exchangePath " + localPath);
+    QString result;
+#ifdef Q_OS_ANDROID
+    QJniObject mediaDir = QJniObject::callStaticObjectMethod("android/os/Environment", "getExternalStorageDirectory", "()Ljava/io/File;");
+    QJniObject mediaPath = mediaDir.callObjectMethod("getAbsolutePath", "()Ljava/lang/String;");
+    result = mediaPath.toString() + localPath;
+    QJniEnvironment env;
+    if (env->ExceptionCheck()) env->ExceptionClear();
+#endif // Q_OS_ANDROID
+    debugLog("@@@@@ Tools::exchangePath result " + result);
+    return result;
 }
 
 void Tools::pause(const int msec, const QString& comment)
@@ -386,4 +402,17 @@ void Tools::debugMemory()
 #endif // Q_OS_ANDROID
 }
 
-
+bool Tools::checkPermission(const QString& permission)
+{
+#ifdef Q_OS_ANDROID
+    auto r = QtAndroidPrivate::checkPermission(permission).result();
+    if (r == QtAndroidPrivate::Denied)
+    {
+        r = QtAndroidPrivate::requestPermission(permission).result();
+        if (r == QtAndroidPrivate::Denied) return false;
+    }
+    return true;
+#else
+    return true;
+#endif // Q_OS_ANDROID
+}

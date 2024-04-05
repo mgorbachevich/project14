@@ -58,8 +58,8 @@ Rectangle
             if (index === -1)
             {
                 app.debugLog("@@@@@ authorizationPanel onShowMainPage");
-                passwordTextField.forceActiveFocus()
                 passwordTextField.text = ""
+                passwordTextField.forceActiveFocus()
             }
         }
     }
@@ -232,6 +232,9 @@ Rectangle
                         break;
                     case Qt.Key_Enter: case Qt.Key_Return:
                         app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text)
+                        break
+                    case Qt.Key_F10: // Промотка
+                        app.onRewind()
                         break
                     default:
                         app.beepSound();
