@@ -22,7 +22,11 @@ Popup
     property int sliderStep: 1
     property int sliderValue: 1
     onOpened: app.onPopupOpened(true)
-    onClosed: app.onPopupOpened(false)
+    onClosed:
+    {
+        app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
+        app.onPopupOpened(false)
+    }
 
     Rectangle
     {
@@ -50,7 +54,6 @@ Popup
                         app.onRewind()
                         break
                     default:
-                        app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
                         sliderSettingPanel.close()
                         break
                 }

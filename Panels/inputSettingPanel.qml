@@ -21,7 +21,11 @@ Popup
     property int settingItemCode: 0
     property int virtualKeyboardSet: 2
     onOpened: app.onPopupOpened(true)
-    onClosed: app.onPopupOpened(false)
+    onClosed:
+    {
+        app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text)
+        app.onPopupOpened(false)
+    }
 
     Connections // Slot for signal KeyEmitter::enterChar
     {
@@ -77,7 +81,6 @@ Popup
             onClicked:
             {
                 app.onUserAction();
-                app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text)
                 inputSettingPanel.close()
             }
         }
@@ -122,7 +125,6 @@ Popup
                             text = ""
                             break;
                         case Qt.Key_Enter: case Qt.Key_Return:
-                            app.onSettingInputClosed(settingItemCode, text)
                             inputSettingPanel.close()
                             break
                         case Qt.Key_F10: // Промотка

@@ -3,8 +3,8 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.16"
-#define RELEASE
+#define APP_VERSION "2.17"
+//#define RELEASE
 
 #ifdef RELEASE
 #define REMOVE_SETTINGS_DB_ON_START false
@@ -45,16 +45,19 @@
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
-//#define ANDROID_EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
-//#define ANDROID_EQUIPMENT_EXCHANGE_FILE "/shtrihm/json_settingsfile.txt"
-//#define ANDROID_DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
+#define DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
 //#define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 //#define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
-#define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
 //#define DB_EMULATION
+
+#ifdef Q_OS_ANDROID
+//#define ANDROID_EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
+#define ANDROID_EQUIPMENT_CONFIG_FILE "/storage/emulated/0/shtrihm/json_settingsfile.txt"
+#define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
+#endif
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -247,6 +250,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_GoToDescription = 1007,
     SettingCode_Level = 1008,
     SettingCode_License = 1009, // todo
+    SettingCode_SerialScalesNumber = 1010,
     //SettingCode_PrinterAddress = 1010,
     //SettingCode_PrinterBaudrate = 1011,
     //SettingCode_PrinterTimeout = 1012,
@@ -281,6 +285,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_PrinterInfo = 1044, // todo
     SettingCode_Equipment = 1045,
     SettingCode_SystemSettings = 1046,
+    SettingCode_Update = 1047,
     /*
     SettingCode_Power = 17,
     SettingCode_Cursor = 10,

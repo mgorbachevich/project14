@@ -87,7 +87,7 @@ void SettingDBTable::checkAndSaveDefaultRecord(DataBase* db, const int code, con
     {
         if (results.at(i).at(Columns::Code).toInt() == code) // уже есть такая запись
         {
-            Tools::debugLog(QString("@@@@@ SettingDBTable::checkAndSaveDefaultRecord exists %1").arg(code));
+            //Tools::debugLog(QString("@@@@@ SettingDBTable::checkAndSaveDefaultRecord exists %1").arg(code));
             return;
         }
     }

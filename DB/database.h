@@ -41,12 +41,14 @@ public:
     void select(const DBSelector, const DBRecordList&);
     void select(const DBSelector, const QString&);
     void clearLog();
+    bool isOpened() { return opened; }
 
     Settings& settings;
     QList<DBTable*> tables;
+    QString message;
 
 protected:
-    bool startDB();
+    void startDB();
     bool open(QSqlDatabase&, const QString&);
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     bool createTable(const QSqlDatabase& db, DBTable*);
@@ -73,10 +75,9 @@ protected:
 signals:
     void requestResult(const DBSelector, const DBRecordList&, const bool);
     void started();
-    void showMessage(const QString&, const QString&);
 
 public slots:
-    void onStart();
+    void onAppStart();
 };
 
 #endif // DATABASE_H

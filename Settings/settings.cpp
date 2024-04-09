@@ -114,13 +114,14 @@ void Settings::update(const DBRecordList& records)
     items.append(records);
 }
 
-bool Settings::onManualInputValue(const int itemCode, const QString& value)
+bool Settings::onInputValue(const int itemCode, const QString& value)
 {
+    Tools::debugLog(QString("@@@@@ Settings::onInputValue %1 %2").arg(Tools::intToString(itemCode), value));
     for (DBRecord& r : items)
     {
         if (r[SettingDBTable::Code].toInt() == itemCode)
         {
-            if(r[SettingDBTable::Value].toString() != value)
+            if(0 != QString::compare(r[SettingDBTable::Value].toString(), value) && checkValue(r, value))
             {
                 switch(getType(r))
                 {
@@ -136,6 +137,45 @@ bool Settings::onManualInputValue(const int itemCode, const QString& value)
         }
     }
     return false;
+}
+
+bool Settings::checkValue(const DBRecord& record, const QString& value)
+{
+    switch (record[SettingDBTable::Code].toInt())
+    {
+    case SettingCode_ScalesNumber:
+        if(Tools::stringToInt(value) == 0)
+        {
+            message += "\n" + getName(record) + ". Неверное значение";
+            return false;
+        }
+        if(value.length() > 6)
+        {
+            message += "\n" + getName(record) + ". Длина должна быть не больше 6";
+            return false;
+        }
+        break;
+    case SettingCode_SerialScalesNumber:
+        if(Tools::stringToInt(value) == 0)
+        {
+            message += "\n" + getName(record) + ". Неверное значение";
+            return false;
+        }
+        if(value.length() > 7)
+        {
+            message += "\n" + getName(record) + ". Длина должна быть не больше 7";
+            return false;
+        }
+        if(getIntValue(SettingCode_ScalesName, true) == 0)
+        {
+            message += "\n" + getName(record) + ". Необходимо выбрать модель весов";
+            return false;
+        }
+        break;
+    default:
+        break;
+    }
+    return true;
 }
 
 int Settings::nativeSettings(const int code) // return error

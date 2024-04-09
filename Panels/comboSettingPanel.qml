@@ -20,7 +20,11 @@ Popup
     property int comboIndex: 0
     property string comboText: ""
     onOpened: app.onPopupOpened(true)
-    onClosed: app.onPopupOpened(false)
+    onClosed:
+    {
+        app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
+        app.onPopupOpened(false)
+    }
 
     Rectangle
     {
@@ -48,7 +52,6 @@ Popup
                         app.onRewind()
                         break
                     default:
-                        app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
                         comboSettingPanel.close()
                         break
                 }
@@ -81,7 +84,6 @@ Popup
                 onClicked:
                 {
                     app.onUserAction();
-                    app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
                     comboSettingPanel.close()
                 }
             }

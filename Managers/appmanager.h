@@ -91,7 +91,9 @@ private:
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
+    void showDBMessage();
     void showMessage(const QString&, const QString&);
+    void showSettingMessage();
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showUsers(const DBRecordList&);
     void startAuthorization();
@@ -190,7 +192,6 @@ public slots:
     void onEquipmentParamChanged(const int, const int);
     void onNetAction(const int);
     void onPrinted(const DBRecord&);
-    void onShowMessage(const QString &title, const QString &text) { showMessage(title, text); }
     void onTimer();
 };
 

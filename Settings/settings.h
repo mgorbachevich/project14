@@ -24,7 +24,8 @@ public:
     QStringList getValueList(const DBRecord&);
     DBRecord* getByCode(const int);
     DBRecord* getByIndexInCurrentGroup(const int);
-    bool onManualInputValue(const int, const QString&);
+    bool onInputValue(const int, const QString&);
+    bool checkValue(const DBRecord&, const QString&);
     QList<int> getCurrentGroupCodes();
     QString getCurrentGroupName();
     void update(const DBRecordList&);
@@ -34,6 +35,7 @@ public:
     EquipmentUris parseEquipmentConfig(const QString&);
 
     int currentGroupCode = 0;
+    QString message;
 
 private:
     DBRecordList items;

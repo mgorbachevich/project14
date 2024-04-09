@@ -42,7 +42,7 @@ DataBase::~DataBase()
     if(REMOVE_TEMP_DB) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
 }
 
-bool DataBase::startDB()
+void DataBase::startDB()
 {
     Tools::debugLog("@@@@@ DataBase::startDB");
     QString path = Tools::dbPath(DB_PRODUCT_NAME);
@@ -61,20 +61,25 @@ bool DataBase::startDB()
         opened &= createTable(productDB, getTable(DBTABLENAME_MOVIES));
         opened &= createTable(productDB, getTable(DBTABLENAME_SOUNDS));
         opened &= createTable(productDB, getTable(DBTABLENAME_SHOWCASE));
+        message += "\nСоздана БД товаров";
     }
-    if (!opened) return false;
+    if (!opened) return;
 
     copyDBFiles(DB_PRODUCT_NAME, DB_TEMP_NAME);
     opened = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
-    if (!opened) return false;
+    if (!opened) return;
 
     path = Tools::dbPath(DB_SETTINGS_NAME);
     if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
     opened = addAndOpen(settingsDB, path);
-    if(!exists && opened) opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
-    if (!opened) return false;
+    if(!exists && opened)
+    {
+        message += "\nСоздана БД настроек";
+        opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
+    }
+    if (!opened) return;
 
     path = Tools::dbPath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
@@ -83,16 +88,16 @@ bool DataBase::startDB()
     opened = addAndOpen(logDB, path);
     if(!exists && opened)
     {
+        message += "\nСоздана БД лога";
         opened &= createTable(logDB, getTable(DBTABLENAME_LOG));
         opened &= createTable(logDB, getTable(DBTABLENAME_TRANSACTIONS));
     }
-    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(opened));
-    return opened;
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::boolToString(opened)));
 }
 
-void DataBase::onStart()
+void DataBase::onAppStart()
 {
-    Tools::debugLog("@@@@@ DataBase::onStart");
+    Tools::debugLog("@@@@@ DataBase::onAppStart");
     startDB();
     if (opened)
     {
@@ -108,13 +113,13 @@ void DataBase::onStart()
         executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('14', 'pictures/14.png', '', '', '')");
         executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '')");
 #endif
-        emit started();
     }
     else
     {
-        Tools::debugLog("@@@@@ DataBase::onStart ERROR");
-        emit showMessage("ВНИМАНИЕ!", "Ошибка при открытии базы данных");
+        Tools::debugLog("@@@@@ DataBase::onAppStart ERROR");
+        message += "\nОшибка при открытии базы данных";
     }
+    emit started();
 }
 
 bool DataBase::open(QSqlDatabase& db, const QString& name)
