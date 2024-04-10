@@ -46,8 +46,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     db = new DataBase(settings, this);
     user = UserDBTable::defaultAdmin();
     netServer = new NetServer(this, db);
-    weightManager = new WeightManager(this, WM_DEMO);
-    printManager = new PrintManager(this, db, settings, PRINTER_DEMO);
+    weightManager = new WeightManager(this);
+    printManager = new PrintManager(this, db, settings);
     timer = new QTimer(this);
 
     // Versions:
@@ -367,6 +367,11 @@ void AppManager::onPiecesInputClosed(const QString &value)
         v = 1;
         showMessage("ВНИМАНИЕ!", "Количество не должно быть меньше 1");
     }
+    else if(v > MAX_PIECES)
+    {
+        v = MAX_PIECES;
+        showMessage("ВНИМАНИЕ!", "Количество не должно быть больше " + Tools::intToString(MAX_PIECES));
+    }
     printStatus.pieces = v;
     updateWeightStatus();
 }
@@ -611,8 +616,7 @@ void AppManager::onSettingsItemClicked(const int index)
     {
     case SettingType_Group:
         settings.currentGroupCode = code;
-        settingsPanelModel->update(settings);
-        emit showSettingsPanel(settings.getCurrentGroupName());
+        updateSettings();
         break;
     case SettingType_InputNumber:
     case SettingType_InputText:
@@ -702,8 +706,7 @@ void AppManager::onSettingsPanelCloseClicked()
         {
             // Переход вверх:
             settings.currentGroupCode = r->at(SettingDBTable::GroupCode).toInt();
-            settingsPanelModel->update(settings);
-            emit showSettingsPanel(settings.getCurrentGroupName());
+            updateSettings();
             return;
         }
     }
@@ -771,8 +774,7 @@ void AppManager::startSettings()
     resetProduct();
     stopEquipment();
     db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
-    settingsPanelModel->update(settings);
-    emit showSettingsPanel(settings.getCurrentGroupName());
+    updateSettings();
 }
 
 void AppManager::stopSettings()
@@ -897,20 +899,14 @@ void AppManager::showMessage(const QString &title, const QString &text)
 
 void AppManager::showDBMessage()
 {
-    if(!db->message.isEmpty())
-    {
-        showMessage("ВНИМАНИЕ!", db->message);
-        db->message = "";
-    }
+    QString s = db->getAndClearMessage();
+    if(!s.isEmpty()) showMessage("ВНИМАНИЕ!", s);
 }
 
 void AppManager::showSettingMessage()
 {
-    if(!settings.message.isEmpty())
-    {
-        showMessage("ВНИМАНИЕ!", settings.message);
-        settings.message = "";
-    }
+    QString s = settings.getAndClearMessage();
+    if(!s.isEmpty()) showMessage("ВНИМАНИЕ!", s);
 }
 
 void AppManager::showConfirmation(const ConfirmSelector selector, const QString &title, const QString &text)
@@ -949,6 +945,22 @@ void AppManager::resetProduct() // Сбросить выбранный прод�
     }
 }
 
+void AppManager::readConfigFile(const QString& path, EquipmentUris& eu, QString& message)
+{
+    if(!Tools::isFileExists(path))
+        message += "\nКонфиг.файл " + path + " не найден";
+    else if(Tools::getFileSize(path) == 0)
+        message += "\nКонфиг.файл " + path + " имеет размер 0";
+    else
+    {
+        eu = settings.parseEquipmentConfig(path);
+        if(eu.wmUri.isEmpty() || eu.printerUri.isEmpty())
+            message += "\nКонфиг.файл " + path + " содержит ошибки";
+        else
+            message += "\nКонфиг.файл " + path + " считан";
+    }
+}
+
 void AppManager::startEquipment()
 {
     debugLog("@@@@@ AppManager::startEquipment");
@@ -959,64 +971,41 @@ void AppManager::startEquipment()
 
     QString message;
     EquipmentUris eu;
-    QString defaultFileName = DEFAULT_EQUIPMENT_CONFIG_FILE;
 
 #ifdef Q_OS_ANDROID
-    if(Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE"))
+    if(!DEMO_ONLY)
     {
-        QString configFileName = ANDROID_EQUIPMENT_CONFIG_FILE;
-        eu = settings.parseEquipmentConfig(configFileName);
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ read config file =\n" + configFileName);
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ WMUri =\n" + eu.wmUri);
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ PrinterUri =\n" + eu.printerUri);
-    }
-    else
-    {
-        message += "\nНет разрешения для чтения конфигурационного файла ";
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ read config file ERROR = no permission");
-    }
-
-    if(eu.wmUri.isEmpty() || eu.printerUri.isEmpty())
-    {
-        message += "\nОшибка чтения конфигурационного файла ";
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ read config file ERROR");
-
-        eu = settings.parseEquipmentConfig(defaultFileName); //  По умолчанию
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ read default file =\n" +  defaultFileName);
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ WMUri =\n" + eu.wmUri);
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ PrinterUri =\n" + eu.printerUri);
-
-        if(eu.wmUri.isEmpty() || eu.printerUri.isEmpty())
-        {
-            message += "\nОшибка чтения конфигурационного файла по умолчанию ";
-            db->saveLog(LogType_Info, LogSource_User, "@@@@@ read default file ERROR");
-        }
+        if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE"))
+            message += "\nНет разрешения для чтения конфиг.файла ";
         else
-        {
-            message += "\nКонфигурация по умолчанию ";
-            db->saveLog(LogType_Info, LogSource_User, "@@@@@ set default config");
-        }
+            readConfigFile(ANDROID_EQUIPMENT_CONFIG_FILE, eu, message);
+        if(eu.wmUri.isEmpty() || eu.printerUri.isEmpty())
+            readConfigFile(DEFAULT_EQUIPMENT_CONFIG_FILE, eu, message);
     }
-#else
-    eu = settings.parseEquipmentConfig(defaultFileName); //  По умолчанию
-    if(eu.wmUri.isEmpty() || eu.printerUri.isEmpty())
-        message += "\nОшибка чтения конфигурационного файла по умолчанию ";
 #endif // Q_OS_ANDROID
 
-    if(WM_DEMO || eu.wmUri.contains("demo", Qt::CaseInsensitive)) message += "\nДемо-режим весового модуля";
-    int e = weightManager->start(eu.wmUri);
-    db->saveLog(LogType_Info, LogSource_User, "@@@@@ start WM error = " + Tools::intToString(e));
+    int e = 0;
+    if(DEMO_ONLY || eu.wmUri.contains("demo", Qt::CaseInsensitive) || eu.wmUri.isEmpty())
+    {
+        message += "\nДемо-режим весового модуля";
+        eu.wmUri = WEIGHT_DEMO_URI;
+    }
+    message += "\nURI весового модуля = " + eu.wmUri;
+    e = weightManager->start(eu.wmUri, 0 == QString::compare(eu.wmUri, WEIGHT_DEMO_URI));
     if(e) message += QString("\nОшибка весового модуля %1: %2").arg(Tools::intToString(e), weightManager->getErrorDescription(e));
 
-    if(PRINTER_DEMO || eu.printerUri.contains("demo", Qt::CaseInsensitive)) message += "\nДемо-режим принтера";
-    e = printManager->start(eu.printerUri);
-    db->saveLog(LogType_Info, LogSource_User, "@@@@@ start printer error = " + Tools::intToString(e));
-    if(e) message += QString("\nОшибка принтера %1: %2").arg(QString::number(e), printManager->getErrorDescription(e));
+    if(DEMO_ONLY || eu.printerUri.contains("demo", Qt::CaseInsensitive) || eu.printerUri.isEmpty())
+    {
+        message += "\nДемо-режим принтера";
+        eu.printerUri = PRINTER_DEMO_URI;
+    }
+    message += "\nURI принтера = " + eu.printerUri;
+    e = printManager->start(eu.printerUri, 0 == QString::compare(eu.printerUri, PRINTER_DEMO_URI));
+    if(e) message += QString("\nОшибка принтера %1: %2").arg(Tools::intToString(e), printManager->getErrorDescription(e));
     else
     {
         e = printManager->setParams(settings.getIntValue(SettingCode_PrinterBrightness),
                                     settings.getIntValue(SettingCode_PrintOffset));
-        db->saveLog(LogType_Info, LogSource_User, "@@@@@ set printer params error = " + Tools::intToString(e));
         if(e) message += QString("\nОшибка установки параметров принтера %1: %2").arg(Tools::intToString(e), printManager->getErrorDescription(e));
     }
 
@@ -1124,11 +1113,13 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
                     weightManager->getErrorDescription(errorCode)));
         break;
     case EquipmentParam_PrintError:
+    {
         db->saveLog(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").arg(
                     QString::number(errorCode),
                     printManager->getErrorDescription(errorCode)));
-        emit showPrinterMessage(printManager->getErrorDescription(errorCode));
+        emit showPrinterMessage(errorCode == 0 ? "" : printManager->getErrorDescription(errorCode));
         break;
+    }
     }
     updateWeightStatus();
 }
@@ -1191,7 +1182,7 @@ void AppManager::updateWeightStatus()
     emit showWeightParam(EquipmentParam_AmountColor, isAmount ? activeColor : passiveColor);
 
     // Можно печатать?
-    if(printManager->isDemoMode()) emit showPrinterMessage("Демо режим принтера");
+    if(printManager->isDemoMode()) emit showPrinterMessage("<b>ДЕМО</b>");
     printStatus.manualPrintEnabled = isAmount && !isPrintError;
     emit enableManualPrint(printStatus.manualPrintEnabled);
     const bool isAutoPrintEnabled = isAutoPrint && printStatus.manualPrintEnabled;
@@ -1272,7 +1263,13 @@ void AppManager::onPopupOpened(const bool open)
     }
 }
 
-
+void AppManager::updateSettings()
+{
+    debugLog("@@@@@ AppManager::updateSettings");
+    settings.onShow();
+    settingsPanelModel->update(settings);
+    emit showSettingsPanel(settings.getCurrentGroupName());
+}
 
 
 

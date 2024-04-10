@@ -17,7 +17,11 @@ Popup
     Material.background: "transparent"
     property string inputText: "Input"
     onOpened: app.onPopupOpened(true)
-    onClosed: app.onPopupOpened(false)
+    onClosed:
+    {
+        app.onPiecesInputClosed(inputPiecesPanelText.text)
+        app.onPopupOpened(false)
+    }
 
     Rectangle
     {
@@ -59,11 +63,7 @@ Popup
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close"
-                onClicked:
-                {
-                    app.onPiecesInputClosed(inputPiecesPanelText.text)
-                    inputPiecesPanel.close()
-                }
+                onClicked: inputPiecesPanel.close()
             }
 
             Rectangle
@@ -117,7 +117,6 @@ Popup
                                 text = 1
                                 break;
                             case Qt.Key_Enter: case Qt.Key_Return:
-                                app.onPiecesInputClosed(text);
                                 inputPiecesPanel.close();
                                 break;
                              default:

@@ -139,7 +139,7 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
                     Tools::debugLog("@@@@@ RequestParser::parseSetRequest. Text " + text);
                     if(!text.isEmpty())
                     {
-                        for (DBTable* t : db->tables)
+                        for (DBTable* t : db->getTables())
                         {
                             if(t == nullptr) continue;
                             DBRecordList tableRecords = JSONParser::parseTable(t, text);

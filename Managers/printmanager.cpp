@@ -8,11 +8,11 @@
 #include "Slpa100u.h"
 #include "Label/labelcreator.h"
 
-PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& globalSettings, const bool demo):
+PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& globalSettings):
     QObject(parent), db(dataBase), settings(globalSettings)
 {
     Tools::debugLog("@@@@@ PrintManager::PrintManager " + Tools::boolToString(demo));
-    if(!demo)
+    if(!DEMO_ONLY)
     {
         slpa = new Slpa100u(this);
         labelCreator = new LabelCreator(this);
@@ -21,8 +21,9 @@ PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& global
     }
 }
 
-int PrintManager::start(const QString& url)
+int PrintManager::start(const QString& url, const bool demoMode)
 {
+    demo = demoMode;
     int e = 0;
     if (slpa != nullptr && labelCreator != nullptr && !started)
     {

@@ -3,17 +3,15 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.17"
-//#define RELEASE
+#define APP_VERSION "2.19"
+#define RELEASE
 
 #ifdef RELEASE
 #define REMOVE_SETTINGS_DB_ON_START false
-#define WM_DEMO false
-#define PRINTER_DEMO false
+#define DEMO_ONLY false
 #else
 #define REMOVE_SETTINGS_DB_ON_START true
-#define WM_DEMO true
-#define PRINTER_DEMO true
+#define DEMO_ONLY false
 #endif
 
 #define DEBUG_LOG
@@ -46,11 +44,12 @@
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
 #define DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
-//#define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
-//#define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
+#define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
+#define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
+#define MAX_PIECES 999
 //#define DB_EMULATION
 
 #ifdef Q_OS_ANDROID
@@ -251,13 +250,12 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_Level = 1008,
     SettingCode_License = 1009, // todo
     SettingCode_SerialScalesNumber = 1010,
-    //SettingCode_PrinterAddress = 1010,
-    //SettingCode_PrinterBaudrate = 1011,
-    //SettingCode_PrinterTimeout = 1012,
+    SettingCode_VerificationName = 1011, // todo
+    SettingCode_VerificationDate = 1012, // todo
     SettingCode_Version = 1013, // todo
     SettingCode_EquipmentVersion = 1014, // todo
     SettingCode_Help = 1015, // todo
-    SettingCode_Verification = 1016, // todo
+    // = 1016
     SettingCode_ReportsDuration = 1017, // todo
     //SettingCode_Brightness = 1018, // todo
     SettingCode_KeyboardSoundVolume = 1019,

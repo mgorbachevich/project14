@@ -351,6 +351,13 @@ void DataBase::clearLog()
         Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
 }
 
+QString DataBase::getAndClearMessage()
+{
+    QString s = message;
+    message = "";
+    return s;
+}
+
 void DataBase::select(const DBSelector selector, const QString& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос

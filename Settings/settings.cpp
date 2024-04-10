@@ -225,4 +225,19 @@ EquipmentUris Settings::parseEquipmentConfig(const QString& fileName)
     return eu;
 }
 
+QString Settings::getAndClearMessage()
+{
+    QString s = message;
+    message = "";
+    return s;
+}
+
+void Settings::onShow()
+{
+    Tools::debugLog("@@@@@ ASettings::onShow");
+    (*getByCode(SettingCode_VerificationName))[SettingDBTable::Value] = QString("%1 %2").arg(
+                getStringValue(*getByCode(SettingCode_ScalesName)),
+                getStringValue(*getByCode(SettingCode_SerialScalesNumber)));
+}
+
 

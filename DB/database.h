@@ -42,10 +42,9 @@ public:
     void select(const DBSelector, const QString&);
     void clearLog();
     bool isOpened() { return opened; }
+    QString getAndClearMessage();
+    QList<DBTable*> getTables() { return tables; };
 
-    Settings& settings;
-    QList<DBTable*> tables;
-    QString message;
 
 protected:
     void startDB();
@@ -65,12 +64,15 @@ protected:
     bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
     void removeOldLogRecords();
 
+    Settings& settings;
     bool opened = false;
     QSqlDatabase productDB;
     QSqlDatabase tempDB;
     QSqlDatabase settingsDB;
     QSqlDatabase logDB;
     int removeOldLogRecordsCounter = 0;
+    QString message;
+    QList<DBTable*> tables;
 
 signals:
     void requestResult(const DBSelector, const DBRecordList&, const bool);

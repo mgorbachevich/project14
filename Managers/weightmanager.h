@@ -3,14 +3,15 @@
 
 #include <QObject>
 #include "wm100.h"
+#include "constants.h"
 
 class WeightManager : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit WeightManager(QObject*, const bool);
-    int start(const QString&);
+    explicit WeightManager(QObject*);
+    int start(const QString&, const bool);
     void stop();
     QString version() const;
     void setWeightParam(const int);
@@ -21,7 +22,7 @@ public:
     bool isWeightFixed() const { return isFlag(status, 0); }
     bool isZeroFlag() const { return isFlag(status, 1); }
     bool isTareFlag() const { return isFlag(status, 3); }
-    bool isDemoMode() const { return wm100 == nullptr; }
+    bool isDemoMode() const { return demo || DEMO_ONLY; }
 
     bool setSystemDateTime = false;
 
@@ -33,6 +34,7 @@ private:
     bool started = false;
     int errorCode = 0;
     Wm100Protocol::channel_status status = {0, 0.0, 0.0, 0};
+    bool demo = false;
 
 signals:
     void paramChanged(const int, const int);

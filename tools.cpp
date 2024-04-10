@@ -244,6 +244,18 @@ bool Tools::isFileExists(const QString &path)
     return QFile::exists(path);
 }
 
+qint64 Tools::getFileSize(const QString &path)
+{
+    qint64 size = 0;
+    QFile f(path);
+    if (f.open(QIODevice::ReadOnly))
+    {
+        size = f.size();
+        f.close();
+    }
+    return size;
+}
+
 QString Tools::dbPath(const QString& localFilePath)
 {
     return makeFullPath("", localFilePath);

@@ -28,6 +28,7 @@ public:
     static bool isFileExists(const QString&);
     static bool isFileExistsInDownloadPath(const QString&);
     static QString jsonToString(const QJsonObject&);
+    static qint64 getFileSize(const QString&);
     static int getMemory(const MemoryType);
     static NetParams getNetParams();
     //static void memoryCheck();

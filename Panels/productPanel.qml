@@ -49,6 +49,8 @@ Popup
         {
             app.debugLog("@@@@@ productPanel onEnableManualPrint %1".arg(value))
             productPanelPrintButton.visible = value
+            if(value) productPanelPrintMessageRectangle.color = "transparent"
+            else productPanelPrintMessageRectangle.color = Constants.colorError
         }
     }
 
@@ -213,6 +215,20 @@ Popup
             onClicked: app.onProductPanelPiecesClicked()
         }
 
+        RoundIconButton
+        {
+            id: productPanelPrintButton
+            Layout.column: 2
+            Layout.row: 2
+            Layout.columnSpan: 2
+            Layout.alignment: Qt.AlignBottom
+            Layout.preferredWidth:  printButtonSize
+            Layout.preferredHeight: printButtonSize
+            icon { width: screenManager.buttonSize(); height: screenManager.buttonSize(); source: "../Icons/print" }
+            Material.background: Constants.colorAuto
+            onClicked: app.onPrintClicked()
+        }
+
         Rectangle
         {
             id: productPanelPrintMessageRectangle
@@ -228,23 +244,12 @@ Popup
             CardText
             {
                 id: productPanelPrintMessage
+                verticalAlignment: Text.AlignBottom
+                bottomPadding: screenManager.spacer() / 2
                 color: Constants.colorWhite
             }
         }
 
-        RoundIconButton
-        {
-            id: productPanelPrintButton
-            Layout.column: 2
-            Layout.row: 2
-            Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignBottom
-            Layout.preferredWidth:  printButtonSize
-            Layout.preferredHeight: printButtonSize
-            icon { width: screenManager.buttonSize(); height: screenManager.buttonSize(); source: "../Icons/print" }
-            Material.background: Constants.colorAuto
-            onClicked: app.onPrintClicked()
-        }
     }
 }
 

@@ -119,7 +119,7 @@ Popup
                 {
                     Label
                     {
-                        width: settingPanelList.width * 2 / 3
+                        width: settingPanelList.width * 6 / 10
                         padding: screenManager.spacer()
                         font { pointSize: screenManager.normalFontSize() }
                         wrapMode: Text.WordWrap
@@ -139,7 +139,7 @@ Popup
 
                     Label
                     {
-                        width: settingPanelList.width / 3
+                        width: settingPanelList.width * 4 / 10
                         font { pointSize: screenManager.normalFontSize() }
                         padding: screenManager.spacer()
                         wrapMode: Text.WordWrap

@@ -84,6 +84,7 @@ private:
     QString priceAsString(const DBRecord&);
     void print();
     QString quantityAsString(const DBRecord&);
+    void readConfigFile(const QString&, EquipmentUris&, QString&);
     void refreshAll();
     void onCustomSettingsItemClicked(const DBRecord&);
     void resetProduct();
@@ -105,6 +106,7 @@ private:
     void updateSystemStatus();
     void updateTablePanel(const bool);
     void updateWeightStatus();
+    void updateSettings();
 
     AppInfo appInfo;
 

@@ -33,12 +33,14 @@ public:
     void sort();
     int nativeSettings(const int);
     EquipmentUris parseEquipmentConfig(const QString&);
+    QString getAndClearMessage();
+    void onShow();
 
     int currentGroupCode = 0;
-    QString message;
 
 private:
     DBRecordList items;
+    QString message;
 };
 
 #endif // SETTINGS_H

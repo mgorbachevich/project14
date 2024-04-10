@@ -15,13 +15,13 @@ class PrintManager : public QObject
     Q_OBJECT
 
 public:
-    explicit PrintManager(QObject*, DataBase*, Settings&, const bool);
-    int start(const QString&);
+    explicit PrintManager(QObject*, DataBase*, Settings&);
+    int start(const QString&, const bool);
     void stop();
     QString version() const;
     void print(const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
     bool isError() const { return errorCode != 0 || isStateError(status); }
-    bool isDemoMode() const { return slpa == nullptr; }
+    bool isDemoMode() const { return demo || DEMO_ONLY; }
     void feed();
     QString getErrorDescription(const int) const;
     int setParams(const int, const int);
@@ -38,6 +38,7 @@ private:
     QString message;
     DataBase* db;
     Settings& settings;
+    bool demo = false;
 
 signals:
     void printed(const DBRecord&);
