@@ -7,22 +7,22 @@
 WeightManager::WeightManager(QObject *parent): QObject(parent)
 {
     Tools::debugLog("@@@@@ WeightManager::WeightManager ");
-    if(!DEMO_ONLY)
+}
+
+int WeightManager::start(const QString& uri) // return error
+{
+    Tools::debugLog("@@@@@ WeightManager::start " + uri);
+    if((0 != QString::compare(uri, EQUIPMENT_OFF_URI)) && wm100 == nullptr)
     {
         wm100 = new Wm100(this);
         connect(wm100, &Wm100::weightStatusChanged, this, &WeightManager::onStatusChanged);
         connect(wm100, &Wm100::errorStatusChanged, this, &WeightManager::onErrorStatusChanged);
     }
-}
-
-int WeightManager::start(const QString& url, const bool demoMode) // return error
-{
-    demo = demoMode;
+    demo = (0 == QString::compare(uri, WEIGHT_DEMO_URI));
     int e = 0;
     if (wm100 != nullptr && !started)
     {
-        Tools::debugLog("@@@@@ WeightManager::start " + url);
-        e = wm100->connectDevice(url);
+        e = wm100->connectDevice(uri);
         started = (e == 0);
         wm100->blockSignals(!started);
         if(started)
@@ -30,26 +30,33 @@ int WeightManager::start(const QString& url, const bool demoMode) // return erro
             if(setSystemDateTime)
             {
                 Tools::debugLog("@@@@@ WeightManager::start setSystemDateTime");
-                wm100->setDateTime(QDateTime::currentDateTime(), url);
+                wm100->setDateTime(QDateTime::currentDateTime(), uri);
             }
             wm100->startPolling(200);
         }
         setSystemDateTime = false;
-        Tools::debugLog("@@@@@ WeightManager::start error " + Tools::intToString(e));
     }
+    Tools::debugLog("@@@@@ WeightManager::start error " + Tools::intToString(e));
     return e;
 }
 
 void WeightManager::stop()
 {
-    if (wm100 != nullptr && started)
+    Tools::debugLog("@@@@@ WeightManager::stop");
+    if (wm100 != nullptr)
     {
-        Tools::debugLog("@@@@@ WeightManager::stop");
-        started = false;
-        wm100->blockSignals(true);
-        wm100->stopPolling();
-        int e = wm100->disconnectDevice();
-        Tools::debugLog("@@@@@ WeightManager::stop error " + Tools::intToString(e));
+        if(started)
+        {
+            started = false;
+            wm100->blockSignals(true);
+            wm100->stopPolling();
+            int e = wm100->disconnectDevice();
+            Tools::debugLog("@@@@@ WeightManager::stop error " + Tools::intToString(e));
+        }
+        disconnect(wm100, &Wm100::weightStatusChanged, this, &WeightManager::onStatusChanged);
+        disconnect(wm100, &Wm100::errorStatusChanged, this, &WeightManager::onErrorStatusChanged);
+        delete wm100;
+        wm100 = nullptr;
     }
     setSystemDateTime = false;
 }
@@ -61,7 +68,7 @@ QString WeightManager::version() const
         Wm100Protocol::device_metrics dm;
         if(wm100->getDeviceMetrics(&dm) >= 0) return Tools::intToString(dm.protocol_version);
     }
-    return "DEMO";
+    return "-";
 }
 
 void WeightManager::setWeightParam(const int param)

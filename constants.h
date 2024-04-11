@@ -3,19 +3,11 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.19"
-#define RELEASE
-
-#ifdef RELEASE
-#define REMOVE_SETTINGS_DB_ON_START false
-#define DEMO_ONLY false
-#else
-#define REMOVE_SETTINGS_DB_ON_START true
-#define DEMO_ONLY false
-#endif
+#define APP_VERSION "2.20"
 
 #define DEBUG_LOG
 #define CREATE_DEFAULT_DATA_ON_START true
+#define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
@@ -46,6 +38,7 @@
 #define DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
 #define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
+#define EQUIPMENT_OFF_URI "OFF"
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5

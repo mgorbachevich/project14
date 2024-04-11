@@ -84,7 +84,7 @@ private:
     QString priceAsString(const DBRecord&);
     void print();
     QString quantityAsString(const DBRecord&);
-    void readConfigFile(const QString&, EquipmentUris&, QString&);
+    bool readConfigFile(const QString&, EquipmentUris&, QString&);
     void refreshAll();
     void onCustomSettingsItemClicked(const DBRecord&);
     void resetProduct();
@@ -92,16 +92,15 @@ private:
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
-    void showDBMessage();
+    void showExternalMessage();
     void showMessage(const QString&, const QString&);
-    void showSettingMessage();
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showUsers(const DBRecordList&);
     void startAuthorization();
     void startEquipment();
     void startSettings();
     void stopAuthorization(const DBRecordList&);
-    void stopEquipment(const bool server = true, const bool weight = true, const bool printer = true);
+    void stopEquipment();
     void stopSettings();
     void updateSystemStatus();
     void updateTablePanel(const bool);
@@ -131,6 +130,7 @@ private:
     PrintStatus printStatus;
     PrintManager* printManager = nullptr;
     bool isResetProductNeeded = false;
+    bool isEquipment = false;
 
     // UI:
     QQmlContext* context = nullptr;

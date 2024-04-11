@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QTimer>
 #include "printmanager.h"
 #include "transactiondbtable.h"
 #include "userdbtable.h"
@@ -11,49 +12,62 @@
 PrintManager::PrintManager(QObject *parent, DataBase* dataBase, Settings& globalSettings):
     QObject(parent), db(dataBase), settings(globalSettings)
 {
-    Tools::debugLog("@@@@@ PrintManager::PrintManager " + Tools::boolToString(demo));
-    if(!DEMO_ONLY)
+    Tools::debugLog("@@@@@ PrintManager::PrintManager ");
+}
+
+int PrintManager::start(const QString& uri)
+{
+    Tools::debugLog("@@@@@ PrintManager::start " + uri);
+    if((0 != QString::compare(uri, EQUIPMENT_OFF_URI)) && slpa == nullptr)
     {
         slpa = new Slpa100u(this);
         labelCreator = new LabelCreator(this);
         connect(slpa, &Slpa100u::printerErrorChanged, this, &PrintManager::onErrorStatusChanged);
         connect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
     }
-}
-
-int PrintManager::start(const QString& url, const bool demoMode)
-{
-    demo = demoMode;
+    demo = (0 == QString::compare(uri, PRINTER_DEMO_URI));
     int e = 0;
     if (slpa != nullptr && labelCreator != nullptr && !started)
     {
-        Tools::debugLog("@@@@@ PrintManager::start " + url);
-        e = slpa->connectDevice(url);
+        e = slpa->connectDevice(uri);
         started = (e == 0);
         slpa->blockSignals(!started);
-        if(started) slpa->startPolling(200);
-        Tools::debugLog("@@@@@ PrintManager::start error " + QString::number(e));
+        if(started)
+        {
+            slpa->startPolling(200);
+            e = slpa->setBrightness(settings.getIntValue(SettingCode_PrinterBrightness) + 8);
+            if(e >= 0) e = slpa->setOffset(settings.getIntValue(SettingCode_PrintOffset) + 8);
+        }
     }
+    Tools::debugLog("@@@@@ PrintManager::start error " + QString::number(e));
     return e;
 }
 
 void PrintManager::stop()
 {
-    if (slpa != nullptr && started)
+    Tools::debugLog("@@@@@ PrintManager::stop");
+    if (slpa != nullptr)
     {
-        Tools::debugLog("@@@@@ PrintManager::stop");
-        slpa->blockSignals(true);
-        slpa->stopPolling();
-        int e = slpa->disconnectDevice();
-        Tools::debugLog("@@@@@ PrintManager::stop disconnect device error " + QString::number(e));
-        started = false;
-        Tools::debugLog("@@@@@ PrintManager::stop Done");
+        if(started)
+        {
+            slpa->blockSignals(true);
+            slpa->stopPolling();
+            int e = slpa->disconnectDevice();
+            Tools::debugLog("@@@@@ PrintManager::stop error " + QString::number(e));
+            started = false;
+        }
+        disconnect(slpa, &Slpa100u::printerErrorChanged, this, &PrintManager::onErrorStatusChanged);
+        disconnect(slpa, &Slpa100u::printerStatusChanged, this, &PrintManager::onStatusChanged);
+        delete labelCreator;
+        labelCreator = nullptr;
+        delete slpa;
+        slpa = nullptr;
     }
 }
 
 QString PrintManager::version() const
 {
-    return (slpa == nullptr) ? "DEMO" : QString::number(slpa->getPrinterVersion());
+    return (slpa == nullptr) ? "-" : QString::number(slpa->getPrinterVersion());
 }
 
 void PrintManager::feed()
@@ -87,15 +101,6 @@ QString PrintManager::getErrorDescription(const int e) const
     case 1008: return "Ошибка памяти принтера!";
     }
     return slpa == nullptr ? "" : slpa->errorDescription(e);
-}
-
-int PrintManager::setParams(const int brightness, const int offset) // -7 .. +7
-{
-    Tools::debugLog(QString("@@@@@ PrintManager::setParams %1 %2").arg(QString::number(brightness), QString::number(offset)));
-    if(!started || slpa == nullptr) return 0;
-    int e = slpa->setBrightness(brightness + 8);
-    if(e >= 0) e = slpa->setOffset(offset + 8);
-    return e;
 }
 
 void PrintManager::onStatusChanged(uint16_t s)

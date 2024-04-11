@@ -11,7 +11,8 @@ class WeightManager : public QObject
 
 public:
     explicit WeightManager(QObject*);
-    int start(const QString&, const bool);
+    ~WeightManager() { stop(); }
+    int start(const QString&);
     void stop();
     QString version() const;
     void setWeightParam(const int);
@@ -22,7 +23,7 @@ public:
     bool isWeightFixed() const { return isFlag(status, 0); }
     bool isZeroFlag() const { return isFlag(status, 1); }
     bool isTareFlag() const { return isFlag(status, 3); }
-    bool isDemoMode() const { return demo || DEMO_ONLY; }
+    bool isDemoMode() const { return demo; }
 
     bool setSystemDateTime = false;
 
