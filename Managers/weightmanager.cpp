@@ -77,10 +77,10 @@ void WeightManager::setWeightParam(const int param)
     if (wm100 == nullptr || !started) return;
     switch (param)
     {
-    case EquipmentParam_Tare:
+    case ControlParam_Tare:
         wm100->setTare();
         break;
-    case EquipmentParam_Zero:
+    case ControlParam_Zero:
         wm100->setZero();
         wm100->setTare();
         break;
@@ -130,18 +130,18 @@ void WeightManager::onStatusChanged(Wm100Protocol::channel_status &s)
     bool b8 = isFlag(s, 8); // весы недогружены
     bool b9 = isFlag(s, 9); // ошибка: нет ответа от АЦП
 
-    EquipmentParam param = EquipmentParam_WeightValue;
+    ControlParam param = ControlParam_WeightValue;
     int e = 0;
     if(b5 || b6 || b7 || b8 || b9) // Ошибка состояния
     {
-        param = EquipmentParam_WeightError;
+        param = ControlParam_WeightError;
         if(b5 && isFlag(status, 5) != b5) e = 5003;
         if(b6 && isFlag(status, 6) != b6) e = 5004;
         if(b7 && isFlag(status, 7) != b7) e = 5005;
         if(b8 && isFlag(status, 8) != b8) e = 5006;
         if(b9 && isFlag(status, 9) != b9) e = 5007;
     }
-    else if(isStateError(status) && errorCode == 0) param = EquipmentParam_WeightError; // Ошибка исчезла
+    else if(isStateError(status) && errorCode == 0) param = ControlParam_WeightError; // Ошибка исчезла
 
     status.weight = s.weight;
     status.tare = s.tare;
@@ -155,7 +155,7 @@ void WeightManager::onErrorStatusChanged(int e)
     if(errorCode != e)
     {
         errorCode = e;
-        emit paramChanged(EquipmentParam_WeightError, e);
+        emit paramChanged(ControlParam_WeightError, e);
     }
 }
 

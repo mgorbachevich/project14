@@ -28,13 +28,13 @@ int Settings::getIntValue(const SettingCode code, const bool listIndex)
 int Settings::getIntValue(const DBRecord& r, const bool listIndex)
 {
     return (listIndex && getType(r) == SettingType_List) ?
-                Tools::stringToInt((r.at(SettingDBTable::Value)).toString()) :
-                Tools::stringToInt(getStringValue(r));
+            Tools::stringToInt((r.at(SettingDBTable::Value)).toString()) :
+            Tools::stringToInt(getStringValue(r));
 }
 
 bool Settings::getBoolValue(const SettingCode code)
 {
-    return getIntValue(code) != 0;
+    return getIntValue(code, true) != 0;
 }
 
 DBRecord* Settings::getByCode(const int code)

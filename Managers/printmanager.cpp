@@ -119,21 +119,21 @@ void PrintManager::onStatusChanged(uint16_t s)
     bool b6 = isFlag(s, 6);
     bool b8 = isFlag(s, 8);
 
-    EquipmentParam param = EquipmentParam_None;
+    ControlParam param = ControlParam_None;
     int e = 0;
     if(!b0 || b1 || !b2 || b3 || b6 || b8)
     {
-        param = EquipmentParam_PrintError;
+        param = ControlParam_PrintError;
         if(!b0 && isFlag(status, 0) != b0) e = 1003;
         if(!b2 && isFlag(status, 2) != b2) e = 1006;
         if(b3 && isFlag(status, 3) != b3) e = 1004;
         if(b8 && isFlag(status, 8) != b8) e = 1008;
         if(b1 && b6 && isFlag(status, 1) != b1) e = 1005;
     }
-    else if(isStateError(status) && errorCode == 0) param = EquipmentParam_PrintError; // Ошибка исчезла
+    else if(isStateError(status) && errorCode == 0) param = ControlParam_PrintError; // Ошибка исчезла
 
     status = s;
-    if(param != EquipmentParam_None) emit paramChanged(param, e);
+    if(param != ControlParam_None) emit paramChanged(param, e);
 }
 
 void PrintManager::onErrorStatusChanged(int e)
@@ -142,7 +142,7 @@ void PrintManager::onErrorStatusChanged(int e)
     if(slpa != nullptr && errorCode != e)
     {
         errorCode = e;
-        emit paramChanged(EquipmentParam_PrintError, e);
+        emit paramChanged(ControlParam_PrintError, e);
     }
 }
 

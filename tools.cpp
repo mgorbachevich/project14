@@ -80,14 +80,29 @@ double Tools::priceToDouble(const QString &dbPrice, const int pointPosition)
     return v;
 }
 
-QString Tools::moneyToText(const double& value, const int pointPosition)
+QString Tools::moneyToText(const double value, const int pointPosition)
 {
-    return QString("%1").arg(value, 0, 'f', pointPosition);
+    return doubleToString(value, pointPosition);
 }
 
 QString Tools::boolToString(const bool value)
 {
     return QVariant(value).toString();
+}
+
+int Tools::boolToInt(const bool value)
+{
+    return value ? 1 : 0;
+}
+
+QString Tools::boolToIntString(const bool value)
+{
+    return intToString(value ? 1 : 0);
+}
+
+QString Tools::doubleToString(const double value, const int afterPoint)
+{
+    return QString("%1").arg(value, 0, 'f', afterPoint);
 }
 
 quint64 Tools::currentDateTimeToUInt()

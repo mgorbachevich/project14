@@ -20,6 +20,31 @@
 #define DBTABLENAME_TRANSACTIONS "transactions"
 #define DBTABLENAME_SETTINGS "settings"
 
+enum DBSelector
+{
+    DBSelector_None = 0,
+    DBSelector_GetShowcaseProducts,
+    DBSelector_GetShowcaseResources,
+    DBSelector_GetImageByResourceCode,
+    DBSelector_GetMessageByResourceCode,
+    DBSelector_GetProductsByGroupCode,
+    DBSelector_GetProductsByGroupCodeIncludeGroups,
+    DBSelector_GetProductsByFilteredCode,
+    DBSelector_GetProductsByFilteredBarcode,
+    DBSelector_GetItemsByCodes,
+    DBSelector_GetAuthorizationUsers,
+    DBSelector_GetAuthorizationUserByName,
+    DBSelector_GetSettingsItemByCode,
+    DBSelector_UpdateSettingsOnStart,
+    DBSelector_GetLog,
+    DBSelector_RefreshCurrentProduct,
+    DBSelector_ReplaceSettingsItem,
+    DBSelector_ChangeSettings,
+    DBSelector_SetProductByInputCode,
+    DBSelector_GetProductsByInputCode,
+    DBSelector_GetProductByInputCode,
+};
+
 class DataBase : public QObject
 {
     Q_OBJECT

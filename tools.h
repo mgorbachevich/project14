@@ -13,6 +13,9 @@ public:
     explicit Tools(QApplication* a) { app = a; }
 
     static QString boolToString(const bool);
+    static int boolToInt(const bool);
+    static QString boolToIntString(const bool);
+    static QString doubleToString(const double, const int);
     static bool checkPermission(const QString&);
     static bool copyFile(const QString&, const QString&);
     static quint64 currentDateTimeToUInt();
@@ -32,7 +35,7 @@ public:
     static int getMemory(const MemoryType);
     static NetParams getNetParams();
     //static void memoryCheck();
-    static QString moneyToText(const double&, const int);
+    static QString moneyToText(const double, const int);
     static void pause(const int, const QString& comment = "");
     static double priceToDouble(const QString&, const int);
     static QString qmlFilePath(const QString&); // Read only

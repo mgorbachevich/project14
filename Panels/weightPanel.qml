@@ -27,16 +27,9 @@ Rectangle
         target: app
         function onShowWeightParam(param, value)
         {
+            app.debugLog("@@@@@ weightPanel.onShowWeightParam %1 %2".arg(param).arg(value));
             switch (param)
             {
-            case 1: // TareFlag >T<
-                if (value === 'true') weightPanelTareIcon.source = "../Icons/tare_white"
-                else                  weightPanelTareIcon.source = "../Icons/tare"
-                break
-            case 2: // ZeroFlag >0<
-                if (value === 'true') weightPanelZeroIcon.source = "../Icons/zero_white"
-                else                  weightPanelZeroIcon.source = "../Icons/zero"
-                break
             case 3: // TareValue todo
                 break
             case 4: // WeightValue
@@ -66,17 +59,27 @@ Rectangle
             case 12: // AmountTitle
                 weightPanelAmountTitle.text = value
                 break
-            case 13: // WeightError
-                if (value === 'true') weightPanelErrorIcon.source = "../Icons/error_white"
-                else                  weightPanelErrorIcon.source = "../Icons/error"
-                break
-            case 14: // WeightFixed
             case 15: // PrintError
                 break
+            case 1: // TareFlag >T<
+                if (value === 'true') weightPanelIcon3.source = "../Icons/tare_white"
+                else                  weightPanelIcon3.source = "../Icons/empty"
+                break
+            case 2: // ZeroFlag >0<
+                if (value === 'true') weightPanelIcon4.source = "../Icons/zero_white"
+                else                  weightPanelIcon4.source = "../Icons/empty"
+                break
+            case 14: // WeightFixed
+                if (value === 'true') weightPanelIcon2.source = "../Icons/fix_white"
+                else                  weightPanelIcon2.source = "../Icons/empty"
+                break
+            case 13: // WeightError
+                if (value === 'true') weightPanelIcon1.source = "../Icons/error_white"
+                else                  weightPanelIcon1.source = "../Icons/empty"
+                break
             case 16: // AutoPrint
-                if (value === '1')      weightPanelAutoIcon.source = "../Icons/auto_white"
-                else if (value === '2') weightPanelAutoIcon.source = "../Icons/auto_white"
-                else                    weightPanelAutoIcon.source = "../Icons/auto"
+                if (value === 'true') weightPanelIcon1.source = "../Icons/auto_white"
+                else                  weightPanelIcon1.source = "../Icons/empty"
                 break
             }
         }
@@ -102,38 +105,38 @@ Rectangle
 
                 Image
                 {
-                    id: weightPanelErrorIcon
+                    id: weightPanelIcon1
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/error"
+                    source: "../Icons/empty"
                 }
 
                 Image
                 {
-                    id: weightPanelAutoIcon
+                    id: weightPanelIcon2
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/auto"
+                    source: "../Icons/empty"
                 }
 
                 Image
                 {
-                    id: weightPanelTareIcon
+                    id: weightPanelIcon3
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/tare"
+                    source: "../Icons/empty"
                 }
 
                 Image
                 {
-                    id: weightPanelZeroIcon
+                    id: weightPanelIcon4
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: flagIconSize
                     height: flagIconSize
-                    source: "../Icons/zero"
+                    source: "../Icons/empty"
                 }
             }
         }

@@ -70,6 +70,7 @@ public:
     Q_INVOKABLE void onVirtualKeyboardSet(const int);
     Q_INVOKABLE void onWeightPanelClicked(const int);
     Q_INVOKABLE void onZeroClicked();
+    Q_INVOKABLE void showMessage(const QString&, const QString&);
 
 private:
     QString amountAsString(const DBRecord&);
@@ -93,7 +94,6 @@ private:
     void setShowcaseSort(const int);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showExternalMessage();
-    void showMessage(const QString&, const QString&);
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showUsers(const DBRecordList&);
     void startAuthorization();
@@ -170,7 +170,7 @@ signals:
     void showGroupHierarchyRoot(const bool);
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);
-    void showPiecesInputBox(const int);
+    void showPiecesInputBox(const int, const int);
     void showProductCodeInputBox(const QString&);
     void showPrinterMessage(const QString&);
     void showProductImage(const QString&);

@@ -191,7 +191,7 @@ void AppManager::onTimer()
 QString AppManager::quantityAsString(const DBRecord& productRecord)
 {
     if(ProductDBTable::isPiece(productRecord)) return QString("%1").arg(printStatus.pieces);
-    return weightManager->isError() ? "" : QString("%1").arg(weightManager->getWeight(), 0, 'f', 3);
+    return weightManager->isError() ? "" : Tools::doubleToString(weightManager->getWeight(), 3);
 }
 
 QString AppManager::priceAsString(const DBRecord& productRecord)
@@ -252,7 +252,13 @@ void AppManager::onProductPanelCloseClicked()
 void AppManager::onProductPanelPiecesClicked()
 {
     onUserAction();
-    if(ProductDBTable::isPiece(product)) emit showPiecesInputBox(printStatus.pieces);
+    if(ProductDBTable::isPiece(product))
+    {
+        debugLog(QString("@@@@@ AppManager::onProductPanelPiecesClicked %1 %2").arg(
+                     Tools::intToString(printStatus.pieces),
+                     Tools::intToString(settings.getIntValue(SettingCode_CharNumberPieces))));
+        emit showPiecesInputBox(printStatus.pieces, settings.getIntValue(SettingCode_CharNumberPieces));
+    }
     else beepSound();
 }
 
@@ -361,15 +367,16 @@ void AppManager::onPiecesInputClosed(const QString &value)
     debugLog("@@@@@ AppManager::onPiecesInputClosed " + value);
     onUserAction();
     int v = Tools::stringToInt(value);
+    const int maxChars = settings.getIntValue(SettingCode_CharNumberPieces);
+    if(value.length() > maxChars)
+    {
+        v = Tools::stringToInt(value.leftJustified(maxChars));
+        showMessage("ВНИМАНИЕ!", "Максимальная длина " + Tools::intToString(maxChars));
+    }
     if(v < 1)
     {
         v = 1;
         showMessage("ВНИМАНИЕ!", "Количество не должно быть меньше 1");
-    }
-    else if(v > MAX_PIECES)
-    {
-        v = MAX_PIECES;
-        showMessage("ВНИМАНИЕ!", "Количество не должно быть больше " + Tools::intToString(MAX_PIECES));
     }
     printStatus.pieces = v;
     updateWeightStatus();
@@ -543,7 +550,7 @@ void AppManager::onTareClicked()
 {
     debugLog("@@@@@ AppManager::onTareClicked ");
     onUserAction();
-    weightManager->setWeightParam(EquipmentParam_Tare);
+    weightManager->setWeightParam(ControlParam_Tare);
     updateWeightStatus();
 }
 
@@ -551,7 +558,7 @@ void AppManager::onZeroClicked()
 {
     debugLog("@@@@@ AppManager::onZeroClicked ");
     onUserAction();
-    weightManager->setWeightParam(EquipmentParam_Zero);
+    weightManager->setWeightParam(ControlParam_Zero);
     updateWeightStatus();
 }
 
@@ -1031,18 +1038,18 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 
     switch (param)
     {
-    case EquipmentParam_None:
+    case ControlParam_None:
         return;
-    case EquipmentParam_WeightValue:
+    case ControlParam_WeightValue:
         if(isResetProductNeeded) resetProduct();
         break;
-    case EquipmentParam_WeightError:
+    case ControlParam_WeightError:
         if(isResetProductNeeded) resetProduct();
         db->saveLog(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").arg(
                     QString::number(errorCode),
                     weightManager->getErrorDescription(errorCode)));
         break;
-    case EquipmentParam_PrintError:
+    case ControlParam_PrintError:
     {
         db->saveLog(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").arg(
                     QString::number(errorCode),
@@ -1077,35 +1084,39 @@ void AppManager::updateWeightStatus()
     if(isZero) printStatus.calculateMode = true;
 
     // Рисуем флажки:
-    emit showWeightParam(EquipmentParam_AutoPrint, QString::number(isAutoPrint ? AutoPrint_Enable : AutoPrint_None));
-    emit showWeightParam(EquipmentParam_WeightError, Tools::boolToString(isWeightError));
-    emit showWeightParam(EquipmentParam_Zero, Tools::boolToString(isZero));
-    emit showWeightParam(EquipmentParam_Tare, Tools::boolToString(isTare));
+    emit showWeightParam(ControlParam_Zero, Tools::boolToString(isZero));
+    emit showWeightParam(ControlParam_Tare, Tools::boolToString(isTare));
+    emit showWeightParam(ControlParam_WeightFixed, Tools::boolToString(isFixed));
+    if(!isEquipment || isWeightError)
+        emit showWeightParam(ControlParam_WeightError, Tools::boolToString(true));
+    else if(isAutoPrint)
+        emit showWeightParam(ControlParam_AutoPrint, Tools::boolToString(true));
+    else
+        emit showWeightParam(ControlParam_WeightError, Tools::boolToString(false));
 
     // Рисуем загаловки:
     QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
-    if(weightManager->isDemoMode()) wt += "  ДЕМО";
+    if(weightManager->isDemoMode()) wt += " ДЕМО";
     QString pt = "ЦЕНА, руб";
     if(isProduct())
     {
         if (isPieceProduct) pt += "/шт";
         else pt += ProductDBTable::is100gBase(product) ? "/100г" : "/кг";
     }
-    emit showWeightParam(EquipmentParam_WeightTitle, wt);
-    emit showWeightParam(EquipmentParam_PriceTitle, pt);
-    emit showWeightParam(EquipmentParam_AmountTitle, "СТОИМОСТЬ, руб");
+    emit showWeightParam(ControlParam_WeightTitle, wt);
+    emit showWeightParam(ControlParam_PriceTitle, pt);
+    emit showWeightParam(ControlParam_AmountTitle, "СТОИМОСТЬ, руб");
 
     // Рисуем количество (вес/штуки):
     QString quantity = "-----";
-    if(isEquipment)
-        quantity = isPieceProduct || !isWeightError ? quantityAsString(product) : "";
-    emit showWeightParam(EquipmentParam_WeightValue, quantity);
-    emit showWeightParam(EquipmentParam_WeightColor, isPieceProduct || (isFixed && !isWeightError) ? activeColor : passiveColor);
+    if(isEquipment) quantity = isPieceProduct || !isWeightError ? quantityAsString(product) : "";
+    emit showWeightParam(ControlParam_WeightValue, quantity);
+    emit showWeightParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWeightError) ? activeColor : passiveColor);
 
     // Рисуем цену:
     const QString price = isProduct() ? priceAsString(product) : "-----";
-    emit showWeightParam(EquipmentParam_PriceValue, price);
-    emit showWeightParam(EquipmentParam_PriceColor, isProduct() ? activeColor : passiveColor);
+    emit showWeightParam(ControlParam_PriceValue, price);
+    emit showWeightParam(ControlParam_PriceColor, isProduct() ? activeColor : passiveColor);
 
     // Рисуем стоимость:
     bool isAmount = false;
@@ -1115,8 +1126,8 @@ void AppManager::updateWeightStatus()
         isAmount = isPieceProduct || (isProduct() && isFixed && !isWeightError);
         amount = amountAsString(product);
     }
-    emit showWeightParam(EquipmentParam_AmountValue, amount);
-    emit showWeightParam(EquipmentParam_AmountColor, isAmount ? activeColor : passiveColor);
+    emit showWeightParam(ControlParam_AmountValue, amount);
+    emit showWeightParam(ControlParam_AmountColor, isAmount ? activeColor : passiveColor);
 
     // Можно печатать?
     if(isEquipment)
@@ -1130,18 +1141,16 @@ void AppManager::updateWeightStatus()
 
     if(printStatus.calculateMode && isProduct())
     {
-        if(isWeightError || isFixed || weightManager->isDemoMode()) printStatus.calculateMode = false;
+        if(isWeightError || isFixed) printStatus.calculateMode = false;
+        //if(isWeightError || isFixed || weightManager->isDemoMode()) printStatus.calculateMode = false;
 
         if(!isPieceProduct) // Весовой товар
         {
-            if(isFixed && !isWeightError && isAutoPrintEnabled) // Автопечать
+            const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
+            if(!isWeightError && isFixed && isAutoPrintEnabled && wg > 0)
             {
-                const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
-                if(wg > 0)
-                {
-                    if(wg >= settings.getIntValue(SettingCode_PrintAutoWeight)) print();
-                    else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
-                }
+                if(wg >= settings.getIntValue(SettingCode_PrintAutoWeight)) print(); // Автопечать
+                else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
             }
         }
         else // Штучный товар
@@ -1163,13 +1172,22 @@ void AppManager::updateWeightStatus()
             }
         }
     }
-    if(isPieceProduct && oldPieces != printStatus.pieces) updateWeightStatus();
-    else debugLog(QString("@@@@@ AppManager::updateWeightStatus %1 %2 %3 %4 %5 %6 %7").arg(
-                        Tools::boolToString(isWeightError),
-                        Tools::boolToString(isAutoPrint),
-                        Tools::boolToString(isTare),
-                        Tools::boolToString(isZero),
-                        quantity, price, amount));
+    if(isPieceProduct && oldPieces != printStatus.pieces)
+    {
+        updateWeightStatus();
+        return;
+    }
+    debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9 %10 %11 %12").arg(
+             Tools::boolToIntString(isWeightError),
+             Tools::boolToIntString(isAutoPrint),
+             Tools::boolToIntString(isFixed),
+             Tools::boolToIntString(isTare),
+             Tools::boolToIntString(isZero),
+             Tools::boolToIntString(isEquipment),
+             Tools::boolToIntString(isPieceProduct),
+             Tools::boolToIntString(printStatus.manualPrintEnabled),
+             Tools::boolToIntString(isAutoPrintEnabled),
+             quantity, price, amount));
 }
 
 void AppManager::beepSound()

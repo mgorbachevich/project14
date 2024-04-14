@@ -117,12 +117,12 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showPiecesInputBox:
     {
         target: app
-        function onShowPiecesInputBox(value)
+        function onShowPiecesInputBox(number, maxDigits)
         {
-            app.debugLog("@@@@@ mainWindow.onShowPiecesInputBox %1".arg(value));
+            app.debugLog("@@@@@ mainWindow.onShowPiecesInputBox");
             Qt.createComponent("Panels/inputPiecesPanel.qml").createObject(mainWindow,
             {
-                x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: value
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: number, maxChars: maxDigits
             }).open()
         }
     }

@@ -15,7 +15,8 @@ Popup
     modal: true
     dim: true
     Material.background: "transparent"
-    property string inputText: "Input"
+    property string inputText: ""
+    property int maxChars: 2
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
@@ -88,12 +89,13 @@ Popup
                     onTextEdited: app.onUserAction();
                     onTextChanged:
                     {
-                        if (parseInt(text) <= 0 || text === "")
+                        if (inputPiecesPanelText.text.length > maxChars)
                         {
-                            text = 1;
                             app.beepSound();
+                            inputPiecesPanelText.text = inputPiecesPanelText.text.substring(0, inputPiecesPanelText.text.length - 1);
+                            app.showMessage("ВНИМАНИЕ!", "Максимальная длина " + maxChars)
                         }
-                        app.debugLog("@@@@@ inputPiecesPanelText onTextChanged %1".arg(text))
+                        if (parseInt(inputPiecesPanelText.text) <= 0) inputPiecesPanelText.text = "";
                     }
                     Keys.onPressed: (event) =>
                     {
@@ -109,12 +111,13 @@ Popup
                                 break;
                             case Qt.Key_Backspace: case Qt.Key_Delete: case Qt.Key_C:
                                 if(text.length > 0) text = text.substring(0, text.length - 1);
+                                else app.beepSound();
                                 break;
                             case Qt.Key_F10: // Промотка
                                 app.onRewind()
                                 break
                             case Qt.Key_Escape:
-                                text = 1
+                                text = ""
                                 break;
                             case Qt.Key_Enter: case Qt.Key_Return:
                                 inputPiecesPanel.close();
@@ -145,7 +148,9 @@ Popup
                     onClicked:
                     {
                         app.onUserAction();
-                        inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) - 1
+                        if(inputPiecesPanelText.text != "" && parseInt(inputPiecesPanelText.text) > 0)
+                            inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) - 1
+                        else app.beepSound();
                         inputPiecesPanelText.focus = true
                     }
                 }
@@ -158,7 +163,8 @@ Popup
                     onClicked:
                     {
                         app.onUserAction();
-                        inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) + 1
+                        if(inputPiecesPanelText.text === "") inputPiecesPanelText.text = "1"
+                        else inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) + 1
                         inputPiecesPanelText.focus = true
                     }
                 }

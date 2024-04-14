@@ -253,7 +253,6 @@ RESOURCES += \
     Icons/a.png \
     Icons/arrow_left.png \
     Icons/arrow_up.png \
-    Icons/auto.png \
     Icons/auto_white.png \
     Icons/backspace.png \
     Icons/bluetooth.png \
@@ -262,6 +261,7 @@ RESOURCES += \
     Icons/empty.png \
     Icons/error.png \
     Icons/error_white.png \
+    Icons/fix_white.png \
     Icons/folder.png \
     Icons/info_outline.png \
     Icons/keyboard.png \
@@ -276,13 +276,11 @@ RESOURCES += \
     Icons/sdcard_white.png \
     Icons/settings.png \
     Icons/star.png \
-    Icons/tare.png \
     Icons/tare_white.png \
     Icons/usb.png \
     Icons/usb_white.png \
     Icons/wifi.png \
     Icons/wifi_white.png \
-    Icons/zero.png \
     Icons/zero_white.png \
     Images/image_dummy.png \
     Images/logo.png \
