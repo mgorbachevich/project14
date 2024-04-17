@@ -431,15 +431,11 @@ void Tools::debugMemory()
 
 bool Tools::checkPermission(const QString& permission)
 {
+    bool ok = true;
 #ifdef Q_OS_ANDROID
-    auto r = QtAndroidPrivate::checkPermission(permission).result();
-    if (r == QtAndroidPrivate::Denied)
-    {
-        r = QtAndroidPrivate::requestPermission(permission).result();
-        if (r == QtAndroidPrivate::Denied) return false;
-    }
-    return true;
-#else
-    return true;
-#endif // Q_OS_ANDROID
+    if (QtAndroidPrivate::checkPermission(permission).result() == QtAndroidPrivate::Denied)
+        ok = (QtAndroidPrivate::requestPermission(permission).result() != QtAndroidPrivate::Denied);
+    debugLog(QString("@@@@@ Tools::checkPermission %1 %2").arg(permission, boolToString(ok)));
+#endif
+    return ok;
 }

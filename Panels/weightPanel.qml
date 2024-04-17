@@ -27,7 +27,7 @@ Rectangle
         target: app
         function onShowWeightParam(param, value)
         {
-            app.debugLog("@@@@@ weightPanel.onShowWeightParam %1 %2".arg(param).arg(value));
+            //app.debugLog("@@@@@ weightPanel.onShowWeightParam %1 %2".arg(param).arg(value));
             switch (param)
             {
             case 3: // TareValue todo

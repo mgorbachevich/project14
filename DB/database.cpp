@@ -17,7 +17,6 @@ DataBase::DataBase(Settings& globalSettings, QObject *parent):
     QObject(parent), settings(globalSettings)
 {
     Tools::debugLog("@@@@@ DataBase::DataBase");
-
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
     tables.append(new UserDBTable(DBTABLENAME_USERS, this));
     tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
@@ -98,7 +97,17 @@ void DataBase::startDB()
 void DataBase::onAppStart()
 {
     Tools::debugLog("@@@@@ DataBase::onAppStart");
+#ifdef Q_OS_ANDROID
+    if(!Tools::checkPermission("android.permission.INTERNET")||
+       !Tools::checkPermission("android.permission.ACCESS_NETWORK_STATE") ||
+       !Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") ||
+       !Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE") ||
+       !Tools::checkPermission("android.permission.QUERY_ALL_PACKAGES"))
+        message += "\nНет разрешения для работы с базой данных";
+    else startDB();
+#else
     startDB();
+#endif
     if (opened)
     {
 #ifdef DB_EMULATION
@@ -177,14 +186,23 @@ bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql, const bool
     if (!opened) return false;
     Tools::debugLog(QString("@@@@@ DataBase::executeSQL %1").arg(sql));
     QSqlQuery q(db);
+#ifdef DB_TRANSACTION_COMMIT
+    if(sql.contains(DB_STATEMENT_DELETE) || sql.contains(DB_STATEMENT_INSERT))
+    {
+        if(q.exec(DB_STATEMENT_BEGIN_TRANSACTION) &&
+                q.exec(sql) &&
+                q.exec(DB_STATEMENT_COMMIT_TRANSACTION)) return true;
+    }
+    else if (q.exec(sql)) return true;
+#else
     if (q.exec(sql)) return true;
+#endif
     if(log)
     {
         Tools::debugLog(QString("@@@@@ DataBase::executeSQL ERROR %1").arg(q.lastError().text()));
         //saveLog(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql);
     }
     return false;
-
 }
 
 bool DataBase::executeSelectSQL(const QSqlDatabase& db, DBTable* table, const QString& sql, DBRecordList& resultRecords)
@@ -243,7 +261,7 @@ void DataBase::selectAll(const QSqlDatabase& db, DBTable *table, DBRecordList& r
 bool DataBase::removeAll(const QSqlDatabase& db, DBTable* table)
 {
     Tools::debugLog(QString("@@@@@ DataBase::removeAll %1").arg(table->name));
-    QString sql = QString("DELETE FROM %1").arg(table->name);
+    QString sql = QString("%1 %2").arg(DB_STATEMENT_DELETE, table->name);
     bool ok = executeSQL(db, sql);
     return ok;
 }
@@ -252,7 +270,8 @@ bool DataBase::removeRecord(const QSqlDatabase& db, DBTable* table, const QStrin
 {
     if (!opened) return false;
     Tools::debugLog(QString("@@@@@ DataBase::removeRecord %1").arg(table->name));
-    QString sql = QString("DELETE FROM %1 WHERE %2 = '%3'").arg(table->name, table->columnName(0), code);
+    QString sql = QString("%1 %2 WHERE %3 = '%4'").arg(
+                DB_STATEMENT_DELETE, table->name, table->columnName(0), code);
     return executeSQL(db, sql);
 }
 
@@ -273,12 +292,8 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
     }
 
     QString code = checkedRecord.at(0).toString();
-    QString sql;
-    DBRecord r;
     Tools::debugLog(QString("@@@@@ DataBase::insertRecord %1 %2").arg(table->name, code));
-    if (select && selectById(sqlDb, table, code, r))
-        removeRecord(sqlDb, table, code);
-    sql = "INSERT INTO " + table->name + " (";
+    QString sql = DB_STATEMENT_INSERT + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
     {
         sql += table->columnName(i);
@@ -332,8 +347,8 @@ void DataBase::removeOldLogRecords()
     if(removeOldLogRecordsCounter == 0)
     {
         quint64 first = Tools::currentDateTimeToUInt() - logDuration * 24 * 60 * 60 * 1000;
-        QString sql = QString("DELETE FROM %1 WHERE %2 < '%3'").
-            arg(t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
+        QString sql = QString("%1 %2 WHERE %3 < '%4'").
+            arg(DB_STATEMENT_DELETE, t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
         if(!executeSQL(logDB, sql, false))
             Tools::debugLog("@@@@@ DataBase::removeOldLogRecords ERROR");
     }

@@ -3,7 +3,7 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.21"
+#define APP_VERSION "2.22"
 
 #define DEBUG_LOG
 #define CREATE_DEFAULT_DATA_ON_START true

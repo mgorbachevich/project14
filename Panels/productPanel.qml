@@ -27,7 +27,7 @@ Popup
         target: app
         function onShowPrinterMessage(value)
         {
-            app.debugLog("@@@@@ productPanel onShowPrinterMessage %1".arg(value))
+            //app.debugLog("@@@@@ productPanel onShowPrinterMessage %1".arg(value))
             productPanelPrintMessage.text = value
         }
     }
