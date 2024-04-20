@@ -41,7 +41,12 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     KeyEmitter* keyEmitter = new KeyEmitter(this);
     context->setContextProperty("keyEmitter", keyEmitter);
 
-    if(CREATE_DEFAULT_DATA_ON_START && !Tools::isFileExists(DB_PRODUCT_NAME)) createDefaultData();
+    if(CREATE_DEFAULT_DATA_ON_START &&
+        !Tools::isFileExists(DB_PRODUCT_NAME))
+            createDefaultData();
+    if(CREATE_DEFAULT_IMAGES_ON_START &&
+        !Tools::isFileExists(Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, "1.png"))))
+            createDefaultImages();
 
     db = new DataBase(settings, this);
     user = UserDBTable::defaultAdmin();
@@ -60,7 +65,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
     connect(this, &AppManager::start, db, &DataBase::onAppStart);
     connect(netServer, &NetServer::action, this, &AppManager::onNetAction);
-    connect(db, &DataBase::started, this, &AppManager::onDBStarted);
+    connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
     connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
@@ -101,7 +106,7 @@ void AppManager::onDBStarted()
     //showToast("", "Инициализация");
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
-    if(db->isOpened())
+    if(db->isStarted())
     {
         db->select(DBSelector_UpdateSettingsOnStart, "");
         timer->start(APP_TIMER_MSEC);
@@ -171,7 +176,10 @@ void AppManager::onTimer()
     }
 
     // Ожидание окончания сетевых запросов:
-    if(netServer->isStarted() && netActionTime > 0 && netRoutes == 0 && WAIT_NET_ACTION_MSEC < now - netActionTime)
+    if(netServer->isStarted() &&
+       netActionTime > 0 &&
+       netRoutes == 0 &&
+       (WAIT_NET_ACTION_SEC * 1000) < now - netActionTime)
     {
         debugLog("@@@@@ AppManager::onTimer netActionTime");
         netActionTime = 0;
@@ -182,7 +190,7 @@ void AppManager::onTimer()
             db->afterNetAction();
             refreshAll();
             resetProduct();
-            showMessage("ВНИМАНИЕ!", "Товары обновлены!");
+            showMessage("ВНИМАНИЕ!", "Данные обновлены!");
             // if(!product.isEmpty()) db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
         }
     }
@@ -217,16 +225,17 @@ void AppManager::createDefaultData()
     Tools::removeFile(Tools::dbPath(DB_SETTINGS_NAME));
     Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
     Tools::removeFile(Tools::dbPath(DEBUG_LOG_NAME));
+    Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME), Tools::dbPath(DB_PRODUCT_NAME));
+}
 
+void AppManager::createDefaultImages()
+{
+    debugLog("@@@@@ AppManager::createDefaultImages");
     QStringList images = { "1.png", "2.png", "3.jpg", "4.png", "5.png", "6.png", "8.png",
                            "9.png", "10.png", "11.png", "12.png", "15.png" };
     for (int i = 0; i < images.count(); i++)
-    {
         Tools::copyFile(QString(":/Default/%1").arg(images[i]),
                         Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
-    }
-    Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME),
-                    Tools::dbPath(DB_PRODUCT_NAME));
 }
 
 double AppManager::price(const DBRecord& productRecord)
@@ -1177,17 +1186,18 @@ void AppManager::updateWeightStatus()
         updateWeightStatus();
         return;
     }
-    debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9 %10 %11 %12").arg(
-             Tools::boolToIntString(isWeightError),
-             Tools::boolToIntString(isAutoPrint),
-             Tools::boolToIntString(isFixed),
-             Tools::boolToIntString(isTare),
-             Tools::boolToIntString(isZero),
-             Tools::boolToIntString(isEquipment),
-             Tools::boolToIntString(isPieceProduct),
-             Tools::boolToIntString(printStatus.manualPrintEnabled),
-             Tools::boolToIntString(isAutoPrintEnabled),
-             quantity, price, amount));
+    if(DEBUG_WEIGHT_STATUS)
+        debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9 %10 %11 %12").arg(
+                 Tools::boolToIntString(isWeightError),
+                 Tools::boolToIntString(isAutoPrint),
+                 Tools::boolToIntString(isFixed),
+                 Tools::boolToIntString(isTare),
+                 Tools::boolToIntString(isZero),
+                 Tools::boolToIntString(isEquipment),
+                 Tools::boolToIntString(isPieceProduct),
+                 Tools::boolToIntString(printStatus.manualPrintEnabled),
+                 Tools::boolToIntString(isAutoPrintEnabled),
+                 quantity, price, amount));
 }
 
 void AppManager::beepSound()

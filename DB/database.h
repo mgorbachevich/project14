@@ -5,13 +5,7 @@
 #include "settings.h"
 #include "dbtable.h"
 
-#define DB_STATEMENT_DELETE "DELETE FROM "
-#define DB_STATEMENT_INSERT "INSERT OR REPLACE INTO "
-#define DB_STATEMENT_BEGIN_TRANSACTION "BEGIN TRANSACTION; "
-#define DB_STATEMENT_COMMIT_TRANSACTION "COMMIT; "
-#define DB_TRANSACTION_COMMIT
-
-#define DB_VERSION "1.4"
+#define DB_VERSION "1.5"
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
@@ -72,10 +66,9 @@ public:
     void select(const DBSelector, const DBRecordList&);
     void select(const DBSelector, const QString&);
     void clearLog();
-    bool isOpened() { return opened; }
+    bool isStarted() { return started; }
     QString getAndClearMessage();
     QList<DBTable*> getTables() { return tables; };
-
 
 protected:
     void startDB();
@@ -84,6 +77,7 @@ protected:
     bool createTable(const QSqlDatabase& db, DBTable*);
     void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
     bool copyDBFiles(const QString&, const QString&);
+    void emulationOnStart();
     void removeTempDb();
     bool removeAll(const QSqlDatabase&, DBTable*);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&, const bool select = true);
@@ -96,7 +90,7 @@ protected:
     void removeOldLogRecords();
 
     Settings& settings;
-    bool opened = false;
+    bool started = false;
     QSqlDatabase productDB;
     QSqlDatabase tempDB;
     QSqlDatabase settingsDB;
@@ -107,7 +101,7 @@ protected:
 
 signals:
     void requestResult(const DBSelector, const DBRecordList&, const bool);
-    void started();
+    void dbStarted();
 
 public slots:
     void onAppStart();

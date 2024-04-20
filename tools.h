@@ -16,6 +16,7 @@ public:
     static int boolToInt(const bool);
     static QString boolToIntString(const bool);
     static QString doubleToString(const double, const int);
+    static bool checkAllPermissions();
     static bool checkPermission(const QString&);
     static bool copyFile(const QString&, const QString&);
     static quint64 currentDateTimeToUInt();

@@ -75,6 +75,7 @@ public:
 private:
     QString amountAsString(const DBRecord&);
     void createDefaultData();
+    void createDefaultImages();
     void filteredSearch();
     void inputDateTime();
     bool isAuthorizationOpened() { return mainPageIndex < 0; }

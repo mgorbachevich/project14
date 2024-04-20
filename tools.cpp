@@ -105,6 +105,19 @@ QString Tools::doubleToString(const double value, const int afterPoint)
     return QString("%1").arg(value, 0, 'f', afterPoint);
 }
 
+bool Tools::checkAllPermissions()
+{
+#ifdef Q_OS_ANDROID
+    return Tools::checkPermission("android.permission.INTERNET") &&
+           Tools::checkPermission("android.permission.ACCESS_NETWORK_STATE") &&
+           Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") &&
+           Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE")  &&
+           //Tools::checkPermission("android.permission.MANAGE_EXTERNAL_STORAGE") &&
+           Tools::checkPermission("android.permission.QUERY_ALL_PACKAGES");
+#endif
+    return true;
+}
+
 quint64 Tools::currentDateTimeToUInt()
 {
     return QDateTime::currentMSecsSinceEpoch();

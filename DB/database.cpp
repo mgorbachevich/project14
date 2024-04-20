@@ -48,92 +48,85 @@ void DataBase::startDB()
     if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
-    opened = addAndOpen(productDB, path);
-    if(!exists && opened)
+    started = addAndOpen(productDB, path);
+    if(!exists && started)
     {
-        opened &= createTable(productDB, getTable(DBTABLENAME_PRODUCTS));
-        opened &= createTable(productDB, getTable(DBTABLENAME_USERS));
-        opened &= createTable(productDB, getTable(DBTABLENAME_LABELFORMATS));
-        opened &= createTable(productDB, getTable(DBTABLENAME_MESSAGES));
-        opened &= createTable(productDB, getTable(DBTABLENAME_MESSAGEFILES));
-        opened &= createTable(productDB, getTable(DBTABLENAME_PICTURES));
-        opened &= createTable(productDB, getTable(DBTABLENAME_MOVIES));
-        opened &= createTable(productDB, getTable(DBTABLENAME_SOUNDS));
-        opened &= createTable(productDB, getTable(DBTABLENAME_SHOWCASE));
+        started &= createTable(productDB, getTable(DBTABLENAME_PRODUCTS));
+        started &= createTable(productDB, getTable(DBTABLENAME_USERS));
+        started &= createTable(productDB, getTable(DBTABLENAME_LABELFORMATS));
+        started &= createTable(productDB, getTable(DBTABLENAME_MESSAGES));
+        started &= createTable(productDB, getTable(DBTABLENAME_MESSAGEFILES));
+        started &= createTable(productDB, getTable(DBTABLENAME_PICTURES));
+        started &= createTable(productDB, getTable(DBTABLENAME_MOVIES));
+        started &= createTable(productDB, getTable(DBTABLENAME_SOUNDS));
+        started &= createTable(productDB, getTable(DBTABLENAME_SHOWCASE));
         message += "\nСоздана БД товаров";
     }
-    if (!opened) return;
+    if (!started) return;
 
     copyDBFiles(DB_PRODUCT_NAME, DB_TEMP_NAME);
-    opened = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
-    if (!opened) return;
+    started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
+    if (!started) return;
 
     path = Tools::dbPath(DB_SETTINGS_NAME);
     if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
-    opened = addAndOpen(settingsDB, path);
-    if(!exists && opened)
+    started = addAndOpen(settingsDB, path);
+    if(!exists && started)
     {
         message += "\nСоздана БД настроек";
-        opened &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
+        started &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
     }
-    if (!opened) return;
+    if (!started) return;
 
     path = Tools::dbPath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
-    opened = addAndOpen(logDB, path);
-    if(!exists && opened)
+    started = addAndOpen(logDB, path);
+    if(!exists && started)
     {
         message += "\nСоздана БД лога";
-        opened &= createTable(logDB, getTable(DBTABLENAME_LOG));
-        opened &= createTable(logDB, getTable(DBTABLENAME_TRANSACTIONS));
+        started &= createTable(logDB, getTable(DBTABLENAME_LOG));
+        started &= createTable(logDB, getTable(DBTABLENAME_TRANSACTIONS));
     }
-    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::boolToString(opened)));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::boolToString(started)));
 }
 
 void DataBase::onAppStart()
 {
     Tools::debugLog("@@@@@ DataBase::onAppStart");
-#ifdef Q_OS_ANDROID
-    if(!Tools::checkPermission("android.permission.INTERNET")||
-       !Tools::checkPermission("android.permission.ACCESS_NETWORK_STATE") ||
-       !Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") ||
-       !Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE") ||
-       !Tools::checkPermission("android.permission.QUERY_ALL_PACKAGES"))
-        message += "\nНет разрешения для работы с базой данных";
-    else startDB();
-#else
     startDB();
-#endif
-    if (opened)
-    {
-#ifdef DB_EMULATION
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('6', 'pictures/6.png', '', '', '')");
-        //executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('7', 'pictures/7.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('8', 'pictures/8.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('9', 'pictures/9.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('10', 'pictures/10.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('11', 'pictures/11.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('12', 'pictures/12.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('13', 'pictures/13.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('14', 'pictures/14.png', '', '', '')");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '')");
-#endif
-    }
+    if (started) emulationOnStart();
     else
     {
         Tools::debugLog("@@@@@ DataBase::onAppStart ERROR");
         message += "\nОшибка при открытии базы данных";
     }
-    emit started();
+    emit dbStarted();
+}
+
+void DataBase::emulationOnStart()
+{
+#ifdef DB_EMULATION
+        Tools::debugLog("@@@@@ DataBase::emulationOnStart");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('6', 'pictures/6.png', '', '', '');");
+        //executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('7', 'pictures/7.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('8', 'pictures/8.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('9', 'pictures/9.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('10', 'pictures/10.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('11', 'pictures/11.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('12', 'pictures/12.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('13', 'pictures/13.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('14', 'pictures/14.png', '', '', '');");
+        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '');");
+#endif
 }
 
 bool DataBase::open(QSqlDatabase& db, const QString& name)
 {
-    if (!opened) return false;
+    if (!started) return false;
     const QString path = Tools::dbPath(name);
     Tools::debugLog("@@@@@ DataBase::open " + path);
     if(!QFile(path).exists()) return false;
@@ -169,45 +162,31 @@ QString DataBase::getProductMessageById(const QString& id)
 
 bool DataBase::createTable(const QSqlDatabase& db, DBTable* table)
 {
-    if (!opened) return false;
+    if (!started) return false;
     Tools::debugLog(QString("@@@@@ DataBase::createTable %1").arg(table->name));
 
     QString sql =  "CREATE TABLE " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
     {
         sql += table->columnName(i) + " " + table->columnType(i);
-        sql += (i == table->columnCount() - 1) ? ")" : ", ";
+        sql += (i == table->columnCount() - 1) ? ");" : ", ";
     }
     return executeSQL(db, sql);
 }
 
 bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql, const bool log)
 {
-    if (!opened) return false;
-    Tools::debugLog(QString("@@@@@ DataBase::executeSQL %1").arg(sql));
+    if (!started) return false;
+    Tools::debugLog(QString("@@@@@ DataBase::executeSQL %1 %2").arg(db.databaseName(), sql));
     QSqlQuery q(db);
-#ifdef DB_TRANSACTION_COMMIT
-    if(sql.contains(DB_STATEMENT_DELETE) || sql.contains(DB_STATEMENT_INSERT))
-    {
-        if(q.exec(DB_STATEMENT_BEGIN_TRANSACTION) &&
-                q.exec(sql) &&
-                q.exec(DB_STATEMENT_COMMIT_TRANSACTION)) return true;
-    }
-    else if (q.exec(sql)) return true;
-#else
     if (q.exec(sql)) return true;
-#endif
-    if(log)
-    {
-        Tools::debugLog(QString("@@@@@ DataBase::executeSQL ERROR %1").arg(q.lastError().text()));
-        //saveLog(LogDBTable::LogType_Error, "БД. Не выполнен запрос " + sql);
-    }
+    if(log) Tools::debugLog(QString("@@@@@ DataBase::executeSQL ERROR %1 %2").arg(q.lastError().text()));
     return false;
 }
 
 bool DataBase::executeSelectSQL(const QSqlDatabase& db, DBTable* table, const QString& sql, DBRecordList& resultRecords)
 {
-    if (!opened) return false;
+    if (!started) return false;
     Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1").arg(sql));
     resultRecords.clear();
 
@@ -238,7 +217,7 @@ bool DataBase::selectById(const QSqlDatabase& db, DBTable* table, const QString&
     Tools::debugLog(QString("@@@@@ DataBase::selectById %1").arg(id));
     resultRecord.clear();
     if(table == nullptr) return false;
-    QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").arg(table->name, table->columnName(0), id);
+    QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3';").arg(table->name, table->columnName(0), id);
     DBRecordList records;
     if(!executeSelectSQL(db, table, sql, records)) return false;
     if(records.count() > 0) resultRecord.append(records.at(0));
@@ -252,7 +231,7 @@ void DataBase::selectAll(const QSqlDatabase& db, DBTable *table, DBRecordList& r
     if(table != nullptr)
     {
         DBRecordList records;
-        QString sql = QString("SELECT * FROM %1").arg(table->name);
+        QString sql = QString("SELECT * FROM %1;").arg(table->name);
         executeSelectSQL(db, table, sql, records);
         resultRecords.append(table->checkList(this, records));
     }
@@ -261,24 +240,23 @@ void DataBase::selectAll(const QSqlDatabase& db, DBTable *table, DBRecordList& r
 bool DataBase::removeAll(const QSqlDatabase& db, DBTable* table)
 {
     Tools::debugLog(QString("@@@@@ DataBase::removeAll %1").arg(table->name));
-    QString sql = QString("%1 %2").arg(DB_STATEMENT_DELETE, table->name);
+    QString sql = QString("DELETE FROM %1;").arg(table->name);
     bool ok = executeSQL(db, sql);
     return ok;
 }
 
 bool DataBase::removeRecord(const QSqlDatabase& db, DBTable* table, const QString& code)
 {
-    if (!opened) return false;
+    if (!started) return false;
     Tools::debugLog(QString("@@@@@ DataBase::removeRecord %1").arg(table->name));
-    QString sql = QString("%1 %2 WHERE %3 = '%4'").arg(
-                DB_STATEMENT_DELETE, table->name, table->columnName(0), code);
+    QString sql = QString("DELETE FROM %1 WHERE %2 = '%3';").arg(table->name, table->columnName(0), code);
     return executeSQL(db, sql);
 }
 
 bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBRecord& record, const bool select)
 {
     Tools::debugLog("@@@@@ DataBase::insertRecord");
-    if (!opened)
+    if (!started)
     {
         Tools::debugLog("@@@@@ DataBase::insertRecord ERROR opened=false");
         return false;
@@ -293,7 +271,7 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
 
     QString code = checkedRecord.at(0).toString();
     Tools::debugLog(QString("@@@@@ DataBase::insertRecord %1 %2").arg(table->name, code));
-    QString sql = DB_STATEMENT_INSERT + table->name + " (";
+    QString sql = "INSERT OR REPLACE INTO " + table->name + " (";
     for (int i = 0; i < table->columnCount(); i++)
     {
         sql += table->columnName(i);
@@ -303,7 +281,7 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
     for (int i = 0; i < table->columnCount(); i++)
     {
         sql += (i < checkedRecord.count()) ? "'" + checkedRecord[i].toString() + "'" : "''";
-        sql += (i == table->columnCount() - 1) ? ")" : ", ";
+        sql += (i == table->columnCount() - 1) ? ");" : ", ";
     }
     return executeSQL(sqlDb, sql);
 }
@@ -324,7 +302,7 @@ bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 
 void DataBase::saveLog(const int type, const int source, const QString &comment)
 {
-    if (!opened) return;
+    if (!started) return;
     int logging = settings.getIntValue(SettingCode_Logging);
     if (type > 0 && type <= logging)
     {
@@ -339,7 +317,7 @@ void DataBase::saveLog(const int type, const int source, const QString &comment)
 
 void DataBase::removeOldLogRecords()
 {
-    if (!opened) return;
+    if (!started) return;
     Tools::debugLog("@@@@@ DataBase::removeOldLogRecords");
     DBTable* t = getTable(DBTABLENAME_LOG);
     quint64 logDuration = settings.getIntValue(SettingCode_LogDuration);
@@ -347,8 +325,8 @@ void DataBase::removeOldLogRecords()
     if(removeOldLogRecordsCounter == 0)
     {
         quint64 first = Tools::currentDateTimeToUInt() - logDuration * 24 * 60 * 60 * 1000;
-        QString sql = QString("%1 %2 WHERE %3 < '%4'").
-            arg(DB_STATEMENT_DELETE, t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
+        QString sql = QString("DELETE FROM %1 WHERE %2 < '%3';").arg(
+                    t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
         if(!executeSQL(logDB, sql, false))
             Tools::debugLog("@@@@@ DataBase::removeOldLogRecords ERROR");
     }
@@ -357,11 +335,11 @@ void DataBase::removeOldLogRecords()
 
 void DataBase::clearLog()
 {
-    if (!opened) return;
+    if (!started) return;
     Tools::debugLog("@@@@@ DataBase::clearLog");
     DBTable* t = getTable(DBTABLENAME_LOG);
     if(t == nullptr) return;
-    QString sql = QString("DELETE FROM %1").arg(t->name);
+    QString sql = QString("DELETE FROM %1;").arg(t->name);
     if(!executeSQL(logDB, sql, false))
         Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
 }
@@ -422,7 +400,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     // Запрос пользователя по имени для авторизации:
     {
         DBTable* t = getTable(DBTABLENAME_USERS);
-        QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3'").arg(t->name, t->columnName(UserDBTable::Name), param);
+        QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3';").arg(t->name, t->columnName(UserDBTable::Name), param);
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
@@ -453,7 +431,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
         sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param);
         if (selector == DBSelector_GetProductsByGroupCode)
             sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-        sql += QString(" ORDER BY %1 DESC, %2 ASC").arg(t->columnName(ProductDBTable::Type), t->columnName(ProductDBTable::Name));
+        sql += QString(" ORDER BY %1 DESC, %2 ASC;").arg(t->columnName(ProductDBTable::Type), t->columnName(ProductDBTable::Name));
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
@@ -467,7 +445,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
         QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '" + p + "%'";
         sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-        sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
+        sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code));
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
@@ -488,7 +466,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
         QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += " WHERE " + t->columnName(ProductDBTable::Code) + " LIKE '%" + p + "%'";
         sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-        sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
+        sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code));
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
@@ -509,7 +487,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
         QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += " WHERE " + t->columnName(ProductDBTable::Barcode) + " LIKE '%" + p + "%'";
         sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-        sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Barcode));
+        sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Barcode));
         executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }

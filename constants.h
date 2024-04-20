@@ -3,28 +3,26 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.22"
+#define APP_VERSION "2.24"
 
+// Debug log:
 #define DEBUG_LOG
-#define CREATE_DEFAULT_DATA_ON_START true
+#define DEBUG_ONTIMER_MESSAGE false
+#define DEBUG_MEMORY_MESSAGE false
+#define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
+#define DEBUG_WEIGHT_STATUS false
+
+// On Start:
+#define CREATE_DEFAULT_DATA_ON_START false
+#define CREATE_DEFAULT_IMAGES_ON_START false
 #define REMOVE_SETTINGS_DB_ON_START false
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
 #define REMOVE_TEMP_DB true
 #define CHECK_AUTHORIZATION true
-#define SHOW_PATH_MESSAGE false
-#define DEBUG_ONTIMER_MESSAGE true
-#define DEBUG_MEMORY_MESSAGE true
-#define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
-#define SERVER_WAIT_FOR_REPLY_MSEC 5000
-#define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
-#define APP_TIMER_MSEC 10000
-#define WAIT_SECRET_MSEC 5000
-#define WAIT_SOUND_MSEC 500
-#define WAIT_DRAWING_MSEC 150
-#define WAIT_NET_ACTION_MSEC 30000
-#define EOL "\r\n"
+
+// Files and Pathes:
 #define DEBUG_LOG_NAME "DebugLog.txt"
 #define DB_LOG_NAME "Log.db"
 #define DB_TEMP_NAME "Temp.db"
@@ -38,18 +36,29 @@
 #define DEFAULT_EQUIPMENT_CONFIG_FILE ":/Text/json_default_equipment_config.txt"
 #define WEIGHT_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
 #define PRINTER_DEMO_URI "demo://COM3?baudrate=115200&timeout=100"
-#define EQUIPMENT_OFF_URI "OFF"
-#define SHOWCASE_ROW_IMAGES 5
-#define PRODUCT_STRING_DELIMETER "   "
-#define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
-//#define DB_EMULATION
-
 #ifdef Q_OS_ANDROID
 //#define ANDROID_EQUIPMENT_CONFIG_FILE "/mnt/sdcard/shtrihm/json_settingsfile.txt"
 #define ANDROID_EQUIPMENT_CONFIG_FILE "/storage/emulated/0/shtrihm/json_settingsfile.txt"
 #define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
 #endif
 
+// Other:
+#define SHOW_PATH_MESSAGE false
+#define SERVER_WAIT_FOR_REPLY_MSEC 5000
+#define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
+#define APP_TIMER_MSEC 10000
+#define WAIT_SECRET_MSEC 5000
+#define WAIT_SOUND_MSEC 500
+#define WAIT_DRAWING_MSEC 150
+#define WAIT_NET_ACTION_SEC 3
+#define EOL "\r\n"
+#define EQUIPMENT_OFF_URI "OFF"
+#define SHOWCASE_ROW_IMAGES 5
+#define PRODUCT_STRING_DELIMETER "   "
+#define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
+//#define DB_EMULATION
+
+// UI:
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
 #define DEFAULT_SPACER 8
