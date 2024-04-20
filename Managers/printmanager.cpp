@@ -37,6 +37,10 @@ int PrintManager::start(const QString& uri)
             slpa->startPolling(200);
             e = slpa->setBrightness(settings.getIntValue(SettingCode_PrinterBrightness) + 8);
             if(e >= 0) e = slpa->setOffset(settings.getIntValue(SettingCode_PrintOffset) + 8);
+            if(e >= 0) e = slpa->setPaper(settings.getIntValue(SettingCode_PrintPaper) == 0 ?
+                                          Slpa100uProtocol::papertype::ptSticker :
+                                          Slpa100uProtocol::papertype::ptRibbon);
+            if(e >= 0) e = slpa->setSensor(settings.getBoolValue(SettingCode_PrintLabelSensor));
         }
     }
     Tools::debugLog("@@@@@ PrintManager::start error " + QString::number(e));
@@ -98,7 +102,9 @@ QString PrintManager::getErrorDescription(const int e) const
     case 1004: return "Закройте головку принтера!";
     case 1005: return "Снимите этикетку!";
     case 1006: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
+    case 1007: return "Ошибка принтера!";
     case 1008: return "Ошибка памяти принтера!";
+    case 1009: return "Неверный штрихкод";
     }
     return slpa == nullptr ? "" : slpa->errorDescription(e);
 }
@@ -146,11 +152,53 @@ void PrintManager::onErrorStatusChanged(int e)
     }
 }
 
-void PrintManager::print(const DBRecord& user, const DBRecord& product,
+QString PrintManager::parseBarcode(const QString& barcodeTemplate, const QChar c, const QString& value)
+{
+    QString result;
+    int n = 0;
+    for(int i = 0; i < barcodeTemplate.length(); i++) if(barcodeTemplate.at(i) == c) n++;
+    if(n > 0)
+    {
+        QString v = value;
+        v = v.replace(QString("."), QString("")).replace(QString(","), QString(""));
+        if(n >= v.length())
+        {
+            for(int i = 0; i < n - v.length(); i++) result += "0";
+            result += v;
+        }
+    }
+    Tools::debugLog(QString("@@@@@ PrintManager::parseBarcode %1 %2 %3 %4").arg(barcodeTemplate, value, result, Tools::intToString(n)));
+    return result;
+}
+
+QString PrintManager::makeBarcode(const DBRecord& product, const QString& quantity, const QString& price, const QString& amount)
+{
+    QString result;
+    QString barcodeTemplate = ProductDBTable::isPiece(product) ?
+                settings.getStringValue(SettingCode_PrintLabelBarcodePiece) :
+                settings.getStringValue(SettingCode_PrintLabelBarcodeWeight);
+    if(barcodeTemplate.contains("P"))
+    {
+        result = ProductDBTable::isPiece(product) ?
+                 settings.getStringValue(SettingCode_PrintLabelPrefixPiece) :
+                 settings.getStringValue(SettingCode_PrintLabelPrefixWeight);
+    }
+    result += parseBarcode(barcodeTemplate, 'C', price) +
+              parseBarcode(barcodeTemplate, 'T', amount) +
+              parseBarcode(barcodeTemplate, 'B', product[ProductDBTable::Barcode].toString()) +
+              parseBarcode(barcodeTemplate, 'W', quantity);
+    Tools::debugLog(QString("@@@@@ PrintManager::makeBarcode %1 %2").arg(barcodeTemplate, result));
+    return result.length() != barcodeTemplate.length() ? "" : result;
+}
+
+int PrintManager::print(const DBRecord& user, const DBRecord& product,
                          const QString& quantity, const QString& price, const QString& amount)
 {
     Tools::debugLog("@@@@@ PrintManager::print");
-    if(!started || slpa == nullptr) return;
+    if(!started || slpa == nullptr) return 1007;
+
+    QString barcode = makeBarcode(product, quantity, price, amount);
+    if (barcode.isEmpty()) return 1009;
 
     quint64 dateTime = Tools::currentDateTimeToUInt();
     int labelNumber = 0; // todo
@@ -163,7 +211,7 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
         pd.price = price;
         pd.cost = amount;
         pd.tare = product[ProductDBTable::Tare].toString();
-        pd.barcode = product[ProductDBTable::Barcode].toString();
+        pd.barcode = barcode;
         pd.itemcode = product[ProductDBTable::Code].toString();
         pd.name = product[ProductDBTable::Name].toString();
         pd.shelflife = product[ProductDBTable::Shelflife].toString();
@@ -180,7 +228,6 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
         pd.scalesnumber = settings.getStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo
         pd.textfile = ""; // todo
-
         QImage p = labelCreator->createImage(pd);
         e = slpa->print(p);
     }
@@ -201,6 +248,7 @@ void PrintManager::print(const DBRecord& user, const DBRecord& product,
         }
         else Tools::debugLog("@@@@@ PrintManager::print ERROR (get Transactions Table)");
     }
+    return e;
 }
 
 

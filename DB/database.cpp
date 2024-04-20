@@ -38,12 +38,13 @@ DataBase::~DataBase()
     close(settingsDB);
     close(logDB);
     close(tempDB);
-    if(REMOVE_TEMP_DB) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
+    if(REMOVE_TEMP_DB_ON_FINISH) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
 }
 
 void DataBase::startDB()
 {
     Tools::debugLog("@@@@@ DataBase::startDB");
+
     QString path = Tools::dbPath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
@@ -60,7 +61,8 @@ void DataBase::startDB()
         started &= createTable(productDB, getTable(DBTABLENAME_MOVIES));
         started &= createTable(productDB, getTable(DBTABLENAME_SOUNDS));
         started &= createTable(productDB, getTable(DBTABLENAME_SHOWCASE));
-        message += "\nСоздана БД товаров";
+        if(started) message += "\nСоздана БД товаров";
+        else message += "\nОШИБКА! Не создана БД товаров";
     }
     if (!started) return;
 
@@ -75,8 +77,9 @@ void DataBase::startDB()
     started = addAndOpen(settingsDB, path);
     if(!exists && started)
     {
-        message += "\nСоздана БД настроек";
         started &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
+        if(started) message += "\nСоздана БД настроек";
+        else message += "\nОШИБКА! Не создана БД настроек";
     }
     if (!started) return;
 
@@ -87,9 +90,10 @@ void DataBase::startDB()
     started = addAndOpen(logDB, path);
     if(!exists && started)
     {
-        message += "\nСоздана БД лога";
         started &= createTable(logDB, getTable(DBTABLENAME_LOG));
         started &= createTable(logDB, getTable(DBTABLENAME_TRANSACTIONS));
+        if(started) message += "\nСоздана БД лога";
+        else message += "\nОШИБКА! Не создана БД лога";
     }
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::boolToString(started)));
 }
@@ -177,7 +181,8 @@ bool DataBase::createTable(const QSqlDatabase& db, DBTable* table)
 bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql, const bool log)
 {
     if (!started) return false;
-    Tools::debugLog(QString("@@@@@ DataBase::executeSQL %1 %2").arg(db.databaseName(), sql));
+    Tools::debugLog(QString("@@@@@ DataBase::executeSQL %1 %2").arg(
+                        Tools::fileNameFromPath(db.databaseName()), sql));
     QSqlQuery q(db);
     if (q.exec(sql)) return true;
     if(log) Tools::debugLog(QString("@@@@@ DataBase::executeSQL ERROR %1 %2").arg(q.lastError().text()));
@@ -187,7 +192,8 @@ bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql, const bool
 bool DataBase::executeSelectSQL(const QSqlDatabase& db, DBTable* table, const QString& sql, DBRecordList& resultRecords)
 {
     if (!started) return false;
-    Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1").arg(sql));
+    Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1 %2").arg(
+                        Tools::fileNameFromPath(db.databaseName()), sql));
     resultRecords.clear();
 
     QSqlQuery q(db);

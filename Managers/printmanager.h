@@ -20,7 +20,7 @@ public:
     int start(const QString&);
     void stop();
     QString version() const;
-    void print(const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
+    int print(const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
     bool isError() const { return errorCode != 0 || isStateError(status); }
     bool isDemoMode() const { return demo; }
     void feed();
@@ -29,13 +29,14 @@ public:
 private:
     bool isFlag(uint16_t v, int shift) const { return (v & (0x00000001 << shift)) != 0; }
     bool isStateError(uint16_t) const;
+    QString makeBarcode(const DBRecord&, const QString&, const QString&, const QString&);
+    QString parseBarcode(const QString&, const QChar, const QString&);
 
     Slpa100u* slpa = nullptr;
     LabelCreator* labelCreator = nullptr;
     bool started = false;
     int errorCode = 0;
     uint16_t status = 0;
-    QString message;
     DataBase* db;
     Settings& settings;
     bool demo = false;

@@ -310,6 +310,11 @@ QString Tools::exchangePath(const QString &localPath)
     return result;
 }
 
+QString Tools::fileNameFromPath(const QString& path)
+{
+    return path.mid(path.lastIndexOf("/") + 1);
+}
+
 void Tools::pause(const int msec, const QString& comment)
 {
     debugLog(QString("@@@@@ Tools::pause %1 %2").arg(intToString(msec), comment));

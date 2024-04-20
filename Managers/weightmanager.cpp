@@ -116,8 +116,9 @@ QString WeightManager::getErrorDescription(const int e) const
 
 void WeightManager::onStatusChanged(Wm100Protocol::channel_status &s)
 {
-    Tools::debugLog(QString("@@@@@ WeightManager::onStatusChanged state=%1b weight=%2 tare=%3").arg(
-        QString::number(s.state, 2), QString::number(s.weight), QString::number(s.tare)));
+    if(DEBUG_WEIGHT_STATUS)
+        Tools::debugLog(QString("@@@@@ WeightManager::onStatusChanged state=%1b weight=%2 tare=%3").arg(
+            QString::number(s.state, 2), QString::number(s.weight), QString::number(s.tare)));
 
     //bool b0 = isFlag(s, 0); // признак фиксации веса
     //bool b1 = isFlag(s, 1); // признак работы автонуляmain()

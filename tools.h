@@ -27,6 +27,7 @@ public:
     static void debugMemory();
     static QString downloadPath(const QString&);
     static QString exchangePath(const QString&);
+    static QString fileNameFromPath(const QString&);
     static QString intToString(const int);
     static bool isEnvironment(const EnvironmentType);
     static bool isFileExists(const QString&);

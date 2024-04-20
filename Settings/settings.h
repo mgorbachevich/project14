@@ -83,6 +83,8 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_Equipment = 1045,
     SettingCode_SystemSettings = 1046,
     SettingCode_Update = 1047,
+    SettingCode_PrintLabelPrefixWeight = 1048,
+    SettingCode_PrintLabelPrefixPiece = 1049,
     /*
     SettingCode_Power = 17,
     SettingCode_Cursor = 10,

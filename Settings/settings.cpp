@@ -149,7 +149,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
             message += "\n" + getName(record) + ". Неверное значение";
             return false;
         }
-        if(value.length() > 6)
+        if(value.trimmed().length() > 6)
         {
             message += "\n" + getName(record) + ". Длина должна быть не больше 6";
             return false;
@@ -161,7 +161,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
             message += "\n" + getName(record) + ". Неверное значение";
             return false;
         }
-        if(value.length() > 7)
+        if(value.trimmed().length() > 7)
         {
             message += "\n" + getName(record) + ". Длина должна быть не больше 7";
             return false;
@@ -172,6 +172,13 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
             return false;
         }
         break;
+    case SettingCode_PrintLabelPrefixWeight:
+    case SettingCode_PrintLabelPrefixPiece:
+        if(value.trimmed().length() != 2)
+        {
+            message += "\n" + getName(record) + ". Длина должна быть равна 2";
+            return false;
+        }
     default:
         break;
     }

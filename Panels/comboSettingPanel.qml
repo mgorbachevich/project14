@@ -22,6 +22,7 @@ Popup
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
+        app.debugLog("@@@@@ comboSettingPanel onClosed %1".arg(settingItemComboBox.currentIndex))
         app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
         app.onPopupOpened(false)
     }

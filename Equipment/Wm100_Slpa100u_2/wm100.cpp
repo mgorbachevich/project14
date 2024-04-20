@@ -22,14 +22,14 @@ bool operator!=(Wm100Protocol::channel_status &r1, Wm100Protocol::channel_status
 Wm100::Wm100(QObject *parent)
     : QObject{parent}
 {
-    Tools::debugLog("@@@@@ Wm100::Wm100");
+    //Tools::debugLog("@@@@@ Wm100::Wm100");
     connect(&timer, SIGNAL(timeout()), this, SLOT(onTimer()), Qt::QueuedConnection);
     disconnectDevice();
 }
 
 int Wm100::connectDevice(const QString &uri)
 {
-    Tools::debugLog("@@@@@ Wm100::connectDevice " + uri);
+    //Tools::debugLog("@@@@@ Wm100::connectDevice " + uri);
     disconnectDevice();
     if (Wm100ProtocolCom::checkUri(uri)) protocol = new Wm100ProtocolCom(this);
     else if (Wm100ProtocolHttp::checkUri(uri)) protocol = new Wm100ProtocolHttp(this);
@@ -46,7 +46,7 @@ int Wm100::connectDevice(const QString &uri)
 
 int Wm100::disconnectDevice()
 {
-    Tools::debugLog("@@@@@ Wm100::disconnectDevice");
+    //Tools::debugLog("@@@@@ Wm100::disconnectDevice");
     qDebug() << "disconnectDevice - thread() =" << this->thread();
     stopPolling();
     lastStatusError = 0;
@@ -64,7 +64,7 @@ int Wm100::getStatus(Wm100Protocol::channel_status *status)
 {
     if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE)
     {
-        Tools::debugLog("@@@@@ Wm100::getStatus");
+        //Tools::debugLog("@@@@@ Wm100::getStatus");
         qDebug() << "getStatus - thread() =" << this->thread();
     }
     if (!isConnected()) return -20;
@@ -75,42 +75,42 @@ int Wm100::getStatus(Wm100Protocol::channel_status *status)
 
 int Wm100::getStatusEx(Wm100Protocol::channel_status_ex *status)
 {
-    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) Tools::debugLog("@@@@@ Wm100::getStatusEx");
+    //if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) Tools::debugLog("@@@@@ Wm100::getStatusEx");
     if (!isConnected()) return -20;
     return protocol->cGetStatusEx(status);
 }
 
 int Wm100::setMode(uint8_t mode)
 {
-    Tools::debugLog("@@@@@ Wm100::setMode");
+    //Tools::debugLog("@@@@@ Wm100::setMode");
     if (!isConnected()) return -20;
     return protocol->cSetMode(mode);
 }
 
 int Wm100::getMode(uint8_t *mode)
 {
-    Tools::debugLog("@@@@@ Wm100::getMode");
+    //Tools::debugLog("@@@@@ Wm100::getMode");
     if (!isConnected()) return -20;
     return protocol->cGetMode(mode);
 }
 
 int Wm100::setZero()
 {
-    Tools::debugLog("@@@@@ Wm100::setZero");
+    //Tools::debugLog("@@@@@ Wm100::setZero");
     if (!isConnected()) return -20;
     return protocol->cSetZero();
 }
 
 int Wm100::setTare()
 {
-    Tools::debugLog("@@@@@ Wm100::setTare");
+    //Tools::debugLog("@@@@@ Wm100::setTare");
     if (!isConnected()) return -20;
     return protocol->cSetTare();
 }
 
 int Wm100::setTareValue(const double_t tare)
 {
-    Tools::debugLog("@@@@@ Wm100::setTareValue");
+    //Tools::debugLog("@@@@@ Wm100::setTareValue");
     if (!isConnected()) return -20;
     return protocol->cSetTareValue(tare);
 }
@@ -159,7 +159,7 @@ int Wm100::controllerId(Wm100Protocol::controller_id *id)
 
 int Wm100::setDateTime(const QDateTime &datetime, const QString &uri)
 {
-    Tools::debugLog("@@@@@ Wm100::setDateTime ");
+    //Tools::debugLog("@@@@@ Wm100::setDateTime ");
     Wm100ProtocolHttp* pr = nullptr;
     if (Wm100ProtocolHttp::checkUri(uri)) pr = new Wm100ProtocolHttp(this);
     if (pr == nullptr) return -15;
@@ -176,7 +176,7 @@ int Wm100::calibAccStart()
 
 void Wm100::startPolling(int time)
 {
-    Tools::debugLog("@@@@@ Wm100::startPolling " + Tools::intToString(time));
+    //Tools::debugLog("@@@@@ Wm100::startPolling " + Tools::intToString(time));
 
     //stopPolling();
     //timer.start(time);
@@ -189,7 +189,7 @@ void Wm100::startPolling(int time)
 
 void Wm100::stopPolling()
 {
-    Tools::debugLog("@@@@@ Wm100::stopPolling");
+    //Tools::debugLog("@@@@@ Wm100::stopPolling");
     timerInterval = 0;
 
 //    timer.stop();
@@ -204,8 +204,7 @@ void Wm100::stopPolling()
 
 void Wm100::onTimer()
 {
-    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE)
-        Tools::debugLog(QString("@@@@@ Wm100::onTimer %1").arg(Tools::intToString(timerInterval)));
+    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) Tools::debugLog(QString("@@@@@ Wm100::onTimer %1").arg(Tools::intToString(timerInterval)));
     //qDebug() << "onTimer.killTimer timerid =" << timerid;
     //killTimer(timerid);
     //timerid = 0;
@@ -275,7 +274,7 @@ QString Wm100::errorDescription(const int err) const
     case 186: desc = "Нет ответа от АЦП"; break;
     default:  desc = "Неизвестная ошибка";
     }
-    Tools::debugLog(QString("@@@@@ Wm100::errorDescription %1 %2").arg(Tools::intToString(err), desc));
+    //Tools::debugLog(QString("@@@@@ Wm100::errorDescription %1 %2").arg(Tools::intToString(err), desc));
     return desc;
 }
 

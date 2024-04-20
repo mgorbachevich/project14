@@ -5,7 +5,7 @@
 #include "Slpa100uProtocolUsb.h"
 #include "Slpa100uProtocolHttp.h"
 #include "Slpa100uProtocolDemo.h"
-#include "tools.h"
+//#include "tools.h"
 
 Slpa100u::Slpa100u(QObject *parent) : QObject{parent}
 {
@@ -179,7 +179,7 @@ int Slpa100u::setBrightness(int value)
 
 int Slpa100u::setOffset(int value)
 {
-    //Tools::debugLog("@@@@@ Slpa100u::setBrightness " + Tools::intToString(value));
+    //Tools::debugLog("@@@@@ Slpa100u::setOffset " + Tools::intToString(value));
     if (!isConnected()) return -20;
     if (value<0 || value>15) return -9;
     if (protocol->getPrinterVersion() < 0x0207) return protocol->cSetOffset(value);
@@ -188,14 +188,14 @@ int Slpa100u::setOffset(int value)
 
 int Slpa100u::setPaper(Slpa100uProtocol::papertype value)
 {
-    //Tools::debugLog("@@@@@ Slpa100u::setPaper " + Tools::intToString(value));
+    //Tools::debugLog("@@@@@ Slpa100u::setPaper " + Tools::intToString((int)value));
     if (!isConnected()) return -20;
     return protocol->cSetPaperType(value);
 }
 
 int Slpa100u::setSensor(bool value)
 {
-    //Tools::debugLog("@@@@@ Slpa100u::setSensor " + Tools::intToString(value));
+    //Tools::debugLog("@@@@@ Slpa100u::setSensor " + Tools::boolToString(value));
     if (!isConnected()) return -20;
     return protocol->cSensorControl(value);
 }

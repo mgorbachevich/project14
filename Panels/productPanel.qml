@@ -37,7 +37,7 @@ Popup
         target: app
         function onShowProductImage(value)
         {
-            app.debugLog("@@@@@ productPanel onShowProductImage %1".arg(value))
+            //app.debugLog("@@@@@ productPanel onShowProductImage %1".arg(value))
             productPanelImage.source = value
         }
     }
@@ -47,7 +47,7 @@ Popup
         target: app
         function onEnableManualPrint(value)
         {
-            app.debugLog("@@@@@ productPanel onEnableManualPrint %1".arg(value))
+            //app.debugLog("@@@@@ productPanel onEnableManualPrint %1".arg(value))
             productPanelPrintButton.visible = value
             if(value) productPanelPrintMessageRectangle.color = "transparent"
             else productPanelPrintMessageRectangle.color = Constants.colorError

@@ -3,7 +3,7 @@
 
 #include <qglobal.h>
 
-#define APP_VERSION "2.24"
+#define APP_VERSION "2.25"
 
 // Debug log:
 #define DEBUG_LOG
@@ -19,7 +19,7 @@
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
-#define REMOVE_TEMP_DB true
+#define REMOVE_TEMP_DB_ON_FINISH true
 #define CHECK_AUTHORIZATION true
 
 // Files and Pathes:

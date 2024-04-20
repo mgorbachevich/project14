@@ -639,7 +639,7 @@ void AppManager::onSettingsItemClicked(const int index)
         break;
     case SettingType_List:
         settingItemListModel->update(settings.getValueList(*r));
-        emit showSettingComboBox(code, name, settings.getIntValue(*r), settings.getStringValue(*r));
+        emit showSettingComboBox(code, name, settings.getIntValue(*r, true), settings.getStringValue(*r));
         break;
     case SettingType_IntervalNumber:
     {
@@ -1013,7 +1013,8 @@ void AppManager::showUsers(const DBRecordList& records)
 void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
-    printManager->print(user, product, quantityAsString(product), priceAsString(product), amountAsString(product));
+    int e = printManager->print(user, product, quantityAsString(product), priceAsString(product), amountAsString(product));
+    if(e != 0) showMessage("ВНИМАНИЕ!",  printManager->getErrorDescription(e));
 }
 
 void AppManager::onPrintClicked()
@@ -1042,7 +1043,7 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
 void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 {
     // Изменился параметр оборудования
-    debugLog(QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(
+    if(DEBUG_WEIGHT_STATUS) debugLog(QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(
                  Tools::intToString(param), Tools::intToString(errorCode)));
 
     switch (param)
@@ -1072,7 +1073,7 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 
 void AppManager::updateWeightStatus()
 {
-    debugLog("@@@@@ AppManager::updateWeightStatus");
+    if(DEBUG_WEIGHT_STATUS) debugLog("@@@@@ AppManager::updateWeightStatus");
 
     const bool isPieceProduct = isProduct() && ProductDBTable::isPiece(product);
     const int oldPieces = printStatus.pieces;
@@ -1186,6 +1187,7 @@ void AppManager::updateWeightStatus()
         updateWeightStatus();
         return;
     }
+
     if(DEBUG_WEIGHT_STATUS)
         debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9 %10 %11 %12").arg(
                  Tools::boolToIntString(isWeightError),
