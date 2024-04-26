@@ -4,21 +4,18 @@
 #include "showcasedbtable.h"
 #include "productdbtable.h"
 #include "labelformatdbtable.h"
-#include "settingdbtable.h"
 #include "transactiondbtable.h"
 #include "resourcedbtable.h"
-#include "userdbtable.h"
 #include "logdbtable.h"
 #include "tools.h"
 #include "constants.h"
 #include "requestparser.h"
 
-DataBase::DataBase(Settings& globalSettings, QObject *parent):
-    QObject(parent), settings(globalSettings)
+DataBase::DataBase(Settings* globalSettings, Users* globalUsers, QObject *parent):
+    QObject(parent), settings(globalSettings), users(globalUsers)
 {
     Tools::debugLog("@@@@@ DataBase::DataBase");
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
-    tables.append(new UserDBTable(DBTABLENAME_USERS, this));
     tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGES, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGEFILES, this));
@@ -26,7 +23,6 @@ DataBase::DataBase(Settings& globalSettings, QObject *parent):
     tables.append(new ResourceDBTable(DBTABLENAME_MOVIES, this));
     tables.append(new ResourceDBTable(DBTABLENAME_SOUNDS, this));
     tables.append(new ShowcaseDBTable(DBTABLENAME_SHOWCASE, this));
-    tables.append(new SettingDBTable(DBTABLENAME_SETTINGS, this));
     tables.append(new LogDBTable(DBTABLENAME_LOG, this));
     tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, this));
 }
@@ -35,7 +31,6 @@ DataBase::~DataBase()
 {
     Tools::debugLog("@@@@@ DataBase::~DataBase");
     close(productDB);
-    close(settingsDB);
     close(logDB);
     close(tempDB);
     if(REMOVE_TEMP_DB_ON_FINISH) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
@@ -53,7 +48,6 @@ void DataBase::startDB()
     if(!exists && started)
     {
         started &= createTable(productDB, getTable(DBTABLENAME_PRODUCTS));
-        started &= createTable(productDB, getTable(DBTABLENAME_USERS));
         started &= createTable(productDB, getTable(DBTABLENAME_LABELFORMATS));
         started &= createTable(productDB, getTable(DBTABLENAME_MESSAGES));
         started &= createTable(productDB, getTable(DBTABLENAME_MESSAGEFILES));
@@ -70,6 +64,7 @@ void DataBase::startDB()
     started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
     if (!started) return;
 
+    /*
     path = Tools::dbPath(DB_SETTINGS_NAME);
     if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();
@@ -82,6 +77,7 @@ void DataBase::startDB()
         else message += "\nОШИБКА! Не создана БД настроек";
     }
     if (!started) return;
+    */
 
     path = Tools::dbPath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
@@ -259,7 +255,7 @@ bool DataBase::removeRecord(const QSqlDatabase& db, DBTable* table, const QStrin
     return executeSQL(db, sql);
 }
 
-bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBRecord& record, const bool select)
+bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBRecord& record)
 {
     Tools::debugLog("@@@@@ DataBase::insertRecord");
     if (!started)
@@ -292,12 +288,6 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
     return executeSQL(sqlDb, sql);
 }
 
-bool DataBase::insertSettingsRecord(const DBRecord &r)
-{
-    Tools::debugLog("@@@@@ DataBase::insertSettingsRecord");
-    return insertRecord(settingsDB, getTable(DBTABLENAME_SETTINGS), r);
-}
-
 bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 {
     Tools::debugLog(QString("@@@@@ DataBase::copyDBFiles %1 %2").arg(fromName, toName));
@@ -309,12 +299,12 @@ bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 void DataBase::saveLog(const int type, const int source, const QString &comment)
 {
     if (!started) return;
-    int logging = settings.getIntValue(SettingCode_Logging);
+    int logging = settings->getIntValue(SettingCode_Logging);
     if (type > 0 && type <= logging)
     {
         Tools::debugLog(QString("@@@@@ DataBase::saveLog %1 %2 %3").arg(QString::number(type), QString::number(source), comment));
         LogDBTable* t = (LogDBTable*)getTable(DBTABLENAME_LOG);
-        if (t != nullptr && insertRecord(logDB, t, t->createRecord(type, source, comment), false))
+        if (t != nullptr && insertRecord(logDB, t, t->createRecord(type, source, comment)))
             removeOldLogRecords();
         else
             Tools::debugLog("@@@@@ DataBase::saveLog ERROR");
@@ -326,7 +316,7 @@ void DataBase::removeOldLogRecords()
     if (!started) return;
     Tools::debugLog("@@@@@ DataBase::removeOldLogRecords");
     DBTable* t = getTable(DBTABLENAME_LOG);
-    quint64 logDuration = settings.getIntValue(SettingCode_LogDuration);
+    quint64 logDuration = settings->getIntValue(SettingCode_LogDuration);
     if(t == nullptr || logDuration <= 0) return;
     if(removeOldLogRecordsCounter == 0)
     {
@@ -361,22 +351,10 @@ void DataBase::select(const DBSelector selector, const QString& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
-    Tools::debugLog(QString("@@@@@ DataBase::select %1").arg(selector));
+    Tools::debugLog(QString("@@@@@ DataBase::select %1 ").arg(selector) + param);
     DBRecordList resultRecords;
     switch(selector)
     {
-    case DBSelector_UpdateSettingsOnStart:
-    case DBSelector_ChangeSettings:
-    // Запрос списка настроек:
-        selectAll(settingsDB, getTable(DBTABLENAME_SETTINGS), resultRecords);
-        break;
-
-    case DBSelector_GetAuthorizationUsers:
-    // Запрос списка пользователей для авторизации:
-        selectAll(productDB, getTable(DBTABLENAME_USERS), resultRecords);
-        Tools::sortByString(resultRecords, UserDBTable::Name);
-        break;
-
     case DBSelector_GetLog:
     // Запрос списка записей лога:
         selectAll(logDB, getTable(DBTABLENAME_LOG), resultRecords);
@@ -399,15 +377,6 @@ void DataBase::select(const DBSelector selector, const QString& param)
         case Sort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code); break;
         case Sort_Name: Tools::sortByString(resultRecords, ProductDBTable::Name); break;
         }
-        break;
-    }
-
-    case DBSelector_GetAuthorizationUserByName:
-    // Запрос пользователя по имени для авторизации:
-    {
-        DBTable* t = getTable(DBTABLENAME_USERS);
-        QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3';").arg(t->name, t->columnName(UserDBTable::Name), param);
-        executeSelectSQL(productDB, t, sql, resultRecords);
         break;
     }
 
@@ -461,10 +430,10 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getBoolValue(SettingCode_SearchType))
+        if (!settings->getBoolValue(SettingCode_SearchType))
         {
             const int n1 = p.size();
-            const int n2 = settings.getIntValue(SettingCode_SearchCodeSymbols);
+            const int n2 = settings->getIntValue(SettingCode_SearchCodeSymbols);
             Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredCode %1 %2").arg(QString::number(n1), QString::number(n2)));
             if(n1 < n2) break;
         }
@@ -482,10 +451,10 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings.getBoolValue(SettingCode_SearchType))
+        if (!settings->getBoolValue(SettingCode_SearchType))
         {
             const int n1 = p.size();
-            const int n2 = settings.getIntValue(SettingCode_SearchBarcodeSymbols);
+            const int n2 = settings->getIntValue(SettingCode_SearchBarcodeSymbols);
             Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredBarcode %1 %2").arg(QString::number(n1), QString::number(n2)));
             if(n1 < n2) break;
         }
@@ -510,7 +479,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
 
     default: break;
     }
-    Tools::debugLog(QString("@@@@@ DataBase::selectByParam records = %1").arg(resultRecords.count()));
+    Tools::debugLog(QString("@@@@@ DataBase::select records = %1").arg(resultRecords.count()));
     emit requestResult(selector, resultRecords, true);
 }
 
@@ -549,26 +518,10 @@ void DataBase::select(const DBSelector selector, const DBRecordList& param)
     emit requestResult(selector, resultRecords, true);
 }
 
-void DataBase::updateSettingsRecord(const DBSelector selector, const DBRecord& record)
-{
-    Tools::debugLog(QString("@@@@@ DataBase::updateSettingsRecord %1").arg(selector));
-    bool result = false;
-    switch(selector)
-    {
-    case DBSelector_ReplaceSettingsItem:
-    {
-        result = insertRecord(settingsDB, getTable(DBTABLENAME_SETTINGS), record);
-        break;
-    }
-    default: break;
-    }
-    emit requestResult(selector, DBRecordList(), result);
-}
-
 void DataBase::saveTransaction(const DBRecord& t)
 {
     Tools::debugLog("@@@@@ DataBase::saveTransaction");
-    insertRecord(logDB, getTable(DBTABLENAME_TRANSACTIONS), t, false);
+    insertRecord(logDB, getTable(DBTABLENAME_TRANSACTIONS), t);
 }
 
 QString DataBase::netDelete(const QString& tableName, const QString& codeList)
@@ -580,7 +533,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = settings.getIntValue(SettingCode_Logging);
+    int logging = settings->getIntValue(SettingCode_Logging);
     bool detailedLog = logging >= LogType_Info;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -644,7 +597,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    bool detailedLog = settings.getIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings->getIntValue(SettingCode_Logging) >= LogType_Info;
     DBRecordList records;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -710,7 +663,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
 {
     Tools::debugLog("@@@@@ DataBase::netDownload");
     if(!open(tempDB, DB_TEMP_NAME)) return;
-    bool detailedLog = settings.getIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = settings->getIntValue(SettingCode_Logging) >= LogType_Info;
     QList tables = records.keys();
     for (DBTable* table : tables)
     {
@@ -737,3 +690,8 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
     }
 }
 
+void DataBase::onParseSetRequest(const QString& json)
+{
+    if(settings->insertOrReplace(json)) settings->write();
+    if(users->insertOrReplace(json)) users->write();
+}

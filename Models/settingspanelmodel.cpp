@@ -4,10 +4,9 @@
 
 void SettingsPanelModel::update(Settings& settings)
 {
-    Tools::debugLog("@@@@@ SettingsPanelModel::update " + Tools::intToString(settings.currentGroupCode));
+    Tools::debugLog("@@@@@ SettingsPanelModel::update " + Tools::intToString(settings.getCurrentGroupCode()));
     beginResetModel();
     items.clear();
-    settings.sort();
     QList<int> groupItemCodes = settings.getCurrentGroupCodes();
     //qDebug() << "@@@@@ SettingsPanelModel::update groupItemCodes =" << groupItemCodes;
     for (int i = 0; i < groupItemCodes.count(); i++)

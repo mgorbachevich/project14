@@ -22,13 +22,12 @@ Popup
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
 
-    Connections // Slot for signal AppManager::showPrinterMessage:
+    Connections // Slot for signal AppManager::showWeightParam:
     {
         target: app
-        function onShowPrinterMessage(value)
+        function onShowWeightParam(param, value)
         {
-            //app.debugLog("@@@@@ productPanel onShowPrinterMessage %1".arg(value))
-            productPanelPrintMessage.text = value
+            if(param === 17) productPanelPrintMessage.text = value
         }
     }
 

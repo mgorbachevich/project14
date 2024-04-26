@@ -1,8 +1,8 @@
 #ifndef DBTABLE_H
 #define DBTABLE_H
 
-#include <QObject>
 #include <QDebug>
+#include <QObject>
 #include <QVariant>
 #include <QSqlDatabase>
 #include "constants.h"
@@ -15,7 +15,8 @@ class DBTable : public QObject
     Q_OBJECT
 
 public:
-    DBTable(const QString &name, QObject *parent): QObject(parent), name(name) {}      static QString toJsonString(DBTable*, const DBRecord&);
+    DBTable(const QString &name, QObject *parent): QObject(parent), name(name) {}
+    static QString toJsonString(DBTable*, const DBRecord&);
     static QString toJsonString(DBTable*, const DBRecordList&);
     QString columnTitle(const int index) const;
     QString columnName(const int index) const;

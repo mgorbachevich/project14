@@ -1,5 +1,4 @@
 #include <QTimer>
-#include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QThread>
@@ -60,12 +59,21 @@ namespace Network
 
 	QByteArray RequestSender::sendRequest(Request& request, bool getRequest /*= true*/)
 	{
-		QTimer timer;
-		timer.setInterval(_maxWaitTime);
-		timer.setSingleShot(true);
+        QEventLoop loop;
+        //loop.processEvents(QEventLoop::ExcludeUserInputEvents);
+        QTimer timer;
+        timer.setInterval(_maxWaitTime);
+        timer.setSingleShot(true);
 
-		QEventLoop loop;
-		QSharedPointer<QNetworkAccessManager> manager(new QNetworkAccessManager);
+        /* while (loop.isRunning()) {
+            qDebug() << "loop.isRunning() пытаемся дождаться особождения" << QDateTime::currentMSecsSinceEpoch() % 10000;
+            QEventLoop loop2;
+            QTimer::singleShot(10, this, [&](){ loop2.quit(); });
+            loop2.exec();
+            qDebug() << "loop2.exec() вызван и отработал" << QDateTime::currentMSecsSinceEpoch() % 10000;
+        } */
+
+        QSharedPointer<QNetworkAccessManager> manager(new QNetworkAccessManager);
 		manager->setProxy(_proxy);
 
 		QNetworkReply* reply = getRequest ? manager->get(request.request()) :
@@ -78,25 +86,38 @@ namespace Network
 			qDebug() << "[POST]" << request.request(false).url().toString() << request.data(); 
 #endif
 
-		QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-		QObject::connect(&timer, &QTimer::timeout, reply, &QNetworkReply::abort);
+        QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        QObject::connect(&timer, &QTimer::timeout, reply, &QNetworkReply::abort);
 
-		timer.start();
+        timer.start();
         loop.exec(QEventLoop::ExcludeUserInputEvents);
 
-		QByteArray data;
+        // qint64 ms = QDateTime::currentMSecsSinceEpoch();
+        // while (reply->isRunning())
+        // {
+        //     QThread::msleep(0);
+        //     if (QDateTime::currentMSecsSinceEpoch() - ms > _maxWaitTime)
+        //     {
+        //         reply->abort();
+        //         break;
+        //     }
+        // }
 
-		if (reply->isFinished() && reply->error() == QNetworkReply::NoError)
-		{
-			data = reply->readAll();
-			_error = RequestSender::NoError;
-		}
-		else
-		{
-			_error = RequestSender::TimeoutError;
-		}
+        QByteArray data;
 
-		reply->deleteLater();
+        if (reply->isFinished() && reply->error() == QNetworkReply::NoError)
+        {
+            data = reply->readAll();
+            _error = RequestSender::NoError;
+        }
+        else
+        {
+            _error = RequestSender::TimeoutError;
+        }
+
+
+        reply->deleteLater();
+
 
 #if defined(NETWORK_SHOW_SEND_REQUESTS)
 		qDebug() << "[ANSWER]" << data;

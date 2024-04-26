@@ -17,6 +17,7 @@ public:
         SYNC = 0x16
     };
     virtual int open(const QString &uri);
+    virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
 
 public:
     static bool checkUri(const QString &uri);

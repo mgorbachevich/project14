@@ -3,7 +3,7 @@
 Slpa100uProtocolUsb::Slpa100uProtocolUsb(QObject *parent)
     : Slpa100uProtocol{parent}
 {
-
+    deviceInterface = diUsb;
 }
 
 bool Slpa100uProtocolUsb::checkUri(const QString &uri)

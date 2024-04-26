@@ -265,7 +265,12 @@ int Wm100Protocol::cGetADC(uint32_t *ADCValue)
 
 int Wm100Protocol::cSetDateTime(const QDateTime &datetime, const QString &uri)
 {
-    return 0;
+    return -15;
+}
+
+int Wm100Protocol::cDeamonVersion(QString &version, QString &build, const QString &uri)
+{
+    return -15;
 }
 
 void Wm100Protocol::getDeviceMetrics(device_metrics *metrics)
@@ -277,5 +282,11 @@ void Wm100Protocol::getChannelParam(channel_specs *params)
 {
     *params = channelParams;
 }
+
+Wm100Protocol::deviceinterface Wm100Protocol::getInterface()
+{
+    return deviceInterface;
+}
+
 
 

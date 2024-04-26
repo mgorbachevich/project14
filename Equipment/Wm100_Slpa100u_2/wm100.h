@@ -33,12 +33,17 @@ public:
     int getADC(uint32_t *ADCValue);
     int controllerId(Wm100Protocol::controller_id *id);
 
-    int setDateTime(const QDateTime &datetime, const QString &uri);
+    int setDateTime(const QDateTime &datetime);
+    int getDeamonVersion(QString &version, QString &build);
 
     void startPolling(int time);
     void stopPolling();
     bool isConnected();
     QString errorDescription(const int err) const;
+    int readConnectParam(const QString &filename, const QString &param, QString &uri);
+
+    Wm100Protocol::deviceinterface getInterface();
+    Wm100Protocol::deviceinterface checkUri(const QString &uri);
 
 protected:
     int resetDevice();

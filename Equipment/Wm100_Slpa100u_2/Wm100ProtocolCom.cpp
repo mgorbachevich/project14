@@ -5,7 +5,7 @@
 Wm100ProtocolCom::Wm100ProtocolCom(QObject *parent)
     : Wm100Protocol{parent}
 {
-
+    deviceInterface = diCom;
 }
 
 int Wm100ProtocolCom::open(const QString &uri)
@@ -74,5 +74,12 @@ int Wm100ProtocolCom::executeCommand(wmcommand cmd, const QByteArray &out, QByte
     }
     io->clear();
     mtx.unlock();
+    return res;
+}
+
+int Wm100ProtocolCom::cSetDateTime(const QDateTime &datetime, const QString &uri)
+{
+    int res = -15;
+    //datetime.setDate(datetime.date());
     return res;
 }

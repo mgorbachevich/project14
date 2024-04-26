@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include "constants.h"
 #include "database.h"
+#include "users.h"
 #include "settings.h"
 #include "appinfo.h"
 #include "printstatus.h"
@@ -23,8 +24,7 @@ class SettingItemListModel;
 class QQmlContext;
 class NetServer;
 class AppInfo;
-class WeightManager;
-class PrintManager;
+class EquipmentManager;
 class InputProductCodePanelModel;
 
 class AppManager : public QObject
@@ -73,6 +73,7 @@ public:
     Q_INVOKABLE void showMessage(const QString&, const QString&);
 
 private:
+    void addMessageString(QString&, const QString&);
     QString amountAsString(const DBRecord&);
     void createDefaultData();
     void createDefaultImages();
@@ -86,7 +87,6 @@ private:
     QString priceAsString(const DBRecord&);
     void print();
     QString quantityAsString(const DBRecord&);
-    bool readConfigFile(const QString&, EquipmentUris&, QString&);
     void refreshAll();
     void onCustomSettingsItemClicked(const DBRecord&);
     void resetProduct();
@@ -94,19 +94,19 @@ private:
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
-    void showExternalMessage();
+    void showExternalMessages();
     void showToast(const QString&, const QString&, const int delaySec = 5);
-    void showUsers(const DBRecordList&);
+    void showUsers();
     void startAuthorization();
     void startEquipment();
     void startSettings();
-    void stopAuthorization(const DBRecordList&);
+    void stopAuthorization(const QString&, const QString&);
     void stopEquipment();
     void stopSettings();
     void updateSystemStatus();
+    void updateSettings(const int);
     void updateTablePanel(const bool);
     void updateWeightStatus();
-    void updateSettings();
 
     AppInfo appInfo;
 
@@ -117,9 +117,9 @@ private:
 
     // БД:
     DataBase* db = nullptr;
-    Settings settings;
-    DBRecord user;
     DBRecord product;
+    Settings* settings = nullptr;
+    Users* users;
 
     // Сеть:
     NetServer* netServer = nullptr;
@@ -127,11 +127,9 @@ private:
     int netRoutes = 0;
 
     // Оборудование:
-    WeightManager* weightManager = nullptr;
+    EquipmentManager* equipmentManager = nullptr;
     PrintStatus printStatus;
-    PrintManager* printManager = nullptr;
     bool isResetProductNeeded = false;
-    bool isEquipment = false;
 
     // UI:
     QQmlContext* context = nullptr;
@@ -173,7 +171,6 @@ signals:
     void showMessageBox(const QString&, const QString&, const bool);
     void showPiecesInputBox(const int, const int);
     void showProductCodeInputBox(const QString&);
-    void showPrinterMessage(const QString&);
     void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);
     void showSettingInputBox(const int, const QString&, const QString&);

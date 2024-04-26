@@ -186,12 +186,17 @@ int Slpa100uProtocol::getPrinterVersion()
     return lastStatus.versionH * 256 + lastStatus.versionL;
 }
 
+Slpa100uProtocol::deviceinterface Slpa100uProtocol::getInterface()
+{
+    return deviceInterface;
+}
+
 int Slpa100uProtocol::command(prncommand cmd, const QByteArray &out, QByteArray &in)
 {
     int res = 0;
     //if (QDateTime::currentMSecsSinceEpoch() < delayTill) res = -17;
     if (!res) res = executeCommand(cmd, out, in);
-    if (!res) setDelay(cmd);
+    setDelay(cmd, res);
     QByteArray ba(9,0);
     QByteArrayView bav(ba);
     if (((res == -13 && in.contains(bav)) || res == -4) && QDateTime::currentMSecsSinceEpoch() < delayTill)
@@ -260,14 +265,9 @@ int Slpa100uProtocol::command(prncommand cmd, counters *ans)
     return res;
 }
 
-void Slpa100uProtocol::setDelay(prncommand cmd)
+void Slpa100uProtocol::setDelay(prncommand cmd, const int res)
 {
-    switch (cmd) {
-    case cmFeed:
-    case cmPrint:     delayTill = QDateTime::currentMSecsSinceEpoch() + 2000/*labelLength*12*/; break;
-    case cmPrintTest: delayTill = QDateTime::currentMSecsSinceEpoch() + 2000/*testLength *12*/; break;
-    default: delayTill = 0;
-    }
+    if (res>=0 && (cmd == cmFeed || cmd == cmPrint || cmd == cmPrintTest)) delayTill = QDateTime::currentMSecsSinceEpoch() + 2000/*labelLength*12*/;
 }
 
 QByteArray Slpa100uProtocol::statusToByteArray(const prnanswer &st)

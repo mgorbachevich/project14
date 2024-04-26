@@ -7,7 +7,7 @@
 Slpa100uProtocolHttp::Slpa100uProtocolHttp(QObject *parent)
     : Slpa100uProtocol{parent}
 {
-
+    deviceInterface = diHttp;
 }
 
 bool Slpa100uProtocolHttp::checkUri(const QString &uri)
@@ -146,13 +146,17 @@ int Slpa100uProtocolHttp::sendImage(const QByteArray &out, QByteArray &in)
     io->setOption(2, 1, "doprint", "true");
     bool b = io->writeRead(out, answer, 0, 3000);
     if (!b) res = -1;
+    else if (answer == "error: spi device busy") res = -17;
     else
     {
         parseReply(answer, in);
-        res = 0;
+        //res = static_cast<uchar>(in[3]);
+        //in[3] = 0;
         if (in.size() > 5 && getCRC16(in.mid(2, in.size()-3))) res = -13;
-        qDebug() << ">> " << in.toHex(' ');
-        if (in.size() == 0) qDebug() << answer;
+        else res = static_cast<uchar>(in[3]);
+        qDebug() << "<< " << in.toHex(' ');
+        qDebug() << "<< " << answer;
+        in = in.mid(4,9);
     }
     //int nn = 0; bool b;
     // do { b = io->writeRead(out, answer, 0, 3000); }

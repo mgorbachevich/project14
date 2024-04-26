@@ -3,9 +3,10 @@
 
 #include <QSqlDatabase>
 #include "settings.h"
+#include "users.h"
 #include "dbtable.h"
 
-#define DB_VERSION "1.5"
+#define DB_VERSION "1.6"
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
@@ -15,10 +16,8 @@
 #define DBTABLENAME_PICTURES "pictures"
 #define DBTABLENAME_MOVIES "movies"
 #define DBTABLENAME_SOUNDS "sounds"
-#define DBTABLENAME_USERS "users"
 #define DBTABLENAME_LOG "log"
 #define DBTABLENAME_TRANSACTIONS "transactions"
-#define DBTABLENAME_SETTINGS "settings"
 
 enum DBSelector
 {
@@ -33,13 +32,8 @@ enum DBSelector
     DBSelector_GetProductsByFilteredBarcode,
     DBSelector_GetItemsByCodes,
     DBSelector_GetAuthorizationUsers,
-    DBSelector_GetAuthorizationUserByName,
-    DBSelector_GetSettingsItemByCode,
-    DBSelector_UpdateSettingsOnStart,
     DBSelector_GetLog,
     DBSelector_RefreshCurrentProduct,
-    DBSelector_ReplaceSettingsItem,
-    DBSelector_ChangeSettings,
     DBSelector_SetProductByInputCode,
     DBSelector_GetProductsByInputCode,
     DBSelector_GetProductByInputCode,
@@ -50,7 +44,7 @@ class DataBase : public QObject
     Q_OBJECT
 
 public:
-    explicit DataBase(Settings&, QObject*);
+    explicit DataBase(Settings*, Users*, QObject*);
     ~DataBase();
     DBTable* getTable(const QString&) const;
     QString version() { return DB_VERSION; }
@@ -59,10 +53,9 @@ public:
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
     QString getProductMessageById(const QString&);
+    void onParseSetRequest(const QString&);
     void saveLog(const int, const int, const QString&);
-    bool insertSettingsRecord(const DBRecord&);
     void saveTransaction(const DBRecord&);
-    void updateSettingsRecord(const DBSelector, const DBRecord&);
     void select(const DBSelector, const DBRecordList&);
     void select(const DBSelector, const QString&);
     void clearLog();
@@ -80,7 +73,7 @@ protected:
     void emulationOnStart();
     void removeTempDb();
     bool removeAll(const QSqlDatabase&, DBTable*);
-    bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&, const bool select = true);
+    bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
     void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
     bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
     bool selectById(const QSqlDatabase&, DBTable*, const QString&, DBRecord&);
@@ -89,15 +82,15 @@ protected:
     bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
     void removeOldLogRecords();
 
-    Settings& settings;
     bool started = false;
     QSqlDatabase productDB;
     QSqlDatabase tempDB;
-    QSqlDatabase settingsDB;
     QSqlDatabase logDB;
     int removeOldLogRecordsCounter = 0;
     QString message;
     QList<DBTable*> tables;
+    Settings* settings;
+    Users* users;
 
 signals:
     void requestResult(const DBSelector, const DBRecordList&, const bool);

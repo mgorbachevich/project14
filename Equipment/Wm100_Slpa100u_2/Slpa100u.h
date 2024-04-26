@@ -31,6 +31,9 @@ public:
     int getOffset(int *value);
     int getPrinterVersion();
 
+    Slpa100uProtocol::deviceinterface getInterface();
+    Slpa100uProtocol::deviceinterface checkUri(const QString &uri);
+
 private:
     Slpa100uProtocol *protocol = nullptr;
     int timerid = 0;

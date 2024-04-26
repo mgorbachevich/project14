@@ -16,6 +16,8 @@ INCLUDEPATH += \
     Equipment/Wm100_Slpa100u_2 \
 
 HEADERS += \
+    DB/users.h \
+    Managers/equipmentmanager.h \
     constants.h \
     tools.h \
     appinfo.h \
@@ -27,10 +29,10 @@ HEADERS += \
     DB/labelformatdbtable.h \
     DB/logdbtable.h \
     DB/resourcedbtable.h \
-    DB/settingdbtable.h \
     DB/showcasedbtable.h \
     DB/transactiondbtable.h \
-    DB/userdbtable.h \
+    DB/settings.h \
+    DB/jsonfile.h \
     Equipment/Wm100_Slpa100u_2/IO/RequestSender.h \
     Equipment/Wm100_Slpa100u_2/IO/iobase.h \
     Equipment/Wm100_Slpa100u_2/IO/iocom.h \
@@ -98,8 +100,6 @@ HEADERS += \
     Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.h \
     Equipment/Wm100_Slpa100u_2/wm100.h \
     Managers/keyemitter.h \
-    Managers/printmanager.h \
-    Managers/weightmanager.h \
     Managers/appmanager.h \
     Managers/printstatus.h \
     Managers/screenmanager.h \
@@ -118,17 +118,17 @@ HEADERS += \
     Net/netparams.h \
     Net/netserver.h \
     Net/requestparser.h \
-    Settings/settings.h \
 
 SOURCES += \
     DB/database.cpp \
     DB/dbtable.cpp \
+    DB/jsonfile.cpp \
     DB/jsonparser.cpp \
     DB/logdbtable.cpp \
     DB/productdbtable.cpp \
-    DB/settingdbtable.cpp \
     DB/transactiondbtable.cpp \
-    DB/userdbtable.cpp \
+    DB/settings.cpp \
+    DB/users.cpp \
     Equipment/Wm100_Slpa100u_2/IO/RequestSender.cpp \
     Equipment/Wm100_Slpa100u_2/IO/iobase.cpp \
     Equipment/Wm100_Slpa100u_2/IO/iocom.cpp \
@@ -195,6 +195,7 @@ SOURCES += \
     Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.cpp \
     Equipment/Wm100_Slpa100u_2/wm100.cpp \
     Managers/appmanager.cpp \
+    Managers/equipmentmanager.cpp \
     Managers/keyemitter.cpp \
     Managers/screenmanager.cpp \
     Models/baselistmodel2.cpp \
@@ -208,13 +209,10 @@ SOURCES += \
     Models/searchpanelmodel.cpp \
     Models/showcasepanelmodel2.cpp \
     Models/tablepanelmodel.cpp \
-    Managers/printmanager.cpp \
-    Managers/weightmanager.cpp \
     Net/netserver.cpp \
     Net/requestparser.cpp \
     main.cpp \
     tools.cpp \
-    Settings/settings.cpp \
 
 RESOURCES += \
     constants.js \
@@ -341,7 +339,7 @@ RESOURCES += \
     Sound/KeypressStandard.mp3 \
     Sound/KeypressInvalid.mp3 \
     Text/json_default_settings.txt \
-    Text/json_default_equipment_config.txt \
+    Text/json_settingsfile.txt \
 
 android {
     QT += core-private

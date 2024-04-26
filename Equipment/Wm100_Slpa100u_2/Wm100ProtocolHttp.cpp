@@ -2,14 +2,14 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <thread>
+//#include <thread>
 #include "Wm100ProtocolHttp.h"
 #include "IO/iohttp.h"
 
 Wm100ProtocolHttp::Wm100ProtocolHttp(QObject *parent)
     : Wm100Protocol{parent}
 {
-
+    deviceInterface = diHttp;
 }
 
 int Wm100ProtocolHttp::open(const QString &uri)
@@ -36,6 +36,29 @@ int Wm100ProtocolHttp::cSetDateTime(const QDateTime &datetime, const QString &ur
         io->setOption(2, 1, "seconds", QString("%1").arg(datetime.time().second()));
         QByteArray out, in;
         if (!io->writeRead(out, in, 0, 3000)) res = -1;
+        close();
+    }
+    return res;
+}
+
+int Wm100ProtocolHttp::cDeamonVersion(QString &version, QString &build, const QString &uri)
+{
+    int res = open(uri);
+    if (!res)
+    {
+        io->setOption(0, 0);
+        io->setOption(1, 0, "/api/v0/info");
+        io->setOption(2, 0);
+        QByteArray out, in;
+        if (!io->writeRead(out, in, 0, 3000)) res = -1;
+        qDebug() << in;
+
+        //QByteArray temp("{\"info\":{\"version\":\"0.0.2\",\"build\":\"13 Feb 2024 18:10\"}}");
+
+        QJsonObject jsonObject = QJsonDocument::fromJson(in).object();
+        jsonObject = jsonObject["info"].toObject();
+        version = jsonObject["version"].toString();
+        build = jsonObject["build"].toString();
         close();
     }
     return res;

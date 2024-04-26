@@ -3,6 +3,7 @@
 
 #include "request.h"
 #include <QNetworkProxy>
+#include <QEventLoop>
 
 namespace Network
 {
@@ -31,8 +32,7 @@ namespace Network
 
 		qint64 maxWaitTime() const;
 		RequestError error() const;
-
-	private:
+    private:
 		QByteArray sendRequest(Request& request, bool getRequest = true);
 		QByteArray sendWhileSuccess(Request& request, int maxCount = 2, bool getRequest = true);
 
@@ -40,6 +40,9 @@ namespace Network
 		qint64 _maxWaitTime;
 		RequestError _error;
 		QNetworkProxy _proxy;
+        //QEventLoop loop;
+        //QEventLoop loop1;
+
 	};
 }
 

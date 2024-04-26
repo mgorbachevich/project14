@@ -10,7 +10,6 @@
 #include "resourcedbtable.h"
 #include "productdbtable.h"
 #include "transactiondbtable.h"
-#include "userdbtable.h"
 #include "productpanelmodel.h"
 #include "tablepanelmodel.h"
 #include "usernamemodel.h"
@@ -22,12 +21,10 @@
 #include "searchfiltermodel.h"
 #include "tools.h"
 #include "appinfo.h"
-#include "weightmanager.h"
-#include "printmanager.h"
+#include "equipmentmanager.h"
 #include "netserver.h"
 #include "screenmanager.h"
 #include "keyemitter.h"
-#include "settingdbtable.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
     QObject(application), context(qmlContext)
@@ -48,28 +45,19 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
         !Tools::isFileExists(Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, "1.png"))))
             createDefaultImages();
 
-    db = new DataBase(settings, this);
-    user = UserDBTable::defaultAdmin();
+    settings = new Settings(this);
+    users = new Users(this);
+    db = new DataBase(settings, users, this);
     netServer = new NetServer(this, db);
-    weightManager = new WeightManager(this);
-    printManager = new PrintManager(this, db, settings);
+    equipmentManager = new EquipmentManager(this, db, settings);
     timer = new QTimer(this);
-
-    // Versions:
-    appInfo.appVersion = APP_VERSION;
-    appInfo.dbVersion = db->version();
-    appInfo.weightManagerVersion = weightManager->version();
-    appInfo.printManagerVersion = printManager->version();
-    appInfo.netServerVersion = netServer->version();
-    appInfo.ip = Tools::getNetParams().localHostIP;
 
     connect(this, &AppManager::start, db, &DataBase::onAppStart);
     connect(netServer, &NetServer::action, this, &AppManager::onNetAction);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
-    connect(weightManager, &WeightManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
-    connect(printManager, &PrintManager::printed, this, &AppManager::onPrinted);
-    connect(printManager, &PrintManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
+    connect(equipmentManager, &EquipmentManager::printed, this, &AppManager::onPrinted);
+    connect(equipmentManager, &EquipmentManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(keyEmitter, &KeyEmitter::enterChar, this, &AppManager::onEnterChar);
     connect(keyEmitter, &KeyEmitter::enterKey, this, &AppManager::onEnterKey);
     connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
@@ -96,8 +84,22 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("settingItemListModel", settingItemListModel);
     context->setContextProperty("inputProductCodePanelModel", inputProductCodePanelModel);
 
-    onUserAction();
+    if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(SETTINGS_CONFIG_FILE);
+    settings->read();
+    updateSettings(0);
+    users->read();
+    equipmentManager->create();
+
+    // Versions:
+    appInfo.appVersion = APP_VERSION;
+    appInfo.dbVersion = db->version();
+    appInfo.weightManagerVersion = equipmentManager->WMversion();
+    appInfo.printManagerVersion = equipmentManager->PMversion();
+    appInfo.netServerVersion = netServer->version();
+    appInfo.ip = Tools::getNetParams().localHostIP;
+
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { emit start(); });
+    onUserAction();
     debugLog("@@@@@ AppManager::AppManager Done");
 }
 
@@ -108,10 +110,10 @@ void AppManager::onDBStarted()
     onUserAction();
     if(db->isStarted())
     {
-        db->select(DBSelector_UpdateSettingsOnStart, "");
+        startAuthorization();
         timer->start(APP_TIMER_MSEC);
     }
-    else QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { showExternalMessage(); });
+    else QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()  { showExternalMessages(); });
     debugLog("@@@@@ AppManager::onDBStarted Done");
 }
 
@@ -142,7 +144,7 @@ void AppManager::onTimer()
     if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer " +
                                        Tools::intToString((int)(userActionTime / 1000)));
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
-    showExternalMessage();
+    showExternalMessages();
     const quint64 now = Tools::currentDateTimeToUInt();
 
     if(isAuthorizationOpened()) // Авторизация
@@ -154,9 +156,9 @@ void AppManager::onTimer()
     else
     {
         // Сброс товара при бездействии:
-        if (isProduct() && settings.getIntValue(SettingCode_ProductReset, true) == ProductReset_Time)
+        if (isProduct() && settings->getIntValue(SettingCode_ProductReset, true) == ProductReset_Time)
         {
-            quint64 waitReset = settings.getIntValue(SettingCode_ProductResetTime); // секунды
+            quint64 waitReset = settings->getIntValue(SettingCode_ProductResetTime); // секунды
             if(waitReset > 0 && waitReset * 1000 < now - userActionTime)
             {
                 debugLog("@@@@@ AppManager::onTimer reset product");
@@ -165,7 +167,7 @@ void AppManager::onTimer()
         }
 
         // Блокировка:
-        quint64 waitBlocking = settings.getIntValue(SettingCode_Blocking); // минуты
+        quint64 waitBlocking = settings->getIntValue(SettingCode_Blocking); // минуты
         if(waitBlocking > 0 && waitBlocking * 1000 * 60 < now - userActionTime)
         {
             debugLog("@@@@@ AppManager::onTimer blocking");
@@ -199,12 +201,12 @@ void AppManager::onTimer()
 QString AppManager::quantityAsString(const DBRecord& productRecord)
 {
     if(ProductDBTable::isPiece(productRecord)) return QString("%1").arg(printStatus.pieces);
-    return weightManager->isError() ? "" : Tools::doubleToString(weightManager->getWeight(), 3);
+    return equipmentManager->isWMError() ? "" : Tools::doubleToString(equipmentManager->getWeight(), 3);
 }
 
 QString AppManager::priceAsString(const DBRecord& productRecord)
 {
-    return Tools::moneyToText(price(productRecord), settings.getIntValue(SettingCode_PointPosition));
+    return Tools::moneyToText(price(productRecord), settings->getIntValue(SettingCode_PointPosition));
 }
 
 QString AppManager::amountAsString(const DBRecord& productRecord)
@@ -212,9 +214,9 @@ QString AppManager::amountAsString(const DBRecord& productRecord)
     double q = 0;
     if(ProductDBTable::isPiece(productRecord))
         q = printStatus.pieces;
-    else if(!weightManager->isError())
-        q = weightManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
-    return Tools::moneyToText(q * price(productRecord), settings.getIntValue(SettingCode_PointPosition));
+    else if(!equipmentManager->isWMError())
+        q = equipmentManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
+    return Tools::moneyToText(q * price(productRecord), settings->getIntValue(SettingCode_PointPosition));
 }
 
 void AppManager::createDefaultData()
@@ -242,7 +244,7 @@ double AppManager::price(const DBRecord& productRecord)
 {
     const int p = ProductDBTable::Price;
     if (productRecord.count() <= p) return 0;
-    return Tools::priceToDouble(productRecord[p].toString(), settings.getIntValue(SettingCode_PointPosition));
+    return Tools::priceToDouble(productRecord[p].toString(), settings->getIntValue(SettingCode_PointPosition));
 }
 
 void AppManager::onProductDescriptionClicked()
@@ -265,8 +267,8 @@ void AppManager::onProductPanelPiecesClicked()
     {
         debugLog(QString("@@@@@ AppManager::onProductPanelPiecesClicked %1 %2").arg(
                      Tools::intToString(printStatus.pieces),
-                     Tools::intToString(settings.getIntValue(SettingCode_CharNumberPieces))));
-        emit showPiecesInputBox(printStatus.pieces, settings.getIntValue(SettingCode_CharNumberPieces));
+                     Tools::intToString(settings->getIntValue(SettingCode_CharNumberPieces))));
+        emit showPiecesInputBox(printStatus.pieces, settings->getIntValue(SettingCode_CharNumberPieces));
     }
     else beepSound();
 }
@@ -275,7 +277,7 @@ void AppManager::onRewind() // Перемотка
 {
     debugLog("@@@@@ AppManager::onRewind ");
     if(isAuthorizationOpened() || isSettingsOpened()) beepSound();
-    else printManager->feed();
+    else equipmentManager->feed();
 }
 
 void AppManager::filteredSearch()
@@ -332,18 +334,19 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     // Настройка изменилась
 
     debugLog(QString("@@@@@ AppManager::onSettingInputClosed %1 %2").arg(QString::number(settingItemCode), value));
-    DBRecord* r = settings.getByCode(settingItemCode);
+    DBRecord* r = settings->getByCode(settingItemCode);
     if (r == nullptr)
     {
         showMessage("ВНИМАНИЕ!", "Ошибка настройки (неизвестная запись)!");
         return;
     }
-    if(!settings.onInputValue(settingItemCode, value))
+    if(!settings->onInputValue(settingItemCode, value))
     {
-        showExternalMessage();
+        showExternalMessages();
         return;
     }
-    db->updateSettingsRecord(DBSelector_ReplaceSettingsItem, *r);
+    updateSettings(settings->getCurrentGroupCode());
+    settings->write();
     QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
     db->saveLog(LogType_Warning, LogSource_Admin, s);
 }
@@ -376,7 +379,7 @@ void AppManager::onPiecesInputClosed(const QString &value)
     debugLog("@@@@@ AppManager::onPiecesInputClosed " + value);
     onUserAction();
     int v = Tools::stringToInt(value);
-    const int maxChars = settings.getIntValue(SettingCode_CharNumberPieces);
+    const int maxChars = settings->getIntValue(SettingCode_CharNumberPieces);
     if(value.length() > maxChars)
     {
         v = Tools::stringToInt(value.leftJustified(maxChars));
@@ -417,25 +420,6 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
 
     switch(selector)
     {
-    case DBSelector_UpdateSettingsOnStart:
-        if(!records.isEmpty()) settings.update(records);
-        settingsPanelModel->update(settings);
-        startAuthorization();
-        break;
-
-    case DBSelector_ChangeSettings: // Обновление настроек без перезапуска оборудования:
-        if(!records.isEmpty()) settings.update(records);
-        settingsPanelModel->update(settings);
-        break;
-
-    case DBSelector_ReplaceSettingsItem: // Изменена настройка оператором:
-        db->select(DBSelector_ChangeSettings, "");
-        break;
-
-    case DBSelector_GetAuthorizationUserByName: // Получен результат поиска пользователя по введеному имени при авторизации:
-        stopAuthorization(records);
-        break;
-
     case DBSelector_GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
         showcasePanelModel->updateProducts(records);
         db->select(DBSelector_GetShowcaseResources, records);
@@ -444,10 +428,6 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
     case DBSelector_GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
         if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
             showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
-        break;
-
-    case DBSelector_GetAuthorizationUsers: // Отображение имен пользователей при авторизации:
-        showUsers(records);
         break;
 
     case DBSelector_GetLog: // Отображение лога:
@@ -559,7 +539,7 @@ void AppManager::onTareClicked()
 {
     debugLog("@@@@@ AppManager::onTareClicked ");
     onUserAction();
-    weightManager->setWeightParam(ControlParam_Tare);
+    equipmentManager->setWMParam(ControlParam_Tare);
     updateWeightStatus();
 }
 
@@ -567,7 +547,7 @@ void AppManager::onZeroClicked()
 {
     debugLog("@@@@@ AppManager::onZeroClicked ");
     onUserAction();
-    weightManager->setWeightParam(ControlParam_Zero);
+    equipmentManager->setWMParam(ControlParam_Zero);
     updateWeightStatus();
 }
 
@@ -585,7 +565,7 @@ void AppManager::onConfirmationClicked(const int selector)
         db->clearLog();
         break;
     case ConfirmSelector_SetSystemDateTime:
-        weightManager->setSystemDateTime = true;
+        equipmentManager->setSystemDateTime = true;
         break;
     }
 }
@@ -615,40 +595,40 @@ void AppManager::onTableResultClicked(const int index)
 void AppManager::onSettingsItemClicked(const int index)
 {
     onUserAction();
-    DBRecord* r = settings.getByIndexInCurrentGroup(index);
+    DBRecord* r = settings->getByIndexInCurrentGroup(index);
     if(r == nullptr || r->empty())
     {
         debugLog("@@@@@ AppManager::onSettingsItemClicked ERROR " + Tools::intToString(index));
         return;
     }
 
-    const int code = settings.getCode(*r);
-    const QString& name = settings.getName(*r);
-    const int type = settings.getType(*r);
+    const int code = settings->getCode(*r);
+    const QString& name = settings->getName(*r);
+    const int type = settings->getType(*r);
     debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::intToString(code), name, QString::number(type)));
 
     switch (type)
     {
     case SettingType_Group:
-        settings.currentGroupCode = code;
-        updateSettings();
+        updateSettings(code);
+        emit showSettingsPanel(settings->getCurrentGroupName());
         break;
     case SettingType_InputNumber:
     case SettingType_InputText:
-        emit showSettingInputBox(code, name, settings.getStringValue(*r));
+        emit showSettingInputBox(code, name, settings->getStringValue(*r));
         break;
     case SettingType_List:
-        settingItemListModel->update(settings.getValueList(*r));
-        emit showSettingComboBox(code, name, settings.getIntValue(*r, true), settings.getStringValue(*r));
+        settingItemListModel->update(settings->getValueList(*r));
+        emit showSettingComboBox(code, name, settings->getIntValue(*r, true), settings->getStringValue(*r));
         break;
     case SettingType_IntervalNumber:
     {
-        QStringList list = settings.getValueList(*r);
+        QStringList list = settings->getValueList(*r);
         if(list.count() >= 2)
         {
             int from = Tools::stringToInt(list[0]);
             int to = Tools::stringToInt(list[1]);
-            int value = settings.getIntValue(*r);
+            int value = settings->getIntValue(*r);
             emit showSettingSlider(code, name, from, to, 1, value);
         }
         break;
@@ -675,8 +655,8 @@ void AppManager::clearLog()
 
 void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
 {
-    const int code = settings.getCode(r);
-    const QString& name = settings.getName(r);
+    const int code = settings->getCode(r);
+    const QString& name = settings->getName(r);
     debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::intToString(code), name));
 
     switch (code)
@@ -691,7 +671,7 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     case SettingCode_WiFi:
     case SettingCode_SystemSettings:
     case SettingCode_Ethernet:
-        switch(settings.nativeSettings(code))
+        switch(settings->nativeSettings(code))
         {
         case 0: // Ошибок нет
             break;
@@ -709,19 +689,26 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     }
 }
 
+void AppManager::updateSettings(const int groupCode)
+{
+    settings->update(groupCode);
+    settingsPanelModel->update(*settings);
+}
+
 void AppManager::onSettingsPanelCloseClicked()
 {
-    debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked " + Tools::intToString(settings.currentGroupCode));
+    debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked " + Tools::intToString(settings->getCurrentGroupCode()));
     onUserAction();
     emit previousSettings();
-    if(settings.currentGroupCode != 0)
+    const int groupCode = settings->getCurrentGroupCode();
+    if(groupCode != 0)
     {
-        DBRecord* r = settings.getByCode(settings.currentGroupCode);
-        if(r != nullptr && !r->empty() && settings.isGroup(*r))
+        DBRecord* r = settings->getByCode(groupCode);
+        if(r != nullptr && !r->empty() && settings->isGroup(*r))
         {
             // Переход вверх:
-            settings.currentGroupCode = r->at(SettingDBTable::GroupCode).toInt();
-            updateSettings();
+            updateSettings(r->at(SettingField_GroupCode).toInt());
+            emit showSettingsPanel(settings->getCurrentGroupName());
             return;
         }
     }
@@ -775,11 +762,9 @@ void AppManager::updateTablePanel(const bool root)
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
 {
     onUserAction();
-    QString normalizedLogin = UserDBTable::fromAdminName(login);
+    QString normalizedLogin = Users::fromAdminName(login);
     debugLog(QString("@@@@@ AppManager::onCheckAuthorizationClick %1 %2").arg(normalizedLogin, password));
-    user[UserDBTable::Name] = normalizedLogin;
-    user[UserDBTable::Password] = password;
-    db->select(DBSelector_GetAuthorizationUserByName, normalizedLogin);
+    stopAuthorization(normalizedLogin, password);
 }
 
 void AppManager::startSettings()
@@ -789,7 +774,7 @@ void AppManager::startSettings()
     resetProduct();
     stopEquipment();
     db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
-    updateSettings();
+    emit showSettingsPanel(settings->getCurrentGroupName());
 }
 
 void AppManager::stopSettings()
@@ -815,46 +800,38 @@ void AppManager::startAuthorization()
         debugLog("@@@@@ AppManager::startAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));
         updateSystemStatus();
         db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
-        db->select(DBSelector_GetAuthorizationUsers, "");
+        showUsers();
         debugLog("@@@@@ AppManager::startAuthorization Done");
     });
 }
 
-void AppManager::stopAuthorization(const DBRecordList& dbUsers)
+void AppManager::stopAuthorization(const QString& login, const QString& password)
 {
-    // Введены логин и пароль. Проверка
     const QString title = "Авторизация";
-    QString login = "";
-
-    if(!CHECK_AUTHORIZATION) // Без проверки
+    if(!CHECK_AUTHORIZATION || users->getAll().isEmpty()) // Без проверки
     {
-        user = UserDBTable::defaultAdmin();
-        login = user[UserDBTable::Name].toString();
+        users->setDefaultAdmin();
         debugLog(QString("@@@@@ AppManager::stopAuthorization %1").arg(login));
     }
-    else
+    else // Введены логин и пароль. Проверка
     {
-        login = user[UserDBTable::Name].toString();
-        const QString password = user[UserDBTable::Password].toString();
         debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
-        if (!dbUsers.isEmpty())
+        DBRecord* u = users->getByName(login);
+        if (u == nullptr || password !=  (u->at(UserField_Password)).toString())
         {
-            if (login != dbUsers[0][UserDBTable::Name].toString() || password != dbUsers[0][UserDBTable::Password])
-            {
-                debugLog("@@@@@ AppManager::stopAuthorization ERROR");
-                const QString error = "Неверные имя пользователя или пароль";
-                showMessage(title, error);
-                db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
-                onUserAction();
-                return;
-            }
-            user.clear();
-            user.append(dbUsers[0]);
+            debugLog("@@@@@ AppManager::stopAuthorization ERROR");
+            const QString error = "Неверные имя пользователя или пароль";
+            showMessage(title, error);
+            db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
+            onUserAction();
+            return;
         }
+        users->setUserByName(login);
     }
 
     debugLog("@@@@@ AppManager::stopAuthorization OK");
-    QString s = QString("%1. Пользователь: %2. Код: %3").arg(title, login, user[UserDBTable::Code].toString());
+    QString s = QString("%1. Пользователь: %2. Код: %3").arg(
+                title, login, (users->getCurrentUser()).at(UserField_Code).toString());
     db->saveLog(LogType_Warning, LogSource_User, s);
     setMainPage(0);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
@@ -880,12 +857,13 @@ void AppManager::refreshAll()
 {
     // Обновить всё на экране
     debugLog("@@@@@ AppManager::refreshAll");
-    emit showAdminMenu(UserDBTable::isAdmin(user));
+    emit showAdminMenu(users->isAdmin());
     setShowcaseSort(showcaseSort);
     searchFilterModel->update();
     //searchPanelModel->update();
     filteredSearch();
     updateTablePanel(true);
+    showExternalMessages();
 }
 
 void AppManager::showToast(const QString &title, const QString &text, const int delaySec)
@@ -912,10 +890,23 @@ void AppManager::showMessage(const QString &title, const QString &text)
     emit showMessageBox(title, text, true);
 }
 
-void AppManager::showExternalMessage()
+void AppManager::addMessageString(QString& to, const QString& from)
 {
-    QString message = db->getAndClearMessage() + "\n" + settings.getAndClearMessage();
-    if(0 != QString::compare(message, "\n")) showMessage("ВНИМАНИЕ!", message);
+    if(!from.isEmpty())
+    {
+        if(!to.isEmpty()) to += "\n";
+        to += from;
+    }
+}
+
+void AppManager::showExternalMessages()
+{
+    QString s;
+    addMessageString(s, db->getAndClearMessage());
+    addMessageString(s, settings->getAndClearMessage());
+    addMessageString(s, users->getAndClearMessage());
+    addMessageString(s, equipmentManager->getAndClearMessage());
+    if(!s.isEmpty()) showMessage("ВНИМАНИЕ!", s);
 }
 
 void AppManager::showConfirmation(const ConfirmSelector selector, const QString &title, const QString &text)
@@ -954,27 +945,6 @@ void AppManager::resetProduct() // Сбросить выбранный прод�
     }
 }
 
-bool AppManager::readConfigFile(const QString& path, EquipmentUris& eu, QString& message)
-{
-    if(!Tools::isFileExists(path))
-    {
-        message += "\nКонфиг.файл " + path + " не найден";
-        return false;
-    }
-    if(Tools::getFileSize(path) == 0)
-    {
-        message += "\nКонфиг.файл " + path + " имеет размер 0";
-        return false;
-    }
-    eu = settings.parseEquipmentConfig(path);
-    if(eu.wmUri.isEmpty() || eu.printerUri.isEmpty())
-    {
-        message += "\nКонфиг.файл " + path + " содержит ошибки";
-        return false;
-    }
-    return true;
-}
-
 void AppManager::onUserAction()
 {
     debugLog("@@@@@ AppManager::onUserAction");
@@ -983,28 +953,22 @@ void AppManager::onUserAction()
     secret = 0;
 }
 
-void AppManager::showUsers(const DBRecordList& records)
+void AppManager::showUsers()
 {
     // Обновить список пользователей на экране авторизации
-
-    DBRecordList users;
-    if (records.isEmpty()) // В базе нет пользователей. Добавить администратора по умолчанию:
-        users << UserDBTable::defaultAdmin();
-    else
-        users.append(records);
-    userNameModel->update(users);
-
-    if(users.count() == 1)
+    DBRecordList records = users->getAll();
+    if(records.isEmpty())
     {
-        user.clear();
-        user.append(users.at(0));
-        emit setCurrentUser(0, user.at(UserDBTable::Name).toString());
+        users->setDefaultAdmin();
+        records << users->getCurrentUser();
     }
-    else for (int i = 0; i < users.count(); i++)
+    userNameModel->update(records);
+    for (int i = 0; i < records.count(); i++)
     {
-        if(users.at(i).at(UserDBTable::Code).toInt() == user.at(UserDBTable::Code).toInt())
+        DBRecord& r = records[i];
+        if(records.count() == 1 || r.at(UserField_Code).toInt() == (users->getCurrentUser()).at(UserField_Code).toInt())
         {
-            emit setCurrentUser(i, users.at(i).at(UserDBTable::Name).toString());
+            emit setCurrentUser(i, r.at(UserField_Name).toString());
             break;
         }
     }
@@ -1013,8 +977,8 @@ void AppManager::showUsers(const DBRecordList& records)
 void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
-    int e = printManager->print(user, product, quantityAsString(product), priceAsString(product), amountAsString(product));
-    if(e != 0) showMessage("ВНИМАНИЕ!",  printManager->getErrorDescription(e));
+    equipmentManager->print(users->getCurrentUser(), product, quantityAsString(product), priceAsString(product), amountAsString(product));
+    showExternalMessages();
 }
 
 void AppManager::onPrintClicked()
@@ -1037,7 +1001,8 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
                 newTransaction[TransactionDBTable::ItemCode].toString(),
                 newTransaction[TransactionDBTable::Weight].toString()));
     db->saveTransaction(newTransaction);
-    if (settings.getIntValue(SettingCode_ProductReset, true) == ProductReset_Print) isResetProductNeeded = true;
+    if (settings->getIntValue(SettingCode_ProductReset, true) == ProductReset_Print) isResetProductNeeded = true;
+    showExternalMessages();
 }
 
 void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
@@ -1057,14 +1022,15 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
         if(isResetProductNeeded) resetProduct();
         db->saveLog(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").arg(
                     QString::number(errorCode),
-                    weightManager->getErrorDescription(errorCode)));
+                    equipmentManager->getWMErrorDescription(errorCode)));
         break;
     case ControlParam_PrintError:
     {
         db->saveLog(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").arg(
                     QString::number(errorCode),
-                    printManager->getErrorDescription(errorCode)));
-        emit showPrinterMessage(errorCode == 0 ? "" : printManager->getErrorDescription(errorCode));
+                    equipmentManager->getPMErrorDescription(errorCode)));
+        emit showWeightParam(ControlParam_PrinterStatus, errorCode == 0 ? "" :
+                    equipmentManager->getPMErrorDescription(errorCode));
         break;
     }
     }
@@ -1079,14 +1045,15 @@ void AppManager::updateWeightStatus()
     const int oldPieces = printStatus.pieces;
     if(isPieceProduct && printStatus.pieces < 1) printStatus.pieces = 1;
 
-    const bool isZero = weightManager->isZeroFlag();
-    const bool isTare = weightManager->isTareFlag();
-    const bool isWeightError = weightManager->isError();
-    const bool isPrintError = printManager->isError();
-    const bool isFixed = weightManager->isWeightFixed();
+    const bool isWM = equipmentManager->isWM();
+    const bool isPM = equipmentManager->isPM();
+    const bool isZero = equipmentManager->isZeroFlag();
+    const bool isTare = equipmentManager->isTareFlag();
+    const bool isWeightError = equipmentManager->isWMError() || !isWM;
+    const bool isFixed = equipmentManager->isWeightFixed();
 
-    const bool isAutoPrint = settings.getBoolValue(SettingCode_PrintAuto) &&
-           (!isPieceProduct || settings.getBoolValue(SettingCode_PrintAutoPcs));
+    const bool isAutoPrint = settings->getBoolValue(SettingCode_PrintAuto) &&
+           (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
     const QString passiveColor = "#424242";
     const QString activeColor = "#fafafa";
 
@@ -1097,7 +1064,7 @@ void AppManager::updateWeightStatus()
     emit showWeightParam(ControlParam_Zero, Tools::boolToString(isZero));
     emit showWeightParam(ControlParam_Tare, Tools::boolToString(isTare));
     emit showWeightParam(ControlParam_WeightFixed, Tools::boolToString(isFixed));
-    if(!isEquipment || isWeightError)
+    if(isWeightError)
         emit showWeightParam(ControlParam_WeightError, Tools::boolToString(true));
     else if(isAutoPrint)
         emit showWeightParam(ControlParam_AutoPrint, Tools::boolToString(true));
@@ -1106,7 +1073,7 @@ void AppManager::updateWeightStatus()
 
     // Рисуем загаловки:
     QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
-    if(weightManager->isDemoMode()) wt += " ДЕМО";
+    if(equipmentManager->isWMDemoMode()) wt += " ДЕМО";
     QString pt = "ЦЕНА, руб";
     if(isProduct())
     {
@@ -1118,48 +1085,40 @@ void AppManager::updateWeightStatus()
     emit showWeightParam(ControlParam_AmountTitle, "СТОИМОСТЬ, руб");
 
     // Рисуем количество (вес/штуки):
-    QString quantity = "-----";
-    if(isEquipment) quantity = isPieceProduct || !isWeightError ? quantityAsString(product) : "";
+    QString quantity = NO_DATA;
+    if(isWM) quantity = isPieceProduct || !isWeightError ? quantityAsString(product) : "";
     emit showWeightParam(ControlParam_WeightValue, quantity);
     emit showWeightParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWeightError) ? activeColor : passiveColor);
 
     // Рисуем цену:
-    const QString price = isProduct() ? priceAsString(product) : "-----";
+    bool isPrice = isProduct() && PRICE_MAX_CHARS >= priceAsString(product).replace(QString("."), QString("")).replace(QString(","), QString("")).length();
+    QString price = isPrice ? priceAsString(product) : NO_DATA;
     emit showWeightParam(ControlParam_PriceValue, price);
-    emit showWeightParam(ControlParam_PriceColor, isProduct() ? activeColor : passiveColor);
+    emit showWeightParam(ControlParam_PriceColor, isPrice ? activeColor : passiveColor);
 
     // Рисуем стоимость:
-    bool isAmount = false;
-    QString amount = "-----";
-    if(isEquipment)
-    {
-        isAmount = isPieceProduct || (isProduct() && isFixed && !isWeightError);
-        amount = amountAsString(product);
-    }
+    bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWeightError)) &&
+        AMOUNT_MAX_CHARS >= amountAsString(product).replace(QString("."), QString("")).replace(QString(","), QString("")).length();
+    QString amount = isAmount ? amountAsString(product) : NO_DATA;
     emit showWeightParam(ControlParam_AmountValue, amount);
     emit showWeightParam(ControlParam_AmountColor, isAmount ? activeColor : passiveColor);
 
-    // Можно печатать?
-    if(isEquipment)
-    {
-        if(printManager->isDemoMode()) emit showPrinterMessage("<b>ДЕМО</b>");
-    }
-    else emit showPrinterMessage("");
-    printStatus.manualPrintEnabled = isAmount && !isPrintError;
+    // Печатать?
+    printStatus.manualPrintEnabled = isAmount && isPM && !equipmentManager->isPMError();
     emit enableManualPrint(printStatus.manualPrintEnabled);
     const bool isAutoPrintEnabled = isAutoPrint && printStatus.manualPrintEnabled;
+    emit showWeightParam(ControlParam_PrinterStatus, isWM && equipmentManager->isPMDemoMode() ? "<b>ДЕМО</b>" : "");
 
-    if(printStatus.calculateMode && isProduct())
+    // Автопечать
+    if(printStatus.calculateMode && isPrice)
     {
         if(isWeightError || isFixed) printStatus.calculateMode = false;
-        //if(isWeightError || isFixed || weightManager->isDemoMode()) printStatus.calculateMode = false;
-
         if(!isPieceProduct) // Весовой товар
         {
-            const int wg = (int)(weightManager->getWeight() * 1000); // Вес в граммах
+            const int wg = (int)(equipmentManager->getWeight() * 1000); // Вес в граммах
             if(!isWeightError && isFixed && isAutoPrintEnabled && wg > 0)
             {
-                if(wg >= settings.getIntValue(SettingCode_PrintAutoWeight)) print(); // Автопечать
+                if(wg >= settings->getIntValue(SettingCode_PrintAutoWeight)) print(); // Автопечать
                 else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
             }
         }
@@ -1170,7 +1129,7 @@ void AppManager::updateWeightStatus()
             {
                 if(isFixed && !isWeightError)
                 {
-                    int newPieces = (int)(weightManager->getWeight() / unitWeight + 0.5); // Округление до ближайшего целого
+                    int newPieces = (int)(equipmentManager->getWeight() / unitWeight + 0.5); // Округление до ближайшего целого
                     printStatus.pieces = newPieces < 1 ? 1 : newPieces;
                     if(isAutoPrintEnabled) print(); // Автопечать
                 }
@@ -1189,13 +1148,14 @@ void AppManager::updateWeightStatus()
     }
 
     if(DEBUG_WEIGHT_STATUS)
-        debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9 %10 %11 %12").arg(
+        debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9%10 %11 %12 %13").arg(
                  Tools::boolToIntString(isWeightError),
                  Tools::boolToIntString(isAutoPrint),
                  Tools::boolToIntString(isFixed),
                  Tools::boolToIntString(isTare),
                  Tools::boolToIntString(isZero),
-                 Tools::boolToIntString(isEquipment),
+                 Tools::boolToIntString(isWM),
+                 Tools::boolToIntString(isPM),
                  Tools::boolToIntString(isPieceProduct),
                  Tools::boolToIntString(printStatus.manualPrintEnabled),
                  Tools::boolToIntString(isAutoPrintEnabled),
@@ -1204,12 +1164,12 @@ void AppManager::updateWeightStatus()
 
 void AppManager::beepSound()
 {
-    Tools::sound("qrc:/Sound/KeypressInvalid.mp3", settings.getIntValue(SettingCode_KeyboardSoundVolume));
+    Tools::sound("qrc:/Sound/KeypressInvalid.mp3", settings->getIntValue(SettingCode_KeyboardSoundVolume));
 }
 
 void AppManager::clickSound()
 {
-    Tools::sound("qrc:/Sound/KeypressStandard.mp3", settings.getIntValue(SettingCode_KeyboardSoundVolume));
+    Tools::sound("qrc:/Sound/KeypressStandard.mp3", settings->getIntValue(SettingCode_KeyboardSoundVolume));
 }
 
 void AppManager::debugLog(const QString& s)
@@ -1234,78 +1194,30 @@ void AppManager::onPopupOpened(const bool open)
     }
 }
 
-void AppManager::updateSettings()
+void AppManager::stopEquipment()
 {
-    debugLog("@@@@@ AppManager::updateSettings");
-    settings.onShow();
-    settingsPanelModel->update(settings);
-    emit showSettingsPanel(settings.getCurrentGroupName());
+    debugLog("@@@@@ AppManager::stopEquipment");
+    timer->blockSignals(true);
+    netServer->stop();
+    equipmentManager->stop();
+    debugLog("@@@@@ AppManager::stopEquipment Done");
 }
 
 void AppManager::startEquipment()
 {
     debugLog("@@@@@ AppManager::startEquipment");
 
-    const int serverPort = settings.getIntValue(SettingCode_TCPPort);
+    const int serverPort = settings->getIntValue(SettingCode_TCPPort);
     debugLog("@@@@@ AppManager::startEquipment serverPort = " + QString::number(serverPort));
     netServer->start(serverPort);
-
-    isEquipment = false;
-    QString message;
-    EquipmentUris eu;
-    int e = 0;
-
-#ifdef Q_OS_ANDROID
-    if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE"))
-        message += "\nНет разрешения для чтения конфиг.файла ";
-    else
-        isEquipment = readConfigFile(ANDROID_EQUIPMENT_CONFIG_FILE, eu, message);
-#else
-    //isEquipment = readConfigFile(DEFAULT_EQUIPMENT_CONFIG_FILE, eu, message);
-    isEquipment = true;
-    eu.wmUri = WEIGHT_DEMO_URI;
-    eu.printerUri = PRINTER_DEMO_URI;
-#endif // Q_OS_ANDROID
-    if(!isEquipment)
-    {
-        message += "\nОБОРУДОВАНИЕ ОТКЛЮЧЕНО";
-        eu.wmUri = eu.printerUri = EQUIPMENT_OFF_URI;
-    }
-    else
-    {   if(eu.wmUri.contains("demo", Qt::CaseInsensitive))
-        {
-            message += "\nДемо-режим весового модуля";
-            eu.wmUri = WEIGHT_DEMO_URI;
-        }
-        if(eu.printerUri.contains("demo", Qt::CaseInsensitive))
-        {
-            message += "\nДемо-режим принтера";
-            eu.printerUri = PRINTER_DEMO_URI;
-        }
-    }
-    e = weightManager->start(eu.wmUri);
-    if(e) message += QString("\nОшибка весового модуля %1: %2").arg(Tools::intToString(e), weightManager->getErrorDescription(e));
-
-    e = printManager->start(eu.printerUri);
-    if(e) message += QString("\nОшибка принтера %1: %2").arg(Tools::intToString(e), printManager->getErrorDescription(e));
-
-    if(!message.isEmpty()) showMessage("ВНИМАНИЕ!", message);
+    equipmentManager->start();
 
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         timer->blockSignals(false);
+        showExternalMessages();
         debugLog("@@@@@ AppManager::startEquipment Done");
     });
-}
-
-void AppManager::stopEquipment()
-{
-    debugLog("@@@@@ AppManager::stopEquipment");
-    timer->blockSignals(true);
-    netServer->stop();
-    weightManager->stop();
-    printManager->stop();
-    debugLog("@@@@@ AppManager::stopEquipment Done");
 }
 
 

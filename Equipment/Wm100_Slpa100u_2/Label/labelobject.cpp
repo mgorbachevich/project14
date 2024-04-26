@@ -32,7 +32,7 @@ bool LabelObject::load(const QByteArray &ba, const QFileInfo &fileInfo, const QL
     fontColor.setRgb(static_cast<QRgb>(i32)); // color
     ds >> i32; // size
 #ifdef Q_OS_ANDROID
-    i32 *= 1.3;
+    i32 *= 1.2;
 #endif
     font.setPointSize(i32);
     ds >> b8; // bold

@@ -6,7 +6,7 @@
 Wm100ProtocolDemo::Wm100ProtocolDemo(QObject *parent)
     : Wm100Protocol{parent}
 {
-
+    deviceInterface = diDemo;
 }
 
 int Wm100ProtocolDemo::open(const QString &uri)

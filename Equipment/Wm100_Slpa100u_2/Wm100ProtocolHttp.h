@@ -14,6 +14,7 @@ public:
     static bool checkUri(const QString &uri);
     virtual int open(const QString &uri);
     virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
+    virtual int cDeamonVersion(QString &version, QString &build, const QString &uri);
 
 private:
     virtual int executeCommand(wmcommand cmd, const QByteArray &out, QByteArray &in);

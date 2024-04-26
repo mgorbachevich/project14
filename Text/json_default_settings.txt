@@ -32,7 +32,7 @@
                 "value_list":"Нет, После печати, Через заданное время простоя",
                 "group_code":"8200",
                 "type":"6"
-           },
+            },
             {
                 "code":"8",
                 "name":"Время простоя перед сбросом товара (секунды)",
@@ -315,7 +315,7 @@
                 "code":"1028",
                 "name":"Формат ШК весового товара по умолчанию",
                 "value":"1",
-                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPTTTTTTWWWW,PPTTTTTWWWWW,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
+                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
                 "group_code":"8602",
                 "type":"6"
             },
@@ -323,7 +323,7 @@
                 "code":"1029",
                 "name":"Формат ШК штучного товара по умолчанию",
                 "value":"1",
-                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPTTTTTTWWWW,PPTTTTTWWWWW,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
+                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
                 "group_code":"8602",
                 "type":"6"
             },

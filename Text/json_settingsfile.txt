@@ -1,0 +1,4 @@
+{
+    "WmUri":"demo://COM3?baudrate=115200&timeout=100",
+    "PrinterUri":"demo://COM3?baudrate=115200&timeout=100"
+}

@@ -92,11 +92,19 @@ public:
         cmReset = 0xf0,
         cmControllerID = 0xf4,
         cmGetDeviceMetrics = 0xfc,
-    } ;
+    };
     enum t_mode{
         modeNormal = 0x00,
         modeCalibration = 0x01,
     };
+    enum deviceinterface {
+        diNone,
+        diCom,
+        diHttp,
+        diUsb,
+        diDemo
+    };
+
 
 public:
     virtual int open(const QString &uri) = 0;
@@ -121,12 +129,15 @@ public:
     virtual int cResetDevice();
     virtual int cGetADC(uint32_t *ADCValue);
     virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
+    virtual int cDeamonVersion(QString &version, QString &build, const QString &uri);
     virtual void getDeviceMetrics(device_metrics *metrics);
     virtual void getChannelParam(channel_specs *params);
+    deviceinterface getInterface();
 
 protected:
     IoBase *io = nullptr;
     QMutex mtx;
+    deviceinterface deviceInterface = diNone;
 
 private:
     channel_status lastStatus = {0, 0.0, 0.0, 0};

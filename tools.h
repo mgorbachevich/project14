@@ -16,7 +16,6 @@ public:
     static int boolToInt(const bool);
     static QString boolToIntString(const bool);
     static QString doubleToString(const double, const int);
-    static bool checkAllPermissions();
     static bool checkPermission(const QString&);
     static bool copyFile(const QString&, const QString&);
     static quint64 currentDateTimeToUInt();
@@ -53,7 +52,8 @@ public:
     static int stringToInt(const QVariant &v, const int defaultValue = 0);
     static QJsonObject stringToJson(const QString&);
     static QString timeFromUInt(quint64, const QString&);
-    static bool writeBinaryFile(const QString&, const QByteArray& data);
+    static bool writeBinaryFile(const QString&, const QByteArray&);
+    static bool writeTextFile(const QString&, const QString&);
 
 private:
     static QString makeFullPath(const QString&, const QString&);

@@ -6,6 +6,7 @@
 #include "jsonparser.h"
 #include "resourcedbtable.h"
 #include "tools.h"
+#include "netserver.h"
 
 QString RequestParser::parseJson(const QByteArray& request)
 {
@@ -139,6 +140,7 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
                     Tools::debugLog("@@@@@ RequestParser::parseSetRequest. Text " + text);
                     if(!text.isEmpty())
                     {
+                        db->onParseSetRequest(text);
                         for (DBTable* t : db->getTables())
                         {
                             if(t == nullptr) continue;

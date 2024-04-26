@@ -42,6 +42,14 @@ public:
         cmSendDataBlock   = 0x90,
         cmLastSendDataRes = 0x91
     };
+    enum deviceinterface {
+        diNone,
+        diCom,
+        diHttp,
+        diUsb,
+        diDemo
+    };
+
     struct prnanswer {
         uint16_t printerStatus;
         uint8_t versionH;
@@ -95,10 +103,12 @@ public:
     int cProtectionMode(const bool value);
 
     int getPrinterVersion();
+    deviceinterface getInterface();
 
 protected:
     IoBase *io = nullptr;
     QByteArray statusToByteArray(const prnanswer &st);
+    deviceinterface deviceInterface = diNone;
 
 private:
     uint16_t labelLength = 60*8;
@@ -112,7 +122,7 @@ private:
     int command(prncommand cmd, prnanswer *ans = nullptr);
     int command(prncommand cmd, memorytest *ans);
     int command(prncommand cmd, counters *ans);
-    void setDelay(prncommand cmd);
+    void setDelay(prncommand cmd, const int res);
 signals:
     void showMessage(const QString&);
 

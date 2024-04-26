@@ -1,9 +1,10 @@
+#include <QThread>
 #include "Slpa100uProtocolCom.h"
 
 Slpa100uProtocolCom::Slpa100uProtocolCom(QObject *parent)
     : Slpa100uProtocol{parent}
 {
-
+    deviceInterface = diCom;
 }
 
 bool Slpa100uProtocolCom::checkUri(const QString &uri)
@@ -32,33 +33,40 @@ int Slpa100uProtocolCom::executeCommand(prncommand cmd, const QByteArray &out, Q
     int res = 0;
     QByteArray buf, buf1;
 
-    io->clear();
-    buf += ENQ;
-    if (!io->write(buf) || !io->read(buf1,1) || buf1[0] != SYNC) res = -1;
+    for (int i = 0; i < 3; i++)
+    {
+        io->clear();
+        buf.clear();
+        buf1.clear();
+        buf += ENQ;
+        if (!io->write(buf) || !io->read(buf1,1) || buf1[0] != SYNC) res = -1;
 
-    buf.clear();
-    buf += cmd;
-    buf += out;
-    buf += crc(buf);
-    buf.push_front(out.size()+1);
-    buf.push_front(STX);
+        buf.clear();
+        buf += cmd;
+        buf += out;
+        buf += crc(buf);
+        buf.push_front(out.size()+1);
+        buf.push_front(STX);
 
-    if (!res)
-        if (!io->write(buf)) res = -4;
+        if (!res)
+            if (!io->write(buf)) res = -4;
 
-    buf.clear();
-    // ACK
-    if (!res)
-        if (!io->read(buf,1) || buf[0] != ACK) res = -5;
+        buf.clear();
+        // ACK
+        if (!res)
+            if (!io->read(buf,1) || buf[0] != ACK) res = -5;
 
-    if (!res && isWithAnswer) {
-        if (io->read(in, 11)) {
-            if (cmd != in[0]) res = -16;
-            else res = in[1];
-            in.remove(0,2);
+        if (!res && isWithAnswer) {
+            if (io->read(in, 11)) {
+                if (cmd != in[0]) res = -16;
+                else res = in[1];
+                in.remove(0,2);
+            }
+            else res = -5;
+            if (res < 0) in.clear();
         }
-        else res = -5;
-        if (res < 0) in.clear();
+        if (!res) break;
+        QThread::msleep(50);
     }
     return res;
  }

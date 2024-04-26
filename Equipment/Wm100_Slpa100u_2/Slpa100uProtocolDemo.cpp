@@ -4,6 +4,7 @@
 Slpa100uProtocolDemo::Slpa100uProtocolDemo(QObject *parent)
     : Slpa100uProtocol{parent}
 {
+    deviceInterface = diDemo;
 }
 
 bool Slpa100uProtocolDemo::checkUri(const QString &uri)
@@ -79,6 +80,7 @@ int Slpa100uProtocolDemo::open(const QString &uri)
 
 void Slpa100uProtocolDemo::showImage(const QImage &img)
 {
+    return;
     QDialog dlg(nullptr);
     QVBoxLayout verticalLayout(&dlg);
     QScrollArea sa(&dlg);

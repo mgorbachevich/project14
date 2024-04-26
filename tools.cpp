@@ -29,15 +29,6 @@ void Tools::sound(const QString& fileName, const int volume)
     mediaPlayer.play();
 }
 
-QString Tools::readTextFile(const QString &fileName)
-{
-    debugLog("@@@@@ Tools::readTextFile " + fileName);
-    QFile f(fileName);
-    if (!f.open(QFile::ReadOnly | QFile::Text)) return "";
-    QTextStream in(&f);
-    return in.readAll();
-}
-
 QString Tools::jsonToString(const QJsonObject &jo)
 {
     QJsonDocument jd(jo);
@@ -105,19 +96,6 @@ QString Tools::doubleToString(const double value, const int afterPoint)
     return QString("%1").arg(value, 0, 'f', afterPoint);
 }
 
-bool Tools::checkAllPermissions()
-{
-#ifdef Q_OS_ANDROID
-    return Tools::checkPermission("android.permission.INTERNET") &&
-           Tools::checkPermission("android.permission.ACCESS_NETWORK_STATE") &&
-           Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") &&
-           Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE")  &&
-           //Tools::checkPermission("android.permission.MANAGE_EXTERNAL_STORAGE") &&
-           Tools::checkPermission("android.permission.QUERY_ALL_PACKAGES");
-#endif
-    return true;
-}
-
 quint64 Tools::currentDateTimeToUInt()
 {
     return QDateTime::currentMSecsSinceEpoch();
@@ -164,20 +142,48 @@ NetParams Tools::getNetParams()
     return np;
 }
 
+QString Tools::readTextFile(const QString &fileName)
+{
+    debugLog("@@@@@ Tools::readTextFile " + fileName);
+    QFile f(fileName);
+    if (!f.open(QFile::ReadOnly | QFile::Text))
+    {
+        debugLog("@@@@@ Tools::readTextFile ERROR");
+        return "";
+    }
+    QTextStream in(&f);
+    return in.readAll();
+}
+
+bool Tools::writeTextFile(const QString &fileName, const QString& data)
+{
+    debugLog("@@@@@ Tools::writeTextFile " + fileName);
+    QFile f(fileName);
+    if (!f.open(QFile::WriteOnly | QFile::Text))
+    {
+        debugLog("@@@@@ Tools::writeTextFile ERROR");
+        return false;
+    }
+    QTextStream out(&f);
+    out << data;
+    f.close();
+    return true;
+}
+
 bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
 {
     debugLog("@@@@@ Tools::writeBinaryFile " + filePath);
     QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly))
+    if (!file.open(QIODevice::WriteOnly))
     {
-        quint64 n1 = file.write(data);
-        quint64 n2 = file.size();
-        debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(intToString(n1), intToString(n2)));
-        file.close();
-        return true;
+        debugLog("@@@@@ Tools::writeBinaryFile ERROR");
+        return false;
     }
-    debugLog("@@@@@ Tools::writeBinaryFile ERROR");
-    return false;
+    quint64 n1 = file.write(data);
+    quint64 n2 = file.size();
+    debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(intToString(n1), intToString(n2)));
+    file.close();
+    return true;
 }
 
 QByteArray Tools::readBinaryFile(const QString& path)
@@ -185,13 +191,13 @@ QByteArray Tools::readBinaryFile(const QString& path)
     debugLog("@@@@@ Tools::readBinaryFile " + path);
     QByteArray a;
     QFile file(path);
-    if (file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly))
     {
-        a = file.readAll();
-        file.close();
-    }
-    else
         debugLog("@@@@@ Tools::writeBinaryFile ERROR");
+        return a;
+    }
+    a = file.readAll();
+    file.close();
     return a;
 }
 
