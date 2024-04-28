@@ -24,11 +24,13 @@ class JsonFile : public QObject
     Q_OBJECT
 
 public:
-    JsonFile(const QString& file, QObject *parent): QObject(parent), fileName(file) { }
+    JsonFile(const QString& file, QObject *parent);
     virtual bool read();
     virtual bool write();
     QString getAndClearMessage();
     virtual bool insertOrReplace(const QString&);
+    virtual void clear() { items.clear(); }
+    virtual DBRecordList getAll();
 
 protected:
     virtual QJsonObject toJson();

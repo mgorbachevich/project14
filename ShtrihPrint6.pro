@@ -338,8 +338,8 @@ RESOURCES += \
     Sound/KeypressInvalid.wav \
     Sound/KeypressStandard.mp3 \
     Sound/KeypressInvalid.mp3 \
+    Text/json_demo_equipment_config.txt \
     Text/json_default_settings.txt \
-    Text/json_settingsfile.txt \
 
 android {
     QT += core-private

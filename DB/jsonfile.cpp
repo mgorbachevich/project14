@@ -2,6 +2,11 @@
 #include "jsonfile.h"
 #include "tools.h"
 
+JsonFile::JsonFile(const QString &file, QObject *parent): QObject(parent), fileName(file)
+{
+    Tools::debugLog("@@@@@ JsonFile::JsonFile " + fileName);
+}
+
 bool JsonFile::read()
 {
     items = parse(Tools::readTextFile(fileName));
@@ -13,6 +18,7 @@ bool JsonFile::read()
 
 bool JsonFile::insertOrReplace(const QString& json)
 {
+    getAll();
     DBRecordList records = parse(json);
     int n = records.count();
     int remove = 0;
@@ -35,15 +41,6 @@ bool JsonFile::insertOrReplace(const QString& json)
 
 bool JsonFile::write()
 {
-#ifdef Q_OS_ANDROID
-    /*
-    if(!Tools::checkPermission("android.permission.MANAGE_EXTERNAL_STORAGE"))
-    {
-        message += "\nНет разрешения для записи конфиг.файла ";
-        return false;
-    }
-    */
-#endif
     bool ok = Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ JsonFile::write %1 %2").arg(fileName, Tools::boolToString(ok)));
     if(!ok) message = "Ошибка записи файла " + fileName;
@@ -94,8 +91,15 @@ DBRecordList JsonFile::parse(const QString& json)
     return records;
 }
 
+DBRecordList JsonFile::getAll()
+{
+    if(items.count() == 0) read();
+    return items;
+}
+
 QJsonObject JsonFile::toJson()
 {
+    getAll();
     QJsonArray ja;
     for (DBRecord& r : items)
     {

@@ -160,7 +160,7 @@ signals:
     void hideToast();
     void previousSettings();
     void resetCurrentProduct();
-    void setCurrentUser(const int, const QString&);
+    void showCurrentUser(const int, const QString&);
     void showCalendarBox();
     void showDateTime(const QString&);
     void showAdminMenu(bool);

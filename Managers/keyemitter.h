@@ -15,7 +15,7 @@ class KeyEmitter : public QObject
     Q_OBJECT
 
 public:
-    KeyEmitter(QObject* parent = nullptr) : QObject(parent) {}
+    KeyEmitter(QObject* parent = nullptr);
 
     Q_INVOKABLE void emitKey(Qt::Key);
     Q_INVOKABLE void emitChar(QChar);

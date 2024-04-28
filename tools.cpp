@@ -142,6 +142,35 @@ NetParams Tools::getNetParams()
     return np;
 }
 
+QString Tools::makeDirs(const bool internalStorage, const QString& localPath)
+{
+    if(localPath.isEmpty()) return "";
+    const QStringList dirs = QString("/" + localPath).split("/");
+    QDir dir;
+    QString path;
+
+    // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
+#ifdef Q_OS_ANDROID
+    if(internalStorage) path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+#else
+    if(internalStorage) path = app->applicationDirPath();
+#endif
+    for(int i = 0; i < dirs.size() - 1; i++)
+    {
+        if(dirs.at(i).isEmpty()) continue;
+        path += "/" + dirs.at(i);
+        if(!dir.exists(path))
+        {
+            bool ok = dir.mkdir(path);
+            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::boolToString(ok), path));
+        }
+    }
+    path += "/" + dirs.last(); // file name
+    //qDebug() << "@@@@@ Tools::makeFullPath local path " << localPath;
+    //qDebug() << "@@@@@ Tools::makeFullPath full path " << path;
+    return path;
+}
+
 QString Tools::readTextFile(const QString &fileName)
 {
     debugLog("@@@@@ Tools::readTextFile " + fileName);
@@ -292,7 +321,9 @@ qint64 Tools::getFileSize(const QString &path)
 
 QString Tools::dbPath(const QString& localFilePath)
 {
-    return makeFullPath("", localFilePath);
+    QString v = makeDirs("", localFilePath);
+    //debugLog("@@@@@ Tools::dbPath " + v);
+    return v;
 }
 
 QString Tools::downloadPath(const QString& localPath)

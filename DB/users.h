@@ -20,21 +20,22 @@ class Users : public JsonFile
 {
 public:
     Users(QObject*);
-    DBRecord getCurrentUser() { return currentUser; }
-    DBRecord* getByName(const QString&);
-    void setDefaultAdmin() { currentUser = defaultAdmin(); }
-    void setUserByName(const QString&);
-    DBRecord defaultAdmin();
-    bool isAdmin() { return isAdmin(currentUser); }
-    static bool isAdmin(const DBRecord& user) { return user[UserField_Role].toInt() == UserRole_Admin; }
-    DBRecordList getAll() { return items; }
-    static QString toAdminName(const QString &);
-    static QString fromAdminName(const QString &);
+    DBRecord& getUser() { return user; }
+    void setDefaultAdmin() { setUser(defaultAdmin()); }
+    void setUser(const DBRecord& r) { user = r; }
+    DBRecord getByName(const QString&);
+    static int getCode(const DBRecord& u) { return u[UserField_Code].toInt(); }
+    static QString getPassword(const DBRecord& u) { return u[UserField_Password].toString(); }
+    static QString getName(const DBRecord& u) { return u[UserField_Name].toString(); }
+    static bool isAdmin(const DBRecord& u) { return u[UserField_Role].toInt() == UserRole_Admin; }
+    static QString toAdminName(const QString&);
+    static QString fromAdminName(const QString&);
 
 protected:
     void sort() { Tools::sortByString(items, UserField_Name);  }
+    DBRecord defaultAdmin();
 
-    DBRecord currentUser;
+    DBRecord user;
 
 };
 

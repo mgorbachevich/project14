@@ -39,12 +39,12 @@ Rectangle
         }
     }
 
-    Connections // Slot for signal AppManager::setCurrentUser:
+    Connections // Slot for signal AppManager::showCurrentUser:
     {
         target: app
-        function onSetCurrentUser(index, name)
+        function onShowCurrentUser(index, name)
         {
-            app.debugLog("@@@@@ authorizationPanel.onSetCurrentUser")
+            app.debugLog("@@@@@ authorizationPanel.onShowCurrentUser")
             loginComboBox.currentIndex = index
             loginComboBox.displayText = name
         }

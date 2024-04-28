@@ -37,9 +37,10 @@ public:
     int nativeSettings(const int);
     bool onInputValue(const int, const QString&);
     void update(const int);
+    void clear() {}
 
 protected:
-    void sort() { Tools::sortByInt(items, SettingField_Code);  }
+    void sort();
     bool checkValue(const DBRecord&, const QString&);
     void checkDefaultRecord(const int, DBRecordList&);
     bool parseDefault();

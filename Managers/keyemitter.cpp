@@ -1,5 +1,11 @@
 #include <QKeyEvent>
 #include "keyemitter.h"
+#include "tools.h"
+
+KeyEmitter::KeyEmitter(QObject *parent) : QObject(parent)
+{
+   Tools::debugLog("@@@@@ KeyEmitter::KeyEmitter");
+}
 
 void KeyEmitter::emitKey(Qt::Key k)
 {

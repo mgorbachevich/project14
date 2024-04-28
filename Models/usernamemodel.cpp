@@ -9,7 +9,7 @@ void UserNameModel::update(const DBRecordList& records)
     for (int i = 0; i < records.count(); i++)
     {
         const DBRecord& user = records[i];
-        const QString name = user[UserField_Name].toString();
+        const QString name = Users::getName(user);
         if (Users::isAdmin(user)) ss << Users::toAdminName(name);
         else ss << name;
     }

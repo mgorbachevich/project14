@@ -35,6 +35,7 @@ public:
     static qint64 getFileSize(const QString&);
     static int getMemory(const MemoryType);
     static NetParams getNetParams();
+    static QString makeDirs(const bool, const QString&);
     //static void memoryCheck();
     static QString moneyToText(const double, const int);
     static void pause(const int, const QString& comment = "");

@@ -47,17 +47,13 @@ void EquipmentManager::create()
     WMMode = PMMode = EquipmentMode_None;
     removeWM();
     removePM();
-#ifdef Q_OS_ANDROID
+
     if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE"))
     {
         message += "\nНет разрешения для чтения конфиг.файла ";
         message += WMPM_MESSAGE_NONE;
         return;
     }
-#endif
-#if (defined(INTERNAL_EQUIPMENT_CONFIG) | !defined(Q_OS_ANDROID))
-    if(!Tools::isFileExists(path)) Tools::copyFile(DEFAULT_EQUIPMENT_DEMO_CONFIG_FILE, path);
-#endif
     if(!Tools::isFileExists(path))
     {
         message += "\nКонфиг.файл " + path + " не найден";

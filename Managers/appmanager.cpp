@@ -84,10 +84,16 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("settingItemListModel", settingItemListModel);
     context->setContextProperty("inputProductCodePanelModel", inputProductCodePanelModel);
 
-    if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(SETTINGS_CONFIG_FILE);
+    if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") ||
+       !Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE"))
+        showMessage("ВНИМАНИЕ!", "Нет разрешений для чтения и записи конфиг.файлов");
+    else if(Tools::makeDirs(false, SETTINGS_FILE).isEmpty() ||
+            Tools::makeDirs(false, USERS_FILE).isEmpty())
+        showMessage("ВНИМАНИЕ!", "Не созданы папки конфиг.файлов");
+
+    if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(SETTINGS_FILE);
     settings->read();
     updateSettings(0);
-    users->read();
     equipmentManager->create();
 
     // Versions:
@@ -224,7 +230,6 @@ void AppManager::createDefaultData()
     debugLog("@@@@@ AppManager::createDefaultData");
     Tools::removeFile(Tools::dbPath(DB_PRODUCT_NAME));
     Tools::removeFile(Tools::dbPath(DB_LOG_NAME));
-    Tools::removeFile(Tools::dbPath(DB_SETTINGS_NAME));
     Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
     Tools::removeFile(Tools::dbPath(DEBUG_LOG_NAME));
     Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME), Tools::dbPath(DB_PRODUCT_NAME));
@@ -816,8 +821,8 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
     else // Введены логин и пароль. Проверка
     {
         debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
-        DBRecord* u = users->getByName(login);
-        if (u == nullptr || password !=  (u->at(UserField_Password)).toString())
+        DBRecord u = users->getByName(login);
+        if (u.isEmpty() || password != Users::getPassword(u))
         {
             debugLog("@@@@@ AppManager::stopAuthorization ERROR");
             const QString error = "Неверные имя пользователя или пароль";
@@ -826,13 +831,12 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
             onUserAction();
             return;
         }
-        users->setUserByName(login);
+        users->setUser(u);
     }
 
     debugLog("@@@@@ AppManager::stopAuthorization OK");
-    QString s = QString("%1. Пользователь: %2. Код: %3").arg(
-                title, login, (users->getCurrentUser()).at(UserField_Code).toString());
-    db->saveLog(LogType_Warning, LogSource_User, s);
+    db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
+                    title, login, Tools::intToString(Users::getCode(users->getUser()))));
     setMainPage(0);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
@@ -842,6 +846,7 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
         updateWeightStatus();
         onUserAction();
         if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
+        users->clear();
         debugLog("@@@@@ AppManager::stopAuthorization Done");
     });
 }
@@ -857,7 +862,7 @@ void AppManager::refreshAll()
 {
     // Обновить всё на экране
     debugLog("@@@@@ AppManager::refreshAll");
-    emit showAdminMenu(users->isAdmin());
+    emit showAdminMenu(users->isAdmin(users->getUser()));
     setShowcaseSort(showcaseSort);
     searchFilterModel->update();
     //searchPanelModel->update();
@@ -960,15 +965,16 @@ void AppManager::showUsers()
     if(records.isEmpty())
     {
         users->setDefaultAdmin();
-        records << users->getCurrentUser();
+        records << users->getUser();
     }
     userNameModel->update(records);
+    const int currentUserCode = Users::getCode(users->getUser());
     for (int i = 0; i < records.count(); i++)
     {
         DBRecord& r = records[i];
-        if(records.count() == 1 || r.at(UserField_Code).toInt() == (users->getCurrentUser()).at(UserField_Code).toInt())
+        if(records.count() == 1 || Users::getCode(r) == currentUserCode)
         {
-            emit setCurrentUser(i, r.at(UserField_Name).toString());
+            emit showCurrentUser(i, Users::getName(r));
             break;
         }
     }
@@ -977,7 +983,7 @@ void AppManager::showUsers()
 void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
-    equipmentManager->print(users->getCurrentUser(), product, quantityAsString(product), priceAsString(product), amountAsString(product));
+    equipmentManager->print(users->getUser(), product, quantityAsString(product), priceAsString(product), amountAsString(product));
     showExternalMessages();
 }
 

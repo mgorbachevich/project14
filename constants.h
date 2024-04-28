@@ -4,9 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.30"
-//#define INTERNAL_EQUIPMENT_CONFIG
-#define INTERNAL_SETTINGS_CONFIG
+#define APP_VERSION "2.31"
 
 // Debug log:
 #define DEBUG_LOG
@@ -22,7 +20,7 @@
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
-#define REMOVE_TEMP_DB_ON_FINISH true
+#define REMOVE_TEMP_DB_ON_START true
 #define CHECK_AUTHORIZATION true
 
 // Files and Pathes:
@@ -33,26 +31,19 @@
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE "../Images/image_dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
-#define DEFAULT_EQUIPMENT_DEMO_CONFIG_FILE ":/Text/json_settingsfile.txt"
+#define DEFAULT_EQUIPMENT_DEMO_CONFIG_FILE ":/Text/json_demo_equipment_config.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
 
 #ifdef Q_OS_ANDROID
 #define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
-#endif
-
-#if (defined(INTERNAL_EQUIPMENT_CONFIG) | !defined(Q_OS_ANDROID))
-#define EQUIPMENT_CONFIG_FILE Tools::dbPath("json_settingsfile.txt")
-#else
 #define EQUIPMENT_CONFIG_FILE "/storage/emulated/0/shtrihm/json_settingsfile.txt"
-#endif
-
-#if (defined(INTERNAL_SETTINGS_CONFIG) | !defined(Q_OS_ANDROID))
-#define SETTINGS_CONFIG_FILE Tools::dbPath("config.txt")
-#define USERS_FILE Tools::dbPath("users.txt")
-#else
-#define SETTINGS_CONFIG_FILE "/storage/emulated/0/shtrihm/config.txt"
+#define SETTINGS_FILE "/storage/emulated/0/shtrihm/config.txt"
 #define USERS_FILE "/storage/emulated/0/shtrihm/users.txt"
+#else
+#define EQUIPMENT_CONFIG_FILE Tools::dbPath("json_settingsfile.txt")
+#define SETTINGS_FILE Tools::dbPath("config.txt")
+#define USERS_FILE Tools::dbPath("users.txt")
 #endif
 
 // Other:
@@ -68,12 +59,11 @@
 #define SHOWCASE_ROW_IMAGES 5
 #define PRODUCT_STRING_DELIMETER "   "
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
-#define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 #define PRICE_MAX_CHARS 6
 #define AMOUNT_MAX_CHARS 8
 #define NO_DATA "-----"
-#define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 //#define DB_EMULATION
+#define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 
 // UI:
 #define DEFAULT_SCREEN_WIDTH 568

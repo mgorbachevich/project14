@@ -4,27 +4,20 @@
 
 Users::Users(QObject *parent): JsonFile(USERS_FILE, parent)
 {
+    Tools::debugLog("@@@@@ Users::Users");
     mainObjectName = "data";
     itemArrayName = "users";
     fields.insert(UserField_Code,     "code");
     fields.insert(UserField_Name,     "name");
     fields.insert(UserField_Role,     "role");
     fields.insert(UserField_Password, "password");
-    setDefaultAdmin();
 }
 
-DBRecord *Users::getByName(const QString &value)
+DBRecord Users::getByName(const QString &value)
 {
-    bool ok = false;
-    for (DBRecord& r : items) if (QString::compare(value, r[UserField_Name].toString()) == 0) return &r;
-    return nullptr;
-}
-
-void Users::setUserByName(const QString &value)
-{
-    DBRecord* u = getByName(value);
-    if(u == nullptr) setDefaultAdmin();
-    else currentUser = *u;
+    getAll();
+    for (DBRecord& r : items) if (QString::compare(value, getName(r)) == 0) return r;
+    return DBRecord();
 }
 
 DBRecord Users::defaultAdmin()
@@ -49,3 +42,4 @@ QString Users::fromAdminName(const QString& name)
     QString s = name;
     return s.remove(USER_ADMIN_PREFIX).remove(USER_ADMIN_POSTFIX);
 }
+

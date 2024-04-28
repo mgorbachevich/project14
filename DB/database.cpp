@@ -33,7 +33,6 @@ DataBase::~DataBase()
     close(productDB);
     close(logDB);
     close(tempDB);
-    if(REMOVE_TEMP_DB_ON_FINISH) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
 }
 
 void DataBase::startDB()
@@ -60,6 +59,7 @@ void DataBase::startDB()
     }
     if (!started) return;
 
+    if(REMOVE_TEMP_DB_ON_START) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
     copyDBFiles(DB_PRODUCT_NAME, DB_TEMP_NAME);
     started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
     if (!started) return;
@@ -141,7 +141,7 @@ bool DataBase::addAndOpen(QSqlDatabase& db, const QString& filePath, const bool 
     db.setDatabaseName(filePath);
     //db.setHostName(hostName);
     if(!open || db.open()) return true;
-    Tools::debugLog("@@@@@ DataBase::addAndOpen ERROR");
+    Tools::debugLog("@@@@@ DataBase::addAndOpen ERROR " + db.lastError().text());
     return false;
 }
 

@@ -6,8 +6,9 @@
 #include <QtCore/private/qandroidextras_p.h>
 #endif
 
-Settings::Settings(QObject *parent): JsonFile(SETTINGS_CONFIG_FILE, parent)
+Settings::Settings(QObject *parent): JsonFile(SETTINGS_FILE, parent)
 {
+    Tools::debugLog("@@@@@ Settings::Settings");
     mainObjectName = "data";
     itemArrayName = "settings";
     fields.insert(SettingField_Code,      "code");
@@ -79,6 +80,7 @@ void Settings::checkDefaultRecord(const int code, DBRecordList& defaults)
 
 DBRecord *Settings::getByCode(const int code)
 {
+    getAll();
     bool ok = false;
     for (DBRecord& r : items) if (r[SettingField_Code].toInt(&ok) == code && ok) return &r;
     return nullptr;
@@ -99,6 +101,7 @@ QVariantList *Settings::getByIndexInCurrentGroup(const int indexInGroup)
 
 QList<int> Settings::getCurrentGroupCodes()
 {
+    getAll();
     QList<int> codes;
     for (DBRecord& r : items)
     {
@@ -173,6 +176,7 @@ int Settings::nativeSettings(const int code) // return error
 bool Settings::onInputValue(const int itemCode, const QString& value)
 {
     Tools::debugLog(QString("@@@@@ Settings::onInputValue %1 %2").arg(Tools::intToString(itemCode), value));
+    getAll();
     for (DBRecord& r : items)
     {
         if (getCode(r) == itemCode)
@@ -202,5 +206,11 @@ void Settings::update(const int groupCode)
     (*getByCode(SettingCode_VerificationName))[SettingField_Value] = QString("%1 %2").arg(
                 getStringValue(*getByCode(SettingCode_ScalesName)),
                 getStringValue(*getByCode(SettingCode_SerialScalesNumber)));
+}
+
+void Settings::sort()
+{
+    getAll();
+    Tools::sortByInt(items, SettingField_Code);
 }
 
