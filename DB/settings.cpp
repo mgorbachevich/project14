@@ -7,7 +7,7 @@
 #include <QtCore/private/qandroidextras_p.h>
 #endif
 
-Settings::Settings(AppManager *parent): JsonFile(SETTINGS_FILE, parent)
+Settings::Settings(AppManager *parent): JsonArrayFile(SETTINGS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Settings::Settings");
     mainObjectName = "data";
@@ -19,6 +19,7 @@ Settings::Settings(AppManager *parent): JsonFile(SETTINGS_FILE, parent)
     fields.insert(SettingField_Value,     "value");
     fields.insert(SettingField_ValueList, "value_list");
     fields.insert(SettingField_Comment,   "comment");
+    scaleConfig = new ScaleConfig(parent);
 }
 
 bool Settings::checkValue(const DBRecord& record, const QString& value)
@@ -200,6 +201,28 @@ void Settings::update(const int groupCode)
     (*getByCode(SettingCode_VerificationName))[SettingField_Value] = QString("%1 %2").arg(
                 getStringValue(*getByCode(SettingCode_ScalesName)),
                 getStringValue(*getByCode(SettingCode_SerialScalesNumber)));
+}
+
+bool Settings::read()
+{
+    Tools::debugLog("@@@@@ Settings::read");
+    bool ok = JsonArrayFile::read();
+    scaleConfig->read();
+    (*getByCode(SettingCode_ScalesName))[SettingField_Value] = scaleConfig->get(ScaleConfigField_Model);
+    (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value] = scaleConfig->get(ScaleConfigField_SerialNumber);
+    (*getByCode(SettingCode_VerificationDate))[SettingField_Value] = scaleConfig->get(ScaleConfigField_VerificationDate);
+    return ok;
+}
+
+bool Settings::write()
+{
+    Tools::debugLog("@@@@@ Settings::write");
+    scaleConfig->set(ScaleConfigField_Model, (*getByCode(SettingCode_ScalesName))[SettingField_Value]);
+    scaleConfig->set(ScaleConfigField_ModelName, getStringValue(SettingCode_ScalesName));
+    scaleConfig->set(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value]);
+    scaleConfig->set(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value]);
+    scaleConfig->write();
+    return JsonArrayFile::write();
 }
 
 void Settings::sort()

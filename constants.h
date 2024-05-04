@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.32"
+#define APP_VERSION "2.33"
 
 // Debug log:
 #define DEBUG_LOG
@@ -40,10 +40,12 @@
 #define EQUIPMENT_CONFIG_FILE "/storage/emulated/0/shtrihm/json_settingsfile.txt"
 #define SETTINGS_FILE "/storage/emulated/0/shtrihm/config.txt"
 #define USERS_FILE "/storage/emulated/0/shtrihm/users.txt"
+#define SCALE_CONFIG_FILE "/storage/emulated/0/shtrihm/scale_config.txt"
 #else
 #define EQUIPMENT_CONFIG_FILE Tools::dbPath("json_settingsfile.txt")
 #define SETTINGS_FILE Tools::dbPath("config.txt")
 #define USERS_FILE Tools::dbPath("users.txt")
+#define SCALE_CONFIG_FILE Tools::dbPath("scale_config.txt")
 #endif
 
 // Other:

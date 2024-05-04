@@ -3,7 +3,7 @@
 #include "users.h"
 #include "appmanager.h"
 
-Users::Users(AppManager *parent): JsonFile(USERS_FILE, parent)
+Users::Users(AppManager *parent): JsonArrayFile(USERS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Users::Users");
     mainObjectName = "data";
@@ -134,7 +134,7 @@ bool Users::isEqual(const DBRecord& u1, const DBRecord& u2)
 DBRecordList Users::getAll()
 {
     Tools::debugLog("@@@@@ Users::getAll");
-    JsonFile::getAll();
+    JsonArrayFile::getAll();
 
     // Удалить всех с кодом 0:
     bool zeroCode;

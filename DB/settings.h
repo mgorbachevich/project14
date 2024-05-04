@@ -1,8 +1,9 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include "jsonfile.h"
+#include "jsonarrayfile.h"
 #include "constants.h"
+#include "scaleconfig.h"
 
 enum SettingField
 {
@@ -15,7 +16,7 @@ enum SettingField
     SettingField_Comment = 6
 };
 
-class Settings : public JsonFile
+class Settings : public JsonArrayFile
 {
 public:
     Settings(AppManager*);
@@ -38,6 +39,8 @@ public:
     bool onInputValue(const int, const QString&);
     void update(const int);
     void clear() {}
+    bool read();
+    bool write();
 
 protected:
     void sort();
@@ -46,6 +49,7 @@ protected:
     bool parseDefault();
 
     int currentGroupCode = 0;
+    ScaleConfig* scaleConfig;
 };
 
 #endif // SETTINGS_H

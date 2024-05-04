@@ -1,7 +1,7 @@
 #ifndef USERS_H
 #define USERS_H
 
-#include "jsonfile.h"
+#include "jsonarrayfile.h"
 #include "constants.h"
 #include "tools.h"
 
@@ -16,7 +16,7 @@ enum UserField
     UserField_Password = 3,
 };
 
-class Users : public JsonFile
+class Users : public JsonArrayFile
 {
 public:
     Users(AppManager*);

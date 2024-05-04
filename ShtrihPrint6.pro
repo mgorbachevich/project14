@@ -16,6 +16,9 @@ INCLUDEPATH += \
     Equipment/Wm100_Slpa100u_2 \
 
 HEADERS += \
+    DB/jsonarrayfile.h \
+    DB/jsonfile.h \
+    DB/scaleconfig.h \
     DB/users.h \
     Managers/equipmentmanager.h \
     Models/edituserspanelmodel.h \
@@ -33,7 +36,6 @@ HEADERS += \
     DB/showcasedbtable.h \
     DB/transactiondbtable.h \
     DB/settings.h \
-    DB/jsonfile.h \
     Equipment/Wm100_Slpa100u_2/IO/RequestSender.h \
     Equipment/Wm100_Slpa100u_2/IO/iobase.h \
     Equipment/Wm100_Slpa100u_2/IO/iocom.h \
@@ -123,10 +125,12 @@ HEADERS += \
 SOURCES += \
     DB/database.cpp \
     DB/dbtable.cpp \
+    DB/jsonarrayfile.cpp \
     DB/jsonfile.cpp \
     DB/jsonparser.cpp \
     DB/logdbtable.cpp \
     DB/productdbtable.cpp \
+    DB/scaleconfig.cpp \
     DB/transactiondbtable.cpp \
     DB/settings.cpp \
     DB/users.cpp \
