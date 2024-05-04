@@ -19,6 +19,7 @@ Popup
     property int settingItemCode: 0
     property int comboIndex: 0
     property string comboText: ""
+    property string commentText: ""
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
@@ -39,7 +40,7 @@ Popup
             anchors.fill: parent
             anchors.margins: screenManager.spacer()
             columns: 3
-            rows: 2
+            rows: 3
             focus: true
             Keys.onPressed: (event) =>
             {
@@ -124,6 +125,19 @@ Popup
                         }
                     }
                 }
+            }
+
+            Rectangle
+            {
+                Layout.column: 0
+                Layout.row: 2
+                Layout.columnSpan: 3
+                Layout.fillWidth: parent
+                Layout.alignment: Qt.AlignCenter
+                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
+                color: "transparent"
+
+                CardText { text: commentText }
             }
         }
     }

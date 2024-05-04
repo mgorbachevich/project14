@@ -150,12 +150,7 @@ Rectangle
             text: " "
         }
 
-        Text
-        {
-            font { pointSize: screenManager.normalFontSize() }
-            color: Material.color(Material.BlueGrey, Material.Shade600)
-            text: qsTr("Пользователь")
-        }
+        SubtitleText { text: qsTr("Пользователь") }
 
         ComboBox
         {
@@ -194,12 +189,7 @@ Rectangle
             text: " "
         }
 
-        Text
-        {
-            font { pointSize: screenManager.normalFontSize() }
-            color: Material.color(Material.BlueGrey, Material.Shade600)
-            text: qsTr("Пароль")
-        }
+        SubtitleText { text: qsTr("Пароль") }
 
         TextField
         {

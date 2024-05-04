@@ -64,21 +64,6 @@ void DataBase::startDB()
     started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
     if (!started) return;
 
-    /*
-    path = Tools::dbPath(DB_SETTINGS_NAME);
-    if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(path);
-    exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::startDB %1 %2").arg(path, Tools::boolToString(exists)));
-    started = addAndOpen(settingsDB, path);
-    if(!exists && started)
-    {
-        started &= createTable(settingsDB, getTable(DBTABLENAME_SETTINGS));
-        if(started) message += "\nСоздана БД настроек";
-        else message += "\nОШИБКА! Не создана БД настроек";
-    }
-    if (!started) return;
-    */
-
     path = Tools::dbPath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
     exists = QFile(path).exists();

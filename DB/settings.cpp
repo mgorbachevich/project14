@@ -1,12 +1,13 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include "settings.h"
+#include "tools.h"
 
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
 #endif
 
-Settings::Settings(QObject *parent): JsonFile(SETTINGS_FILE, parent)
+Settings::Settings(AppManager *parent): JsonFile(SETTINGS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Settings::Settings");
     mainObjectName = "data";
@@ -17,6 +18,7 @@ Settings::Settings(QObject *parent): JsonFile(SETTINGS_FILE, parent)
     fields.insert(SettingField_Name,      "name");
     fields.insert(SettingField_Value,     "value");
     fields.insert(SettingField_ValueList, "value_list");
+    fields.insert(SettingField_Comment,   "comment");
 }
 
 bool Settings::checkValue(const DBRecord& record, const QString& value)
@@ -76,14 +78,6 @@ void Settings::checkDefaultRecord(const int code, DBRecordList& defaults)
 {
     for (DBRecord& r : items)    if (getCode(r) == code) return; // уже есть такая запись
     for (DBRecord& r : defaults) if (getCode(r) == code) { items.append(r); return; }
-}
-
-DBRecord *Settings::getByCode(const int code)
-{
-    getAll();
-    bool ok = false;
-    for (DBRecord& r : items) if (r[SettingField_Code].toInt(&ok) == code && ok) return &r;
-    return nullptr;
 }
 
 QVariantList *Settings::getByIndexInCurrentGroup(const int indexInGroup)

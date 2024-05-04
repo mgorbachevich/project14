@@ -139,14 +139,14 @@ int EquipmentManager::startWM() // return error
         wm100->blockSignals(!isWMStarted);
         if(isWMStarted)
         {
-            if(setSystemDateTime)
+            if(isSystemDateTime)
             {
                 Tools::debugLog("@@@@@ EquipmentManager::startWM setSystemDateTime");
                 wm100->setDateTime(QDateTime::currentDateTime());
             }
             wm100->startPolling(200);
         }
-        setSystemDateTime = false;
+        isSystemDateTime = false;
     }
     if(e) message += QString("\nОшибка весового модуля %1: %2").arg(
                 Tools::intToString(e), getWMErrorDescription(e));
@@ -172,7 +172,7 @@ void EquipmentManager::removeWM()
         delete wm100;
         wm100 = nullptr;
     }
-    setSystemDateTime = false;
+    isSystemDateTime = false;
 }
 
 QString EquipmentManager::WMversion() const

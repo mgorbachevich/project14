@@ -73,13 +73,14 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showSettingComboBox:
     {
         target: app
-        function onShowSettingComboBox(code, name, index, value)
+        function onShowSettingComboBox(code, name, index, value, comment)
         {
-            app.debugLog("@@@@@ mainWindow.onShowSettingComboBox %1 %2 %3 %4".arg(code).arg(name).arg(index).arg(value));
+            app.debugLog("@@@@@ mainWindow.onShowSettingComboBox %1 %2 %3 %4 %5".arg(code).arg(name).arg(index).arg(value).arg(comment));
             Qt.createComponent("Panels/comboSettingPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight,
-                titleText: name, settingItemCode: code, comboIndex: index, comboText: value
+                titleText: name, settingItemCode: code,
+                comboIndex: index, comboText: value, commentText: comment
             }).open()
         }
     }
@@ -135,8 +136,7 @@ ApplicationWindow
             app.debugLog("@@@@@ mainWindow.onShowViewLogPanel");
             Qt.createComponent("Panels/viewLogPanel.qml").createObject(mainWindow,
             {
-                x: 0, y: mainWeightPanel.height, width: mainWindow.width,
-                height: mainWindow.height - mainWeightPanel.height
+                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height
             }).open()
         }
     }
@@ -146,7 +146,7 @@ ApplicationWindow
         target: app
         function onShowMessageBox(titleText, messageText, showButton)
         {
-            app.debugLog("@@@@@ mainWindow.onShowMessageBox %1 %2".arg(titleText).arg(messageText));
+            //app.debugLog("@@@@@ mainWindow.onShowMessageBox %1 %2".arg(titleText).arg(messageText));
             Qt.createComponent("Panels/messagePanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
@@ -160,7 +160,7 @@ ApplicationWindow
         target: app
         function onShowConfirmationBox(selector, titleText, messageText)
         {
-            app.debugLog("@@@@@ mainWindow.onShowConfirmationBox %1 %2 %3".arg(selector).arg(titleText).arg(messageText));
+            //app.debugLog("@@@@@ mainWindow.onShowConfirmationBox %1 %2 %3".arg(selector).arg(titleText).arg(messageText));
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
@@ -197,15 +197,29 @@ ApplicationWindow
         }
     }
 
-    Connections // Slot for signal AppManager::showCalendarBox:
+    Connections // Slot for signal AppManager::showEditUsersPanel:
     {
         target: app
-        function onShowCalendarBox()
+        function onShowEditUsersPanel()
         {
-            app.debugLog("@@@@@ mainWindow.onShowCalendarBox");
-            Qt.createComponent("Panels/calendarPanel.qml").createObject(mainWindow,
+            app.debugLog("@@@@@ mainWindow.onShowEditUsersPanel");
+            Qt.createComponent("Panels/editUsersPanel.qml").createObject(mainWindow,
             {
-                x: popupX, y: popupY, width: popupWidth, height: popupHeight
+                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height
+            }).open()
+        }
+    }
+
+    Connections // Slot for signal AppManager::showInputUserPanel:
+    {
+        target: app
+        function onShowInputUserPanel(code, name, password, admin)
+        {
+            app.debugLog("@@@@@ mainWindow.onShowInputUserPanel");
+            Qt.createComponent("Panels/inputUserPanel.qml").createObject(mainWindow,
+            {
+                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height,
+                userCode: code, userName: name, userPassword: password, isUserAdmin: admin
             }).open()
         }
     }

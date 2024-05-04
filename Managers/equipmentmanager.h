@@ -21,6 +21,7 @@ public:
     void start() { startWM(); startPM(); }
     void stop() { removeWM(); removePM(); }
     QString getAndClearMessage();
+    void setSystemDateTime(const bool v) { isSystemDateTime = v; }
 
     // Weight Manager:
     QString WMversion() const;
@@ -44,9 +45,6 @@ public:
     bool isPM();
     void feed();
 
-    bool setSystemDateTime = false;
-    EquipmentMode WMMode = EquipmentMode_None;
-    EquipmentMode PMMode = EquipmentMode_None;
 
 private:
     // Weight Manager:
@@ -72,6 +70,7 @@ private:
     int WMErrorCode = 0;
     Wm100Protocol::channel_status WMStatus = {0, 0.0, 0.0, 0};
     QString WMUri;
+    EquipmentMode WMMode = EquipmentMode_None;
 
     // Print Manager:
     Slpa100u* slpa = nullptr;
@@ -80,7 +79,9 @@ private:
     int PMErrorCode = 0;
     uint16_t PMStatus = 0;
     QString PMUri;
+    EquipmentMode PMMode = EquipmentMode_None;
 
+    bool isSystemDateTime = false;
     DataBase* db;
     Settings* settings;
     QString message;

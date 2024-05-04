@@ -26,6 +26,7 @@ class NetServer;
 class AppInfo;
 class EquipmentManager;
 class InputProductCodePanelModel;
+class EditUsersPanelModel;
 
 class AppManager : public QObject
 {
@@ -33,15 +34,22 @@ class AppManager : public QObject
 
 public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
+    void showConfirmation(const ConfirmSelector, const QString&, const QString&);
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
     Q_INVOKABLE void clickSound();
     Q_INVOKABLE void debugLog(const QString&);
+    Q_INVOKABLE void onAddUserClicked();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
+    Q_INVOKABLE void onDeleteUserClicked(const QString&);
+    Q_INVOKABLE void onEditUsersClicked();
+    Q_INVOKABLE void onEditUsersPanelClicked(const int);
+    Q_INVOKABLE void onEditUsersPanelClose();
     Q_INVOKABLE void onInfoClicked();
+    Q_INVOKABLE void onInputUserClosed(const QString&, const QString&, const QString&, const bool);
     Q_INVOKABLE void onLockClicked();
     Q_INVOKABLE void onMainPageSwiped(const int);
     Q_INVOKABLE void onNumberClicked(const QString&);
@@ -93,7 +101,6 @@ private:
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
-    void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showExternalMessages();
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showUsers();
@@ -151,6 +158,7 @@ private:
     ViewLogPanelModel* viewLogPanelModel = nullptr;
     SettingItemListModel* settingItemListModel = nullptr;
     InputProductCodePanelModel* inputProductCodePanelModel = nullptr;
+    EditUsersPanelModel* editUsersPanelModel = nullptr;
 
 signals:
     void closeLogView();
@@ -161,12 +169,13 @@ signals:
     void previousSettings();
     void resetCurrentProduct();
     void showCurrentUser(const int, const QString&);
-    void showCalendarBox();
     void showDateTime(const QString&);
     void showAdminMenu(bool);
     void showConfirmationBox(const int, const QString&, const QString&);
+    void showEditUsersPanel();
     void showEnvironmentStatus(const bool, const bool, const bool, const bool);
     void showGroupHierarchyRoot(const bool);
+    void showInputUserPanel(const QString&, const QString&, const QString&, const bool);
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);
     void showPiecesInputBox(const int, const int);
@@ -174,7 +183,7 @@ signals:
     void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);
     void showSettingInputBox(const int, const QString&, const QString&);
-    void showSettingComboBox(const int, const QString&, const int, const QString&);
+    void showSettingComboBox(const int, const QString&, const int, const QString&, const QString&);
     void showSettingSlider(const int, const QString&, const int, const int, const int, const int);
     void showSettingsPanel(const QString&);
     void showShowcaseSort(const int);

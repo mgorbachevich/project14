@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.31"
+#define APP_VERSION "2.32"
 
 // Debug log:
 #define DEBUG_LOG
@@ -16,7 +16,7 @@
 // On Start:
 #define CREATE_DEFAULT_DATA_ON_START false
 #define CREATE_DEFAULT_IMAGES_ON_START false
-#define REMOVE_SETTINGS_DB_ON_START false
+#define REMOVE_SETTINGS_FILE_ON_START true
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START false
@@ -64,6 +64,7 @@
 #define NO_DATA "-----"
 //#define DB_EMULATION
 #define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
+#define DEFAULT_ADMIN_CODE 0
 
 // UI:
 #define DEFAULT_SCREEN_WIDTH 568
@@ -87,6 +88,8 @@ enum ConfirmSelector
     ConfirmSelector_Authorization,
     ConfirmSelector_ClearLog,
     ConfirmSelector_SetSystemDateTime,
+    ConfirmSelector_ReplaceUser,
+    ConfirmSelector_DeleteUser
 };
 
 enum LogType

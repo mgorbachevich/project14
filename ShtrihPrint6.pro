@@ -18,6 +18,7 @@ INCLUDEPATH += \
 HEADERS += \
     DB/users.h \
     Managers/equipmentmanager.h \
+    Models/edituserspanelmodel.h \
     constants.h \
     tools.h \
     appinfo.h \
@@ -199,6 +200,7 @@ SOURCES += \
     Managers/keyemitter.cpp \
     Managers/screenmanager.cpp \
     Models/baselistmodel2.cpp \
+    Models/edituserspanelmodel.cpp \
     Models/inputproductcodepanelmodel.cpp \
     Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
@@ -256,6 +258,7 @@ RESOURCES += \
     Icons/bluetooth.png \
     Icons/bluetooth_white.png \
     Icons/close.png \
+    Icons/delete.png \
     Icons/empty.png \
     Icons/error.png \
     Icons/error_white.png \
@@ -268,6 +271,7 @@ RESOURCES += \
     Icons/menu.png \
     Icons/n.png \
     Icons/ok_outline.png \
+    Icons/plus.png \
     Icons/print.png \
     Icons/red.png \
     Icons/sdcard.png \
@@ -277,6 +281,7 @@ RESOURCES += \
     Icons/tare_white.png \
     Icons/usb.png \
     Icons/usb_white.png \
+    Icons/user.png \
     Icons/wifi.png \
     Icons/wifi_white.png \
     Icons/zero_white.png \
@@ -310,16 +315,17 @@ RESOURCES += \
     Panels/KeyboardCharButton.qml \
     Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
-    Panels/calendarPanel.qml \
     Panels/CardText.qml \
     Panels/CardTitleText.qml \
     Panels/comboSettingPanel.qml \
     Panels/sliderSettingPanel.qml \
     Panels/confirmationPanel.qml \
+    Panels/editUsersPanel.qml \
     Panels/EmptyButton.qml \
     Panels/inputPiecesPanel.qml \
     Panels/inputProductCodePanel.qml \
     Panels/inputSettingPanel.qml \
+    Panels/inputUserPanel.qml \
     Panels/KeyboardIconButton.qml \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
@@ -328,6 +334,7 @@ RESOURCES += \
     Panels/searchPanel.qml \
     Panels/settingsPanel.qml \
     Panels/showcasePanel.qml \
+    Panels/SubtitleText.qml \
     Panels/tablePanel.qml \
     Panels/viewLogPanel.qml \
     Panels/VirtualKeyboardNumeric.qml \

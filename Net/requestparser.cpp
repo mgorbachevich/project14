@@ -42,12 +42,12 @@ QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, con
         if(p2 < 0)
         {
             int p2 = request.length();
-            Tools::debugLog(QString("@@@@@ AppManager::parseGetDataRequest: p1=%1, p2=%2").arg(p1, p2));
+            Tools::debugLog(QString("@@@@@ RequestParser::parseGetRequest: p1=%1, p2=%2").arg(p1, p2));
             if(p2 > p1)
             {
                 p1 += s1.length();
                 tableName = request.mid(p1, p2 - p1);
-                Tools::debugLog("@@@@@ AppManager::parseGetDataRequest table " + tableName);
+                Tools::debugLog("@@@@@ RequestParser::parseGetRequest table " + tableName);
             }
         }
         else
@@ -58,7 +58,7 @@ QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, con
             {
                 p1 += s1.length();
                 tableName = request.mid(p1, p2 - p1);
-                Tools::debugLog("@@@@@ AppManager::parseGetDataRequest table " + tableName);
+                Tools::debugLog("@@@@@ RequestParser::parseGetRequest table " + tableName);
                 if (request.contains(s2))
                 {
                     int p3 = request.indexOf("[") + 1;

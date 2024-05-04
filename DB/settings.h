@@ -3,7 +3,6 @@
 
 #include "jsonfile.h"
 #include "constants.h"
-#include "tools.h"
 
 enum SettingField
 {
@@ -12,17 +11,18 @@ enum SettingField
     SettingField_GroupCode = 2,
     SettingField_Name = 3,
     SettingField_Value = 4,
-    SettingField_ValueList = 5
+    SettingField_ValueList = 5,
+    SettingField_Comment = 6
 };
 
 class Settings : public JsonFile
 {
 public:
-    Settings(QObject*);
+    Settings(AppManager*);
     bool getBoolValue(const SettingCode code) { return getIntValue(code, true) != 0; }
-    DBRecord* getByCode(const int);
     DBRecord* getByIndexInCurrentGroup(const int);
     int getCode(const DBRecord& r) { return r[SettingField_Code].toInt(); }
+    QString getComment(const DBRecord& r) { return r[SettingField_Comment].toString(); }
     QList<int> getCurrentGroupCodes();
     int getCurrentGroupCode() { return currentGroupCode; }
     QString getCurrentGroupName();

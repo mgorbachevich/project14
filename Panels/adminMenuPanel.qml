@@ -30,4 +30,11 @@ Column
         icon.source: "../Icons/log"
         onClicked: app.onViewLogClicked()
     }
+
+    RoundIconButton
+    {
+        anchors.horizontalCenter: parent.horizontalCenter
+        icon.source: "../Icons/user"
+        onClicked: app.onEditUsersClicked()
+    }
 }

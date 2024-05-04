@@ -1,8 +1,9 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include "users.h"
+#include "appmanager.h"
 
-Users::Users(QObject *parent): JsonFile(USERS_FILE, parent)
+Users::Users(AppManager *parent): JsonFile(USERS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Users::Users");
     mainObjectName = "data";
@@ -13,6 +14,12 @@ Users::Users(QObject *parent): JsonFile(USERS_FILE, parent)
     fields.insert(UserField_Password, "password");
 }
 
+DBRecord &Users::getUser()
+{
+    if(user.isEmpty()) setUser(items[0]);
+    return user;
+}
+
 DBRecord Users::getByName(const QString &value)
 {
     getAll();
@@ -20,16 +27,89 @@ DBRecord Users::getByName(const QString &value)
     return DBRecord();
 }
 
-DBRecord Users::defaultAdmin()
+DBRecord Users::createUser(const QString& code, const QString& name, const QString& password, const bool admin)
 {
-    Tools::debugLog("@@@@@ Users::defaultAdmin");
     DBRecord r;
     for (int i = 0; i < fields.count(); i++) r << QVariant("");
-    r[UserField_Code] = QVariant(0);
-    r[UserField_Name] = QVariant(DEFAULT_ADMIN_NAME);
-    r[UserField_Role] = QVariant(UserRole_Admin);
-    r[UserField_Password] = QVariant("");
+    r[UserField_Code] = code;
+    r[UserField_Name] = name;
+    r[UserField_Password] = password;
+    r[UserField_Role] = admin ? Tools::boolToIntString(UserRole_Admin) : Tools::boolToIntString(UserRole_Operator);
     return r;
+}
+
+void Users::onDeleteUser(const  QString& code)
+{
+    Tools::debugLog(QString("@@@@@ Users::onDeleteUser %1").arg(code));
+    DBRecord* p = getByCode(Tools::stringToInt(code));
+    if(p == nullptr)
+    {
+        appManager->showMessage("ВНИМАНИЕ!", QString("Не найден пользователь с кодом %1?").arg(code));
+        return;
+    }
+    inputUser = createUser(code, getName(*p), getPassword(*p), isAdmin(*p));
+    appManager->showConfirmation(ConfirmSelector::ConfirmSelector_DeleteUser,
+                "Подтверждение", QString("Удалить пользователя %1 с кодом %2?").arg(getName(*p), code));
+}
+
+void Users::onInputUser(const QString& code, const QString& name, const QString& password, const bool admin)
+{
+    Tools::debugLog(QString("@@@@@ Users::onInputUser %1 %2 %3 %4").arg(
+                        code, name, password, Tools::boolToString(admin)));
+    if(Tools::stringToInt(code) <= 0)
+    {
+        message += "Неверный код пользователя " + code;
+        return;
+    }
+    if(name.isEmpty())
+    {
+        message += "Неверное имя пользователя";
+        return;
+    }
+    inputUser = createUser(code, name, password, admin);
+
+    DBRecord* p = getByCode(Tools::stringToInt(code));
+    if(p != nullptr)
+    {
+        if(!isEqual(*p, inputUser))
+            appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
+                "Подтверждение", QString("Уже есть пользователь с кодом %1, заменить?").arg(code));
+        return;
+    }
+    DBRecord u = getByName(name);
+    if(!u.isEmpty())
+    {
+        if(!isEqual(u, inputUser))
+            appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
+                "Подтверждение", QString("Уже есть пользователь с именем %1, заменить?").arg(name));
+        return;
+    }
+    if(!isEqual(u, inputUser)) replaceOrInsertInputUser();
+}
+
+void Users::replaceOrInsertInputUser()
+{
+    const int code = getCode(inputUser);
+    Tools::debugLog("@@@@@ Users::replaceOrInsertInputUser " + Tools::intToString(code));
+    DBRecord* p = getByCode(code);
+    if(p != nullptr) *p = inputUser;
+    else items << inputUser;
+    write();
+}
+
+void Users::deleteInputUser()
+{
+    const int code = getCode(inputUser);
+    Tools::debugLog("@@@@@ Users::deleteInputUser " + Tools::intToString(code));
+    if(getByCode(code) != nullptr)
+    {
+        const int i = getIndex(code);
+        if(!get(i).isEmpty())
+        {
+            items.remove(i);
+            write();
+        }
+    }
 }
 
 QString Users::toAdminName(const QString& name)
@@ -42,4 +122,43 @@ QString Users::fromAdminName(const QString& name)
     QString s = name;
     return s.remove(USER_ADMIN_PREFIX).remove(USER_ADMIN_POSTFIX);
 }
+
+bool Users::isEqual(const DBRecord& u1, const DBRecord& u2)
+{
+    if(u1.count() != u2.count()) return false;
+    for (int i = 0; i < u1.count(); i++)
+        if(u1[i].toString() != u2[i].toString()) return false;
+    return true;
+}
+
+DBRecordList Users::getAll()
+{
+    Tools::debugLog("@@@@@ Users::getAll");
+    JsonFile::getAll();
+
+    // Удалить всех с кодом 0:
+    bool zeroCode;
+    do
+    {
+        zeroCode = false;
+        for (int i = 0; i < items.count(); i++)
+        {
+            zeroCode = getCode(items[i]) == 0;
+            if(zeroCode)
+            {
+                items.remove(i);
+                break;
+            }
+        }
+    }
+    while (zeroCode);
+
+    // Нужен хотя бы один администратор:
+    int n = 0;
+    for (DBRecord& r : items) if (isAdmin(r)) n++;
+    if (n == 0) items << createUser(Tools::intToString(DEFAULT_ADMIN_CODE), DEFAULT_ADMIN_NAME, "", true);
+    sort();
+    return items;
+}
+
 

@@ -25,6 +25,7 @@
 #include "netserver.h"
 #include "screenmanager.h"
 #include "keyemitter.h"
+#include "edituserspanelmodel.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
     QObject(application), context(qmlContext)
@@ -72,6 +73,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     viewLogPanelModel = new ViewLogPanelModel(this);
     settingItemListModel = new SettingItemListModel(this);
     inputProductCodePanelModel = new InputProductCodePanelModel(this);
+    editUsersPanelModel = new EditUsersPanelModel(this);
 
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
@@ -83,6 +85,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("viewLogPanelModel", viewLogPanelModel);
     context->setContextProperty("settingItemListModel", settingItemListModel);
     context->setContextProperty("inputProductCodePanelModel", inputProductCodePanelModel);
+    context->setContextProperty("editUsersPanelModel", editUsersPanelModel);
 
     if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") ||
        !Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE"))
@@ -91,7 +94,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
             Tools::makeDirs(false, USERS_FILE).isEmpty())
         showMessage("ВНИМАНИЕ!", "Не созданы папки конфиг.файлов");
 
-    if(REMOVE_SETTINGS_DB_ON_START) Tools::removeFile(SETTINGS_FILE);
+    if(REMOVE_SETTINGS_FILE_ON_START) Tools::removeFile(SETTINGS_FILE);
     settings->read();
     updateSettings(0);
     equipmentManager->create();
@@ -562,6 +565,14 @@ void AppManager::onConfirmationClicked(const int selector)
     onUserAction();
     switch (selector)
     {
+    case ConfirmSelector_DeleteUser:
+        users->deleteInputUser();
+        editUsersPanelModel->update(users);
+        break;
+    case ConfirmSelector_ReplaceUser:
+        users->replaceOrInsertInputUser();
+        editUsersPanelModel->update(users);
+        break;
     case ConfirmSelector_Authorization:
         startAuthorization();
         break;
@@ -570,9 +581,15 @@ void AppManager::onConfirmationClicked(const int selector)
         db->clearLog();
         break;
     case ConfirmSelector_SetSystemDateTime:
-        equipmentManager->setSystemDateTime = true;
+        equipmentManager->setSystemDateTime(true);
         break;
     }
+}
+
+void AppManager::onDeleteUserClicked(const QString& code)
+{
+    debugLog("@@@@@ AppManager::onDeleteUserClicked " + code);
+    users->onDeleteUser(code);
 }
 
 void AppManager::onInfoClicked()
@@ -624,7 +641,7 @@ void AppManager::onSettingsItemClicked(const int index)
         break;
     case SettingType_List:
         settingItemListModel->update(settings->getValueList(*r));
-        emit showSettingComboBox(code, name, settings->getIntValue(*r, true), settings->getStringValue(*r));
+        emit showSettingComboBox(code, name, settings->getIntValue(*r, true), settings->getStringValue(*r), settings->getComment(*r));
         break;
     case SettingType_IntervalNumber:
     {
@@ -810,47 +827,6 @@ void AppManager::startAuthorization()
     });
 }
 
-void AppManager::stopAuthorization(const QString& login, const QString& password)
-{
-    const QString title = "Авторизация";
-    if(!CHECK_AUTHORIZATION || users->getAll().isEmpty()) // Без проверки
-    {
-        users->setDefaultAdmin();
-        debugLog(QString("@@@@@ AppManager::stopAuthorization %1").arg(login));
-    }
-    else // Введены логин и пароль. Проверка
-    {
-        debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
-        DBRecord u = users->getByName(login);
-        if (u.isEmpty() || password != Users::getPassword(u))
-        {
-            debugLog("@@@@@ AppManager::stopAuthorization ERROR");
-            const QString error = "Неверные имя пользователя или пароль";
-            showMessage(title, error);
-            db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
-            onUserAction();
-            return;
-        }
-        users->setUser(u);
-    }
-
-    debugLog("@@@@@ AppManager::stopAuthorization OK");
-    db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
-                    title, login, Tools::intToString(Users::getCode(users->getUser()))));
-    setMainPage(0);
-    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
-    {
-        debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));
-        startEquipment();
-        refreshAll();
-        updateWeightStatus();
-        onUserAction();
-        if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
-        users->clear();
-        debugLog("@@@@@ AppManager::stopAuthorization Done");
-    });
-}
-
 void AppManager::setShowcaseSort(const int sort)
 {
     showcaseSort = sort;
@@ -956,28 +932,6 @@ void AppManager::onUserAction()
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
     userActionTime = Tools::currentDateTimeToUInt();
     secret = 0;
-}
-
-void AppManager::showUsers()
-{
-    // Обновить список пользователей на экране авторизации
-    DBRecordList records = users->getAll();
-    if(records.isEmpty())
-    {
-        users->setDefaultAdmin();
-        records << users->getUser();
-    }
-    userNameModel->update(records);
-    const int currentUserCode = Users::getCode(users->getUser());
-    for (int i = 0; i < records.count(); i++)
-    {
-        DBRecord& r = records[i];
-        if(records.count() == 1 || Users::getCode(r) == currentUserCode)
-        {
-            emit showCurrentUser(i, Users::getName(r));
-            break;
-        }
-    }
 }
 
 void AppManager::print() // Печатаем этикетку
@@ -1226,7 +1180,102 @@ void AppManager::startEquipment()
     });
 }
 
+void AppManager::onEditUsersClicked()
+{
+    users->getAll();
+    debugLog("@@@@@ AppManager::onEditUsersClicked " + Tools::intToString(users->count()));
+    editUsersPanelModel->update(users);
+    emit showEditUsersPanel();
+}
 
+void AppManager::onEditUsersPanelClicked(const int index)
+{
+    DBRecord u = users->get(index);
+    const int code = users->getCode(u);
+    if(code <= 0)
+    {
+        showMessage("ВНИМАНИЕ!", "Редактирование запрещено");
+        return;
+    }
+    const QString name = users->getName(u);
+    const QString password = users->getPassword(u);
+    const bool isAdmin = users->isAdmin(u);
+    debugLog(QString("@@@@@ AppManager::onEditUsersPanelClicked %1 %2 %3 %4 %5").arg(
+        Tools::intToString(index), Tools::intToString(code), name, password, Tools::boolToString(isAdmin)));
+    emit showInputUserPanel(Tools::intToString(code), name, password, isAdmin);
+}
+
+void AppManager::onEditUsersPanelClose()
+{
+    debugLog("@@@@@ AppManager::onEditUsersPanelClose ");
+    users->clear();
+}
+
+void AppManager::onAddUserClicked()
+{
+    debugLog("@@@@@ AppManager::onAddUserClicked ");
+    emit showInputUserPanel("", "", "", false);
+}
+
+void AppManager::onInputUserClosed(const QString& code, const QString& name, const QString& password, const bool admin)
+{
+    users->onInputUser(code, name, password, admin);
+    editUsersPanelModel->update(users);
+    showExternalMessages();
+}
+
+void AppManager::showUsers()
+{
+    // Обновить список пользователей на экране авторизации
+    DBRecordList records = users->getAll();
+    userNameModel->update(records);
+    const int currentUserCode = Users::getCode(users->getUser());
+    for (int i = 0; i < records.count(); i++)
+    {
+        DBRecord& r = records[i];
+        if(records.count() == 1 || Users::getCode(r) == currentUserCode)
+        {
+            emit showCurrentUser(i, Users::getName(r));
+            break;
+        }
+    }
+}
+
+void AppManager::stopAuthorization(const QString& login, const QString& password)
+{
+    const QString title = "Авторизация";
+    if(CHECK_AUTHORIZATION)
+    {
+        debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
+        DBRecord u = users->getByName(login);
+        if (u.isEmpty() || password != Users::getPassword(u))
+        {
+            debugLog("@@@@@ AppManager::stopAuthorization ERROR");
+            const QString error = "Неверные имя пользователя или пароль";
+            showMessage(title, error);
+            db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
+            onUserAction();
+            return;
+        }
+        users->setUser(u);
+    }
+
+    debugLog("@@@@@ AppManager::stopAuthorization OK");
+    db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
+                    title, login, Tools::intToString(Users::getCode(users->getUser()))));
+    setMainPage(0);
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    {
+        debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));
+        startEquipment();
+        refreshAll();
+        updateWeightStatus();
+        onUserAction();
+        if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
+        users->clear();
+        debugLog("@@@@@ AppManager::stopAuthorization Done");
+    });
+}
 
 
 

@@ -2,7 +2,8 @@
 #include "jsonfile.h"
 #include "tools.h"
 
-JsonFile::JsonFile(const QString &file, QObject *parent): QObject(parent), fileName(file)
+JsonFile::JsonFile(const QString &file, AppManager* parent):
+    QObject((QObject*)parent), appManager(parent), fileName(file)
 {
     Tools::debugLog("@@@@@ JsonFile::JsonFile " + fileName);
 }
@@ -41,6 +42,7 @@ bool JsonFile::insertOrReplace(const QString& json)
 
 bool JsonFile::write()
 {
+    sort();
     bool ok = Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ JsonFile::write %1 %2").arg(fileName, Tools::boolToString(ok)));
     if(!ok) message = "Ошибка записи файла " + fileName;
@@ -91,11 +93,26 @@ DBRecordList JsonFile::parse(const QString& json)
     return records;
 }
 
+int JsonFile::getIndex(const int code)
+{
+    for (int i = 0; i < items.count(); i++) if(items[i][0].toInt() == code) return i;
+    return -1;
+}
+
 DBRecordList JsonFile::getAll()
 {
     if(items.count() == 0) read();
     return items;
 }
+
+DBRecord *JsonFile::getByCode(const int code)
+{
+    getAll();
+    bool ok = false;
+    for (DBRecord& r : items) if (r[0].toInt(&ok) == code && ok) return &r;
+    return nullptr;
+}
+
 
 QJsonObject JsonFile::toJson()
 {

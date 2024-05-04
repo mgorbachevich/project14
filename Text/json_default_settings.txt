@@ -316,6 +316,7 @@
                 "name":"Формат ШК весового товара по умолчанию",
                 "value":"1",
                 "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
+                "comment":"P – префикс весовой или штучный, W – вес товара в граммах или количество штучного товара, С – код, T – стоимость в МДЕ, B – ШК из карточки товара",
                 "group_code":"8602",
                 "type":"6"
             },
@@ -324,6 +325,7 @@
                 "name":"Формат ШК штучного товара по умолчанию",
                 "value":"1",
                 "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
+                "comment":"P – префикс весовой или штучный, W – вес товара в граммах или количество штучного товара, С – код, T – стоимость в МДЕ, B – ШК из карточки товара",
                 "group_code":"8602",
                 "type":"6"
             },

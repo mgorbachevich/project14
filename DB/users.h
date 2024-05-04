@@ -19,24 +19,29 @@ enum UserField
 class Users : public JsonFile
 {
 public:
-    Users(QObject*);
-    DBRecord& getUser() { return user; }
-    void setDefaultAdmin() { setUser(defaultAdmin()); }
+    Users(AppManager*);
+    DBRecord& getUser();
     void setUser(const DBRecord& r) { user = r; }
+    DBRecordList getAll();
     DBRecord getByName(const QString&);
+    void onInputUser(const QString&, const QString&, const QString&, const bool);
+    void onDeleteUser(const QString&);
+    void replaceOrInsertInputUser();
+    void deleteInputUser();
     static int getCode(const DBRecord& u) { return u[UserField_Code].toInt(); }
     static QString getPassword(const DBRecord& u) { return u[UserField_Password].toString(); }
-    static QString getName(const DBRecord& u) { return u[UserField_Name].toString(); }
+    static QString getName(const DBRecord& u) { return u.isEmpty() ? "" : u[UserField_Name].toString(); }
     static bool isAdmin(const DBRecord& u) { return u[UserField_Role].toInt() == UserRole_Admin; }
     static QString toAdminName(const QString&);
+    static bool isEqual(const DBRecord&, const DBRecord&);
     static QString fromAdminName(const QString&);
 
 protected:
     void sort() { Tools::sortByString(items, UserField_Name);  }
-    DBRecord defaultAdmin();
+    DBRecord createUser(const QString&, const QString&, const QString&, const bool);
 
     DBRecord user;
-
+    DBRecord inputUser;
 };
 
 #endif // USERS_H
