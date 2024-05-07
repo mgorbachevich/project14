@@ -4,16 +4,14 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QVariantList>
+#include "externalmessager.h"
 
 class AppManager;
 
-class JsonFile : public QObject
+class JsonFile : public ExternalMessager
 {
-    Q_OBJECT
-
 public:
     JsonFile(const QString&, AppManager*);
-    QString getAndClearMessage();
     virtual bool read() { return false; }
     virtual bool write();
     virtual void clear() {}
@@ -22,10 +20,8 @@ protected:
     virtual QJsonObject toJson() { return QJsonObject(); }
     virtual QString toString();
 
-    AppManager* appManager;
     QHash<int, QString> fields;
     QString fileName;
-    QString message;
 };
 
 #endif // JSONFILE_H

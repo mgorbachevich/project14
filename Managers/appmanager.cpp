@@ -89,10 +89,10 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
     if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") ||
        !Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE"))
-        showMessage("ВНИМАНИЕ!", "Нет разрешений для чтения и записи конфиг.файлов");
+        showAttention("Нет разрешений для чтения и записи конфиг.файлов");
     else if(Tools::makeDirs(false, SETTINGS_FILE).isEmpty() ||
             Tools::makeDirs(false, USERS_FILE).isEmpty())
-        showMessage("ВНИМАНИЕ!", "Не созданы папки конфиг.файлов");
+        showAttention("Не созданы папки конфиг.файлов");
 
     if(REMOVE_SETTINGS_FILE_ON_START) Tools::removeFile(SETTINGS_FILE);
     settings->read();
@@ -122,7 +122,6 @@ void AppManager::onDBStarted()
         startAuthorization();
         timer->start(APP_TIMER_MSEC);
     }
-    else QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()  { showExternalMessages(); });
     debugLog("@@@@@ AppManager::onDBStarted Done");
 }
 
@@ -153,7 +152,6 @@ void AppManager::onTimer()
     if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer " +
                                        Tools::intToString((int)(userActionTime / 1000)));
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
-    showExternalMessages();
     const quint64 now = Tools::currentDateTimeToUInt();
 
     if(isAuthorizationOpened()) // Авторизация
@@ -201,7 +199,7 @@ void AppManager::onTimer()
             db->afterNetAction();
             refreshAll();
             resetProduct();
-            showMessage("ВНИМАНИЕ!", "Данные обновлены!");
+            showAttention("Данные обновлены!");
             // if(!product.isEmpty()) db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
         }
     }
@@ -345,14 +343,10 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     DBRecord* r = settings->getByCode(settingItemCode);
     if (r == nullptr)
     {
-        showMessage("ВНИМАНИЕ!", "Ошибка настройки (неизвестная запись)!");
+        showAttention("Ошибка настройки (неизвестная запись)!");
         return;
     }
-    if(!settings->onInputValue(settingItemCode, value))
-    {
-        showExternalMessages();
-        return;
-    }
+    if(!settings->onInputValue(settingItemCode, value)) return;
     updateSettings(settings->getCurrentGroupCode());
     settings->write();
     QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
@@ -391,12 +385,12 @@ void AppManager::onPiecesInputClosed(const QString &value)
     if(value.length() > maxChars)
     {
         v = Tools::stringToInt(value.leftJustified(maxChars));
-        showMessage("ВНИМАНИЕ!", "Максимальная длина " + Tools::intToString(maxChars));
+        showAttention("Максимальная длина " + Tools::intToString(maxChars));
     }
     if(v < 1)
     {
         v = 1;
-        showMessage("ВНИМАНИЕ!", "Количество не должно быть меньше 1");
+        showAttention("Количество не должно быть меньше 1");
     }
     printStatus.pieces = v;
     updateWeightStatus();
@@ -422,7 +416,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
     debugLog("@@@@@ AppManager::onDBRequestResult " + QString::number(selector));
     if (!ok)
     {
-        showMessage("ВНИМАНИЕ!", "Ошибка базы данных!");
+        showAttention("Ошибка базы данных!");
         return;
     }
 
@@ -448,7 +442,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
 
     case DBSelector_SetProductByInputCode: // Отображение товара с заданным кодом:
         if(records.isEmpty())
-            showMessage("", "Товар не найден!");
+            showAttention("Товар не найден!");
         else
         {
             emit closeInputProductPanel();
@@ -658,12 +652,15 @@ void AppManager::onSettingsItemClicked(const int index)
     case SettingType_Custom:
         onCustomSettingsItemClicked(*r);
         break;
+        break;
     case SettingType_Unsed:
         showMessage(name, "Не поддерживается");
         break;
     case SettingType_ReadOnly:
         showMessage(name, "Редактирование запрещено");
         break;
+    case SettingType_GroupWithPassword:
+        emit showPasswordInputBox(code);
     default:
         break;
     }
@@ -680,10 +677,9 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     const int code = settings->getCode(r);
     const QString& name = settings->getName(r);
     debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::intToString(code), name));
-
     switch (code)
     {
-    case SettingCode_ClearLog:
+     case SettingCode_ClearLog:
         clearLog();
         break;
     case SettingCode_DateTime:
@@ -691,19 +687,11 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
         break;
     case SettingCode_Equipment:
     case SettingCode_WiFi:
-    case SettingCode_SystemSettings:
     case SettingCode_Ethernet:
-        switch(settings->nativeSettings(code))
-        {
-        case 0: // Ошибок нет
-            break;
-        case -1:
-            showMessage(name, "ОШИБКА! Неизвестный параметр");
-            break;
-        case -2:
-            showMessage(name, "ОШИБКА! Неверный вызов");
-            break;
-        }
+        settings->nativeSettings(code);
+        break;
+    case SettingCode_SystemSettings:
+        emit showPasswordInputBox(code);
         break;
     default:
         showMessage(name, "Не поддерживается");
@@ -844,7 +832,6 @@ void AppManager::refreshAll()
     //searchPanelModel->update();
     filteredSearch();
     updateTablePanel(true);
-    showExternalMessages();
 }
 
 void AppManager::showToast(const QString &title, const QString &text, const int delaySec)
@@ -878,16 +865,6 @@ void AppManager::addMessageString(QString& to, const QString& from)
         if(!to.isEmpty()) to += "\n";
         to += from;
     }
-}
-
-void AppManager::showExternalMessages()
-{
-    QString s;
-    addMessageString(s, db->getAndClearMessage());
-    addMessageString(s, settings->getAndClearMessage());
-    addMessageString(s, users->getAndClearMessage());
-    addMessageString(s, equipmentManager->getAndClearMessage());
-    if(!s.isEmpty()) showMessage("ВНИМАНИЕ!", s);
 }
 
 void AppManager::showConfirmation(const ConfirmSelector selector, const QString &title, const QString &text)
@@ -938,7 +915,6 @@ void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
     equipmentManager->print(users->getUser(), product, quantityAsString(product), priceAsString(product), amountAsString(product));
-    showExternalMessages();
 }
 
 void AppManager::onPrintClicked()
@@ -962,7 +938,6 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
                 newTransaction[TransactionDBTable::Weight].toString()));
     db->saveTransaction(newTransaction);
     if (settings->getIntValue(SettingCode_ProductReset, true) == ProductReset_Print) isResetProductNeeded = true;
-    showExternalMessages();
 }
 
 void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
@@ -1175,7 +1150,6 @@ void AppManager::startEquipment()
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         timer->blockSignals(false);
-        showExternalMessages();
         debugLog("@@@@@ AppManager::startEquipment Done");
     });
 }
@@ -1194,7 +1168,7 @@ void AppManager::onEditUsersPanelClicked(const int index)
     const int code = users->getCode(u);
     if(code <= 0)
     {
-        showMessage("ВНИМАНИЕ!", "Редактирование запрещено");
+        showAttention("Редактирование запрещено");
         return;
     }
     const QString name = users->getName(u);
@@ -1221,7 +1195,6 @@ void AppManager::onInputUserClosed(const QString& code, const QString& name, con
 {
     users->onInputUser(code, name, password, admin);
     editUsersPanelModel->update(users);
-    showExternalMessages();
 }
 
 void AppManager::showUsers()
@@ -1277,6 +1250,27 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
     });
 }
 
+void AppManager::onPasswordInputClosed(const int code, const QString& inputPassword)
+{
+    switch(code)
+    {
+    case SettingCode_FactorySettings:
+        if(inputPassword == settings->getScaleConfigValue(ScaleConfigField_FactorySettingsPassword))
+        {
+            updateSettings(code);
+            emit showSettingsPanel(settings->getCurrentGroupName());
+        }
+        else showAttention("Неверный пароль");
+        break;
+    case SettingCode_SystemSettings:
+        if(inputPassword == settings->getScaleConfigValue(ScaleConfigField_SystemSettingsPassword))
+            settings->nativeSettings(code);
+        else showAttention("Неверный пароль");
+        break;
+    default:
+        break;
+    }
+}
 
 
 

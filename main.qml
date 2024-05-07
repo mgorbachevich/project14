@@ -70,6 +70,19 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showPasswordInputBox:
+    {
+        target: app
+        function onShowPasswordInputBox(code)
+        {
+            app.debugLog("@@@@@ mainWindow.onShowPasswordInputBox %1".arg(code));
+            Qt.createComponent("Panels/inputPasswordPanel.qml").createObject(mainWindow,
+            {
+                x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, code: code
+            }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showSettingComboBox:
     {
         target: app

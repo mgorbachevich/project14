@@ -55,6 +55,7 @@ public:
     Q_INVOKABLE void onNumberClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
     Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
+    Q_INVOKABLE void onPasswordInputClosed(const int, const QString&);
     Q_INVOKABLE void onPopupOpened(const bool);
     Q_INVOKABLE void onProductCodeEdited(const QString&);
     Q_INVOKABLE void onPrintClicked();
@@ -78,6 +79,7 @@ public:
     Q_INVOKABLE void onVirtualKeyboardSet(const int);
     Q_INVOKABLE void onWeightPanelClicked(const int);
     Q_INVOKABLE void onZeroClicked();
+    Q_INVOKABLE void showAttention(const QString& s) { showMessage("ВНИМАНИЕ!", s); }
     Q_INVOKABLE void showMessage(const QString&, const QString&);
 
 private:
@@ -101,7 +103,6 @@ private:
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
-    void showExternalMessages();
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showUsers();
     void startAuthorization();
@@ -178,6 +179,7 @@ signals:
     void showInputUserPanel(const QString&, const QString&, const QString&, const bool);
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);
+    void showPasswordInputBox(const int);
     void showPiecesInputBox(const int, const int);
     void showProductCodeInputBox(const QString&);
     void showProductImage(const QString&);

@@ -10,17 +10,10 @@
 #include "Slpa100u.h"
 #include "Label/labelcreator.h"
 
-EquipmentManager::EquipmentManager(QObject *parent, DataBase* dataBase, Settings* globalSettings):
-    QObject(parent), db(dataBase), settings(globalSettings)
+EquipmentManager::EquipmentManager(AppManager *parent, DataBase* dataBase, Settings* globalSettings):
+    ExternalMessager(parent), db(dataBase), settings(globalSettings)
 {
     Tools::debugLog("@@@@@ EquipmentManager::EquipmentManager ");
-}
-
-QString EquipmentManager::getAndClearMessage()
-{
-    QString s = message;
-    message = "";
-    return s;
 }
 
 bool EquipmentManager::isWM()
@@ -50,20 +43,17 @@ void EquipmentManager::create()
 
     if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE"))
     {
-        message += "\nНет разрешения для чтения конфиг.файла ";
-        message += WMPM_MESSAGE_NONE;
+        showAttention(QString("Нет разрешения для чтения конфиг.файла. %1").arg(WMPM_MESSAGE_NONE));
         return;
     }
     if(!Tools::isFileExists(path))
     {
-        message += "\nКонфиг.файл " + path + " не найден";
-        message += WMPM_MESSAGE_NONE;
+        showAttention(QString("Конфиг.файл %1 не найден. %2").arg(path, WMPM_MESSAGE_NONE));
         return;
     }
     if(Tools::getFileSize(path) == 0)
     {
-        message += "\nКонфиг.файл " + path + " имеет размер 0";
-        message += WMPM_MESSAGE_NONE;
+        showAttention(QString("Конфиг.файл %1 имеет размер 0. %2").arg(path, WMPM_MESSAGE_NONE));
         return;
     }
 
@@ -71,21 +61,21 @@ void EquipmentManager::create()
     if(wm100 == nullptr)
     {
         removeWM();
-        message += WMPM_MESSAGE_NONE;
+        showAttention(WMPM_MESSAGE_NONE);
         return;
     }
     int e1 = wm100->readConnectParam(path, "WmUri", WMUri);
-    if(e1 != 0) message += "\n" + wm100->errorDescription(e1);
+    if(e1 != 0) showAttention(wm100->errorDescription(e1));
     else
     {
         switch (wm100->checkUri(WMUri))
         {
         case Wm100Protocol::diDemo:
             WMMode = EquipmentMode_Demo;
-            message += WM_MESSAGE_DEMO;
+            showAttention(WM_MESSAGE_DEMO);
             break;
         case Wm100Protocol::diNone:
-            message += WM_MESSAGE_NONE;
+            showAttention(WMPM_MESSAGE_NONE);
             break;
         default:
             WMMode = EquipmentMode_Ok;
@@ -95,17 +85,17 @@ void EquipmentManager::create()
 
     createPM();
     int e2 = wm100->readConnectParam(path, "PrinterUri", PMUri);
-    if(e2 != 0) message += "\n" + wm100->errorDescription(e2);
+    if(e2 != 0) showAttention(wm100->errorDescription(e2));
     else
     {
         switch (slpa->checkUri(PMUri))
         {
         case Slpa100uProtocol::diDemo:
             PMMode = EquipmentMode_Demo;
-            message += PM_MESSAGE_DEMO;
+            showAttention(PM_MESSAGE_DEMO);
             break;
         case Slpa100uProtocol::diNone:
-            message += PM_MESSAGE_NONE;
+            showAttention(PM_MESSAGE_NONE);
             break;
         default:
             PMMode = EquipmentMode_Ok;
@@ -148,8 +138,8 @@ int EquipmentManager::startWM() // return error
         }
         isSystemDateTime = false;
     }
-    if(e) message += QString("\nОшибка весового модуля %1: %2").arg(
-                Tools::intToString(e), getWMErrorDescription(e));
+    if(e) showAttention(QString("\nОшибка весового модуля %1: %2").arg(
+                Tools::intToString(e), getWMErrorDescription(e)));
     Tools::debugLog("@@@@@ EquipmentManager::startWM error " + Tools::intToString(e));
     return e;
 }
@@ -307,8 +297,8 @@ int EquipmentManager::startPM()
             if(e >= 0) e = slpa->setSensor(settings->getBoolValue(SettingCode_PrintLabelSensor));
         }
     }
-    if(e) message += QString("\nОшибка принтера %1: %2").arg(
-                Tools::intToString(e), getPMErrorDescription(e));
+    if(e) showAttention(QString("\nОшибка принтера %1: %2").arg(
+                Tools::intToString(e), getPMErrorDescription(e)));
     Tools::debugLog("@@@@@ EquipmentManager::startPM error " + QString::number(e));
     return e;
 }
@@ -514,7 +504,7 @@ int EquipmentManager::print(const DBRecord& user, const DBRecord& product,
         }
         else Tools::debugLog("@@@@@ EquipmentManager::print ERROR (get Transactions Table)");
     }
-    if(e != 0) message += "\nОшибка печати " + getPMErrorDescription(e);
-    else if(isPMDemoMode()) message += "\nДемо-печать";
+    if(e != 0) showAttention("Ошибка печати " + getPMErrorDescription(e));
+    else if(isPMDemoMode()) showAttention("Демо-печать");
     return e;
 }

@@ -93,7 +93,7 @@ Popup
                         {
                             app.beepSound();
                             inputPiecesPanelText.text = inputPiecesPanelText.text.substring(0, inputPiecesPanelText.text.length - 1);
-                            app.showMessage("ВНИМАНИЕ!", "Максимальная длина " + maxChars)
+                            app.showAttention("Максимальная длина " + maxChars)
                         }
                         if (parseInt(inputPiecesPanelText.text) <= 0) inputPiecesPanelText.text = "";
                     }

@@ -39,6 +39,7 @@ public:
 protected:
     void sort() { Tools::sortByString(items, UserField_Name);  }
     DBRecord createUser(const QString&, const QString&, const QString&, const bool);
+    void update();
 
     DBRecord user;
     DBRecord inputUser;

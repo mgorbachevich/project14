@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "users.h"
 #include "dbtable.h"
+#include "externalmessager.h"
 
 #define DB_VERSION "1.6"
 
@@ -39,12 +40,12 @@ enum DBSelector
     DBSelector_GetProductByInputCode,
 };
 
-class DataBase : public QObject
+class DataBase : public ExternalMessager
 {
     Q_OBJECT
 
 public:
-    explicit DataBase(Settings*, Users*, QObject*);
+    explicit DataBase(Settings*, Users*, AppManager*);
     ~DataBase();
     DBTable* getTable(const QString&) const;
     QString version() { return DB_VERSION; }
@@ -60,7 +61,6 @@ public:
     void select(const DBSelector, const QString&);
     void clearLog();
     bool isStarted() { return started; }
-    QString getAndClearMessage();
     QList<DBTable*> getTables() { return tables; };
 
 protected:
@@ -87,7 +87,6 @@ protected:
     QSqlDatabase tempDB;
     QSqlDatabase logDB;
     int removeOldLogRecordsCounter = 0;
-    QString message;
     QList<DBTable*> tables;
     Settings* settings;
     Users* users;

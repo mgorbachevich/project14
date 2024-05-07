@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.33"
+#define APP_VERSION "2.35"
 
 // Debug log:
 #define DEBUG_LOG
@@ -67,6 +67,7 @@
 //#define DB_EMULATION
 #define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 #define DEFAULT_ADMIN_CODE 0
+#define DEFAULT_FACTORY_SETTINGS_PASSWORDS true
 
 // UI:
 #define DEFAULT_SCREEN_WIDTH 568
@@ -231,6 +232,7 @@ enum SettingType
     SettingType_IntervalNumber = 5,
     SettingType_List = 6,
     SettingType_Unsed = 7,
+    SettingType_GroupWithPassword = 8,
 };
 
 enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt!
@@ -302,6 +304,8 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_Update = 1047,
     SettingCode_PrintLabelPrefixWeight = 1048,
     SettingCode_PrintLabelPrefixPiece = 1049,
+    //Группы:
+    SettingCode_FactorySettings = 9000,
     /*
     SettingCode_Power = 17,
     SettingCode_Cursor = 10,

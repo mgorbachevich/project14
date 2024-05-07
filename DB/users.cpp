@@ -16,7 +16,11 @@ Users::Users(AppManager *parent): JsonArrayFile(USERS_FILE, parent)
 
 DBRecord &Users::getUser()
 {
-    if(user.isEmpty()) setUser(items[0]);
+    if(user.isEmpty())
+    {
+        getAll();
+        setUser(items[0]);
+    }
     return user;
 }
 
@@ -44,7 +48,7 @@ void Users::onDeleteUser(const  QString& code)
     DBRecord* p = getByCode(Tools::stringToInt(code));
     if(p == nullptr)
     {
-        appManager->showMessage("ВНИМАНИЕ!", QString("Не найден пользователь с кодом %1?").arg(code));
+        showAttention(QString("Не найден пользователь с кодом %1?").arg(code));
         return;
     }
     inputUser = createUser(code, getName(*p), getPassword(*p), isAdmin(*p));
@@ -58,12 +62,12 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
                         code, name, password, Tools::boolToString(admin)));
     if(Tools::stringToInt(code) <= 0)
     {
-        message += "Неверный код пользователя " + code;
+        showAttention("Неверный код пользователя " + code);
         return;
     }
     if(name.isEmpty())
     {
-        message += "Неверное имя пользователя";
+        showAttention("Неверное имя пользователя");
         return;
     }
     inputUser = createUser(code, name, password, admin);
@@ -94,6 +98,7 @@ void Users::replaceOrInsertInputUser()
     DBRecord* p = getByCode(code);
     if(p != nullptr) *p = inputUser;
     else items << inputUser;
+    update();
     write();
 }
 
@@ -107,9 +112,36 @@ void Users::deleteInputUser()
         if(!get(i).isEmpty())
         {
             items.remove(i);
+            update();
             write();
         }
     }
+}
+
+void Users::update()
+{
+    // Удалить всех с кодом 0:
+    bool foundZeroCode = false;
+    do
+    {
+        foundZeroCode = false;
+        for (int i = 0; i < items.count(); i++)
+        {
+            if(getCode(items[i]) == 0)
+            {
+                foundZeroCode = true;
+                items.remove(i);
+                break;
+            }
+        }
+    }
+    while (foundZeroCode);
+
+    // Нужен хотя бы один администратор:
+    bool foundAdmin = false;
+    for (DBRecord& r : items) foundAdmin |= isAdmin(r);
+    if (!foundAdmin) items << createUser(Tools::intToString(DEFAULT_ADMIN_CODE), DEFAULT_ADMIN_NAME, "", true);
+    sort();
 }
 
 QString Users::toAdminName(const QString& name)
@@ -135,30 +167,10 @@ DBRecordList Users::getAll()
 {
     Tools::debugLog("@@@@@ Users::getAll");
     JsonArrayFile::getAll();
-
-    // Удалить всех с кодом 0:
-    bool zeroCode;
-    do
-    {
-        zeroCode = false;
-        for (int i = 0; i < items.count(); i++)
-        {
-            zeroCode = getCode(items[i]) == 0;
-            if(zeroCode)
-            {
-                items.remove(i);
-                break;
-            }
-        }
-    }
-    while (zeroCode);
-
-    // Нужен хотя бы один администратор:
-    int n = 0;
-    for (DBRecord& r : items) if (isAdmin(r)) n++;
-    if (n == 0) items << createUser(Tools::intToString(DEFAULT_ADMIN_CODE), DEFAULT_ADMIN_NAME, "", true);
-    sort();
+    update();
     return items;
 }
+
+
 
 

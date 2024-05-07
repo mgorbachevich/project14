@@ -241,7 +241,7 @@
                 "name":"Дата поверки",
                 "value":"",
                 "group_code":"9001",
-                "type":"1"
+                "type":"4"
             },
             {
                 "code":"1013",
@@ -474,82 +474,98 @@
             {
                 "code":"8100",
                 "name":"Система",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8200",
                 "name":"Рабочий режим",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8300",
                 "name":"Поиск",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8400",
                 "name":"Реклама",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8500",
                 "name":"Видеораспознование",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8600",
                 "name":"Печать",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8601",
                 "name":"Параметры печати",
-                "group_code": "8600"
+                "group_code": "8600",
+                "type":"0"
             },
             {
                 "code":"8602",
                 "name":"Параметры этикетки",
-                "group_code": "8600"
+                "group_code": "8600",
+                "type":"0"
             },
             {
                 "code":"8700",
                 "name":"Сеть",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8750",
                 "name":"Протокол",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8800",
                 "name":"Лог и отчеты",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"8801",
                 "name":"Лог",
-                "group_code": "8800"
+                "group_code": "8800",
+                "type":"0"
             },
             {
                 "code":"8802",
                 "name":"Отчеты",
-                "group_code": "8800"
+                "group_code": "8800",
+                "type":"0"
             },
             {
                 "code":"8900",
                 "name":"Информация",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"0"
             },
             {
                 "code":"9000",
                 "name":"Заводские настройки",
-                "group_code": "0"
+                "group_code": "0",
+                "type":"8"
             },
             {
                 "code":"9001",
                 "name":"Поверка",
-                "group_code":"9000"
+                "group_code":"9000",
+                "type":"0"
             }
         ]
     }

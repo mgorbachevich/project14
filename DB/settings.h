@@ -34,13 +34,14 @@ public:
     QString getStringValue(const SettingCode);
     int getType(const DBRecord& r) { return r[SettingField_Type].toInt(); }
     QStringList getValueList(const DBRecord& r) { return r[SettingField_ValueList].toString().split(','); }
-    bool isGroup(const DBRecord& r) { return getType(r) == SettingType_Group; }
-    int nativeSettings(const int);
+    bool isGroup(const DBRecord& r);
+    void nativeSettings(const int);
     bool onInputValue(const int, const QString&);
     void update(const int);
     void clear() {}
     bool read();
     bool write();
+    QString getScaleConfigValue(const ScaleConfigField field) { return scaleConfig->get(field).toString(); }
 
 protected:
     void sort();

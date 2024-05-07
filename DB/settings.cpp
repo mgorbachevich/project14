@@ -29,29 +29,29 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
     case SettingCode_ScalesNumber:
         if(Tools::stringToInt(value) == 0)
         {
-            message += "\n" + getName(record) + ". Неверное значение";
+           showAttention(getName(record) + ". Неверное значение");
             return false;
         }
         if(value.trimmed().length() > 6)
         {
-            message += "\n" + getName(record) + ". Длина должна быть не больше 6";
+            showAttention(getName(record) + ". Длина должна быть не больше 6");
             return false;
         }
         break;
     case SettingCode_SerialScalesNumber:
         if(Tools::stringToInt(value) == 0)
         {
-            message += "\n" + getName(record) + ". Неверное значение";
+            showAttention(getName(record) + ". Неверное значение");
             return false;
         }
         if(value.trimmed().length() > 7)
         {
-            message += "\n" + getName(record) + ". Длина должна быть не больше 7";
+            showAttention(getName(record) + ". Длина должна быть не больше 7");
             return false;
         }
         if(getIntValue(SettingCode_ScalesName, true) == 0)
         {
-            message += "\n" + getName(record) + ". Необходимо выбрать модель весов";
+            showAttention(getName(record) + ". Необходимо выбрать модель весов");
             return false;
         }
         break;
@@ -59,7 +59,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
     case SettingCode_PrintLabelPrefixPiece:
         if(value.trimmed().length() != 2)
         {
-            message += "\n" + getName(record) + ". Длина должна быть равна 2";
+            showAttention(getName(record) + ". Длина должна быть равна 2");
             return false;
         }
     default:
@@ -139,7 +139,12 @@ QString Settings::getStringValue(const SettingCode code)
     return r == nullptr ? "" : getStringValue(*r);
 }
 
-int Settings::nativeSettings(const int code) // return error
+bool Settings::isGroup(const DBRecord &r)
+{
+    return getType(r) == SettingType_Group || getType(r) == SettingType_GroupWithPassword;
+}
+
+void Settings::nativeSettings(const int code)
 {
     Tools::debugLog("@@@@@ Settings::nativeSettings " + QString::number(code));
 
@@ -156,16 +161,31 @@ int Settings::nativeSettings(const int code) // return error
         jint result = QJniObject::callStaticMethod<jint>(ANDROID_NATIVE_CLASS_NAME, "startNativeActivity",
                     "(Landroid/content/Context;I)I", QNativeInterface::QAndroidApplication::context(), code);
         Tools::debugLog("@@@@@ Settings::nativeSettings SettingCode_Equipment result " + QString::number(result));
-        return result;
+        switch(result)
+        {
+        case 0: // Ошибок нет
+            break;
+        case -1:
+            showAttention("ОШИБКА! Неизвестный параметр");
+            break;
+        case -2:
+            showAttention("ОШИБКА! Неверный вызов");
+            break;
+        default:
+            showAttention("ОШИБКА! Неизвестное значение");
+            break;
+        }
+        break;
     }
     default:
         qDebug("@@@@@ Settings::nativeSettings: Unknown code");
-        return -1;
+        showAttention("ОШИБКА! Неизвестный параметр");
+        break;
     }
-#endif // Q_OS_ANDROID
-
+#else
     qDebug("@@@@@ Settings::nativeSettings: Unknown param");
-    return -1;
+    showAttention("Не поддерживается");
+#endif
 }
 
 bool Settings::onInputValue(const int itemCode, const QString& value)

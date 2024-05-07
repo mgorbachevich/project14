@@ -21,6 +21,7 @@ HEADERS += \
     DB/scaleconfig.h \
     DB/users.h \
     Managers/equipmentmanager.h \
+    Managers/externalmessager.h \
     Models/edituserspanelmodel.h \
     constants.h \
     tools.h \
@@ -201,6 +202,7 @@ SOURCES += \
     Equipment/Wm100_Slpa100u_2/wm100.cpp \
     Managers/appmanager.cpp \
     Managers/equipmentmanager.cpp \
+    Managers/externalmessager.cpp \
     Managers/keyemitter.cpp \
     Managers/screenmanager.cpp \
     Models/baselistmodel2.cpp \
@@ -326,6 +328,7 @@ RESOURCES += \
     Panels/confirmationPanel.qml \
     Panels/editUsersPanel.qml \
     Panels/EmptyButton.qml \
+    Panels/inputPasswordPanel.qml \
     Panels/inputPiecesPanel.qml \
     Panels/inputProductCodePanel.qml \
     Panels/inputSettingPanel.qml \

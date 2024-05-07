@@ -11,8 +11,8 @@
 #include "constants.h"
 #include "requestparser.h"
 
-DataBase::DataBase(Settings* globalSettings, Users* globalUsers, QObject *parent):
-    QObject(parent), settings(globalSettings), users(globalUsers)
+DataBase::DataBase(Settings* globalSettings, Users* globalUsers, AppManager *parent) :
+    ExternalMessager(parent), settings(globalSettings), users(globalUsers)
 {
     Tools::debugLog("@@@@@ DataBase::DataBase");
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
@@ -39,6 +39,7 @@ void DataBase::startDB()
 {
     Tools::debugLog("@@@@@ DataBase::startDB");
 
+    QString message;
     QString path = Tools::dbPath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
@@ -57,12 +58,20 @@ void DataBase::startDB()
         if(started) message += "\nСоздана БД товаров";
         else message += "\nОШИБКА! Не создана БД товаров";
     }
-    if (!started) return;
+    if (!started)
+    {
+        if(!message.isEmpty()) showAttention(message);
+        return;
+    }
 
     if(REMOVE_TEMP_DB_ON_START) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
     copyDBFiles(DB_PRODUCT_NAME, DB_TEMP_NAME);
     started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
-    if (!started) return;
+    if (!started)
+    {
+        if(!message.isEmpty()) showAttention(message);
+        return;
+    }
 
     path = Tools::dbPath(DB_LOG_NAME);
     if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
@@ -76,6 +85,7 @@ void DataBase::startDB()
         if(started) message += "\nСоздана БД лога";
         else message += "\nОШИБКА! Не создана БД лога";
     }
+    if(!message.isEmpty()) showAttention(message);
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::boolToString(started)));
 }
 
@@ -87,7 +97,7 @@ void DataBase::onAppStart()
     else
     {
         Tools::debugLog("@@@@@ DataBase::onAppStart ERROR");
-        message += "\nОшибка при открытии базы данных";
+        showAttention("Ошибка при открытии базы данных");
     }
     emit dbStarted();
 }
@@ -323,13 +333,6 @@ void DataBase::clearLog()
     QString sql = QString("DELETE FROM %1;").arg(t->name);
     if(!executeSQL(logDB, sql, false))
         Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
-}
-
-QString DataBase::getAndClearMessage()
-{
-    QString s = message;
-    message = "";
-    return s;
 }
 
 void DataBase::select(const DBSelector selector, const QString& param)

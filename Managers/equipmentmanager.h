@@ -1,26 +1,25 @@
 #ifndef EQUIPMENTMANAGER_H
 #define EQUIPMENTMANAGER_H
 
-#include <QObject>
 #include "wm100.h"
 #include "constants.h"
 #include "settings.h"
+#include "externalmessager.h"
 
 class DataBase;
 class Slpa100u;
 class LabelCreator;
 
-class EquipmentManager : public QObject
+class EquipmentManager : public ExternalMessager
 {
     Q_OBJECT
 
 public:
-    EquipmentManager(QObject*, DataBase*, Settings*);
+    EquipmentManager(AppManager*, DataBase*, Settings*);
     ~EquipmentManager() { stop(); }
     void create();
     void start() { startWM(); startPM(); }
     void stop() { removeWM(); removePM(); }
-    QString getAndClearMessage();
     void setSystemDateTime(const bool v) { isSystemDateTime = v; }
 
     // Weight Manager:
@@ -84,7 +83,6 @@ private:
     bool isSystemDateTime = false;
     DataBase* db;
     Settings* settings;
-    QString message;
 
 signals:
     void printed(const DBRecord&);

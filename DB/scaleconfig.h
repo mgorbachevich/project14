@@ -13,7 +13,9 @@ enum ScaleConfigField
     ScaleConfigField_Model = 0,
     ScaleConfigField_ModelName = 1, // Comment
     ScaleConfigField_SerialNumber = 2,
-    ScaleConfigField_VerificationDate = 3
+    ScaleConfigField_VerificationDate = 3,
+    ScaleConfigField_FactorySettingsPassword = 4,
+    ScaleConfigField_SystemSettingsPassword = 5,
 };
 
 class ScaleConfig : public JsonFile
