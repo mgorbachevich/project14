@@ -24,6 +24,7 @@ public:
     virtual void setOption(const int index, const int option, const QString &s1 = "", const QString &s2 = "");
 
     static bool checkUri(const QString &uri);
+    Network::RequestSender reqSender;
 
 public slots:
     void managerFinished(QNetworkReply *reply);
@@ -35,7 +36,6 @@ private:
     QString api;
     Network::Request request;
     QNetworkAccessManager *manager = nullptr;
-    Network::RequestSender sender;
     static QString getRegexStr();
     void setError(Network::RequestSender::RequestError e);
 };

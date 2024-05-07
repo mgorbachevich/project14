@@ -129,14 +129,14 @@ public:
     virtual int cResetDevice();
     virtual int cGetADC(uint32_t *ADCValue);
     virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
-    virtual int cDeamonVersion(QString &version, QString &build, const QString &uri);
+    virtual int cDaemonVersion(QString &version, QString &build, const QString &uri);
+    virtual int cKillDaemon(const QString &uri);
     virtual void getDeviceMetrics(device_metrics *metrics);
     virtual void getChannelParam(channel_specs *params);
     deviceinterface getInterface();
 
 protected:
     IoBase *io = nullptr;
-    QMutex mtx;
     deviceinterface deviceInterface = diNone;
 
 private:
@@ -144,12 +144,6 @@ private:
     device_metrics deviceMetrics;
     channel_specs channelParams;
     virtual int executeCommand(wmcommand cmd, const QByteArray &out, QByteArray &in) = 0;
-//    int command(prncommand cmd, const QByteArray &out, QByteArray &in);
-//    int command(prncommand cmd, const QByteArray &out, prnanswer *ans);
-//    int command(prncommand cmd, const QByteArray &out);
-//    int command(prncommand cmd, prnanswer *ans = nullptr);
-//    int command(prncommand cmd, memorytest *ans);
-//    int command(prncommand cmd, counters *ans);
 
 signals:
 

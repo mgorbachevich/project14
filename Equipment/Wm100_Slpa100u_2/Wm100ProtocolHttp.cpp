@@ -2,6 +2,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QTimer>
+#include <QEventLoop>
 //#include <thread>
 #include "Wm100ProtocolHttp.h"
 #include "IO/iohttp.h"
@@ -41,7 +43,7 @@ int Wm100ProtocolHttp::cSetDateTime(const QDateTime &datetime, const QString &ur
     return res;
 }
 
-int Wm100ProtocolHttp::cDeamonVersion(QString &version, QString &build, const QString &uri)
+int Wm100ProtocolHttp::cDaemonVersion(QString &version, QString &build, const QString &uri)
 {
     int res = open(uri);
     if (!res)
@@ -53,12 +55,26 @@ int Wm100ProtocolHttp::cDeamonVersion(QString &version, QString &build, const QS
         if (!io->writeRead(out, in, 0, 3000)) res = -1;
         qDebug() << in;
 
-        //QByteArray temp("{\"info\":{\"version\":\"0.0.2\",\"build\":\"13 Feb 2024 18:10\"}}");
-
         QJsonObject jsonObject = QJsonDocument::fromJson(in).object();
         jsonObject = jsonObject["info"].toObject();
         version = jsonObject["version"].toString();
         build = jsonObject["build"].toString();
+        close();
+    }
+    return res;
+}
+
+int Wm100ProtocolHttp::cKillDaemon(const QString &uri)
+{
+    int res = open(uri);
+    if (!res)
+    {
+        io->setOption(0, 1);
+        io->setOption(1, 0, "/stopthedaemon");
+        io->setOption(2, 0);
+        QByteArray out, in;
+        if (!io->writeRead(out, in, 0, 3000)) res = -1;
+        qDebug() << in;
         close();
     }
     return res;
@@ -83,7 +99,6 @@ bool Wm100ProtocolHttp::checkCRC(const QByteArray &in)
 int Wm100ProtocolHttp::executeCommand(wmcommand cmd, const QByteArray &out, QByteArray &in)
 {
     if (!io) return -20;
-    //if (!mtx.tryLock(3000)) return -21;
 
     static uint8_t inf = 0;
     ++inf;
@@ -91,25 +106,21 @@ int Wm100ProtocolHttp::executeCommand(wmcommand cmd, const QByteArray &out, QByt
 
     QByteArray answer;
     int res = 0;
+    int repeats = 0;
     do
     {
         res = sendCommand(cmd, out, answer, inf);
         if (!res && answer.toStdString()=="ok")
         {
             uint8_t len = 0;
+            int repeats2 = 0;
             do
             {
                 res = readAnswer(in, 2);
-                //qDebug() << "<<" << in.toHex(' ');
-                if (!res && in[0] && (in[1] & 0x80))
-                {
-                    len = in[0];
-                    break;
-                }
-            } while (res);
-            //qDebug() << "readAnswer() res = " << res << ", cmd = " << cmd << ", in = " << in.toHex(' ');
+                if (!res && in[0] && (in[1] & 0x80)) len = in[0];
+                ++repeats2;
+            } while (res != 0 && res != -31 && res != -32 && res != -33 && res != -34 && repeats2 < 20);
             if (!res) res = readAnswer(in, len);
-            //qDebug() << "<<" << in.toHex(' ');
             if (!res)
             {
                 if (in.size() <= 6) res = -8;
@@ -119,16 +130,14 @@ int Wm100ProtocolHttp::executeCommand(wmcommand cmd, const QByteArray &out, QByt
                 in = in.mid(5, len-7);
             }
         }
-    } while (res == -16);
-    //mtx.unlock();
+        ++repeats;
+    } while (res == -16 && repeats < 4);
     return res;
 }
 
 int Wm100ProtocolHttp::readAnswer(QByteArray &in, uint32_t toRead)
 {
     int res = -1;
-
-    //qDebug() << "readAnswer cmd = " << cmd << " out = " << out.toHex(' ') << " in = " << in.toHex(' ');
 
     QByteArray out, answer;
     io->setOption(0, 1); // POST
@@ -143,11 +152,13 @@ int Wm100ProtocolHttp::readAnswer(QByteArray &in, uint32_t toRead)
         io->setOption(0, 0); // GET
         io->setOption(1, 0, "/api/v0/i2c/state");
         io->setOption(2, 0);
-        while (io->writeRead(out, answer, 0, 3000))
+        int repeats = 0;
+        while (io->writeRead(out, answer, 0, 3000) && repeats < 10)
         {
-            parseReply(answer, in);
-            if (in.size() == toRead) res = 0;
-            if (in.size()) break;
+            res = parseReply(answer, in);
+            if (!res && in.size() == toRead) res = 0;
+            if (res || in.size()) break;
+            ++repeats;
         }
     }
     //qDebug() << "readAnswer answer = " << answer;
@@ -173,21 +184,26 @@ int Wm100ProtocolHttp::sendCommand(wmcommand cmd, const QByteArray &out, QByteAr
     QString cmd16(cmd16data.toHex());
     io->setOption(2, 1, "data", cmd16.toUpper());
     if (!io->writeRead(out, in, 0, 3000)) res = -1;
-    //qDebug() << ">>" << cmd16data.toHex(' ');
     return res;
 }
 
-void Wm100ProtocolHttp::parseReply(const QByteArray &reply, QByteArray &answer)
+int Wm100ProtocolHttp::parseReply(const QByteArray &reply, QByteArray &answer)
 {
+    int res = 0;
     QJsonDocument jsonResponse = QJsonDocument::fromJson(reply);
     QJsonObject jsonObject = jsonResponse.object();
-    if (jsonObject["cmdresult"].toInteger() == 2)
+    if (jsonObject["i2c_err"] != QJsonValue::Undefined) {
+        int i2c_err = jsonObject["i2c_err"].toInt();
+        if (i2c_err) res = i2c_err - 30;
+    }
+    if (!res && jsonObject["cmdresult"].toInteger() == 2)
     {
         QString data = jsonObject["rxbuf"].toString().remove(' ');
         answer = QByteArray::fromHex(data.toLatin1());
     }
     else
         answer.clear();
+    return res;
 }
 
 uint16_t Wm100ProtocolHttp::getCRC16(const QByteArray &src)

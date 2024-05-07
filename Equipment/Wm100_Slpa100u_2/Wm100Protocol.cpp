@@ -1,4 +1,5 @@
 #include <QTimer>
+#include <QDebug>
 #include "Wm100Protocol.h"
 
 Wm100Protocol::Wm100Protocol(QObject *parent)
@@ -15,18 +16,12 @@ Wm100Protocol::~Wm100Protocol()
 void Wm100Protocol::close()
 {
     lastStatus = {0, 0.0, 0.0, 0};
-    //if (!mtx.tryLock(3000))
-    //{
-        //QTimer::singleShot(10, this, [this]() { this->close(); } );
-    //    return;
-    //}
     if (io != nullptr)
     {
         io->close();
         delete io;
         io = nullptr;
     }
-    //mtx.unlock();
 }
 
 bool Wm100Protocol::connected()
@@ -268,7 +263,12 @@ int Wm100Protocol::cSetDateTime(const QDateTime &datetime, const QString &uri)
     return -15;
 }
 
-int Wm100Protocol::cDeamonVersion(QString &version, QString &build, const QString &uri)
+int Wm100Protocol::cDaemonVersion(QString &version, QString &build, const QString &uri)
+{
+    return -15;
+}
+
+int Wm100Protocol::cKillDaemon(const QString &uri)
 {
     return -15;
 }
@@ -287,6 +287,5 @@ Wm100Protocol::deviceinterface Wm100Protocol::getInterface()
 {
     return deviceInterface;
 }
-
 
 

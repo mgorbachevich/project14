@@ -53,11 +53,9 @@ bool IoHttp::writeRead(const QByteArray &out, QByteArray &in, int64_t toRead, in
     }
 
     request.setAddress(addr + api);
-    sender.setMaxWaitTime(timeoutRead);
-    if (postCommand) in = sender.post(request);
-                else in = sender.get(request);
-    //QThread::msleep(50);
-    return sender.error() == Network::RequestSender::NoError;
+    if (postCommand) in = reqSender.post(request);
+                else in = reqSender.get(request);
+    return reqSender.error() == Network::RequestSender::NoError;
 }
 
 bool IoHttp::isOpen()

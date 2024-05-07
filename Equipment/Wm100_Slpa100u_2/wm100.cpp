@@ -10,7 +10,6 @@
 #include "Wm100ProtocolCom.h"
 #include "Wm100ProtocolHttp.h"
 #include "Wm100ProtocolDemo.h"
-#include "constants.h"
 
 
 bool operator==(Wm100Protocol::channel_status &r1, Wm100Protocol::channel_status &r2)
@@ -27,6 +26,11 @@ Wm100::Wm100(QObject *parent)
     : QObject{parent}
 {
     connect(&timer, SIGNAL(timeout()), this, SLOT(onTimer()), Qt::QueuedConnection);
+    disconnectDevice();
+}
+
+Wm100::~Wm100()
+{
     disconnectDevice();
 }
 
@@ -104,10 +108,9 @@ int Wm100::disconnectDevice()
 
 int Wm100::getStatus(Wm100Protocol::channel_status *status)
 {
-    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) qDebug() << "getStatus - thread() =" << this->thread();
     if (!isConnected()) return -20;
     int res = protocol->cGetStatus(status);
-    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) qDebug() << "getStatus - res =" << res;
+    if (!res) qDebug() << "getStatus - res =" << res;
     return res;
 }
 
@@ -189,10 +192,18 @@ int Wm100::controllerId(Wm100Protocol::controller_id *id)
     return protocol->cControllerId(id);
 }
 
-int Wm100::getDeamonVersion(QString &version, QString &build)
+int Wm100::killDaemon()
 {
     Wm100ProtocolHttp* pr = new Wm100ProtocolHttp(this);
-    int res =  pr->cDeamonVersion(version, build, "http://127.0.0.1:51232");
+    int res =  pr->cKillDaemon("http://127.0.0.1:51232");
+    delete pr;
+    return res;
+}
+
+int Wm100::getDaemonVersion(QString &version, QString &build)
+{
+    Wm100ProtocolHttp* pr = new Wm100ProtocolHttp(this);
+    int res =  pr->cDaemonVersion(version, build, "http://127.0.0.1:51232");
     delete pr;
     return res;
 }
@@ -213,12 +224,6 @@ int Wm100::calibAccStart()
 
 void Wm100::startPolling(int time)
 {
-    //stopPolling();
-    //timer.start(time);
-
-    //timerid = startTimer(time);
-    //timerInterval = time;
-    //qDebug() << "startPolling. timerid =" << timerid;
     QTimer::singleShot(time, this, [this]() { this->onTimer(); } );
     timerInterval = time;
 }
@@ -226,38 +231,27 @@ void Wm100::startPolling(int time)
 void Wm100::stopPolling()
 {
     timerInterval = 0;
-//    timer.stop();
-
-//    if (timerid)
-//    {
-//        qDebug() << "stopPolling. timerid =" << timerid;
-//        killTimer(timerid);
-//        timerid = 0;
-//        timerInterval = 0;
-//    }
 }
 
 void Wm100::onTimer()
 {
-    //qDebug() << "onTimer.killTimer timerid =" << timerid;
-    //killTimer(timerid);
-    //timerid = 0;
     if (!timerInterval) return;
     Wm100Protocol::channel_status st;
     int res = getStatus(&st);
-    if (res != lastStatusError)
+    if (res != -13)
     {
-        lastStatusError = res;
-        emit errorStatusChanged(res);
-    }
-    if (!res && lastStatus != st)
-    {
-        lastStatus = st;
-        emit weightStatusChanged(st);
+        if (res != lastStatusError)
+        {
+            lastStatusError = res;
+            emit errorStatusChanged(res);
+        }
+        if (!res && lastStatus != st)
+        {
+            lastStatus = st;
+            emit weightStatusChanged(st);
+        }
     }
     emit pollingStatus(res);
-    //if (timerInterval) timerid = startTimer(timerInterval);
-    //qDebug() << "timerEvent.startTimer(" << timerInterval << ") timerid =" << timerid;
     if (timerInterval) QTimer::singleShot(timerInterval, this, [this]() { this->onTimer(); } );
 }
 
@@ -272,10 +266,14 @@ QString Wm100::
     QString desc;
     switch (err)
     {
+    case -34:
+    case -33:
+    case -32:
+    case -31: desc = "Устройство отсутствует на линии"; break;
     case -26: desc = "Параметр не найден"; break;
     case -25: desc = "Пустой файл"; break;
     case -24: desc = "Ошибка чтения файла"; break;
-    case -23: desc = "Ошибка откhытия файла"; break;
+    case -23: desc = "Ошибка открытия файла"; break;
     case -22: desc = "Нет разрешений на чтение файла"; break;
     case -21: desc = "Файл не найден"; break;
     case -20: desc = "Соединение не установлено"; break;
@@ -285,6 +283,7 @@ QString Wm100::
     case -16: desc = "Получен ответ на предыдущую команду"; break;
     case -15: desc = "Команда не реализуется в данной версии"; break;
     case -13: desc = "Контрольная сумма не совпадает"; break;
+    case -12: desc = "Устройство отсутствует на линии"; break;
     case -11: desc = "Интерфейс не поддерживается"; break;
     case -9:  desc = "Параметр вне диапазона"; break;
     case -8:  desc = "Неожиданный ответ"; break;

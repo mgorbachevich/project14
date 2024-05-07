@@ -11,6 +11,7 @@ class Wm100 : public QObject
     Q_OBJECT
 public:
     explicit Wm100(QObject *parent = nullptr);
+    ~Wm100();
 
 public:
     int connectDevice(const QString &uri);
@@ -34,7 +35,8 @@ public:
     int controllerId(Wm100Protocol::controller_id *id);
 
     int setDateTime(const QDateTime &datetime);
-    int getDeamonVersion(QString &version, QString &build);
+    int getDaemonVersion(QString &version, QString &build);
+    int killDaemon();
 
     void startPolling(int time);
     void stopPolling();

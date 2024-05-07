@@ -6,7 +6,7 @@
 
 namespace Network
 {
-	RequestSender::RequestSender(qint64 maxWaitTime /*= 35000*/)
+    RequestSender::RequestSender(qint64 maxWaitTime /*= 35000*/) : QObject()
 	{
 		setMaxWaitTime(maxWaitTime);
 		_error = NoError;
@@ -59,19 +59,10 @@ namespace Network
 
 	QByteArray RequestSender::sendRequest(Request& request, bool getRequest /*= true*/)
 	{
-        QEventLoop loop;
-        //loop.processEvents(QEventLoop::ExcludeUserInputEvents);
+        QEventLoop loop(this);
         QTimer timer;
         timer.setInterval(_maxWaitTime);
         timer.setSingleShot(true);
-
-        /* while (loop.isRunning()) {
-            qDebug() << "loop.isRunning() пытаемся дождаться особождения" << QDateTime::currentMSecsSinceEpoch() % 10000;
-            QEventLoop loop2;
-            QTimer::singleShot(10, this, [&](){ loop2.quit(); });
-            loop2.exec();
-            qDebug() << "loop2.exec() вызван и отработал" << QDateTime::currentMSecsSinceEpoch() % 10000;
-        } */
 
         QSharedPointer<QNetworkAccessManager> manager(new QNetworkAccessManager);
 		manager->setProxy(_proxy);
@@ -90,18 +81,7 @@ namespace Network
         QObject::connect(&timer, &QTimer::timeout, reply, &QNetworkReply::abort);
 
         timer.start();
-        loop.exec(QEventLoop::ExcludeUserInputEvents);
-
-        // qint64 ms = QDateTime::currentMSecsSinceEpoch();
-        // while (reply->isRunning())
-        // {
-        //     QThread::msleep(0);
-        //     if (QDateTime::currentMSecsSinceEpoch() - ms > _maxWaitTime)
-        //     {
-        //         reply->abort();
-        //         break;
-        //     }
-        // }
+        loop.exec(QEventLoop::ExcludeUserInputEvents | QEventLoop::X11ExcludeTimers);
 
         QByteArray data;
 

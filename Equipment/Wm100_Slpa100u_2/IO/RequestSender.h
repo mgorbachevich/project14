@@ -40,9 +40,6 @@ namespace Network
 		qint64 _maxWaitTime;
 		RequestError _error;
 		QNetworkProxy _proxy;
-        //QEventLoop loop;
-        //QEventLoop loop1;
-
 	};
 }
 

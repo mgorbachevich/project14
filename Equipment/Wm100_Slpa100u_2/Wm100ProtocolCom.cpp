@@ -32,7 +32,6 @@ char Wm100ProtocolCom::crc(const QByteArray &buf)
 int Wm100ProtocolCom::executeCommand(wmcommand cmd, const QByteArray &out, QByteArray &in)
 {
     if (!io) return -20;
-    if (!mtx.tryLock(3000)) return -20;
 
     int res = 0;
 
@@ -73,13 +72,11 @@ int Wm100ProtocolCom::executeCommand(wmcommand cmd, const QByteArray &out, QByte
         }
     }
     io->clear();
-    mtx.unlock();
     return res;
 }
 
 int Wm100ProtocolCom::cSetDateTime(const QDateTime &datetime, const QString &uri)
 {
     int res = -15;
-    //datetime.setDate(datetime.date());
     return res;
 }

@@ -102,14 +102,6 @@ int Wm100ProtocolDemo::cGetADC(uint32_t *ADCValue)
     *ADCValue = QRandomGenerator::global()->bounded(22535438, 22536438);
     return 0;
 }
-/*
-int Wm100Protocol::cControllerId(controller_id *id)
-{
-    id->crc16 = 0xc0de;
-    id->id = QByteArray(16, 7);
-    id->firmware = "Feb 12 2016 23:59:01 v0.1 SME22022.121_1";
-    return 0;
-}*/
 
 bool Wm100ProtocolDemo::checkUri(const QString &uri)
 {
