@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -49,8 +49,6 @@ Popup
     {
         anchors.fill: parent
         anchors.margins: screenManager.spacer()
-        columns: 3
-        rows: 3
 
         EmptyButton
         {

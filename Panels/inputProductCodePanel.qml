@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -49,8 +49,7 @@ Popup
             anchors.fill: parent
             anchors.margins: screenManager.spacer()
             columnSpacing: 0
-            rowSpacing: screenManager.spacer() * 2
-            columns: 3
+            rowSpacing: 0
 
             EmptyButton
             {
@@ -79,20 +78,27 @@ Popup
                 onClicked: inputProductCodePanel.close()
             }
 
-            Rectangle
+            Spacer
             {
                 Layout.column: 1
                 Layout.row: 1
+            }
+
+            Rectangle
+            {
+                Layout.column: 1
+                Layout.row: 2
                 Layout.fillWidth: parent
+                Layout.preferredHeight: screenManager.largeFontSize() * 2
                 color: "transparent"
 
                 TextField
                 {
                     id: inputProductCodePanelText
-                    anchors.verticalCenter: parent.top
+                    anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: screenManager.editWidth()
-                    font { pointSize: screenManager.normalFontSize() }
+                    width: screenManager.editWidth() / 2
+                    font { pointSize: screenManager.largeFontSize() }
                     Material.accent: Material.Orange
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     focus: true
@@ -136,15 +142,21 @@ Popup
                 }
             }
 
+            Spacer
+            {
+                Layout.column: 1
+                Layout.row: 3
+            }
+
             Rectangle
             {
                 id: inputProductCodePanelListRectangle
-                Layout.column: 1
-                Layout.row: 2
+                Layout.column: 0
+                Layout.row: 4
+                Layout.columnSpan: 3
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.topMargin: screenManager.spacer() * 2
-                color: Material.color(Material.Grey, Material.Shade200)
+                color: Material.color(Material.Grey, Material.Shade50)
 
                 ListView
                 {
@@ -152,33 +164,46 @@ Popup
                     anchors.fill: parent
                     orientation: Qt.Vertical
                     clip: true
-
+                    /*
                     ScrollBar.vertical: ScrollBar
                     {
                         width: screenManager.scrollBarWidth()
                         background: Rectangle { color: "transparent" }
                         policy: ScrollBar.AlwaysOn
                     }
-
+                    */
                     model: inputProductCodePanelModel
-                    delegate: Label
+                    delegate: Text
                     {
-                        width: inputProductCodePanelListRectangle.width
+                        width: inputProductCodePanelList.width
                         font { pointSize: screenManager.normalFontSize() }
-                        color: Material.color(Material.Grey, Material.Shade900)
+                        leftPadding: screenManager.spacer()
+                        topPadding: screenManager.spacer()
+                        rightPadding: screenManager.spacer()
+                        bottomPadding: screenManager.spacer()
+                        color: Material.color(Material.BlueGrey, Material.Shade900)
                         text: model.value // Roles::ValueRole
-                        background: Rectangle { color: "transparent" }
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onSetProductByCodeClicked(text)
+                        }
                     }
                 }
+            }
+
+            Spacer
+            {
+                Layout.column: 1
+                Layout.row: 5
             }
 
             RoundTextButton
             {
                 id: inputProductCodePanelContinueButton
                 Layout.column: 1
-                Layout.row: 3
-                Layout.bottomMargin: screenManager.spacer()
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+                Layout.row: 6
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 text: qsTr("ПРОДОЛЖИТЬ")
                 onClicked: app.onSetProductByCodeClicked(inputProductCodePanelText.text)
             }

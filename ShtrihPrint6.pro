@@ -22,6 +22,7 @@ HEADERS += \
     DB/users.h \
     Managers/equipmentmanager.h \
     Managers/externalmessager.h \
+    Managers/moneycalculator.h \
     Models/edituserspanelmodel.h \
     constants.h \
     tools.h \
@@ -204,6 +205,7 @@ SOURCES += \
     Managers/equipmentmanager.cpp \
     Managers/externalmessager.cpp \
     Managers/keyemitter.cpp \
+    Managers/moneycalculator.cpp \
     Managers/screenmanager.cpp \
     Models/baselistmodel2.cpp \
     Models/edituserspanelmodel.cpp \
@@ -223,7 +225,6 @@ SOURCES += \
     tools.cpp \
 
 RESOURCES += \
-    constants.js \
     main.qml \
     Default/1.png \
     Default/2.png \
@@ -262,12 +263,13 @@ RESOURCES += \
     Icons/auto_white.png \
     Icons/backspace.png \
     Icons/bluetooth.png \
+    Icons/bluetooth_orange.png \
     Icons/bluetooth_white.png \
     Icons/close.png \
     Icons/delete.png \
     Icons/empty.png \
     Icons/error.png \
-    Icons/error_white.png \
+    Icons/error_red.png \
     Icons/fix_white.png \
     Icons/folder.png \
     Icons/info_outline.png \
@@ -276,19 +278,24 @@ RESOURCES += \
     Icons/log.png \
     Icons/menu.png \
     Icons/n.png \
+    Icons/net.png \
+    Icons/net_orange.png \
+    Icons/net_white.png \
     Icons/ok_outline.png \
     Icons/plus.png \
     Icons/print.png \
-    Icons/red.png \
     Icons/sdcard.png \
+    Icons/sdcard_orange.png \
     Icons/sdcard_white.png \
     Icons/settings.png \
     Icons/star.png \
     Icons/tare_white.png \
     Icons/usb.png \
+    Icons/usb_orange.png \
     Icons/usb_white.png \
     Icons/user.png \
     Icons/wifi.png \
+    Icons/wifi_orange.png \
     Icons/wifi_white.png \
     Icons/zero_white.png \
     Images/image_dummy.png \
@@ -341,6 +348,7 @@ RESOURCES += \
     Panels/searchPanel.qml \
     Panels/settingsPanel.qml \
     Panels/showcasePanel.qml \
+    Panels/Spacer.qml \
     Panels/SubtitleText.qml \
     Panels/tablePanel.qml \
     Panels/viewLogPanel.qml \
@@ -367,6 +375,7 @@ android {
 
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
 }
+
 
 
 

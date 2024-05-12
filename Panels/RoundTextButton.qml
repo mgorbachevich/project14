@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 RoundButton
 {
@@ -16,8 +16,8 @@ RoundButton
     bottomInset: screenManager.spacer() / 4
     horizontalPadding: screenManager.spacer() * 2
     verticalPadding: screenManager.spacer() / 4
-    Material.background: Material.color(Material.BlueGrey, Material.Shade200)
-    Material.foreground: Material.color(Material.BlueGrey, enabled ? Material.Shade900 : Material.Shade50)
+    Material.background: Material.color(Material.BlueGrey, Material.Shade100)
+    Material.foreground: Material.color(Material.BlueGrey, enabled ? Material.Shade900 : Material.Shade300)
     font { pointSize: screenManager.normalFontSize() }
     flat: true
 }

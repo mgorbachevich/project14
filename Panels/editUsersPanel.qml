@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -25,10 +25,8 @@ Popup
     {
         id: editUsersPanelLayout
         anchors.fill: parent
-        anchors.margins: screenManager.spacer()
-        columnSpacing: screenManager.spacer()
-        columns: 3
-        rows: 2
+        columnSpacing: 0
+        rowSpacing: 0
         focus: true
 
         Keys.onPressed: (event) =>
@@ -40,11 +38,11 @@ Popup
             switch (event.key)
             {
                 case Qt.Key_Up:
-                    if (!editUsersPanelList.atYBeginning) editUsersPanelList.flick(0, Constants.flickVelocity)
+                    if (!editUsersPanelList.atYBeginning) editUsersPanelList.flick(0, screenManager.flickVelocity())
                     else app.beepSound()
                     break;
                 case Qt.Key_Down:
-                    if (!editUsersPanelList.atYEnd) editUsersPanelList.flick(0, -Constants.flickVelocity)
+                    if (!editUsersPanelList.atYEnd) editUsersPanelList.flick(0, -screenManager.flickVelocity())
                     else app.beepSound()
                     break;
                 case Qt.Key_Escape: // Круглая стрелка
@@ -59,13 +57,21 @@ Popup
             }
         }
 
-        RoundIconButton
+        Rectangle
         {
             Layout.column: 0
             Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            icon.source: "../Icons/plus"
-            onClicked: app.onAddUserClicked()
+            Layout.preferredWidth: screenManager.buttonSize() + screenManager.spacer() * 2
+            Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
+            color: Material.color(Material.Grey, Material.Shade100)
+
+            RoundIconButton
+            {
+                icon.source: "../Icons/plus"
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: app.onAddUserClicked()
+            }
         }
 
         Rectangle
@@ -73,29 +79,36 @@ Popup
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
-            color: "transparent"
+            color: Material.color(Material.Grey, Material.Shade100)
 
-            CardTitleText { text: "Пользователи" }
+            CardTitleText { text: qsTr("Пользователи") }
         }
 
-        RoundIconButton
+        Rectangle
         {
             Layout.column: 2
             Layout.row: 0
-            icon.source: "../Icons/close"
-            Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-            onClicked: editUsersPanel.close()
+            Layout.preferredWidth: screenManager.buttonSize() + screenManager.spacer() * 2
+            Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
+            color: Material.color(Material.Grey, Material.Shade100)
+
+            RoundIconButton
+            {
+                icon.source: "../Icons/close"
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: editUsersPanel.close()
+            }
         }
 
         Rectangle
         {
             Layout.column: 0
             Layout.row: 1
-            Layout.columnSpan: editUsersPanelLayout.columns
+            Layout.columnSpan: 3
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            Layout.rightMargin: screenManager.spacer() / 2
-            color: Material.background
+            color: Material.color(Material.Grey, Material.Shade50)
 
             ListView
             {
@@ -104,26 +117,24 @@ Popup
                 orientation: Qt.Vertical
                 clip: true
                 onFlickStarted: app.onUserAction()
-
+                /*
                 ScrollBar.vertical: ScrollBar
                 {
                     width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
-
+                */
                 model: editUsersPanelModel
                 delegate: Label
                 {
                     width: editUsersPanelList.width
                     font { pointSize: screenManager.normalFontSize() }
-                    padding: screenManager.spacer()
+                    leftPadding: screenManager.spacer() * 2
+                    topPadding: screenManager.spacer()
+                    rightPadding: screenManager.spacer()
+                    bottomPadding: screenManager.spacer()
                     color: Material.color(Material.BlueGrey, Material.Shade900)
-                    background: Rectangle
-                    {
-                        color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
-                                                 Material.color(Material.Grey, Material.Shade200)
-                    }
                     text: model.value // Roles::ValueRole
                     MouseArea
                     {

@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "constants.js" as Constants
 import RegisteredTypes
+
 
 ApplicationWindow
 {
@@ -14,10 +14,10 @@ ApplicationWindow
     Material.background: Material.color(Material.Grey, Material.Shade100)
     Material.accent: Material.Orange
     color: Material.background
-    property int pageIndicatorHeight: 16
+    property int pageIndicatorHeight: 0
     property int adminMenuWidth: 0
-    property int popupWidth: mainWindow.width * 3 / 4
-    property int popupHeight: mainWindow.height * 3 / 4
+    property int popupWidth: screenManager.popupWidth()
+    property int popupHeight: screenManager.popupHeight()
     property int popupX: (mainWindow.width - popupWidth) / 2
     property int popupY: (mainWindow.height - popupHeight) / 2
 
@@ -51,7 +51,7 @@ ApplicationWindow
         function onShowAdminMenu(show)
         {
             app.debugLog("@@@@@ mainWindow.onShowAdminMenu");
-            adminMenuWidth = show ? screenManager.buttonSize() + screenManager.spacer() : 0
+            adminMenuWidth = show ? screenManager.buttonSize() + screenManager.spacer() * 2 : 0
             adminMenuPanel.visible = show
         }
     }
@@ -272,7 +272,7 @@ ApplicationWindow
                 id: adminMenuPanel
                 width: adminMenuWidth
                 height: parent.height
-                color: "transparent"
+                color: Material.color(Material.Grey, Material.Shade200)
 
                 Loader
                 {
@@ -285,13 +285,12 @@ ApplicationWindow
             {
                 width: parent.width - adminMenuWidth
                 height: parent.height
-                color: "transparent"
+                color: Material.color(Material.Grey, Material.Shade100)
 
                 Rectangle
                 {
                     width: parent.width
                     height: parent.height - pageIndicatorHeight
-                    color: "transparent"
 
                     SwipeView
                     {
@@ -328,7 +327,6 @@ ApplicationWindow
                     height: pageIndicatorHeight
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
-                    color: "transparent"
 
                     PageIndicator
                     {

@@ -4,8 +4,10 @@
 #include "requestparser.h"
 #include "database.h"
 #include "tools.h"
+#include "appmanager.h"
+#include "externalmessager.h"
 
-NetServer::NetServer(QObject *parent, DataBase* dataBase): QObject{parent}, db(dataBase)
+NetServer::NetServer(AppManager* parent) : ExternalMessager(parent)
 {
     Tools::debugLog("@@@@@ NetServer::NetServer");
 }
@@ -35,7 +37,7 @@ void NetServer::start(const int port)
             {
                 emit action(NetAction_Delete);
                 QByteArray ba = request.query().toString().toUtf8();
-                QString response = RequestParser::parseDeleteRequest(db, ba);
+                QString response = RequestParser::parseDeleteRequest(appManager->db, ba);
                 Tools::debugLog("@@@@@ NetServer::start deleteData " + response);
                 emit action(NetAction_DeleteFinished);
                 return QHttpServerResponse(response);
@@ -47,7 +49,7 @@ void NetServer::start(const int port)
             {
                 emit action(NetAction_Upload);
                 QByteArray ba = request.query().toString().toUtf8();
-                QString response = RequestParser::parseGetRequest(db, ba);
+                QString response = RequestParser::parseGetRequest(appManager->db, ba);
                 Tools::debugLog("@@@@@ NetServer::start getData response " + response);
                 emit action(NetAction_UploadFinished);
                 return QHttpServerResponse(response);
@@ -59,7 +61,7 @@ void NetServer::start(const int port)
             {
                 emit action(NetAction_Download);
                 QByteArray ba = request.body();
-                QString response = RequestParser::parseSetRequest(db, ba);
+                QString response = RequestParser::parseSetRequest(appManager->db, ba);
                 Tools::debugLog("@@@@@ NetServer::start setData response " + response);
                 emit action(NetAction_DownloadFinished);
                 return QHttpServerResponse(response);

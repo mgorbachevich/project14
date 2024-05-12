@@ -27,6 +27,7 @@ class AppInfo;
 class EquipmentManager;
 class InputProductCodePanelModel;
 class EditUsersPanelModel;
+class MoneyCalculator;
 
 class AppManager : public QObject
 {
@@ -82,9 +83,13 @@ public:
     Q_INVOKABLE void showAttention(const QString& s) { showMessage("ВНИМАНИЕ!", s); }
     Q_INVOKABLE void showMessage(const QString&, const QString&);
 
+    DataBase* db = nullptr;
+    Settings* settings = nullptr;
+    Users* users = nullptr;
+    EquipmentManager* equipmentManager = nullptr;
+    PrintStatus printStatus;
+
 private:
-    void addMessageString(QString&, const QString&);
-    QString amountAsString(const DBRecord&);
     void createDefaultData();
     void createDefaultImages();
     void filteredSearch();
@@ -93,10 +98,7 @@ private:
     bool isProduct() { return !product.isEmpty(); }
     bool isSettingsOpened() { return isSettings; }
     QString getImageFileWithQmlPath(const DBRecord&);
-    double price(const DBRecord&);
-    QString priceAsString(const DBRecord&);
     void print();
-    QString quantityAsString(const DBRecord&);
     void refreshAll();
     void onCustomSettingsItemClicked(const DBRecord&);
     void resetProduct();
@@ -117,27 +119,19 @@ private:
     void updateWeightStatus();
 
     AppInfo appInfo;
+    DBRecord product;
+    bool isResetProductNeeded = false;
+    MoneyCalculator* moneyCalculator = nullptr;
 
     // Таймер
     QTimer *timer = nullptr;
     quint64 netActionTime = 0;
     quint64 userActionTime = 0;
 
-    // БД:
-    DataBase* db = nullptr;
-    DBRecord product;
-    Settings* settings = nullptr;
-    Users* users;
-
     // Сеть:
     NetServer* netServer = nullptr;
     bool isRefreshNeeded = false;
     int netRoutes = 0;
-
-    // Оборудование:
-    EquipmentManager* equipmentManager = nullptr;
-    PrintStatus printStatus;
-    bool isResetProductNeeded = false;
 
     // UI:
     QQmlContext* context = nullptr;

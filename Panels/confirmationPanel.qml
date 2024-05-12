@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -26,7 +26,7 @@ Popup
         anchors.fill: parent
         radius: screenManager.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
-        color: Material.background
+        color: Material.color(Material.Grey, Material.Shade100)
 
         GridLayout
         {
@@ -34,9 +34,6 @@ Popup
             anchors.margins: screenManager.spacer()
             columnSpacing: 0
             rowSpacing: 0
-            columns: 1
-            rows: 3
-
             focus: true
             Keys.onPressed: (event) =>
             {
@@ -79,39 +76,46 @@ Popup
                 Layout.row: 1
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.bottomMargin: screenManager.buttonSize() / 2
                 color: "transparent"
 
                 CardText { text: messageText }
             }
 
-            Row
+            Rectangle
             {
-                spacing: screenManager.spacer() * 4
-                Layout.preferredWidth: screenManager.buttonSize() * 3 + spacing
                 Layout.column: 0
                 Layout.row: 2
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+                Layout.fillWidth: parent
+                Layout.preferredHeight: screenManager.buttonSize()
+                color: "transparent"
 
-                RoundTextButton
+                Row
                 {
-                    width: screenManager.buttonSize() * 3 / 2
-                    text: qsTr("ДА")
-                    onClicked:
+                    spacing: screenManager.spacer() * 4
+                    width: screenManager.buttonSize() * 3 + spacing
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    RoundTextButton
                     {
-                        app.onConfirmationClicked(confirmSelector)
-                        confirmationPanel.close()
+                        width: screenManager.buttonSize() * 3 / 2
+                        text: qsTr("ДА")
+                        onClicked:
+                        {
+                            app.onConfirmationClicked(confirmSelector)
+                            confirmationPanel.close()
+                        }
                     }
-                 }
 
-                RoundTextButton
-                {
-                    width: screenManager.buttonSize() * 3 / 2
-                    text: qsTr("НЕТ")
-                    onClicked:
+                    RoundTextButton
                     {
-                        app.onUserAction();
-                        confirmationPanel.close()
+                        width: screenManager.buttonSize() * 3 / 2
+                        text: qsTr("НЕТ")
+                        onClicked:
+                        {
+                            app.onUserAction();
+                            confirmationPanel.close()
+                        }
                     }
                 }
             }

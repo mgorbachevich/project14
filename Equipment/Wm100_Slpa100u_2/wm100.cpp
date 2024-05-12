@@ -10,7 +10,7 @@
 #include "Wm100ProtocolCom.h"
 #include "Wm100ProtocolHttp.h"
 #include "Wm100ProtocolDemo.h"
-
+#include "constants.h"
 
 bool operator==(Wm100Protocol::channel_status &r1, Wm100Protocol::channel_status &r2)
 {
@@ -110,7 +110,7 @@ int Wm100::getStatus(Wm100Protocol::channel_status *status)
 {
     if (!isConnected()) return -20;
     int res = protocol->cGetStatus(status);
-    if (!res) qDebug() << "getStatus - res =" << res;
+    if(DEBUG_ONTIMER_EQUIPMENT_MESSAGE) if (!res) qDebug() << "getStatus - res =" << res;
     return res;
 }
 

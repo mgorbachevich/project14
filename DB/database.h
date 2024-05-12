@@ -2,8 +2,6 @@
 #define DATABASE_H
 
 #include <QSqlDatabase>
-#include "settings.h"
-#include "users.h"
 #include "dbtable.h"
 #include "externalmessager.h"
 
@@ -45,7 +43,7 @@ class DataBase : public ExternalMessager
     Q_OBJECT
 
 public:
-    explicit DataBase(Settings*, Users*, AppManager*);
+    explicit DataBase(AppManager*);
     ~DataBase();
     DBTable* getTable(const QString&) const;
     QString version() { return DB_VERSION; }
@@ -88,8 +86,6 @@ protected:
     QSqlDatabase logDB;
     int removeOldLogRecordsCounter = 0;
     QList<DBTable*> tables;
-    Settings* settings;
-    Users* users;
 
 signals:
     void requestResult(const DBSelector, const DBRecordList&, const bool);

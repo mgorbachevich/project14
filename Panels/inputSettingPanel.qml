@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -100,7 +100,7 @@ Popup
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: screenManager.editWidth()
-                font { pointSize: screenManager.normalFontSize() }
+                font { pointSize: screenManager.largeFontSize() }
                 Material.accent: Material.Orange
                 color: Material.color(Material.BlueGrey, Material.Shade900)
                 focus: true

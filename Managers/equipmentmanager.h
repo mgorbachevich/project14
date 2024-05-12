@@ -1,12 +1,12 @@
 #ifndef EQUIPMENTMANAGER_H
 #define EQUIPMENTMANAGER_H
 
+#include <QVariantList>
 #include "wm100.h"
 #include "constants.h"
-#include "settings.h"
 #include "externalmessager.h"
 
-class DataBase;
+class AppManager;
 class Slpa100u;
 class LabelCreator;
 
@@ -15,7 +15,7 @@ class EquipmentManager : public ExternalMessager
     Q_OBJECT
 
 public:
-    EquipmentManager(AppManager*, DataBase*, Settings*);
+    EquipmentManager(AppManager*);
     ~EquipmentManager() { stop(); }
     void create();
     void start() { startWM(); startPM(); }
@@ -43,7 +43,6 @@ public:
     QString getPMErrorDescription(const int) const;
     bool isPM();
     void feed();
-
 
 private:
     // Weight Manager:
@@ -81,8 +80,6 @@ private:
     EquipmentMode PMMode = EquipmentMode_None;
 
     bool isSystemDateTime = false;
-    DataBase* db;
-    Settings* settings;
 
 signals:
     void printed(const DBRecord&);

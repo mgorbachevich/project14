@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.36"
+#define APP_VERSION "2.37"
 
 // Debug log:
 #define DEBUG_LOG

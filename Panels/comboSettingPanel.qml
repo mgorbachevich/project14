@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -33,14 +33,14 @@ Popup
         anchors.fill: parent
         radius: screenManager.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
-        color: Material.background
+        color: Material.color(Material.Grey, Material.Shade100)
 
         GridLayout
         {
             anchors.fill: parent
             anchors.margins: screenManager.spacer()
-            columns: 3
-            rows: 3
+            columnSpacing: 0
+            rowSpacing: 0
             focus: true
             Keys.onPressed: (event) =>
             {
@@ -90,38 +90,45 @@ Popup
                 }
             }
 
-            ComboBox
+            Rectangle
             {
-                id: settingItemComboBox
                 Layout.column: 0
                 Layout.row: 1
                 Layout.columnSpan: 3
-                Layout.preferredWidth: screenManager.editWidth()
-                Layout.alignment: Qt.AlignCenter
-                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
-                editable: false
-                popup.modal: true
-                currentIndex: comboIndex
-                displayText: comboText
+                Layout.fillWidth: parent
+                Layout.fillHeight: parent
+                color: "transparent"
 
-                model: settingItemListModel
-                delegate: Text
+                ComboBox
                 {
-                    padding: screenManager.spacer()
-                    font { pointSize: screenManager.normalFontSize() }
-                    color: Material.color(Material.BlueGrey, Material.Shade900)
-                    text: model.value // Roles::ValueRole
+                    id: settingItemComboBox
+                    width: screenManager.editWidth()
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    editable: false
+                    popup.modal: true
+                    currentIndex: comboIndex
+                    displayText: comboText
 
-                    MouseArea
+                    model: settingItemListModel
+                    delegate: Text
                     {
-                        anchors.fill: parent
-                        onClicked:
+                        padding: screenManager.spacer()
+                        font { pointSize: screenManager.normalFontSize() }
+                        color: Material.color(Material.BlueGrey, Material.Shade900)
+                        text: model.value // Roles::ValueRole
+
+                        MouseArea
                         {
-                            app.debugLog("@@@@@ comboSettingPanel.settingItemComboBox.onClicked %1".arg(index))
-                            app.onUserAction();
-                            settingItemComboBox.currentIndex = index
-                            settingItemComboBox.displayText = text
-                            settingItemComboBox.popup.close()
+                            anchors.fill: parent
+                            onClicked:
+                            {
+                                app.debugLog("@@@@@ comboSettingPanel.settingItemComboBox.onClicked %1".arg(index))
+                                app.onUserAction();
+                                settingItemComboBox.currentIndex = index
+                                settingItemComboBox.displayText = text
+                                settingItemComboBox.popup.close()
+                            }
                         }
                     }
                 }
@@ -133,9 +140,9 @@ Popup
                 Layout.row: 2
                 Layout.columnSpan: 3
                 Layout.fillWidth: parent
-                Layout.alignment: Qt.AlignCenter
-                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
+                Layout.fillHeight: parent
                 color: "transparent"
+                visible: commentText != ""
 
                 CardText { text: commentText }
             }

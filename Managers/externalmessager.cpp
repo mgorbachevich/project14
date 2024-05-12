@@ -1,7 +1,7 @@
 #include "externalmessager.h"
 #include "appmanager.h"
 
-ExternalMessager::ExternalMessager(AppManager* parent) : QObject((QObject*)parent), appManager(parent) {}
+ExternalMessager::ExternalMessager(AppManager* parent) : QObject{parent}, appManager(parent) {}
 
 void ExternalMessager::showMessage(const QString& title, const QString& text)
 {

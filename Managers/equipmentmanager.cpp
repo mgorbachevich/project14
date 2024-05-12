@@ -9,9 +9,9 @@
 #include "users.h"
 #include "Slpa100u.h"
 #include "Label/labelcreator.h"
+#include "appmanager.h"
 
-EquipmentManager::EquipmentManager(AppManager *parent, DataBase* dataBase, Settings* globalSettings):
-    ExternalMessager(parent), db(dataBase), settings(globalSettings)
+EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent)
 {
     Tools::debugLog("@@@@@ EquipmentManager::EquipmentManager ");
 }
@@ -289,12 +289,12 @@ int EquipmentManager::startPM()
         if(isPMStarted)
         {
             slpa->startPolling(200);
-            e = slpa->setBrightness(settings->getIntValue(SettingCode_PrinterBrightness) + 8);
-            if(e >= 0) e = slpa->setOffset(settings->getIntValue(SettingCode_PrintOffset) + 8);
-            if(e >= 0) e = slpa->setPaper(settings->getIntValue(SettingCode_PrintPaper) == 0 ?
+            e = slpa->setBrightness(appManager->settings->getIntValue(SettingCode_PrinterBrightness) + 8);
+            if(e >= 0) e = slpa->setOffset(appManager->settings->getIntValue(SettingCode_PrintOffset) + 8);
+            if(e >= 0) e = slpa->setPaper(appManager->settings->getIntValue(SettingCode_PrintPaper) == 0 ?
                                           Slpa100uProtocol::papertype::ptSticker :
                                           Slpa100uProtocol::papertype::ptRibbon);
-            if(e >= 0) e = slpa->setSensor(settings->getBoolValue(SettingCode_PrintLabelSensor));
+            if(e >= 0) e = slpa->setSensor(appManager->settings->getBoolValue(SettingCode_PrintLabelSensor));
         }
     }
     if(e) showAttention(QString("\nОшибка принтера %1: %2").arg(
@@ -431,13 +431,13 @@ QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& qu
 {
     QString result;
     QString barcodeTemplate = ProductDBTable::isPiece(product) ?
-                settings->getStringValue(SettingCode_PrintLabelBarcodePiece) :
-                settings->getStringValue(SettingCode_PrintLabelBarcodeWeight);
+                appManager->settings->getStringValue(SettingCode_PrintLabelBarcodePiece) :
+                appManager->settings->getStringValue(SettingCode_PrintLabelBarcodeWeight);
     if(barcodeTemplate.contains("P"))
     {
         result = ProductDBTable::isPiece(product) ?
-                 settings->getStringValue(SettingCode_PrintLabelPrefixPiece) :
-                 settings->getStringValue(SettingCode_PrintLabelPrefixWeight);
+                 appManager->settings->getStringValue(SettingCode_PrintLabelPrefixPiece) :
+                 appManager->settings->getStringValue(SettingCode_PrintLabelPrefixWeight);
     }
     result += parseBarcode(barcodeTemplate, 'C', product[ProductDBTable::Code].toString()) +
               parseBarcode(barcodeTemplate, 'T', amount) +
@@ -474,14 +474,14 @@ int EquipmentManager::print(const DBRecord& user, const DBRecord& product,
         pd.validity = ""; // todo
         pd.price2 = product[ProductDBTable::Price2].toString();
         pd.certificate = product[ProductDBTable::Certificate].toString();
-        pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
-        pd.shop = settings->getStringValue(SettingCode_ShopName);
+        pd.message = appManager->db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
+        pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
         pd.operatorcode = user[UserField_Code].toString();
         pd.operatorname = user[UserField_Name].toString();
         pd.date = Tools::dateFromUInt(dateTime, "dd.MM.yyyy");
         pd.time = Tools::timeFromUInt(dateTime, "hh:mm:ss");
         pd.labelnumber = QString::number(labelNumber);
-        pd.scalesnumber = settings->getStringValue(SettingCode_ScalesNumber),
+        pd.scalesnumber = appManager->settings->getStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo
         pd.textfile = ""; // todo
         QImage p = labelCreator->createImage(pd);
@@ -489,7 +489,7 @@ int EquipmentManager::print(const DBRecord& user, const DBRecord& product,
     }
     if(e == 0)
     {
-        TransactionDBTable* t = (TransactionDBTable*)db->getTable(DBTABLENAME_TRANSACTIONS);
+        TransactionDBTable* t = (TransactionDBTable*)(appManager->db->getTable(DBTABLENAME_TRANSACTIONS));
         if(t != nullptr)
         {
             DBRecord r = t->createRecord(

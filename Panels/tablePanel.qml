@@ -2,14 +2,15 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Rectangle
 {
     id: tablePanel
-    color: Material.background
+    color: Material.color(Material.Grey, Material.Shade100)
     focus: true
+
     Keys.onPressed: (event) =>
     {
         app.debugLog("@@@@@ tablePanel Keys.onPressed %1".arg(JSON.stringify(event)))
@@ -39,11 +40,11 @@ Rectangle
                 app.onMainPageSwiped(2)
                 break;
             case Qt.Key_Up:
-                if (!tablePanelResultList.atYBeginning) tablePanelResultList.flick(0, Constants.flickVelocity)
+                if (!tablePanelResultList.atYBeginning) tablePanelResultList.flick(0, screenManager.flickVelocity())
                 else app.beepSound()
                 break;
             case Qt.Key_Down:
-                if (!tablePanelResultList.atYEnd) tablePanelResultList.flick(0, -Constants.flickVelocity)
+                if (!tablePanelResultList.atYEnd) tablePanelResultList.flick(0, -screenManager.flickVelocity())
                 else app.beepSound()
                 break;
             case Qt.Key_F10: // Промотка
@@ -86,43 +87,56 @@ Rectangle
 
     GridLayout
     {
-        id: tablePanelLayout
         anchors.fill: parent
-        columnSpacing: screenManager.spacer() / 2
-        columns: 3
-        rows: 2
+        columnSpacing: 0
+        rowSpacing: 0
 
-        RoundIconButton
+        Rectangle
         {
-            id: tablePanelBackButton
             Layout.column: 0
             Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            icon.source: "../Icons/empty"
-            onClicked: app.onTableBackClicked()
+            Layout.preferredWidth: screenManager.buttonSize() + screenManager.spacer() * 2
+            Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
+            color: "transparent"
+
+            RoundIconButton
+            {
+                id: tablePanelBackButton
+                anchors.centerIn: parent
+                icon.source: "../Icons/empty"
+                onClicked: app.onTableBackClicked()
+            }
         }
 
-        Text
+        Rectangle
         {
-            id: tablePanelTitle
             Layout.column: 1
             Layout.row: 0
-            Layout.fillWidth: parent
-            font { pointSize: screenManager.normalFontSize() }
-            wrapMode: Text.WordWrap
-            color: Material.color(Material.BlueGrey, Material.Shade600)
-            text: "/"
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
+            color: "transparent"
+
+            Text
+            {
+                id: tablePanelTitle
+                anchors.fill: parent
+                anchors.verticalCenter: parent.verticalCenter
+                verticalAlignment: Text.AlignVCenter
+                font { pointSize: screenManager.normalFontSize() }
+                color: Material.color(Material.BlueGrey, Material.Shade900)
+                wrapMode: Text.WordWrap
+                text: "/"
+            }
         }
 
         Rectangle
         {
             Layout.column: 0
             Layout.row: 1
-            Layout.columnSpan: tablePanelLayout.columns
+            Layout.columnSpan: 2
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            Layout.rightMargin: screenManager.spacer() / 2
-            color: Material.background
+            color: Material.color(Material.Grey, Material.Shade50)
 
             ListView
             {
@@ -131,14 +145,14 @@ Rectangle
                 orientation: Qt.Vertical
                 clip: true
                 onFlickStarted: app.onUserAction()
-
+                /*
                 ScrollBar.vertical: ScrollBar
                 {
                     width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
-
+                */
                 model: tablePanelModel
                 delegate: Label
                 {
@@ -146,11 +160,6 @@ Rectangle
                     font { pointSize: screenManager.normalFontSize() }
                     padding: screenManager.spacer()
                     color: Material.color(Material.BlueGrey, Material.Shade900)
-                    background: Rectangle
-                    {
-                        color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
-                                                 Material.color(Material.Grey, Material.Shade200)
-                    }
                     text: model.value // Roles::ValueRole
                     MouseArea
                     {

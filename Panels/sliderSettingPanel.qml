@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -91,15 +91,20 @@ Popup
                 }
             }
 
-            Text
+            Rectangle
             {
-                id: sliderValueText
-                Layout.column: 1
+                Layout.column: 0
                 Layout.row: 1
-                Layout.alignment: Qt.AlignHCenter
-                color: Material.color(Material.BlueGrey, Material.Shade600)
-                font { pointSize: screenManager.largeFontSize() }
-                text: settingItemSlider.value
+                Layout.columnSpan: 3
+                Layout.fillWidth: parent
+                Layout.preferredHeight: parent.height / 2
+                color: "transparent"
+
+                CardTitleText
+                {
+                    id: sliderValueText
+                    text: settingItemSlider.value
+                }
             }
 
             Slider
@@ -108,9 +113,9 @@ Popup
                 Layout.column: 0
                 Layout.row: 2
                 Layout.columnSpan: 3
+                Layout.fillHeight: parent
                 Layout.preferredWidth: screenManager.editWidth()
-                Layout.alignment: Qt.AlignHCenter
-                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 from: sliderFrom
                 to: sliderTo
                 stepSize: sliderStep

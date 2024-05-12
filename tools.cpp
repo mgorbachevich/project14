@@ -64,18 +64,6 @@ double Tools::stringToDouble(const QString &s, const double defaultValue)
     return ok ? v : defaultValue;
 }
 
-double Tools::priceToDouble(const QString &dbPrice, const int pointPosition)
-{
-    double v = dbPrice.toDouble();
-    for (int i = 0; i < pointPosition; i++) v /= 10;
-    return v;
-}
-
-QString Tools::moneyToText(const double value, const int pointPosition)
-{
-    return doubleToString(value, pointPosition);
-}
-
 QString Tools::boolToString(const bool value)
 {
     return QVariant(value).toString();
@@ -91,9 +79,16 @@ QString Tools::boolToIntString(const bool value)
     return intToString(value ? 1 : 0);
 }
 
-QString Tools::doubleToString(const double value, const int afterPoint)
+QString Tools::doubleToString(const double value, const int pointPosition)
 {
-    return QString("%1").arg(value, 0, 'f', afterPoint);
+    return QString("%1").arg(value, 0, 'f', pointPosition);
+}
+
+double Tools::round(const double value, const int pointPosition)
+{
+    int d = 1;
+    for(int i = 0; i < pointPosition; i++) d *= 10;
+    return ((double)qRound(value * d)) / d;
 }
 
 quint64 Tools::currentDateTimeToUInt()

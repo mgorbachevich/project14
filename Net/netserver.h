@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QHttpServer>
 #include <QHttpServerResponse>
+#include "externalmessager.h"
 
 #ifdef SSL
 #include <QSslCertificate>
@@ -14,14 +15,14 @@
 
 #define SERVER_VERSION "1.4"
 
-class DataBase;
+class AppManager;
 
-class NetServer : public QObject
+class NetServer : public ExternalMessager
 {
     Q_OBJECT
 
 public:
-    explicit NetServer(QObject*, DataBase*);
+    explicit NetServer(AppManager*);
     ~NetServer() { stop(); }
     void start(const int);
     void stop();
@@ -30,7 +31,6 @@ public:
 
 protected:
     QHttpServer* server = nullptr;
-    DataBase* db = nullptr;
 
 signals:
     void action(const int);

@@ -2,13 +2,15 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Column
 {
     anchors.horizontalCenter: parent.horizontalCenter
-    spacing: screenManager.spacer() / 4
+    spacing: 0
+
+    Spacer {}
 
     RoundIconButton
     {
@@ -17,12 +19,16 @@ Column
         onClicked: app.onAdminSettingsClicked()
     }
 
+    Spacer {}
+
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
         icon.source: "../Icons/lock"
         onClicked: app.onLockClicked()
     }
+
+    Spacer {}
 
     RoundIconButton
     {
@@ -31,6 +37,8 @@ Column
         onClicked: app.onViewLogClicked()
     }
 
+    Spacer {}
+
     RoundIconButton
     {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -38,3 +46,4 @@ Column
         onClicked: app.onEditUsersClicked()
     }
 }
+

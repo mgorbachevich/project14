@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -32,14 +32,14 @@ Popup
         anchors.fill: parent
         radius: screenManager.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
-        color: Material.background
+        color: Material.color(Material.Grey, Material.Shade100)
 
         GridLayout
         {
             anchors.fill: parent
             anchors.margins: screenManager.spacer()
-            columns: 3
-            rows: 2
+            columnSpacing: 0
+            rowSpacing: 0
             focus: true
             Keys.onPressed: (event) =>
             {
@@ -97,7 +97,6 @@ Popup
                 Layout.columnSpan: 3
                 Layout.fillWidth: parent
                 Layout.fillHeight: parent
-                Layout.bottomMargin: screenManager.buttonSize() * 3 / 4
                 color: "transparent"
 
                 CardText { text: messageText }

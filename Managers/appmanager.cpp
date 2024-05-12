@@ -26,6 +26,7 @@
 #include "screenmanager.h"
 #include "keyemitter.h"
 #include "edituserspanelmodel.h"
+#include "moneycalculator.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
     QObject(application), context(qmlContext)
@@ -48,9 +49,10 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
     settings = new Settings(this);
     users = new Users(this);
-    db = new DataBase(settings, users, this);
-    netServer = new NetServer(this, db);
-    equipmentManager = new EquipmentManager(this, db, settings);
+    db = new DataBase(this);
+    netServer = new NetServer(this);
+    equipmentManager = new EquipmentManager(this);
+    moneyCalculator = new MoneyCalculator(this);
     timer = new QTimer(this);
 
     connect(this, &AppManager::start, db, &DataBase::onAppStart);
@@ -205,27 +207,6 @@ void AppManager::onTimer()
     }
 }
 
-QString AppManager::quantityAsString(const DBRecord& productRecord)
-{
-    if(ProductDBTable::isPiece(productRecord)) return QString("%1").arg(printStatus.pieces);
-    return equipmentManager->isWMError() ? "" : Tools::doubleToString(equipmentManager->getWeight(), 3);
-}
-
-QString AppManager::priceAsString(const DBRecord& productRecord)
-{
-    return Tools::moneyToText(price(productRecord), settings->getIntValue(SettingCode_PointPosition));
-}
-
-QString AppManager::amountAsString(const DBRecord& productRecord)
-{
-    double q = 0;
-    if(ProductDBTable::isPiece(productRecord))
-        q = printStatus.pieces;
-    else if(!equipmentManager->isWMError())
-        q = equipmentManager->getWeight() * (ProductDBTable::is100gBase(productRecord) ? 10 : 1);
-    return Tools::moneyToText(q * price(productRecord), settings->getIntValue(SettingCode_PointPosition));
-}
-
 void AppManager::createDefaultData()
 {
     debugLog("@@@@@ AppManager::createDefaultData");
@@ -244,13 +225,6 @@ void AppManager::createDefaultImages()
     for (int i = 0; i < images.count(); i++)
         Tools::copyFile(QString(":/Default/%1").arg(images[i]),
                         Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
-}
-
-double AppManager::price(const DBRecord& productRecord)
-{
-    const int p = ProductDBTable::Price;
-    if (productRecord.count() <= p) return 0;
-    return Tools::priceToDouble(productRecord[p].toString(), settings->getIntValue(SettingCode_PointPosition));
 }
 
 void AppManager::onProductDescriptionClicked()
@@ -399,7 +373,7 @@ void AppManager::onPiecesInputClosed(const QString &value)
 void AppManager::onSetProductByCodeClicked(const QString &value)
 {
     debugLog("@@@@@ AppManager::onSetProductByCodeClicked " + value);
-    db->select(DBSelector_SetProductByInputCode, value);
+    db->select(DBSelector_SetProductByInputCode, value.split(PRODUCT_STRING_DELIMETER).at(0));
 }
 
 void AppManager::onProductCodeEdited(const QString &value)
@@ -858,15 +832,6 @@ void AppManager::showMessage(const QString &title, const QString &text)
     emit showMessageBox(title, text, true);
 }
 
-void AppManager::addMessageString(QString& to, const QString& from)
-{
-    if(!from.isEmpty())
-    {
-        if(!to.isEmpty()) to += "\n";
-        to += from;
-    }
-}
-
 void AppManager::showConfirmation(const ConfirmSelector selector, const QString &title, const QString &text)
 {
     debugLog(QString("@@@@@ AppManager::showConfirmation %1 %2 %3").arg(QString::number(selector), title, text));
@@ -880,7 +845,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
-        productPanelModel->update(product, price(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+        productPanelModel->update(product, moneyCalculator->price(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
@@ -914,7 +879,11 @@ void AppManager::onUserAction()
 void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
-    equipmentManager->print(users->getUser(), product, quantityAsString(product), priceAsString(product), amountAsString(product));
+    equipmentManager->print(users->getUser(),
+                            product,
+                            moneyCalculator->quantityAsString(product),
+                            moneyCalculator->priceAsString(product),
+                            moneyCalculator->amountAsString(product));
 }
 
 void AppManager::onPrintClicked()
@@ -984,7 +953,7 @@ void AppManager::updateWeightStatus()
     const bool isPM = equipmentManager->isPM();
     const bool isZero = equipmentManager->isZeroFlag();
     const bool isTare = equipmentManager->isTareFlag();
-    const bool isWeightError = equipmentManager->isWMError() || !isWM;
+    const bool isWMError = equipmentManager->isWMError() || !isWM;
     const bool isFixed = equipmentManager->isWeightFixed();
 
     const bool isAutoPrint = settings->getBoolValue(SettingCode_PrintAuto) &&
@@ -999,7 +968,7 @@ void AppManager::updateWeightStatus()
     emit showWeightParam(ControlParam_Zero, Tools::boolToString(isZero));
     emit showWeightParam(ControlParam_Tare, Tools::boolToString(isTare));
     emit showWeightParam(ControlParam_WeightFixed, Tools::boolToString(isFixed));
-    if(isWeightError)
+    if(isWMError)
         emit showWeightParam(ControlParam_WeightError, Tools::boolToString(true));
     else if(isAutoPrint)
         emit showWeightParam(ControlParam_AutoPrint, Tools::boolToString(true));
@@ -1021,20 +990,22 @@ void AppManager::updateWeightStatus()
 
     // Рисуем количество (вес/штуки):
     QString quantity = NO_DATA;
-    if(isWM) quantity = isPieceProduct || !isWeightError ? quantityAsString(product) : "";
+    if(isWM) quantity = isPieceProduct || !isWMError ? moneyCalculator->quantityAsString(product) : "";
     emit showWeightParam(ControlParam_WeightValue, quantity);
-    emit showWeightParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWeightError) ? activeColor : passiveColor);
+    emit showWeightParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? activeColor : passiveColor);
 
     // Рисуем цену:
-    bool isPrice = isProduct() && PRICE_MAX_CHARS >= priceAsString(product).replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    QString price = isPrice ? priceAsString(product) : NO_DATA;
+    QString ps = moneyCalculator->priceAsString(product);
+    bool isPrice = isProduct() && PRICE_MAX_CHARS >= ps.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
+    QString price = isPrice ? moneyCalculator->priceAsString(product) : NO_DATA;
     emit showWeightParam(ControlParam_PriceValue, price);
     emit showWeightParam(ControlParam_PriceColor, isPrice ? activeColor : passiveColor);
 
     // Рисуем стоимость:
-    bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWeightError)) &&
-        AMOUNT_MAX_CHARS >= amountAsString(product).replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    QString amount = isAmount ? amountAsString(product) : NO_DATA;
+    QString as = moneyCalculator->amountAsString(product);
+    bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWMError)) &&
+        AMOUNT_MAX_CHARS >= as.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
+    QString amount = isAmount ? moneyCalculator->amountAsString(product) : NO_DATA;
     emit showWeightParam(ControlParam_AmountValue, amount);
     emit showWeightParam(ControlParam_AmountColor, isAmount ? activeColor : passiveColor);
 
@@ -1047,11 +1018,11 @@ void AppManager::updateWeightStatus()
     // Автопечать
     if(printStatus.calculateMode && isPrice)
     {
-        if(isWeightError || isFixed) printStatus.calculateMode = false;
+        if(isWMError || isFixed) printStatus.calculateMode = false;
         if(!isPieceProduct) // Весовой товар
         {
             const int wg = (int)(equipmentManager->getWeight() * 1000); // Вес в граммах
-            if(!isWeightError && isFixed && isAutoPrintEnabled && wg > 0)
+            if(!isWMError && isFixed && isAutoPrintEnabled && wg > 0)
             {
                 if(wg >= settings->getIntValue(SettingCode_PrintAutoWeight)) print(); // Автопечать
                 else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
@@ -1062,7 +1033,7 @@ void AppManager::updateWeightStatus()
             const double unitWeight = product[ProductDBTable::UnitWeight].toDouble() / 1000000; // Вес единицы, кг
             if(unitWeight > 0) // Задан вес единицы
             {
-                if(isFixed && !isWeightError)
+                if(isFixed && !isWMError)
                 {
                     int newPieces = (int)(equipmentManager->getWeight() / unitWeight + 0.5); // Округление до ближайшего целого
                     printStatus.pieces = newPieces < 1 ? 1 : newPieces;
@@ -1084,7 +1055,7 @@ void AppManager::updateWeightStatus()
 
     if(DEBUG_WEIGHT_STATUS)
         debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9%10 %11 %12 %13").arg(
-                 Tools::boolToIntString(isWeightError),
+                 Tools::boolToIntString(isWMError),
                  Tools::boolToIntString(isAutoPrint),
                  Tools::boolToIntString(isFixed),
                  Tools::boolToIntString(isTare),
@@ -1271,6 +1242,7 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
         break;
     }
 }
+
 
 
 

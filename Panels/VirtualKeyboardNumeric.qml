@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Rectangle
 {
@@ -20,7 +20,6 @@ Rectangle
         Row
         {
             anchors.horizontalCenter: parent.horizontalCenter
-
             KeyboardButton { text: qsTr("1"); onClicked: emitKey(Qt.Key_1) }
             KeyboardButton { text: qsTr("2"); onClicked: emitKey(Qt.Key_2) }
             KeyboardButton { text: qsTr("3"); onClicked: emitKey(Qt.Key_3) }
@@ -36,7 +35,6 @@ Rectangle
         Row
         {
             anchors.horizontalCenter: parent.horizontalCenter
-
             KeyboardCharButton { text: qsTr("-") }
             KeyboardCharButton { text: qsTr("/") }
             KeyboardCharButton { text: qsTr(":") }
@@ -51,7 +49,6 @@ Rectangle
         Row
         {
             anchors.horizontalCenter: parent.horizontalCenter
-
             KeyboardCharButton { text: qsTr("%") }
             KeyboardCharButton { text: qsTr("*") }
             KeyboardCharButton { text: qsTr("_") }
@@ -70,7 +67,6 @@ Rectangle
         Row
         {
             anchors.horizontalCenter: parent.horizontalCenter
-
             KeyboardButton
             {
                 text: qsTr("LAT")
@@ -85,7 +81,11 @@ Rectangle
                 font { pointSize: screenManager.normalFontSize() }
                 onClicked: app.onVirtualKeyboardSet(1)
             }
-            KeyboardCharButton { text: qsTr(" "); width: screenManager.buttonSize() * 4 }
+            KeyboardCharButton
+            {
+                text: qsTr(" ");
+                width: screenManager.buttonSize() * 4
+            }
             /*
             KeyboardIconButton
             {

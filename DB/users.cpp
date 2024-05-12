@@ -60,6 +60,8 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
 {
     Tools::debugLog(QString("@@@@@ Users::onInputUser %1 %2 %3 %4").arg(
                         code, name, password, Tools::boolToString(admin)));
+    if(code.isEmpty() && name.isEmpty() && password.isEmpty())
+        return;
     if(Tools::stringToInt(code) <= 0)
     {
         showAttention("Неверный код пользователя " + code);

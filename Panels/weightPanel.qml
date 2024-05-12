@@ -2,13 +2,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Rectangle
 {
     id:  weightPanel
-
     property int valueFontSize: screenManager.weightValueFontSize()
     property int titleFontSize: screenManager.weightTitleFontSize()
     property int flagIconSize: (valueFontSize + titleFontSize + screenManager.spacer()) / 4
@@ -74,7 +73,7 @@ Rectangle
                 else                  weightPanelIcon2.source = "../Icons/empty"
                 break
             case 13: // WeightError
-                if (value === 'true') weightPanelIcon1.source = "../Icons/error_white"
+                if (value === 'true') weightPanelIcon1.source = "../Icons/error_red"
                 else                  weightPanelIcon1.source = "../Icons/empty"
                 break
             case 16: // AutoPrint

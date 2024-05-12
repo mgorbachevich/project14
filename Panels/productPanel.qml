@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -14,8 +14,8 @@ Popup
     modal: true
     dim: false
     Material.theme: Material.Dark
-    Material.background: Material.color(Material.Grey, Material.Shade800)
-    property int imageSize: height - screenManager.spacer() * 4 - screenManager.buttonSize()
+    Material.background: Material.color(Material.Grey, Material.Shade900)
+    property int imageSize: height - screenManager.buttonSize()
     property int printButtonSize: screenManager.buttonSize() * 2 + screenManager.spacer()
     property bool isPiece: false
     property string productName: ""
@@ -49,7 +49,7 @@ Popup
             //app.debugLog("@@@@@ productPanel onEnableManualPrint %1".arg(value))
             productPanelPrintButton.visible = value
             if(value) productPanelPrintMessageRectangle.color = "transparent"
-            else productPanelPrintMessageRectangle.color = Constants.colorError
+            else productPanelPrintMessageRectangle.color = Material.color(Material.Red)
         }
     }
 
@@ -67,12 +67,8 @@ Popup
     {
         id: productPanelLayout
         anchors.fill: parent
-        anchors.margins: screenManager.spacer()
-        columnSpacing: screenManager.spacer()
-        rowSpacing: screenManager.spacer()
-        columns: 4
-        rows: 3
-
+        columnSpacing: 0
+        rowSpacing: 0
         focus: true
         Keys.onPressed: (event) =>
         {
@@ -102,11 +98,11 @@ Popup
                     app.onRewind()
                     break
                 case Qt.Key_Up:
-                    if (!productPanelList.atYBeginning) productPanelList.flick(0, Constants.flickVelocity)
+                    if (!productPanelList.atYBeginning) productPanelList.flick(0, screenManager.flickVelocity())
                     else app.beepSound()
                     break;
                 case Qt.Key_Down:
-                    if (!productPanelList.atYEnd) productPanelList.flick(0, -Constants.flickVelocity)
+                    if (!productPanelList.atYEnd) productPanelList.flick(0, -screenManager.flickVelocity())
                     else app.beepSound()
                     break;
                 default:
@@ -115,30 +111,17 @@ Popup
             }
         }
 
-        Image
-        {
-            id: productPanelImage
-            Layout.preferredWidth: productPanel.imageSize
-            Layout.preferredHeight: productPanel.imageSize
-            Layout.column: 0
-            Layout.row: 1
-            Layout.rowSpan: 2
-            Layout.alignment: Qt.AlignCenter
-            fillMode: Image.PreserveAspectFit
-            source: "../Images/image_dummy"
-        }
-
         Rectangle
         {
             Layout.fillWidth: parent
             Layout.column: 0
             Layout.row: 0
             Layout.columnSpan: 2
-            color: "transparent"
+            color: "red"
 
             CardTitleText
             {
-                color: Constants.colorWhite
+                color: "white"
                 font { pointSize: screenManager.largeFontSize(); bold: true }
                 text: productName
             }
@@ -146,12 +129,32 @@ Popup
 
         Rectangle
         {
+            Layout.column: 0
+            Layout.row: 1
+            Layout.rowSpan: 5
+            Layout.preferredHeight: imageSize
+            Layout.preferredWidth: imageSize
+            color: Material.color(Material.Grey, Material.Shade800)
+
+            Image
+            {
+                id: productPanelImage
+                width: imageSize
+                height: imageSize
+                anchors.centerIn: parent
+                fillMode: Image.PreserveAspectFit
+                source: "../Images/image_dummy"
+            }
+        }
+
+        Rectangle
+        {
             Layout.column: 1
             Layout.row: 1
-            Layout.rowSpan: 2
+            Layout.rowSpan: 5
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            color: "transparent"
+            color: Material.color(Material.Grey, Material.Shade800)
 
             ListView
             {
@@ -160,18 +163,19 @@ Popup
                 orientation: Qt.Vertical
                 clip: true
                 onFlickStarted: app.onUserAction()
-
+                /*
                 ScrollBar.vertical: ScrollBar
                 {
                     width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
-
+                */
                 model: productPanelModel
                 delegate: Text
                 {
-                    leftPadding: screenManager.spacer()
+                    leftPadding: screenManager.spacer() * 2
+                    rightPadding: screenManager.spacer()
                     font { pointSize: screenManager.normalFontSize(); family: "Roboto" }
                     color: Material.color(Material.BlueGrey, Material.Shade50)
                     text: model.value // Roles::ValueRole
@@ -179,76 +183,111 @@ Popup
             }
         }
 
+        Spacer
+        {
+            Layout.column: 2
+            Layout.row: 0
+        }
+
         RoundIconButton
         {
             id: productPanelInfoButton
-            Layout.column: 2
+            Layout.column: 3
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
             icon.source: "../Icons/info_outline"
             onClicked: app.onProductDescriptionClicked()
         }
 
+        Spacer
+        {
+            Layout.column: 4
+            Layout.row: 0
+        }
+
         RoundIconButton
         {
             id: productPanelCloseButton
-            Layout.column: 3
+            Layout.column: 5
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             icon.source: "../Icons/close"
             onClicked: app.onProductPanelCloseClicked()
         }
 
-        RoundTextButton
+        Spacer
+        {
+            Layout.column: 6
+            Layout.row: 0
+        }
+
+        Spacer
+        {
+            Layout.column: 2
+            Layout.row: 1
+        }
+
+          RoundTextButton
         {
             id: productPanelPiecesButton
             Layout.preferredWidth: screenManager.buttonSize() * 2 + screenManager.spacer()
             Layout.preferredHeight: screenManager.buttonSize()
-            Layout.column: 2
-            Layout.row: 1
-            Layout.columnSpan: 2
+            Layout.column: 3
+            Layout.row: 2
+            Layout.columnSpan: 3
             Layout.alignment: Qt.AlignTop
-            Material.background: Material.color(Material.BlueGrey, isPiece ? Material.Shade200 : Material.Shade700)
+            Material.background: Material.color(Material.BlueGrey, isPiece ? Material.Shade100 : Material.Shade700)
             text: isPiece ? qsTr("+ / -") : qsTr(" ")
             font { pointSize: screenManager.largeFontSize() }
             onClicked: app.onProductPanelPiecesClicked()
         }
 
+        Spacer
+        {
+            Layout.column: 2
+            Layout.row: 3
+        }
+
         RoundIconButton
         {
             id: productPanelPrintButton
-            Layout.column: 2
-            Layout.row: 2
-            Layout.columnSpan: 2
+            Layout.column: 3
+            Layout.row: 4
+            Layout.columnSpan: 3
             Layout.alignment: Qt.AlignBottom
-            Layout.preferredWidth:  printButtonSize
+            Layout.preferredWidth: printButtonSize
             Layout.preferredHeight: printButtonSize
             icon { width: screenManager.buttonSize(); height: screenManager.buttonSize(); source: "../Icons/print" }
-            Material.background: Constants.colorAuto
+            Material.background: Material.color(Material.BlueGrey, Material.Shade200)
             onClicked: app.onPrintClicked()
         }
 
         Rectangle
         {
             id: productPanelPrintMessageRectangle
-            Layout.column: 2
-            Layout.row: 2
-            Layout.columnSpan: 2
+            Layout.column: 3
+            Layout.row: 4
+            Layout.columnSpan: 3
             Layout.alignment: Qt.AlignBottom
             Layout.preferredWidth:  printButtonSize
             Layout.preferredHeight: printButtonSize
             radius: screenManager.spacer()
-            color: Constants.colorError
+            color: Material.color(Material.Red)
 
             CardText
             {
                 id: productPanelPrintMessage
                 verticalAlignment: Text.AlignBottom
                 bottomPadding: screenManager.spacer() / 2
-                color: Constants.colorWhite
+                color: "white"
             }
         }
 
+        Spacer
+        {
+            Layout.column: 2
+            Layout.row: 5
+        }
     }
 }
 

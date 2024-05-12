@@ -2,14 +2,15 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
     id: viewLogPanel
     //objectName: "viewLogPanel"
     padding : 0
+    Material.background: Material.color(Material.Grey, Material.Shade100)
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
     focus: true
@@ -27,10 +28,8 @@ Popup
     GridLayout
     {
         anchors.fill: parent
-        anchors.margins: screenManager.spacer()
-        columnSpacing: screenManager.spacer()
-        rowSpacing: screenManager.spacer()
-        columns: 3
+        columnSpacing: 0
+        rowSpacing: 0
 
         focus: true
         Keys.onPressed: (event) =>
@@ -48,11 +47,11 @@ Popup
                     viewLogPanel.close()
                     break
                 case Qt.Key_Up:
-                    if (!viewLogPanelList.atYBeginning) viewLogPanelList.flick(0, Constants.flickVelocity)
+                    if (!viewLogPanelList.atYBeginning) viewLogPanelList.flick(0, screenManager.flickVelocity())
                     else app.beepSound()
                     break;
                 case Qt.Key_Down:
-                    if (!viewLogPanelList.atYEnd) viewLogPanelList.flick(0, -Constants.flickVelocity)
+                    if (!viewLogPanelList.atYEnd) viewLogPanelList.flick(0, -screenManager.flickVelocity())
                     else app.beepSound()
                     break;
                 case Qt.Key_F10: // Промотка
@@ -64,16 +63,24 @@ Popup
             }
         }
 
-        RoundTextButton
+        Rectangle
         {
             Layout.column: 0
             Layout.row: 0
-            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-            text: qsTr("ОЧИСТИТЬ")
-            onClicked:
+            Layout.preferredWidth: screenManager.buttonSize() + screenManager.spacer() * 2
+            Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
+            color: Material.color(Material.Grey, Material.Shade100)
+
+            RoundIconButton
             {
-                app.onUserAction();
-                app.clearLog()
+                icon.source: "../Icons/delete"
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked:
+                {
+                    app.onUserAction();
+                    app.clearLog()
+                }
             }
         }
 
@@ -82,30 +89,29 @@ Popup
             Layout.column: 1
             Layout.row: 0
             Layout.fillWidth: parent
-            Layout.preferredHeight: screenManager.buttonSize()
-            color: Material.background
+            color: Material.color(Material.Grey, Material.Shade100)
 
-            Text
-            {
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                font { pointSize: screenManager.normalFontSize() }
-                color: Material.color(Material.Grey, Material.Shade600)
-                wrapMode: Text.WordWrap
-                text: qsTr("Лог")
-            }
+            CardTitleText { text: qsTr("Лог") }
         }
 
-        RoundIconButton
+        Rectangle
         {
             Layout.column: 2
             Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-            icon.source: "../Icons/close"
-            onClicked:
+            Layout.preferredWidth: screenManager.buttonSize() + screenManager.spacer() * 2
+            Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
+            color: Material.color(Material.Grey, Material.Shade100)
+
+            RoundIconButton
             {
-                app.onUserAction();
-                viewLogPanel.close()
+                icon.source: "../Icons/close"
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked:
+                {
+                    app.onUserAction();
+                    viewLogPanel.close()
+                }
             }
         }
 
@@ -125,18 +131,19 @@ Popup
                 orientation: Qt.Vertical
                 clip: true
                 onFlickStarted: app.onUserAction()
-
+                /*
                 ScrollBar.vertical: ScrollBar
                 {
-                    width: screenManager.spacer()
+                    width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
-
+                */
                 model: viewLogPanelModel
                 delegate: Text
                 {
-                    leftPadding: screenManager.spacer()
+                    leftPadding: screenManager.spacer() * 2
+                    rightPadding: screenManager.spacer() * 2
                     font { pointSize: screenManager.normalFontSize() }
                     color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value

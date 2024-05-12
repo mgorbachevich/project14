@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -29,7 +29,7 @@ Popup
         anchors.fill: parent
         radius: screenManager.spacer()
         Material.background: Material.color(Material.Grey, Material.Shade100)
-        color: Material.background
+        color: Material.color(Material.Grey, Material.Shade100)
 
         GridLayout
         {
@@ -37,8 +37,6 @@ Popup
             anchors.margins: screenManager.spacer()
             columnSpacing: 0
             rowSpacing: 0
-            columns: 3
-            rows: 4
 
             EmptyButton
             {
@@ -81,7 +79,7 @@ Popup
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: screenManager.editWidth() / 4
-                    font { pointSize: screenManager.normalFontSize() }
+                    font { pointSize: screenManager.largeFontSize() }
                     Material.accent: Material.Orange
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     focus: true
@@ -136,7 +134,6 @@ Popup
                 Layout.row: 2
                 Layout.preferredWidth: screenManager.buttonSize() * 2 + spacing
                 Layout.preferredHeight: screenManager.buttonSize()
-                Layout.bottomMargin: screenManager.spacer()
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                 spacing: screenManager.spacer() * 4
 

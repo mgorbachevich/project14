@@ -2,13 +2,13 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Rectangle
 {
     id: searchPanel
-    color: Material.background
+    color: Material.color(Material.Grey, Material.Shade100)
     property int filterWidth: width * 0.25
 
     Connections // Slot for signal AppManager::showMainPage:
@@ -28,50 +28,20 @@ Rectangle
     {
         id: searchPanelLayout
         anchors.fill: parent
-        columnSpacing: screenManager.spacer() / 2
+        columnSpacing: 0
         rowSpacing: 0
-        columns: 4
-        rows: 4
-
-        EmptyButton
-        {
-            Layout.column: 0
-            Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-        }
 
         Rectangle
         {
-            Layout.column: 1
+            Layout.column: 0
             Layout.row: 0
             Layout.columnSpan: 2
             Layout.fillWidth: parent
-            color: "transparent"
+            Layout.preferredHeight: screenManager.buttonSize()
+            color: Material.color(Material.Grey, Material.Shade100)
 
             CardTitleText { text: qsTr("Поиск товаров") }
         }
-
-        EmptyButton
-        {
-            Layout.column: 3
-            Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignRight
-        }
-
-        /*
-        RoundIconButton
-        {
-            Layout.column: 2
-            Layout.row: 0
-            Layout.alignment: Qt.AlignTop | Qt.AlignRight
-            icon.source: "../Icons/keyboard"
-            onClicked:
-            {
-                app.onUserAction();
-                searchPanelKeyboard.visible = !searchPanelKeyboard.visible
-            }
-        }
-        */
 
         Rectangle
         {
@@ -79,10 +49,9 @@ Rectangle
             Layout.column: 0
             Layout.row: 1
             Layout.rowSpan: 2
-            Layout.columnSpan: 2
             Layout.fillWidth: parent
             Layout.fillHeight: parent
-            color: "transparent"
+            color: Material.color(Material.Grey, Material.Shade50)
 
             ListView
             {
@@ -91,14 +60,14 @@ Rectangle
                 orientation: Qt.Vertical
                 clip: true
                 onFlickStarted: app.onUserAction()
-
+                /*
                 ScrollBar.vertical: ScrollBar
                 {
                     width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
-
+                */
                 model: searchPanelModel
                 delegate: Label
                 {
@@ -107,11 +76,7 @@ Rectangle
                     font { pointSize: screenManager.normalFontSize() }
                     color: Material.color(Material.Grey, Material.Shade900)
                     text: model.value // Roles::ValueRole
-                    background: Rectangle
-                    {
-                        color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
-                                                 Material.color(Material.Grey, Material.Shade200)
-                    }
+
                     MouseArea
                     {
                         anchors.fill: parent
@@ -124,13 +89,13 @@ Rectangle
         TextField
         {
             id: searchPanelTextField
-            Layout.column: 2
+            Layout.column: 1
             Layout.row: 1
-            Layout.columnSpan: 2
             Layout.preferredWidth: filterWidth
+            Layout.margins: screenManager.spacer()
             Material.accent: Material.Orange
             color: Material.color(Material.Grey, Material.Shade900)
-            font { pointSize: screenManager.normalFontSize() }
+            font { pointSize: screenManager.largeFontSize() }
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
             onTextEdited: app.onUserAction();
@@ -171,11 +136,11 @@ Rectangle
                         app.onZeroClicked()
                         break
                     case Qt.Key_Up:
-                        if (!searchPanelResultList.atYBeginning) searchPanelResultList.flick(0, Constants.flickVelocity)
+                        if (!searchPanelResultList.atYBeginning) searchPanelResultList.flick(0, screenManager.flickVelocity())
                         else app.beepSound()
                         break;
                     case Qt.Key_Down:
-                        if (!searchPanelResultList.atYEnd) searchPanelResultList.flick(0, -Constants.flickVelocity)
+                        if (!searchPanelResultList.atYEnd) searchPanelResultList.flick(0, -screenManager.flickVelocity())
                         else app.beepSound()
                         break;
                     case Qt.Key_F10: // Промотка
@@ -190,10 +155,8 @@ Rectangle
 
         Rectangle
         {
-            Layout.column: 2
+            Layout.column: 1
             Layout.row: 2
-            Layout.columnSpan: 2
-            Layout.rightMargin: screenManager.spacer() / 2
             Layout.preferredWidth: filterWidth
             Layout.fillHeight: parent
             Layout.alignment: Qt.AlignTop
@@ -208,31 +171,26 @@ Rectangle
                 currentIndex: 0
                 onFlickStarted: app.onUserAction()
                 //highlight: Rectangle { color: Material.color(Material.BlueGrey, Material.Shade100) }
-
+                /*
                 ScrollBar.vertical: ScrollBar
                 {
                     width: screenManager.scrollBarWidth()
                     background: Rectangle { color: "transparent" }
                     policy: ScrollBar.AlwaysOn
                 }
-
+                */
                 model: searchFilterModel
                 delegate: Label
                 {
                     width: searchPanelFilterList.width
-                    padding: screenManager.spacer() / 2
+                    padding: screenManager.spacer()
                     font
                     {
                         pointSize: screenManager.normalFontSize();
                         styleName: searchPanelFilterList.currentIndex === index ? 'Bold' : 'Regular'
                     }
                     text: model.value // Roles::ValueRole
-                    color: searchPanelFilterList.currentIndex === index ? Constants.colorBlack : Material.color(Material.BlueGrey, Material.Shade600)
-                    background: Rectangle
-                    {
-                        color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
-                                                 Material.color(Material.Grey, Material.Shade200)
-                    }
+                    color: searchPanelFilterList.currentIndex === index ? "black" : Material.color(Material.BlueGrey, Material.Shade600)
                     MouseArea
                     {
                         anchors.fill: parent

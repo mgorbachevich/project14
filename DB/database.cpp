@@ -10,9 +10,9 @@
 #include "tools.h"
 #include "constants.h"
 #include "requestparser.h"
+#include "appmanager.h"
 
-DataBase::DataBase(Settings* globalSettings, Users* globalUsers, AppManager *parent) :
-    ExternalMessager(parent), settings(globalSettings), users(globalUsers)
+DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
 {
     Tools::debugLog("@@@@@ DataBase::DataBase");
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
@@ -294,7 +294,7 @@ bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
 void DataBase::saveLog(const int type, const int source, const QString &comment)
 {
     if (!started) return;
-    int logging = settings->getIntValue(SettingCode_Logging);
+    int logging = appManager->settings->getIntValue(SettingCode_Logging);
     if (type > 0 && type <= logging)
     {
         Tools::debugLog(QString("@@@@@ DataBase::saveLog %1 %2 %3").arg(QString::number(type), QString::number(source), comment));
@@ -311,7 +311,7 @@ void DataBase::removeOldLogRecords()
     if (!started) return;
     Tools::debugLog("@@@@@ DataBase::removeOldLogRecords");
     DBTable* t = getTable(DBTABLENAME_LOG);
-    quint64 logDuration = settings->getIntValue(SettingCode_LogDuration);
+    quint64 logDuration = appManager->settings->getIntValue(SettingCode_LogDuration);
     if(t == nullptr || logDuration <= 0) return;
     if(removeOldLogRecordsCounter == 0)
     {
@@ -418,10 +418,10 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings->getBoolValue(SettingCode_SearchType))
+        if (!appManager->settings->getBoolValue(SettingCode_SearchType))
         {
             const int n1 = p.size();
-            const int n2 = settings->getIntValue(SettingCode_SearchCodeSymbols);
+            const int n2 = appManager->settings->getIntValue(SettingCode_SearchCodeSymbols);
             Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredCode %1 %2").arg(QString::number(n1), QString::number(n2)));
             if(n1 < n2) break;
         }
@@ -439,10 +439,10 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         QString p = param.trimmed();
         if (p.isEmpty()) break;
-        if (!settings->getBoolValue(SettingCode_SearchType))
+        if (!appManager->settings->getBoolValue(SettingCode_SearchType))
         {
             const int n1 = p.size();
-            const int n2 = settings->getIntValue(SettingCode_SearchBarcodeSymbols);
+            const int n2 = appManager->settings->getIntValue(SettingCode_SearchBarcodeSymbols);
             Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredBarcode %1 %2").arg(QString::number(n1), QString::number(n2)));
             if(n1 < n2) break;
         }
@@ -521,7 +521,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = settings->getIntValue(SettingCode_Logging);
+    int logging = appManager->settings->getIntValue(SettingCode_Logging);
     bool detailedLog = logging >= LogType_Info;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -585,7 +585,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    bool detailedLog = settings->getIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = appManager->settings->getIntValue(SettingCode_Logging) >= LogType_Info;
     DBRecordList records;
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
@@ -651,7 +651,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
 {
     Tools::debugLog("@@@@@ DataBase::netDownload");
     if(!open(tempDB, DB_TEMP_NAME)) return;
-    bool detailedLog = settings->getIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = appManager->settings->getIntValue(SettingCode_Logging) >= LogType_Info;
     QList tables = records.keys();
     for (DBTable* table : tables)
     {
@@ -680,6 +680,6 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
 
 void DataBase::onParseSetRequest(const QString& json)
 {
-    if(settings->insertOrReplace(json)) settings->write();
-    if(users->insertOrReplace(json)) users->write();
+    if(appManager->settings->insertOrReplace(json)) appManager->settings->write();
+    if(appManager->users->insertOrReplace(json)) appManager->users->write();
 }

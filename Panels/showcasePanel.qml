@@ -2,16 +2,18 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Rectangle
 {
     id:  showcasePanel
+    Material.background: Material.color(Material.Grey, Material.Shade100)
     color: Material.background
-    property int spacer: screenManager.spacer() / 2
-    property int buttonPanelWidth: screenManager.buttonSize() + spacer * 2
-    property int imageSize: (width - screenManager.scrollBarWidth() - buttonPanelWidth - spacer * 2) / screenManager.showcaseRowImages() - spacer
+    property int spacer: 1
+    property int buttonPanelWidth: screenManager.buttonSize() + screenManager.spacer() * 2
+    //property int imageSize: (width - screenManager.scrollBarWidth() - buttonPanelWidth - spacer * 2) / screenManager.showcaseRowImages() - spacer
+    property int imageSize: (width - buttonPanelWidth - screenManager.showcaseRowImages() * spacer) / screenManager.showcaseRowImages()
     focus: true
 
     Connections // Slot for signal AppManager::showMainPage:
@@ -75,11 +77,11 @@ Rectangle
                 app.onMainPageSwiped(2)
                 break;
             case Qt.Key_Up:
-                if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, Constants.flickVelocity)
+                if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, screenManager.flickVelocity())
                 else app.beepSound()
                 break;
             case Qt.Key_Down:
-                if (!showcasePanelGrid.atYEnd) showcasePanelGrid.flick(0, -Constants.flickVelocity)
+                if (!showcasePanelGrid.atYEnd) showcasePanelGrid.flick(0, -screenManager.flickVelocity())
                 else app.beepSound()
                 break;
             case Qt.Key_F10: // Промотка
@@ -100,7 +102,9 @@ Rectangle
         {
             width: buttonPanelWidth
             height: parent.height
-            spacing: spacer / 2
+            spacing: 0
+
+            Spacer {}
 
             RoundIconButton
             {
@@ -109,6 +113,8 @@ Rectangle
                 icon.source: "../Icons/n"
                 onClicked: app.onShowcaseSortClicked(0)
             }
+
+            Spacer {}
 
             RoundIconButton
             {
@@ -124,26 +130,26 @@ Rectangle
             id: showcasePanelGrid
             width: parent.width - buttonPanelWidth
             height: parent.height
-            leftMargin: spacer
+            leftMargin: 0
             topMargin: spacer
             rightMargin: spacer
             bottomMargin: spacer
             clip: true
             cellWidth: imageSize + spacer
             cellHeight: imageSize + spacer
-
+            /*
             ScrollBar.vertical: ScrollBar
             {
                 width: screenManager.scrollBarWidth()
                 background: Rectangle { color: "transparent" }
                 policy: ScrollBar.AlwaysOn
             }
-
+            */
             model: showcasePanelModel
             delegate: Label
             {
-                width: showcasePanelGrid.cellWidth - spacer
-                height: showcasePanelGrid.cellHeight - spacer
+                width: imageSize
+                height: imageSize
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 wrapMode: Text.WordWrap

@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-import "../constants.js" as Constants
 import RegisteredTypes
+
 
 Popup
 {
@@ -54,9 +54,7 @@ Popup
         id: inputUserPanelLayout
         anchors.fill: parent
         anchors.margins: screenManager.spacer()
-        columnSpacing: screenManager.spacer()
-        columns: 6
-        rows: 4
+        columnSpacing: screenManager.spacer() * 2
 
         RoundIconButton
         {
