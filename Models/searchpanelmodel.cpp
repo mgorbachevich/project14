@@ -15,17 +15,19 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const SearchFilte
         QString s;
         switch(index)
         {
-            case SearchFilterModel::Code:
-                //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Code).toString() + " ";
-                s += ri[ProductDBTable::Code].toString() + PRODUCT_STRING_DELIMETER;
-                break;
-            case SearchFilterModel::Barcode:
-                //s += "<font color='" + titleColor + "'>" + ri.field(ProductDBTable::Barcode).toString() + " ";
-                s += ri[ProductDBTable::Barcode].toString() + PRODUCT_STRING_DELIMETER;
-                break;
+        case SearchFilterModel::Code:
+            s += ri[ProductDBTable::Code].toString() + LIST_ROW_DELIMETER;
+            break;
+        case SearchFilterModel::Number:
+            s += ri[ProductDBTable::Code2].toString() + LIST_ROW_DELIMETER;
+            break;
+        case SearchFilterModel::Barcode:
+            s += ri[ProductDBTable::Barcode].toString() + LIST_ROW_DELIMETER;
+            break;
+        case SearchFilterModel::Name:
+            break;
         }
-        //s += "<font color='" + valueColor + "'>" + ri.field(ProductDBTable::Name).toString();
-        s += ri[ProductDBTable::Name].toString();
+         s += ri[ProductDBTable::Name].toString();
         ss << s;
     }
     setStringList(ss);

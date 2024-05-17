@@ -14,12 +14,13 @@ ApplicationWindow
     Material.background: Material.color(Material.Grey, Material.Shade100)
     Material.accent: Material.Orange
     color: Material.background
-    property int pageIndicatorHeight: 0
+    width: screenManager.screenWidth()
+    height: screenManager.screenHeight()
     property int adminMenuWidth: 0
     property int popupWidth: screenManager.popupWidth()
     property int popupHeight: screenManager.popupHeight()
-    property int popupX: (mainWindow.width - popupWidth) / 2
-    property int popupY: (mainWindow.height - popupHeight) / 2
+    property int popupX: (width - popupWidth) / 2
+    property int popupY: (height - popupHeight) / 2
 
     Connections // Slot for signal AppManager::start:
     {
@@ -28,8 +29,6 @@ ApplicationWindow
         {
             app.debugLog("@@@@@ mainWindow.onStart %1 %2".arg(screenManager.screenWidth()).arg(screenManager.screenHeight()));
             if (Qt.platform.os === "android") mainWindow.visibility = Window.FullScreen
-            mainWindow.width = screenManager.screenWidth()
-            mainWindow.height = screenManager.screenHeight()
         }
     }
 
@@ -39,9 +38,27 @@ ApplicationWindow
         function onShowMainPage(value)
         {
             app.debugLog("@@@@@ mainWindow.onShowMainPage %1".arg(value));
-            mainWindowLayout.visible = (value >= 0)
-            authorizationPanel.visible = (value < 0)
-            if(value >= 0) mainSwipeView.setCurrentIndex(value)
+            switch(value)
+            {
+            case -1: // Authorization
+                authorizationPanel.visible = true
+                mainWindowLayout.visible = false
+                mainWeightPanel.visible = false
+                break
+            case 0: // Showcase
+            case 1: // Table
+                authorizationPanel.visible = false
+                mainWindowLayout.visible = true
+                mainWeightPanel.visible = true
+                mainSwipeView.setCurrentIndex(value)
+                break
+            case 2: // Search
+                authorizationPanel.visible = false
+                mainWindowLayout.visible = true
+                mainWeightPanel.visible = false
+                mainSwipeView.setCurrentIndex(value)
+                break
+            }
         }
     }
 
@@ -201,6 +218,7 @@ ApplicationWindow
         function onShowProductPanel(name, isPieceProduct)
         {
             app.debugLog("@@@@@ mainWindow.onShowProductPanel");
+            mainWeightPanel.visible = true
             Qt.createComponent("Panels/productPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: mainWeightPanel.height,
@@ -263,7 +281,7 @@ ApplicationWindow
         Row
         {
             width: parent.width
-            height: parent.height - mainWeightPanel.height
+            height: mainWeightPanel.visible ? parent.height - mainWeightPanel.height : parent.height
             spacing: 0
             padding: 0
 
@@ -290,7 +308,7 @@ ApplicationWindow
                 Rectangle
                 {
                     width: parent.width
-                    height: parent.height - pageIndicatorHeight
+                    height: parent.height
 
                     SwipeView
                     {
@@ -318,22 +336,6 @@ ApplicationWindow
                             focus: true
                             source: "Panels/searchPanel.qml"
                         }
-                    }
-                }
-
-                Rectangle
-                {
-                    width: parent.width
-                    height: pageIndicatorHeight
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.bottom: parent.bottom
-
-                    PageIndicator
-                    {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        count: mainSwipeView.count
-                        currentIndex: mainSwipeView.currentIndex
-                        Material.foreground: Material.color(Material.Grey, Material.Shade600)
                     }
                 }
             }

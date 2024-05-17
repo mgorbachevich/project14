@@ -36,14 +36,5 @@ Column
         icon.source: "../Icons/log"
         onClicked: app.onViewLogClicked()
     }
-
-    Spacer {}
-
-    RoundIconButton
-    {
-        anchors.horizontalCenter: parent.horizontalCenter
-        icon.source: "../Icons/user"
-        onClicked: app.onEditUsersClicked()
-    }
 }
 

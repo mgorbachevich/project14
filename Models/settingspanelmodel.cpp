@@ -20,6 +20,7 @@ void SettingsPanelModel::update(Settings& settings)
             {
             case SettingType_ReadOnly:
             case SettingType_Unsed:
+            case SettingType_UnsedGroup:
                 color = "<font color='#78909c'>";
                 break;
             }

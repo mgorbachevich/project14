@@ -12,14 +12,15 @@ class MoneyCalculator : public QObject
 
 public:
     explicit MoneyCalculator(AppManager*);
-    double price(const DBRecord&);
-    double amount(const DBRecord&);
-    double quantity(const DBRecord&);
     QString amountAsString(const DBRecord&);
     QString priceAsString(const DBRecord&);
     QString quantityAsString(const DBRecord&);
 
 private:
+    int moneyMultiplier();
+    double quantityAsDouble(const DBRecord&);
+    QVariant price(const DBRecord&);
+
     AppManager* appManager;
 };
 

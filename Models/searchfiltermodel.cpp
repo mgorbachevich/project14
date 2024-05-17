@@ -5,6 +5,6 @@ void SearchFilterModel::update()
 {
     Tools::debugLog("@@@@@ SearchFilterModel::update");
     QStringList ss;
-    ss << "Код" << "Штрихкод";
+    ss << "Код" << "Номер" << "Штрихкод" << "Наименование";
     setStringList(ss);
 }

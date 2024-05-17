@@ -20,6 +20,7 @@ class Settings : public JsonArrayFile
 {
 public:
     Settings(AppManager*);
+    void apply();
     bool getBoolValue(const SettingCode code) { return getIntValue(code, true) != 0; }
     DBRecord* getByIndexInCurrentGroup(const int);
     int getCode(const DBRecord& r) { return r[SettingField_Code].toInt(); }

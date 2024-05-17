@@ -11,7 +11,9 @@ public:
     enum FilterIndex
     {
         Code = 0,
-        Barcode,
+        Number = 1,
+        Barcode = 2,
+        Name = 3
     };
 
     explicit SearchFilterModel(AppManager *parent): BaseListModel(parent) {}

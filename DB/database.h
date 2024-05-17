@@ -5,7 +5,7 @@
 #include "dbtable.h"
 #include "externalmessager.h"
 
-#define DB_VERSION "1.6"
+#define DB_VERSION "1.7"
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
@@ -28,7 +28,9 @@ enum DBSelector
     DBSelector_GetProductsByGroupCode,
     DBSelector_GetProductsByGroupCodeIncludeGroups,
     DBSelector_GetProductsByFilteredCode,
+    DBSelector_GetProductsByFilteredNumber,
     DBSelector_GetProductsByFilteredBarcode,
+    DBSelector_GetProductsByFilteredName,
     DBSelector_GetItemsByCodes,
     DBSelector_GetAuthorizationUsers,
     DBSelector_GetLog,
@@ -62,13 +64,11 @@ public:
     QList<DBTable*> getTables() { return tables; };
 
 protected:
-    void startDB();
     bool open(QSqlDatabase&, const QString&);
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     bool createTable(const QSqlDatabase& db, DBTable*);
     void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
     bool copyDBFiles(const QString&, const QString&);
-    void emulationOnStart();
     void removeTempDb();
     bool removeAll(const QSqlDatabase&, DBTable*);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);

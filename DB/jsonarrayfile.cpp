@@ -20,22 +20,34 @@ bool JsonArrayFile::insertOrReplace(const QString& json)
 {
     getAll();
     DBRecordList records = parse(json);
-    int n = records.count();
-    int remove = 0;
+    const int n = records.count();
     for(int i = 0; i < n; i++)
     {
-        const int code = records[i][0].toInt();
-        for(int j = 0; j < items.count(); j++)
-            if(code == items[j][0].toInt()) { items.removeAt(j); remove++; break; }
-        items << records[i];
+        DBRecord& ri = records[i];
+        const int code = ri[0].toInt();
+        bool found = false;
+        for(int j = 0; j < items.count() && !found; j++)
+        {
+            if(code ==  items[j][0].toInt())
+            {
+                found = true;
+                for(int k = 0; k < ri.count() && k < items[j].count(); k++)
+                {
+                    if(!ri[k].isNull() && ri[k].isValid() &&
+                       !ri[k].toString().isNull() && !ri[k].toString().isEmpty())
+                        items[j][k] = ri[k];
+                }
+            }
+        }
+        if(!found) items << records[i];
     }
     if(n > 0)
     {
         parseDefault();
         sort();
     }
-    Tools::debugLog(QString("@@@@@ JsonArrayFile::insertOrReplace %1 %2 %3").arg(
-        Tools::intToString(n), Tools::intToString(remove), Tools::intToString(items.count())));
+    Tools::debugLog(QString("@@@@@ JsonArrayFile::insertOrReplace %1 %2").arg(
+        Tools::intToString(n), Tools::intToString(items.count())));
     return n > 0;
 }
 

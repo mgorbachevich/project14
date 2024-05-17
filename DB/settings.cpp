@@ -22,6 +22,13 @@ Settings::Settings(AppManager *parent): JsonArrayFile(SETTINGS_FILE, parent)
     scaleConfig = new ScaleConfig(parent);
 }
 
+void Settings::apply()
+{
+#ifdef Q_OS_ANDROID
+    Tools::debugLog("@@@@@ Settings::apply");
+#endif
+}
+
 bool Settings::checkValue(const DBRecord& record, const QString& value)
 {
     switch (getCode(record))
@@ -242,6 +249,7 @@ bool Settings::write()
     scaleConfig->set(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value]);
     scaleConfig->set(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value]);
     scaleConfig->write();
+    apply();
     return JsonArrayFile::write();
 }
 

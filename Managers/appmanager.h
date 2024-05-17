@@ -46,7 +46,6 @@ public:
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
-    Q_INVOKABLE void onEditUsersClicked();
     Q_INVOKABLE void onEditUsersPanelClicked(const int);
     Q_INVOKABLE void onEditUsersPanelClose();
     Q_INVOKABLE void onInfoClicked();
@@ -94,19 +93,20 @@ private:
     void createDefaultImages();
     void filteredSearch();
     void inputDateTime();
-    bool isAuthorizationOpened() { return mainPageIndex < 0; }
+    bool isAuthorizationOpened() { return mainPageIndex == MainPageIndex_Authorization; }
     bool isProduct() { return !product.isEmpty(); }
     bool isSettingsOpened() { return isSettings; }
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
     void refreshAll();
     void onCustomSettingsItemClicked(const DBRecord&);
+    void onEditUsersClicked();
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setShowcaseSort(const int);
+    void showAuthorizationUsers();
     void showToast(const QString&, const QString&, const int delaySec = 5);
-    void showUsers();
     void startAuthorization();
     void startEquipment();
     void startSettings();
@@ -135,7 +135,7 @@ private:
 
     // UI:
     QQmlContext* context = nullptr;
-    int mainPageIndex = -1; // Авторизация
+    int mainPageIndex = MainPageIndex_Authorization; // Авторизация
     int secret = 0;
     int showcaseSort = Sort_Name;
     bool isSettings = false;

@@ -10,6 +10,7 @@ Rectangle
     id: searchPanel
     color: Material.color(Material.Grey, Material.Shade100)
     property int filterWidth: width * 0.25
+    property int virtualKeyboardSet: 2
 
     Connections // Slot for signal AppManager::showMainPage:
     {
@@ -24,6 +25,26 @@ Rectangle
         }
     }
 
+    Connections // Slot for signal AppManager::showVirtualKeyboard
+    {
+        target: app
+        function onShowVirtualKeyboard(value)
+        {
+            app.debugLog("@@@@@ searchPanel onShowVirtualKeyboard %1".arg(value))
+            virtualKeyboardSet = value
+        }
+    }
+
+    Connections // Slot for signal KeyEmitter::enterChar
+    {
+        target: keyEmitter
+        function onEnterChar(value)
+        {
+            app.debugLog("@@@@@ searchPanel onEnterChar %1".arg(value))
+            searchPanelTextField.text += value
+        }
+    }
+
     GridLayout
     {
         id: searchPanelLayout
@@ -31,68 +52,67 @@ Rectangle
         columnSpacing: 0
         rowSpacing: 0
 
-        Rectangle
+        Spacer
         {
             Layout.column: 0
             Layout.row: 0
-            Layout.columnSpan: 2
+        }
+
+        RoundIconButton
+        {
+            Layout.column: 1
+            Layout.row: 0
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            icon.source: "../Icons/menu"
+            onClicked:
+            {
+                app.onUserAction();
+            }
+        }
+
+        Spacer
+        {
+            Layout.column: 2
+            Layout.row: 0
+        }
+
+        RoundIconButton
+        {
+            Layout.column: 3
+            Layout.row: 0
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            icon.source: "../Icons/keyboard"
+            onClicked:
+            {
+                app.onUserAction();
+                searchPanelKeyboard.visible = !searchPanelKeyboard.visible
+            }
+        }
+
+        Rectangle
+        {
+            Layout.column: 4
+            Layout.row: 0
             Layout.fillWidth: parent
-            Layout.preferredHeight: screenManager.buttonSize()
+            Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
             color: Material.color(Material.Grey, Material.Shade100)
 
             CardTitleText { text: qsTr("Поиск товаров") }
         }
 
-        Rectangle
+        Spacer
         {
-            id: searchPanelResultListRectangle
-            Layout.column: 0
-            Layout.row: 1
-            Layout.rowSpan: 2
-            Layout.fillWidth: parent
-            Layout.fillHeight: parent
-            color: Material.color(Material.Grey, Material.Shade50)
-
-            ListView
-            {
-                id: searchPanelResultList
-                anchors.fill: parent
-                orientation: Qt.Vertical
-                clip: true
-                onFlickStarted: app.onUserAction()
-                /*
-                ScrollBar.vertical: ScrollBar
-                {
-                    width: screenManager.scrollBarWidth()
-                    background: Rectangle { color: "transparent" }
-                    policy: ScrollBar.AlwaysOn
-                }
-                */
-                model: searchPanelModel
-                delegate: Label
-                {
-                    padding: screenManager.spacer()
-                    width: searchPanelResultListRectangle.width
-                    font { pointSize: screenManager.normalFontSize() }
-                    color: Material.color(Material.Grey, Material.Shade900)
-                    text: model.value // Roles::ValueRole
-
-                    MouseArea
-                    {
-                        anchors.fill: parent
-                        onClicked: app.onSearchResultClicked(index)
-                    }
-                }
-            }
+            Layout.column: 5
+            Layout.row: 0
         }
 
         TextField
         {
             id: searchPanelTextField
-            Layout.column: 1
-            Layout.row: 1
+            Layout.column: 6
+            Layout.row: 0
             Layout.preferredWidth: filterWidth
-            Layout.margins: screenManager.spacer()
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Material.accent: Material.Orange
             color: Material.color(Material.Grey, Material.Shade900)
             font { pointSize: screenManager.largeFontSize() }
@@ -153,10 +173,63 @@ Rectangle
             }
         }
 
+        Spacer
+        {
+            Layout.column: 7
+            Layout.row: 0
+        }
+
         Rectangle
         {
-            Layout.column: 1
-            Layout.row: 2
+            id: searchPanelResultListRectangle
+            Layout.column: 0
+            Layout.row: 1
+            Layout.columnSpan: 5
+            Layout.fillWidth: parent
+            Layout.fillHeight: parent
+            color: Material.color(Material.Grey, Material.Shade50)
+
+            ListView
+            {
+                id: searchPanelResultList
+                anchors.fill: parent
+                orientation: Qt.Vertical
+                clip: true
+                onFlickStarted: app.onUserAction()
+                /*
+                ScrollBar.vertical: ScrollBar
+                {
+                    width: screenManager.scrollBarWidth()
+                    background: Rectangle { color: "transparent" }
+                    policy: ScrollBar.AlwaysOn
+                }
+                */
+                model: searchPanelModel
+                delegate: Label
+                {
+                    leftPadding: screenManager.spacer() * 2
+                    topPadding: screenManager.spacer()
+                    rightPadding: screenManager.spacer()
+                    bottomPadding: screenManager.spacer()
+                    width: searchPanelResultListRectangle.width
+                    font { pointSize: screenManager.normalFontSize() }
+                    color: Material.color(Material.Grey, Material.Shade900)
+                    text: model.value // Roles::ValueRole
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        onClicked: app.onSearchResultClicked(index)
+                    }
+                }
+            }
+        }
+
+        Rectangle
+        {
+            id: searchPanelFilterListLayout
+            Layout.column: 6
+            Layout.row: 1
             Layout.preferredWidth: filterWidth
             Layout.fillHeight: parent
             Layout.alignment: Qt.AlignTop
@@ -196,12 +269,49 @@ Rectangle
                         anchors.fill: parent
                         onClicked:
                         {
+                            if (index === 3) // Наименование
+                            {
+                                searchPanelKeyboard.visible = true
+                                virtualKeyboardSet = 1
+                            }
+                            else
+                            {
+                                virtualKeyboardSet = 2
+                            }
                             searchPanelFilterList.currentIndex = index
                             app.onSearchFilterClicked(index)
                         }
                     }
                 }
             }
+        }
+
+        Spacer
+        {
+            Layout.column: 0
+            Layout.row: 2
+        }
+
+        Loader
+        {
+            id: searchPanelKeyboard
+            Layout.column: 0
+            Layout.row: 3
+            Layout.columnSpan: 8
+            Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
+            Layout.fillWidth: parent
+            Layout.preferredHeight: screenManager.keyboardHeight()
+            focus: false
+            visible: false
+            source: virtualKeyboardSet === 0 ? "VirtualKeyboardLatin.qml" :
+                    virtualKeyboardSet === 1 ? "VirtualKeyboardCyrillic.qml" :
+                                               "VirtualKeyboardNumeric.qml"
+        }
+
+        Spacer
+        {
+            Layout.column: 0
+            Layout.row: 4
         }
     }
 }

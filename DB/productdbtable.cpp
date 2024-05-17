@@ -9,6 +9,7 @@ ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(na
     addColumn("Штрих-код",              "barcode",          "TEXT");
     addColumn("Наименование",           "name",             "TEXT");
     addColumn("Краткое наименование",   "name2",            "TEXT");
+    addColumn("Наименование*",          "upper_name",       "TEXT");
     addColumn("Короткий код",           "code2",            "TEXT");
     addColumn("Тип",                    "type",             "INT");
     addColumn("Цена",                   "price",            "INT");
@@ -48,6 +49,7 @@ const DBRecord ProductDBTable::checkRecord(const DBRecord& record)
     result.append(record);
     result.replace(Columns::Code, QString("%1").arg(code));
     result.replace(Columns::GroupCode, QString("%1").arg(groupCode));
+    result.replace(Columns::UpperName, record.at(Columns::Name).toString().toUpper());
     return result;
 }
 

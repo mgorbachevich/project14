@@ -150,6 +150,7 @@ QString Tools::makeDirs(const bool internalStorage, const QString& localPath)
 #else
     if(internalStorage) path = app->applicationDirPath();
 #endif
+
     for(int i = 0; i < dirs.size() - 1; i++)
     {
         if(dirs.at(i).isEmpty()) continue;
@@ -237,7 +238,7 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
     QString path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
 #else
     QString path = app->applicationDirPath(); // Returns the directory that contains the application executable.
-#endif // Q_OS_ANDROID
+#endif
 
     for(int i = 0; i < dirs.size() - 1; i++)
     {
@@ -278,7 +279,8 @@ QString Tools::qmlFilePath(const QString& localPath)
     QString path = QString("file:%1/%2").arg(DOWNLOAD_SUBDIR, localPath).replace(":/", ":").replace("//", "/");
 #else
     QString path = QString("file:///%1").arg(downloadPath(localPath));
-#endif // Q_OS_ANDROID
+#endif
+
     //qDebug() << "@@@@@ Tools::qmlFilePath " << path;
     return localPath.isEmpty() ? "" : path;
 }
@@ -331,13 +333,15 @@ QString Tools::exchangePath(const QString &localPath)
     //https://forum.qt.io/topic/34940/does-qstandardpaths-work-with-sdcard-on-android/2
     debugLog("@@@@@ Tools::exchangePath " + localPath);
     QString result;
+
 #ifdef Q_OS_ANDROID
     QJniObject mediaDir = QJniObject::callStaticObjectMethod("android/os/Environment", "getExternalStorageDirectory", "()Ljava/io/File;");
     QJniObject mediaPath = mediaDir.callObjectMethod("getAbsolutePath", "()Ljava/lang/String;");
     result = mediaPath.toString() + localPath;
     QJniEnvironment env;
     if (env->ExceptionCheck()) env->ExceptionClear();
-#endif // Q_OS_ANDROID
+#endif
+
     debugLog("@@@@@ Tools::exchangePath result " + result);
     return result;
 }
@@ -451,7 +455,7 @@ bool Tools::isEnvironment(const EnvironmentType type)
         result = (jresult == 0);
         break;
     }
-#endif // Q_OS_ANDROID
+#endif
 
     default: break;
     }
@@ -463,9 +467,11 @@ bool Tools::isEnvironment(const EnvironmentType type)
 int Tools::getMemory(const MemoryType type)
 {
     //debugLog(QString("@@@@@ Tools::getMemory %1").arg(intToString(type)));
+
 #ifdef Q_OS_ANDROID
     return QJniObject::callStaticMethod<jint>(ANDROID_NATIVE_CLASS_NAME, "getMemory", "(I)I", type);
-#endif // Q_OS_ANDROID
+#endif
+
     return -3;
 }
 
@@ -476,16 +482,18 @@ void Tools::debugMemory()
                  Tools::intToString(getMemory(MemoryType_Max)),
                  Tools::intToString(getMemory(MemoryType_Available)),
                  Tools::intToString(getMemory(MemoryType_Used))));
-#endif // Q_OS_ANDROID
+#endif
 }
 
 bool Tools::checkPermission(const QString& permission)
 {
     bool ok = true;
+
 #ifdef Q_OS_ANDROID
     if (QtAndroidPrivate::checkPermission(permission).result() == QtAndroidPrivate::Denied)
         ok = (QtAndroidPrivate::requestPermission(permission).result() != QtAndroidPrivate::Denied);
     debugLog(QString("@@@@@ Tools::checkPermission %1 %2").arg(permission, boolToString(ok)));
 #endif
+
     return ok;
 }

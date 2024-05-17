@@ -13,7 +13,7 @@ INCLUDEPATH += \
     Managers \
     Models \
     Settings \
-    Equipment/Wm100_Slpa100u_2 \
+    Equipment/Wm100_Slpa100u \
 
 HEADERS += \
     DB/jsonarrayfile.h \
@@ -38,72 +38,72 @@ HEADERS += \
     DB/showcasedbtable.h \
     DB/transactiondbtable.h \
     DB/settings.h \
-    Equipment/Wm100_Slpa100u_2/IO/RequestSender.h \
-    Equipment/Wm100_Slpa100u_2/IO/iobase.h \
-    Equipment/Wm100_Slpa100u_2/IO/iocom.h \
-    Equipment/Wm100_Slpa100u_2/IO/iohttp.h \
-    Equipment/Wm100_Slpa100u_2/IO/request.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/aztec.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/big5.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/bmp.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/channel_precalcs.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code1.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code128.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code49.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/common.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/composite.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/dmatrix.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/dmatrix_trace.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/eci.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/eci_sb.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/emf.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/normal_ttf.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/normal_woff2.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/upcean_ttf.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/fonts/upcean_woff2.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gb18030.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gb2312.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gbk.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/general_field.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gridmtx.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gs1.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gs1_lint.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/hanxin.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/iso3166.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/iso4217.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/ksx1001.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/large.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/maxicode.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/output.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/pcx.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417_tabs.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417_trace.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/qr.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/raster_font.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/reedsol.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/reedsol_logs.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/rss.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/sjis.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/tif.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/tif_lzw.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/zfiletypes.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/zint.h \
-    Equipment/Wm100_Slpa100u_2/Label/backend/zintconfig.h \
-    Equipment/Wm100_Slpa100u_2/Label/labelcreator.h \
-    Equipment/Wm100_Slpa100u_2/Label/labelobject.h \
-    Equipment/Wm100_Slpa100u_2/Label/qzint.h \
-    Equipment/Wm100_Slpa100u_2/Slpa100u.h \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocol.h \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolCom.h \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolDemo.h \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolHttp.h \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolUsb.h \
-    Equipment/Wm100_Slpa100u_2/Wm100Protocol.h \
-    Equipment/Wm100_Slpa100u_2/Wm100ProtocolCom.h \
-    Equipment/Wm100_Slpa100u_2/Wm100ProtocolDemo.h \
-    Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.h \
-    Equipment/Wm100_Slpa100u_2/wm100.h \
+    Equipment/Wm100_Slpa100u/IO/RequestSender.h \
+    Equipment/Wm100_Slpa100u/IO/iobase.h \
+    Equipment/Wm100_Slpa100u/IO/iocom.h \
+    Equipment/Wm100_Slpa100u/IO/iohttp.h \
+    Equipment/Wm100_Slpa100u/IO/request.h \
+    Equipment/Wm100_Slpa100u/Label/backend/aztec.h \
+    Equipment/Wm100_Slpa100u/Label/backend/big5.h \
+    Equipment/Wm100_Slpa100u/Label/backend/bmp.h \
+    Equipment/Wm100_Slpa100u/Label/backend/channel_precalcs.h \
+    Equipment/Wm100_Slpa100u/Label/backend/code1.h \
+    Equipment/Wm100_Slpa100u/Label/backend/code128.h \
+    Equipment/Wm100_Slpa100u/Label/backend/code49.h \
+    Equipment/Wm100_Slpa100u/Label/backend/common.h \
+    Equipment/Wm100_Slpa100u/Label/backend/composite.h \
+    Equipment/Wm100_Slpa100u/Label/backend/dmatrix.h \
+    Equipment/Wm100_Slpa100u/Label/backend/dmatrix_trace.h \
+    Equipment/Wm100_Slpa100u/Label/backend/eci.h \
+    Equipment/Wm100_Slpa100u/Label/backend/eci_sb.h \
+    Equipment/Wm100_Slpa100u/Label/backend/emf.h \
+    Equipment/Wm100_Slpa100u/Label/backend/fonts/normal_ttf.h \
+    Equipment/Wm100_Slpa100u/Label/backend/fonts/normal_woff2.h \
+    Equipment/Wm100_Slpa100u/Label/backend/fonts/upcean_ttf.h \
+    Equipment/Wm100_Slpa100u/Label/backend/fonts/upcean_woff2.h \
+    Equipment/Wm100_Slpa100u/Label/backend/gb18030.h \
+    Equipment/Wm100_Slpa100u/Label/backend/gb2312.h \
+    Equipment/Wm100_Slpa100u/Label/backend/gbk.h \
+    Equipment/Wm100_Slpa100u/Label/backend/general_field.h \
+    Equipment/Wm100_Slpa100u/Label/backend/gridmtx.h \
+    Equipment/Wm100_Slpa100u/Label/backend/gs1.h \
+    Equipment/Wm100_Slpa100u/Label/backend/gs1_lint.h \
+    Equipment/Wm100_Slpa100u/Label/backend/hanxin.h \
+    Equipment/Wm100_Slpa100u/Label/backend/iso3166.h \
+    Equipment/Wm100_Slpa100u/Label/backend/iso4217.h \
+    Equipment/Wm100_Slpa100u/Label/backend/ksx1001.h \
+    Equipment/Wm100_Slpa100u/Label/backend/large.h \
+    Equipment/Wm100_Slpa100u/Label/backend/maxicode.h \
+    Equipment/Wm100_Slpa100u/Label/backend/output.h \
+    Equipment/Wm100_Slpa100u/Label/backend/pcx.h \
+    Equipment/Wm100_Slpa100u/Label/backend/pdf417.h \
+    Equipment/Wm100_Slpa100u/Label/backend/pdf417_tabs.h \
+    Equipment/Wm100_Slpa100u/Label/backend/pdf417_trace.h \
+    Equipment/Wm100_Slpa100u/Label/backend/qr.h \
+    Equipment/Wm100_Slpa100u/Label/backend/raster_font.h \
+    Equipment/Wm100_Slpa100u/Label/backend/reedsol.h \
+    Equipment/Wm100_Slpa100u/Label/backend/reedsol_logs.h \
+    Equipment/Wm100_Slpa100u/Label/backend/rss.h \
+    Equipment/Wm100_Slpa100u/Label/backend/sjis.h \
+    Equipment/Wm100_Slpa100u/Label/backend/tif.h \
+    Equipment/Wm100_Slpa100u/Label/backend/tif_lzw.h \
+    Equipment/Wm100_Slpa100u/Label/backend/zfiletypes.h \
+    Equipment/Wm100_Slpa100u/Label/backend/zint.h \
+    Equipment/Wm100_Slpa100u/Label/backend/zintconfig.h \
+    Equipment/Wm100_Slpa100u/Label/labelcreator.h \
+    Equipment/Wm100_Slpa100u/Label/labelobject.h \
+    Equipment/Wm100_Slpa100u/Label/qzint.h \
+    Equipment/Wm100_Slpa100u/Slpa100u.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocol.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolCom.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolDemo.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolHttp.h \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolUsb.h \
+    Equipment/Wm100_Slpa100u/Wm100Protocol.h \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolCom.h \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolDemo.h \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolHttp.h \
+    Equipment/Wm100_Slpa100u/wm100.h \
     Managers/keyemitter.h \
     Managers/appmanager.h \
     Managers/printstatus.h \
@@ -136,71 +136,71 @@ SOURCES += \
     DB/transactiondbtable.cpp \
     DB/settings.cpp \
     DB/users.cpp \
-    Equipment/Wm100_Slpa100u_2/IO/RequestSender.cpp \
-    Equipment/Wm100_Slpa100u_2/IO/iobase.cpp \
-    Equipment/Wm100_Slpa100u_2/IO/iocom.cpp \
-    Equipment/Wm100_Slpa100u_2/IO/iohttp.cpp \
-    Equipment/Wm100_Slpa100u_2/IO/request.cpp \
-    Equipment/Wm100_Slpa100u_2/Label/backend/2of5.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/auspost.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/aztec.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/bc412.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/bmp.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/codablock.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code1.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code128.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code16k.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/code49.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/common.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/composite.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/dllversion.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/dmatrix.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/dotcode.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/eci.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/emf.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/general_field.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gif.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gridmtx.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/gs1.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/hanxin.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/imail.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/large.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/library.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/mailmark.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/maxicode.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/medical.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/output.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/pcx.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/pdf417.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/plessey.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/png.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/postal.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/ps.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/qr.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/raster.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/reedsol.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/rss.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/svg.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/telepen.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/tif.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/ultra.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/upcean.c \
-    Equipment/Wm100_Slpa100u_2/Label/backend/vector.c \
-    Equipment/Wm100_Slpa100u_2/Label/labelcreator.cpp \
-    Equipment/Wm100_Slpa100u_2/Label/labelobject.cpp \
-    Equipment/Wm100_Slpa100u_2/Label/qzint.cpp \
-    Equipment/Wm100_Slpa100u_2/Slpa100u.cpp \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocol.cpp \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolCom.cpp \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolDemo.cpp \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolHttp.cpp \
-    Equipment/Wm100_Slpa100u_2/Slpa100uProtocolUsb.cpp \
-    Equipment/Wm100_Slpa100u_2/Wm100Protocol.cpp \
-    Equipment/Wm100_Slpa100u_2/Wm100ProtocolCom.cpp \
-    Equipment/Wm100_Slpa100u_2/Wm100ProtocolDemo.cpp \
-    Equipment/Wm100_Slpa100u_2/Wm100ProtocolHttp.cpp \
-    Equipment/Wm100_Slpa100u_2/wm100.cpp \
+    Equipment/Wm100_Slpa100u/IO/RequestSender.cpp \
+    Equipment/Wm100_Slpa100u/IO/iobase.cpp \
+    Equipment/Wm100_Slpa100u/IO/iocom.cpp \
+    Equipment/Wm100_Slpa100u/IO/iohttp.cpp \
+    Equipment/Wm100_Slpa100u/IO/request.cpp \
+    Equipment/Wm100_Slpa100u/Label/backend/2of5.c \
+    Equipment/Wm100_Slpa100u/Label/backend/auspost.c \
+    Equipment/Wm100_Slpa100u/Label/backend/aztec.c \
+    Equipment/Wm100_Slpa100u/Label/backend/bc412.c \
+    Equipment/Wm100_Slpa100u/Label/backend/bmp.c \
+    Equipment/Wm100_Slpa100u/Label/backend/codablock.c \
+    Equipment/Wm100_Slpa100u/Label/backend/code.c \
+    Equipment/Wm100_Slpa100u/Label/backend/code1.c \
+    Equipment/Wm100_Slpa100u/Label/backend/code128.c \
+    Equipment/Wm100_Slpa100u/Label/backend/code16k.c \
+    Equipment/Wm100_Slpa100u/Label/backend/code49.c \
+    Equipment/Wm100_Slpa100u/Label/backend/common.c \
+    Equipment/Wm100_Slpa100u/Label/backend/composite.c \
+    Equipment/Wm100_Slpa100u/Label/backend/dllversion.c \
+    Equipment/Wm100_Slpa100u/Label/backend/dmatrix.c \
+    Equipment/Wm100_Slpa100u/Label/backend/dotcode.c \
+    Equipment/Wm100_Slpa100u/Label/backend/eci.c \
+    Equipment/Wm100_Slpa100u/Label/backend/emf.c \
+    Equipment/Wm100_Slpa100u/Label/backend/general_field.c \
+    Equipment/Wm100_Slpa100u/Label/backend/gif.c \
+    Equipment/Wm100_Slpa100u/Label/backend/gridmtx.c \
+    Equipment/Wm100_Slpa100u/Label/backend/gs1.c \
+    Equipment/Wm100_Slpa100u/Label/backend/hanxin.c \
+    Equipment/Wm100_Slpa100u/Label/backend/imail.c \
+    Equipment/Wm100_Slpa100u/Label/backend/large.c \
+    Equipment/Wm100_Slpa100u/Label/backend/library.c \
+    Equipment/Wm100_Slpa100u/Label/backend/mailmark.c \
+    Equipment/Wm100_Slpa100u/Label/backend/maxicode.c \
+    Equipment/Wm100_Slpa100u/Label/backend/medical.c \
+    Equipment/Wm100_Slpa100u/Label/backend/output.c \
+    Equipment/Wm100_Slpa100u/Label/backend/pcx.c \
+    Equipment/Wm100_Slpa100u/Label/backend/pdf417.c \
+    Equipment/Wm100_Slpa100u/Label/backend/plessey.c \
+    Equipment/Wm100_Slpa100u/Label/backend/png.c \
+    Equipment/Wm100_Slpa100u/Label/backend/postal.c \
+    Equipment/Wm100_Slpa100u/Label/backend/ps.c \
+    Equipment/Wm100_Slpa100u/Label/backend/qr.c \
+    Equipment/Wm100_Slpa100u/Label/backend/raster.c \
+    Equipment/Wm100_Slpa100u/Label/backend/reedsol.c \
+    Equipment/Wm100_Slpa100u/Label/backend/rss.c \
+    Equipment/Wm100_Slpa100u/Label/backend/svg.c \
+    Equipment/Wm100_Slpa100u/Label/backend/telepen.c \
+    Equipment/Wm100_Slpa100u/Label/backend/tif.c \
+    Equipment/Wm100_Slpa100u/Label/backend/ultra.c \
+    Equipment/Wm100_Slpa100u/Label/backend/upcean.c \
+    Equipment/Wm100_Slpa100u/Label/backend/vector.c \
+    Equipment/Wm100_Slpa100u/Label/labelcreator.cpp \
+    Equipment/Wm100_Slpa100u/Label/labelobject.cpp \
+    Equipment/Wm100_Slpa100u/Label/qzint.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100u.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocol.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolCom.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolDemo.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolHttp.cpp \
+    Equipment/Wm100_Slpa100u/Slpa100uProtocolUsb.cpp \
+    Equipment/Wm100_Slpa100u/Wm100Protocol.cpp \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolCom.cpp \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolDemo.cpp \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolHttp.cpp \
+    Equipment/Wm100_Slpa100u/wm100.cpp \
     Managers/appmanager.cpp \
     Managers/equipmentmanager.cpp \
     Managers/externalmessager.cpp \
@@ -324,14 +324,11 @@ RESOURCES += \
     Labels/60x60.dat/print.dat \
     Labels/60x60.dat/strings \
     Labels/60x60.lpr \
-    Panels/KeyboardButton.qml \
-    Panels/KeyboardCharButton.qml \
     Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
     Panels/CardText.qml \
     Panels/CardTitleText.qml \
     Panels/comboSettingPanel.qml \
-    Panels/sliderSettingPanel.qml \
     Panels/confirmationPanel.qml \
     Panels/editUsersPanel.qml \
     Panels/EmptyButton.qml \
@@ -340,6 +337,8 @@ RESOURCES += \
     Panels/inputProductCodePanel.qml \
     Panels/inputSettingPanel.qml \
     Panels/inputUserPanel.qml \
+    Panels/KeyboardButton.qml \
+    Panels/KeyboardCharButton.qml \
     Panels/KeyboardIconButton.qml \
     Panels/messagePanel.qml \
     Panels/productPanel.qml \
@@ -348,6 +347,7 @@ RESOURCES += \
     Panels/searchPanel.qml \
     Panels/settingsPanel.qml \
     Panels/showcasePanel.qml \
+    Panels/sliderSettingPanel.qml \
     Panels/Spacer.qml \
     Panels/SubtitleText.qml \
     Panels/tablePanel.qml \
@@ -356,8 +356,6 @@ RESOURCES += \
     Panels/VirtualKeyboardCyrillic.qml \
     Panels/VirtualKeyboardLatin.qml \
     Panels/weightPanel.qml \
-    Sound/KeypressStandard.wav \
-    Sound/KeypressInvalid.wav \
     Sound/KeypressStandard.mp3 \
     Sound/KeypressInvalid.mp3 \
     Text/json_demo_equipment_config.txt \

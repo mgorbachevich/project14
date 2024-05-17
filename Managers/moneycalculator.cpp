@@ -5,47 +5,56 @@
 #include "equipmentmanager.h"
 #include "tools.h"
 
-#define POINT_POSITION appManager->settings->getIntValue(SettingCode_PointPosition)
+#define MONEY_POINT_POSITION (appManager->settings->getIntValue(SettingCode_PointPosition))
+#define WEIGHT_POINT_POSITION 3
 
 MoneyCalculator::MoneyCalculator(AppManager* parent) : QObject{parent}, appManager(parent) {}
 
-double MoneyCalculator::price(const DBRecord& product)
+int MoneyCalculator::moneyMultiplier()
+{
+    int v = 1;
+    for(int i = 0; i < MONEY_POINT_POSITION; i++) v *= 10;
+    return v;
+}
+
+QVariant MoneyCalculator::price(const DBRecord& product)
 {
     const int p = ProductDBTable::Price;
-    double v = product.count() <= p? 0 : product[p].toString().toDouble();
-    for (int i = 0; i < POINT_POSITION; i++) v /= 10;
-    return Tools::round(v, POINT_POSITION);
+    return product.count() <= p ? QVariant(0) : product[p];
 }
 
-double MoneyCalculator::quantity(const DBRecord& product)
+double MoneyCalculator::quantityAsDouble(const DBRecord& product)
 {
-    if(ProductDBTable::isPiece(product))
-        return Tools::round(appManager->printStatus.pieces, 0);
-    if(appManager->equipmentManager->isWMError())
-        return 0;
-    const double w = appManager->equipmentManager->getWeight() * (ProductDBTable::is100gBase(product) ? 10 : 1);
-    return Tools::round(w, 3);
-}
-
-double MoneyCalculator::amount(const DBRecord& product)
-{
-    return Tools::round(quantity(product) * price(product), POINT_POSITION);
-}
-
-QString MoneyCalculator::priceAsString(const DBRecord& product)
-{
-    return Tools::doubleToString(price(product), POINT_POSITION);
-}
-
-QString MoneyCalculator::amountAsString(const DBRecord& product)
-{
-    return Tools::doubleToString(amount(product), POINT_POSITION);
+    if(ProductDBTable::isPiece(product)) return (double)(appManager->printStatus.pieces);
+    if(appManager->equipmentManager->isWMError()) return 0;
+    return appManager->equipmentManager->getWeight() * (ProductDBTable::is100gBase(product) ? 10 : 1);
 }
 
 QString MoneyCalculator::quantityAsString(const DBRecord& product)
 {
+    double q = quantityAsDouble(product);
     if(ProductDBTable::isPiece(product))
-        return Tools::doubleToString(quantity(product), 0);
-    return appManager->equipmentManager->isWMError() ? "" : Tools::doubleToString(quantity(product), 3);
+    {
+        double v = Tools::round(q, 0);
+        return Tools::doubleToString(v, 0);
+    }
+    if(appManager->equipmentManager->isWMError()) return "";
+    double v = Tools::round(q, WEIGHT_POINT_POSITION);
+    return Tools::doubleToString(v, WEIGHT_POINT_POSITION);
 }
+
+QString MoneyCalculator::priceAsString(const DBRecord& product)
+{
+    double p = price(product).toDouble() / moneyMultiplier();
+    double v = Tools::round(p, MONEY_POINT_POSITION);
+    return Tools::doubleToString(v, MONEY_POINT_POSITION);
+}
+
+QString MoneyCalculator::amountAsString(const DBRecord& product)
+{
+    double a = quantityAsDouble(product) * (double)(price(product).toLongLong()) / moneyMultiplier();
+    double v = Tools::round(a, MONEY_POINT_POSITION);
+    return Tools::doubleToString(v, MONEY_POINT_POSITION);
+}
+
 

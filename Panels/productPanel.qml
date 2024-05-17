@@ -15,7 +15,7 @@ Popup
     dim: false
     Material.theme: Material.Dark
     Material.background: Material.color(Material.Grey, Material.Shade900)
-    property int imageSize: height - screenManager.buttonSize()
+    property int imageSize: height - screenManager.buttonSize() - screenManager.spacer()
     property int printButtonSize: screenManager.buttonSize() * 2 + screenManager.spacer()
     property bool isPiece: false
     property string productName: ""
@@ -130,8 +130,8 @@ Popup
         Rectangle
         {
             Layout.column: 0
-            Layout.row: 1
-            Layout.rowSpan: 5
+            Layout.row: 2
+            Layout.rowSpan: 4
             Layout.preferredHeight: imageSize
             Layout.preferredWidth: imageSize
             color: Material.color(Material.Grey, Material.Shade800)
@@ -150,8 +150,8 @@ Popup
         Rectangle
         {
             Layout.column: 1
-            Layout.row: 1
-            Layout.rowSpan: 5
+            Layout.row: 2
+            Layout.rowSpan: 4
             Layout.fillWidth: parent
             Layout.fillHeight: parent
             color: Material.color(Material.Grey, Material.Shade800)
@@ -227,7 +227,7 @@ Popup
             Layout.row: 1
         }
 
-          RoundTextButton
+        RoundTextButton
         {
             id: productPanelPiecesButton
             Layout.preferredWidth: screenManager.buttonSize() * 2 + screenManager.spacer()

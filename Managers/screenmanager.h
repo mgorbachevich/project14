@@ -28,6 +28,7 @@ public:
     Q_INVOKABLE int flagSize() const { return (int)(DEFAULT_FLAG_SIZE * screenScale); }
     Q_INVOKABLE int showcaseRowImages() const { return SHOWCASE_ROW_IMAGES; }
     Q_INVOKABLE int flickVelocity() const { return 300; }
+    Q_INVOKABLE int keyboardHeight() const { return buttonSize() * 3; }
 
 private:
     QSize screenSize;

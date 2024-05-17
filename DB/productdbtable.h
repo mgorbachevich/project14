@@ -12,6 +12,7 @@ public:
         Barcode,
         Name,
         Name2,
+        UpperName,
         Code2,
         Type, // enum ProductType
         Price,

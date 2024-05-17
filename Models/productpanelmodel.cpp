@@ -2,7 +2,7 @@
 #include "productdbtable.h"
 #include "tools.h"
 
-void ProductPanelModel::update(const DBRecord& product, const double price, ProductDBTable* productTable)
+void ProductPanelModel::update(const DBRecord& product, const QString& price, ProductDBTable* productTable)
 {
     Tools::debugLog("@@@@@ ProductPanelModel::update " + product.at(ProductDBTable::Code).toString());
     QStringList ss;
@@ -23,7 +23,7 @@ void ProductPanelModel::update(const DBRecord& product, const double price, Prod
             s += product.at(i).toString();
             break;
         case ProductDBTable::Price:
-            s += QString("%1").arg(price);
+            s += price;
             break;
         case ProductDBTable::Type:
             switch (product.at(ProductDBTable::Type).toInt())

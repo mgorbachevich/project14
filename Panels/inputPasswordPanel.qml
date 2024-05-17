@@ -40,7 +40,7 @@ Popup
         target: app
         function onShowVirtualKeyboard(value)
         {
-            app.debugLog("@@@@@ inputPasswordPanel onShowVirtualKeyboard ".arg(value))
+            app.debugLog("@@@@@ inputPasswordPanel onShowVirtualKeyboard %1".arg(value))
             virtualKeyboardSet = value
         }
     }

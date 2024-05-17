@@ -32,7 +32,7 @@ Popup
         target: app
         function onShowVirtualKeyboard(value)
         {
-            app.debugLog("@@@@@ inputSettingPanel onShowVirtualKeyboard ".arg(value))
+            app.debugLog("@@@@@ inputUserPanel onShowVirtualKeyboard %1".arg(value))
             virtualKeyboardSet = value
         }
     }
@@ -42,7 +42,7 @@ Popup
         target: keyEmitter
         function onEnterChar(value)
         {
-            app.debugLog("@@@@@ inputSettingPanel onEnterChar %1".arg(value))
+            app.debugLog("@@@@@ inputUserPanel onEnterChar %1".arg(value))
             if(userCodeTextField.activeFocus) userCodeTextField.text += value
             if(userNameTextField.activeFocus) userNameTextField.text += value
             if(userPasswordTextField.activeFocus) userPasswordTextField.text += value

@@ -99,6 +99,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     if(REMOVE_SETTINGS_FILE_ON_START) Tools::removeFile(SETTINGS_FILE);
     settings->read();
     updateSettings(0);
+    settings->apply();
     equipmentManager->create();
 
     // Versions:
@@ -109,8 +110,8 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     appInfo.netServerVersion = netServer->version();
     appInfo.ip = Tools::getNetParams().localHostIP;
 
-    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { emit start(); });
     onUserAction();
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { emit start(); });
     debugLog("@@@@@ AppManager::AppManager Done");
 }
 
@@ -187,9 +188,7 @@ void AppManager::onTimer()
     }
 
     // Ожидание окончания сетевых запросов:
-    if(netServer->isStarted() &&
-       netActionTime > 0 &&
-       netRoutes == 0 &&
+    if(netServer->isStarted() && netActionTime > 0 && netRoutes == 0 &&
        (WAIT_NET_ACTION_SEC * 1000) < now - netActionTime)
     {
         debugLog("@@@@@ AppManager::onTimer netActionTime");
@@ -238,6 +237,7 @@ void AppManager::onProductPanelCloseClicked()
 {
     onUserAction();
     resetProduct();
+    setMainPage(mainPageIndex);
 }
 
 void AppManager::onProductPanelPiecesClicked()
@@ -268,16 +268,22 @@ void AppManager::filteredSearch()
     debugLog(QString("@@@@@ AppManager::filteredSearch %1 %2").arg(QString::number(searchFilterModel->index), v));
     switch(searchFilterModel->index)
     {
-        case SearchFilterModel::Code:
-            db->select(DBSelector_GetProductsByFilteredCode, v);
-            break;
-        case SearchFilterModel::Barcode:
-            db->select(DBSelector_GetProductsByFilteredBarcode, v);
-            break;
-         default:
-            debugLog("@@@@@ AppManager::filteredSearch ERROR");
-            //emit saveLog(LogType_Warning, LogSource_AppManager, "Неизвестный фильтр поиска");
-            break;
+    case SearchFilterModel::Code:
+        db->select(DBSelector_GetProductsByFilteredCode, v);
+        break;
+    case SearchFilterModel::Number:
+        db->select(DBSelector_GetProductsByFilteredNumber, v);
+        break;
+    case SearchFilterModel::Barcode:
+        db->select(DBSelector_GetProductsByFilteredBarcode, v);
+        break;
+    case SearchFilterModel::Name:
+        db->select(DBSelector_GetProductsByFilteredName, v);
+        break;
+    default:
+        debugLog("@@@@@ AppManager::filteredSearch ERROR");
+        //emit saveLog(LogType_Warning, LogSource_AppManager, "Неизвестный фильтр поиска");
+        break;
     }
 }
 
@@ -294,7 +300,7 @@ void AppManager::onSearchFilterClicked(const int index)
 {
     // Изменилось поле поиска (код, штрих-код...)
 
-    debugLog("@@@@@ AppManager::onSearchFilterClicked " + QString::number( index));
+    debugLog("@@@@@ AppManager::onSearchFilterClicked " + Tools::intToString(index));
     onUserAction();
     searchFilterModel->index = (SearchFilterModel::FilterIndex)index;
     filteredSearch();
@@ -373,7 +379,7 @@ void AppManager::onPiecesInputClosed(const QString &value)
 void AppManager::onSetProductByCodeClicked(const QString &value)
 {
     debugLog("@@@@@ AppManager::onSetProductByCodeClicked " + value);
-    db->select(DBSelector_SetProductByInputCode, value.split(PRODUCT_STRING_DELIMETER).at(0));
+    db->select(DBSelector_SetProductByInputCode, value.split(LIST_ROW_DELIMETER).at(0));
 }
 
 void AppManager::onProductCodeEdited(const QString &value)
@@ -436,11 +442,19 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
         searchPanelModel->update(records, SearchFilterModel::Code);
         break;
 
+    case DBSelector_GetProductsByFilteredNumber: // Отображение товаров с заданным фрагментом номерв:
+        searchPanelModel->update(records, SearchFilterModel::Number);
+        break;
+
     case DBSelector_GetProductsByFilteredBarcode: // Отображение товаров с заданным фрагментом штрих-кода:
         searchPanelModel->update(records, SearchFilterModel::Barcode);
         break;
 
-    case DBSelector_RefreshCurrentProduct: // Сброс выбранного товара после изменений в БД:
+    case DBSelector_GetProductsByFilteredName: // Отображение товаров с заданным фрагментом наименования:
+        searchPanelModel->update(records, SearchFilterModel::Name);
+        break;
+
+   case DBSelector_RefreshCurrentProduct: // Сброс выбранного товара после изменений в БД:
         resetProduct();
         if (!records.isEmpty() && !records.at(0).isEmpty())
         {
@@ -628,6 +642,7 @@ void AppManager::onSettingsItemClicked(const int index)
         break;
         break;
     case SettingType_Unsed:
+    case SettingType_UnsedGroup:
         showMessage(name, "Не поддерживается");
         break;
     case SettingType_ReadOnly:
@@ -666,6 +681,9 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
         break;
     case SettingCode_SystemSettings:
         emit showPasswordInputBox(code);
+        break;
+    case SettingCode_Users:
+        onEditUsersClicked();
         break;
     default:
         showMessage(name, "Не поддерживается");
@@ -778,13 +796,13 @@ void AppManager::startAuthorization()
     debugLog("@@@@@ AppManager::startAuthorization");
     resetProduct();
     stopEquipment();
-    setMainPage(-1);
+    setMainPage(MainPageIndex_Authorization);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         debugLog("@@@@@ AppManager::startAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));
         updateSystemStatus();
         db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
-        showUsers();
+        showAuthorizationUsers();
         debugLog("@@@@@ AppManager::startAuthorization Done");
     });
 }
@@ -845,7 +863,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
-        productPanelModel->update(product, moneyCalculator->price(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+        productPanelModel->update(product, moneyCalculator->priceAsString(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
@@ -1168,7 +1186,7 @@ void AppManager::onInputUserClosed(const QString& code, const QString& name, con
     editUsersPanelModel->update(users);
 }
 
-void AppManager::showUsers()
+void AppManager::showAuthorizationUsers()
 {
     // Обновить список пользователей на экране авторизации
     DBRecordList records = users->getAll();
@@ -1207,7 +1225,7 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
     debugLog("@@@@@ AppManager::stopAuthorization OK");
     db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
                     title, login, Tools::intToString(Users::getCode(users->getUser()))));
-    setMainPage(0);
+    setMainPage(MainPageIndex_Showcase);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));

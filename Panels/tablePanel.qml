@@ -158,7 +158,10 @@ Rectangle
                 {
                     width: tablePanelResultList.width
                     font { pointSize: screenManager.normalFontSize() }
-                    padding: screenManager.spacer()
+                    leftPadding: screenManager.spacer() * 2
+                    topPadding: screenManager.spacer()
+                    rightPadding: screenManager.spacer()
+                    bottomPadding: screenManager.spacer()
                     color: Material.color(Material.BlueGrey, Material.Shade900)
                     text: model.value // Roles::ValueRole
                     MouseArea

@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.37"
+#define APP_VERSION "2.40"
 
 // Debug log:
 #define DEBUG_LOG
@@ -19,7 +19,7 @@
 #define REMOVE_SETTINGS_FILE_ON_START true
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
-#define REMOVE_LOG_DB_ON_START false
+#define REMOVE_LOG_DB_ON_START true
 #define REMOVE_TEMP_DB_ON_START true
 #define CHECK_AUTHORIZATION true
 
@@ -59,7 +59,7 @@
 #define WAIT_NET_ACTION_SEC 3
 #define EOL "\r\n"
 #define SHOWCASE_ROW_IMAGES 5
-#define PRODUCT_STRING_DELIMETER "   "
+#define LIST_ROW_DELIMETER "   "
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
 #define PRICE_MAX_CHARS 6
 #define AMOUNT_MAX_CHARS 8
@@ -84,6 +84,14 @@
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
 #define StringPair QPair<QString, QString>
+
+enum MainPageIndex
+{
+    MainPageIndex_Authorization = -1,
+    MainPageIndex_Showcase = 0,
+    MainPageIndex_Table = 1,
+    MainPageIndex_Search = 2
+};
 
 enum ConfirmSelector
 {
@@ -233,6 +241,7 @@ enum SettingType
     SettingType_List = 6,
     SettingType_Unsed = 7,
     SettingType_GroupWithPassword = 8,
+    SettingType_UnsedGroup = 9,
 };
 
 enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt!
@@ -240,7 +249,6 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_None = 0,
     SettingCode_ScalesNumber = 1,
     SettingCode_ScalesName = 2,
-    SettingCode_Blocking = 3,
     SettingCode_ProductReset = 7,
     SettingCode_ProductResetTime = 8,
     SettingCode_PointPosition = 12,
@@ -248,62 +256,64 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_CharNumberPieces = 43,
     SettingCode_SearchCodeSymbols = 44,
     SettingCode_SearchBarcodeSymbols = 45,
-    SettingCode_SearchNameSymbols = 46, // todo
-    SettingCode_SearchEquality = 47, // todo
+    SettingCode_SearchNameSymbols = 46,
+    SettingCode_SearchEquality = 47,
     SettingCode_ShopName = 202,
     SettingCode_PrintAutoWeight = 203,
     SettingCode_PrintPaper = 208,
     SettingCode_PrintAuto = 210,
     SettingCode_PrinterBrightness = 211,
-    SettingCode_PrintLabelFormat = 213, // todo
+    SettingCode_PrintLabelFormat = 213,
     SettingCode_PrintAutoPcs = 218,
     SettingCode_Logging = 606,
     SettingCode_LogDuration = 607,
     SettingCode_Currency = 1002,
     SettingCode_TCPPort = 1003,
     SettingCode_SearchType = 1004,
-    SettingCode_Manufacturer = 1005, // todo
+    SettingCode_Manufacturer = 1005,
     SettingCode_SetZeroTries = 1006,
     SettingCode_GoToDescription = 1007,
     SettingCode_Level = 1008,
-    SettingCode_License = 1009, // todo
+    SettingCode_License = 1009,
     SettingCode_SerialScalesNumber = 1010,
-    SettingCode_VerificationName = 1011, // todo
-    SettingCode_VerificationDate = 1012, // todo
-    SettingCode_Version = 1013, // todo
-    SettingCode_EquipmentVersion = 1014, // todo
-    SettingCode_Help = 1015, // todo
-    // = 1016
-    SettingCode_ReportsDuration = 1017, // todo
-    //SettingCode_Brightness = 1018, // todo
-    SettingCode_KeyboardSoundVolume = 1019,
-    SettingCode_DateTime = 1020, // todo
-    SettingCode_PrintOffset = 1024, // todo
-    SettingCode_PrintLabelSensor = 1025, // todo
-    SettingCode_PrintLabelHighlight = 1026, // todo
-    SettingCode_PrintLabelRotation = 1027, // todo
-    SettingCode_PrintLabelBarcodeWeight = 1028, // todo
-    SettingCode_PrintLabelBarcodePiece = 1029, // todo
+    SettingCode_VerificationName = 1011,
+    SettingCode_VerificationDate = 1012,
+    SettingCode_Version = 1013,
+    SettingCode_EquipmentVersion = 1014,
+    SettingCode_Help = 1015,
+    SettingCode_ReportsDuration = 1017,
+    SettingCode_DateTime = 1020,
+    SettingCode_PrintOffset = 1024,
+    SettingCode_PrintLabelSensor = 1025,
+    SettingCode_PrintLabelHighlight = 1026,
+    SettingCode_PrintLabelRotation = 1027,
+    SettingCode_PrintLabelBarcodeWeight = 1028,
+    SettingCode_PrintLabelBarcodePiece = 1029,
     SettingCode_Ethernet = 1030,
     SettingCode_WiFi = 1031,
     SettingCode_ClearLog = 1032,
-    SettingCode_ClearReports = 1033, // todo
-    SettingCode_HorizontalCalibration = 1034, // todo
-    SettingCode_ResetAll = 1035, // todo
-    SettingCode_UpdateCore = 1036, // todo
-    SettingCode_UpdateApp = 1037, // todo
-    SettingCode_UpdateDemon = 1038, // todo
-    SettingCode_WMReset = 1039, // todo
-    SettingCode_WMCalibration = 1040, // todo
-    SettingCode_PrinterReset = 1041, // todo
-    SettingCode_PrinterCalibration = 1042, // todo
-    SettingCode_WMInfo = 1043, // todo
-    SettingCode_PrinterInfo = 1044, // todo
+    SettingCode_ClearReports = 1033,
+    SettingCode_HorizontalCalibration = 1034,
+    SettingCode_ResetAll = 1035,
+    SettingCode_UpdateCore = 1036,
+    SettingCode_UpdateApp = 1037,
+    SettingCode_UpdateDemon = 1038,
+    SettingCode_WMReset = 1039,
+    SettingCode_WMCalibration = 1040,
+    SettingCode_PrinterReset = 1041,
+    SettingCode_PrinterCalibration = 1042,
+    SettingCode_WMInfo = 1043,
+    SettingCode_PrinterInfo = 1044,
     SettingCode_Equipment = 1045,
     SettingCode_SystemSettings = 1046,
     SettingCode_Update = 1047,
     SettingCode_PrintLabelPrefixWeight = 1048,
     SettingCode_PrintLabelPrefixPiece = 1049,
+    SettingCode_Users = 1050,
+    SettingCode_Blocking = 1051,
+    SettingCode_KeyboardSoundVolume = 1052,
+    SettingCode_SystemSoundVolume = 1053,
+    SettingCode_Brightness = 1054,
     //Группы:
     SettingCode_FactorySettings = 9000,
     /*
