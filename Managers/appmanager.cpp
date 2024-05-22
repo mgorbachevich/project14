@@ -135,6 +135,7 @@ void AppManager::onNetAction(const int action)
     switch (action)
     {
     case NetAction_Upload:
+    case NetAction_Command:
         netRoutes++;
         break;
     case NetAction_Delete:
@@ -145,6 +146,7 @@ void AppManager::onNetAction(const int action)
     case NetAction_UploadFinished:
     case NetAction_DeleteFinished:
     case NetAction_DownloadFinished:
+    case NetAction_CommandFinished:
         netRoutes--;
         break;
     }

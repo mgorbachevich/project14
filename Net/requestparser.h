@@ -13,11 +13,13 @@ public:
     static QString parseDeleteRequest(DataBase*, const QByteArray&);
     static QString parseSetRequest(DataBase*, const QByteArray&);
     static QString makeResultJson(const int, const QString&, const QString&, const QString&);
+    static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 
 private:
     static QString parseGetRequest(const NetAction, DataBase*, const QByteArray&);
     static QString parseJson(const QByteArray&);
     static QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
+    static bool parseCommand(const QByteArray&);
 };
 
 #endif // REQUESTPARSER_H

@@ -36,6 +36,7 @@ public:
         MessageFileCode,
         MovieCode,
         SoundCode,
+        Favorite,
         COLUMN_COUNT
     };
 

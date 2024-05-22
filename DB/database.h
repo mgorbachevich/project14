@@ -50,7 +50,7 @@ public:
     DBTable* getTable(const QString&) const;
     QString version() { return DB_VERSION; }
     void afterNetAction();
-    QString netUpload(const QString&, const QString&);
+    QString netUpload(const QString&, const QString&, const bool codesOnly = false);
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
     QString getProductMessageById(const QString&);
@@ -73,6 +73,7 @@ protected:
     bool removeAll(const QSqlDatabase&, DBTable*);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
     void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
+    QStringList selectAllCodes(const QSqlDatabase&, DBTable*);
     bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
     bool selectById(const QSqlDatabase&, DBTable*, const QString&, DBRecord&);
     bool executeSQL(const QSqlDatabase&, const QString&, const bool log = true);

@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.40"
+#define APP_VERSION "2.41"
 
 // Debug log:
 #define DEBUG_LOG
@@ -20,7 +20,6 @@
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START true
-#define REMOVE_TEMP_DB_ON_START true
 #define CHECK_AUTHORIZATION true
 
 // Files and Pathes:
@@ -193,6 +192,8 @@ enum NetAction
     NetAction_DownloadFinished,
     NetAction_Delete,
     NetAction_DeleteFinished,
+    NetAction_Command,
+    NetAction_CommandFinished,
 };
 
 enum VirtualKeyboardSet

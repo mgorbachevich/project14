@@ -24,6 +24,7 @@ HEADERS += \
     Managers/externalmessager.h \
     Managers/moneycalculator.h \
     Models/edituserspanelmodel.h \
+    Net/netcommand.h \
     constants.h \
     tools.h \
     appinfo.h \
@@ -219,6 +220,7 @@ SOURCES += \
     Models/searchpanelmodel.cpp \
     Models/showcasepanelmodel2.cpp \
     Models/tablepanelmodel.cpp \
+    Net/netcommand.cpp \
     Net/netserver.cpp \
     Net/requestparser.cpp \
     main.cpp \

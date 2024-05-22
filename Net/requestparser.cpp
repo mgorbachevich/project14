@@ -1,12 +1,13 @@
 #include <QDebug>
 #include <QByteArrayView>
 #include <QHash>
+#include <QJsonObject>
+#include <QJsonArray>
 #include "requestparser.h"
 #include "database.h"
 #include "jsonparser.h"
 #include "resourcedbtable.h"
 #include "tools.h"
-#include "netserver.h"
 
 QString RequestParser::parseJson(const QByteArray& request)
 {
@@ -33,16 +34,17 @@ QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, con
     // Parse list of codes to upload:
     Tools::debugLog(QString("@@@@@ RequestParser::parseGetRequest %1 %2").arg(QString::number(action), QString(request)));
     QByteArray tableName;
-    QByteArray codeList;
+    QByteArray codes;
     const QByteArray s1 = "source=";
     int p1 = request.indexOf(s1);
+    bool codesOnly = false;
     if(p1 >= 0)
     {
         int p2 = request.indexOf("&");
         if(p2 < 0)
         {
             int p2 = request.length();
-            Tools::debugLog(QString("@@@@@ RequestParser::parseGetRequest: p1=%1, p2=%2").arg(p1, p2));
+            Tools::debugLog(QString("@@@@@ RequestParser::parseGetRequest: p1=%1, p2=%2").arg(QString::number(p1), QString::number(p2)));
             if(p2 > p1)
             {
                 p1 += s1.length();
@@ -54,7 +56,8 @@ QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, con
         {
             const QByteArray s2 = "codes=";
             const QByteArray s3 = "code=";
-            if(p2 > p1 && (request.contains(s2) || request.contains(s3)))
+            const QByteArray s4 = "codelist=";
+            if(p2 > p1)
             {
                 p1 += s1.length();
                 tableName = request.mid(p1, p2 - p1);
@@ -63,31 +66,74 @@ QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, con
                 {
                     int p3 = request.indexOf("[") + 1;
                     int p4 = request.indexOf("]");
-                    codeList = request.mid(p3, p4 - p3);
+                    codes = request.mid(p3, p4 - p3);
                 }
                 else if (request.contains(s3))
                 {
                     int p3 = request.indexOf(s3);
                     int p4 = request.length();
                     p3 += s3.length();
-                    codeList = request.mid(p3, p4 - p3);
+                    codes = request.mid(p3, p4 - p3);
+                }
+                else if (request.contains(s4))
+                {
+                    int p3 = request.indexOf(s4);
+                    int p4 = request.length();
+                    p3 += s4.length();
+                    codesOnly = (1 == Tools::stringToInt(QString(request.mid(p3, p4 - p3))));
                 }
             }
         }
     }
     switch(action)
     {
-    case NetAction_Delete: return db->netDelete(tableName, codeList);
-    case NetAction_Upload: return db->netUpload(tableName, codeList);
+    case NetAction_Delete:
+        if(!codesOnly) return db->netDelete(tableName, codes);
+        break;
+    case NetAction_Upload:
+        return db->netUpload(tableName, codes, codesOnly);
     default: break;
     }
     return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
 }
 
+QString RequestParser::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QString& data)
+{
+    if(tableName.isEmpty() || data.isEmpty())
+        return QString("{\"result\":\"%1\",\"description\":\"%2\"}").
+                arg(QString::number(errorCode), description);
+    else
+        return QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
+            arg(QString::number(errorCode), description, tableName, data);
+}
+
+QString RequestParser::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QStringList& values)
+{
+    QString data;
+    if(values.count() > 0)
+    {
+        data += QString("%1").arg(values[0]);
+        for(int i = 1; i < values.count(); i++) data += QString(",%1").arg(values[i]);
+    }
+    return QString("{\"result\":\"%1\",\"description\":\"%2\",\"codelist\":{\"%3\":[%4]}}").
+        arg(QString::number(errorCode), description, tableName, data);
+}
+
+QByteArray RequestParser::parseHeaderItem(const QByteArray& header, const QByteArray& item, const QByteArray& title)
+{
+    if(!header.contains(title) || !header.contains(item)) return "";
+    const int i1 = header.indexOf(item);
+    if(i1 < 0) return "";
+    const int i2 = header.indexOf("\"", i1);
+    if(i2 < 0) return "";
+    const int i3 = header.indexOf("\"", i2 + 1);
+    if(i3 <= i2) return "";
+    return header.mid(i2 + 1, i3 - i2 - 1);
+}
+
 QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
 {
     Tools::debugLog("@@@@@ RequestParser::parseSetRequest " + QString::number(request.length()));
-    //qDebug() << "@@@@@ RequestParser::parseSetRequest = " << request;
     int successCount = 0;
     int errorCount = 0;
     int errorCode = 0;
@@ -96,6 +142,7 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
     if(request.indexOf("{") == 0)
     {
         Tools::debugLog("@@@@@ RequestParser::parseSetRequest Singlepart");
+        parseCommand(request);
         return makeResultJson(LogError_WrongRequest, "Неверный запрос", "", "");
     }
 
@@ -216,25 +263,31 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
     return makeResultJson(errorCode, description, "", "");
 }
 
-QString RequestParser::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QString& data)
+bool RequestParser::parseCommand(const QByteArray& request)
 {
-    if(tableName.isEmpty() || data.isEmpty())
-        return QString("{\"result\":\"%1\",\"description\":\"%2\"}").
-                arg(QString::number(errorCode), description);
-    else
-        return QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
-            arg(QString::number(errorCode), description, tableName, data);
-}
+    QString json = parseJson(request);
+    Tools::debugLog("@@@@@ RequestParser::parseCommand " + json);
 
-QByteArray RequestParser::parseHeaderItem(const QByteArray& header, const QByteArray& item, const QByteArray& title)
-{
-    if(!header.contains(title) || !header.contains(item)) return "";
-    const int i1 = header.indexOf(item);
-    if(i1 < 0) return "";
-    const int i2 = header.indexOf("\"", i1);
-    if(i2 < 0) return "";
-    const int i3 = header.indexOf("\"", i2 + 1);
-    if(i3 <= i2) return "";
-    return header.mid(i2 + 1, i3 - i2 - 1);
+    const QJsonObject jo = Tools::stringToJson(json);
+    QJsonValue method = jo["method"];
+    if (!method.isObject())
+    {
+        Tools::debugLog("@@@@@ RequestParser::parseCommand ERROR !method.isObject()");
+        return false;
+    }
+    QJsonValue params = jo["params"];
+    if (!params.isArray())
+    {
+        Tools::debugLog("@@@@@ RequestParser::parseCommand ERROR !params.isArray()");
+        return false;
+    }
+    QJsonArray ja = params.toArray();
+    for (int i = 0; i < ja.size(); i++)
+    {
+        QJsonValue jai = ja[i];
+        if (jai.isObject())
+        {
+        }
+    }
+    return true;
 }
-

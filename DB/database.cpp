@@ -59,7 +59,7 @@ void DataBase::onAppStart()
     }
     if (started)
     {
-        if(REMOVE_TEMP_DB_ON_START) Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
+        Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
         copyDBFiles(DB_PRODUCT_NAME, DB_TEMP_NAME);
         started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
     }
@@ -167,7 +167,6 @@ bool DataBase::executeSelectSQL(const QSqlDatabase& db, DBTable* table, const QS
     Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1 %2").arg(
                         Tools::fileNameFromPath(db.databaseName()), sql));
     resultRecords.clear();
-
     QSqlQuery q(db);
     if (!q.exec(sql))
     {
@@ -204,7 +203,7 @@ bool DataBase::selectById(const QSqlDatabase& db, DBTable* table, const QString&
 
 void DataBase::selectAll(const QSqlDatabase& db, DBTable *table, DBRecordList& resultRecords)
 {
-    Tools::debugLog("@@@@@ DataBase::selectAll ");
+    Tools::debugLog("@@@@@ DataBase::selectAll");
     resultRecords.clear();
     if(table != nullptr)
     {
@@ -213,6 +212,21 @@ void DataBase::selectAll(const QSqlDatabase& db, DBTable *table, DBRecordList& r
         executeSelectSQL(db, table, sql, records);
         resultRecords.append(table->checkList(this, records));
     }
+}
+
+QStringList DataBase::selectAllCodes(const QSqlDatabase& db, DBTable *table)
+{
+    Tools::debugLog("@@@@@ DataBase::selectAllCodes");
+    QStringList result;
+    if(table != nullptr)
+    {
+        DBRecordList records;
+        QString sql = QString("SELECT %1 FROM %2;").arg(table->columnName(0), table->name);
+        executeSelectSQL(db, table, sql, records);
+        Tools::sortByInt(records, 0);
+        for(int i = 0; i < records.count(); i++) result << records[i][0].toString();
+    }
+    return result;
 }
 
 bool DataBase::removeAll(const QSqlDatabase& db, DBTable* table)
@@ -239,27 +253,27 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
         Tools::debugLog("@@@@@ DataBase::insertRecord ERROR opened=false");
         return false;
     }
-    DBRecord checkedRecord = table->checkRecord(record);
-    if (checkedRecord.isEmpty())
+    DBRecord r = table->checkRecord(record);
+    if (r.isEmpty())
     {
         Tools::debugLog("@@@@@ DataBase::insertRecord ERROR checkedRecord.isEmpty()");
         //saveLog(LogDBTable::LogType_Error, "БД. Не сохранена запись в таблице " + table->name);
         return false;
     }
 
-    QString code = checkedRecord.at(0).toString();
-    Tools::debugLog(QString("@@@@@ DataBase::insertRecord %1 %2").arg(table->name, code));
+    Tools::debugLog(QString("@@@@@ DataBase::insertRecord %1 %2").arg(table->name, r.at(0).toString()));
+    const int n = table->columnCount();
     QString sql = "INSERT OR REPLACE INTO " + table->name + " (";
-    for (int i = 0; i < table->columnCount(); i++)
+    for (int i = 0; i < n; i++)
     {
         sql += table->columnName(i);
-        sql += (i == table->columnCount() - 1) ? ")" : ", ";
+        sql += (i == n - 1) ? ")" : ", ";
     }
     sql +=  " VALUES (";
-    for (int i = 0; i < table->columnCount(); i++)
+    for (int i = 0; i < n; i++)
     {
-        sql += (i < checkedRecord.count()) ? "'" + checkedRecord[i].toString() + "'" : "''";
-        sql += (i == table->columnCount() - 1) ? ");" : ", ";
+        sql += (i < r.count()) ? "'" + r[i].toString() + "'" : "''";
+        sql += (i == n - 1) ? ");" : ", ";
     }
     return executeSQL(sqlDb, sql);
 }
@@ -596,12 +610,14 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     return resultJson;
 }
 
-QString DataBase::netUpload(const QString& tableName, const QString& codeList)
+QString DataBase::netUpload(const QString& tableName, const QString& codesToUpload, const bool codesOnly)
 {
-    // Выгрузка из таблицы по списку кодов
+    // Выгрузка из таблицы
 
-    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1").arg(tableName));
-    saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1").arg(tableName));
+    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::boolToString(codesOnly)));
+    if(codesOnly) saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1 %2").arg(
+                tableName, Tools::intToString(codesToUpload.split(',').count())));
+    else saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов. Таблица: %1").arg(tableName));
     int recordCount = 0;
     int errorCount = 0;
     int errorCode = 0;
@@ -609,7 +625,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
     bool detailedLog = appManager->settings->getIntValue(SettingCode_Logging) >= LogType_Info;
     DBRecordList records;
     DBTable* t = getTable(tableName);
-    QStringList codes = codeList.split(','); // Коды товаров через запятую
+    QStringList codes = codesToUpload.split(','); // Коды через запятую
 
     if(t == nullptr || !open(tempDB, DB_TEMP_NAME))
     {
@@ -617,21 +633,29 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
         errorCode = LogError_UnknownTable;
         description = "Неизвестная таблица";
     }
-    else if (codes.isEmpty()) // Upload all records
+    else if (codesOnly) // Только коды
+    {
+        QStringList codes = selectAllCodes(tempDB, t);
+        saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов завершена. Таблица: %1. Записи: %2").
+                arg(tableName, QString::number(codes.count())));
+        const QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, codes);
+        Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
+        return resultJson;
+    }
+    else if (codes.isEmpty() || codes[0].isEmpty()) // Upload all fields
     {
         selectAll(tempDB, t, records);
         recordCount = records.count();
-        if (detailedLog)
+        if (!codesOnly && detailedLog)
         {
             for (int i = 0; i < recordCount; i++)
             {
-                QString s = QString("Выгружена запись. Таблица: %1. Код: %2").
-                        arg(tableName, records[i].at(0).toString());
-                saveLog(LogType_Warning, LogSource_DB, s);
+                saveLog(LogType_Warning, LogSource_DB, QString("Выгружена запись. Таблица: %1. Код: %2").
+                        arg(tableName, records[i].at(0).toString()));
             }
         }
     }
-    else
+    else // По списку кодов
     {
         for (int i = 0; i < codes.count(); i++)
         {
@@ -641,10 +665,8 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
                 recordCount++;
                 records.append(r);
                 if (detailedLog)
-                {
-                    QString s = QString("Запись выгружена. Таблица: %1. Код: %2").arg(tableName, r.at(0).toString());
-                    saveLog(LogType_Warning, LogSource_DB, s);
-                }
+                    saveLog(LogType_Warning, LogSource_DB, QString("Запись выгружена. Таблица: %1. Код: %2").
+                            arg(tableName, r.at(0).toString()));
             }
             else
             {
@@ -652,18 +674,14 @@ QString DataBase::netUpload(const QString& tableName, const QString& codeList)
                 errorCode = LogError_RecordNotFound;
                 description = "Запись не найдена";
                 if (detailedLog)
-                {
-                    QString s = QString("Ошибка выгрузки записи. Таблица: %1. Код ошибки: %2. Описание: %3").
-                            arg(tableName, QString::number(errorCode), description);
-                    saveLog(LogType_Error, LogSource_DB, s);
-                }
+                    saveLog(LogType_Error, LogSource_DB, QString("Ошибка выгрузки записи. Таблица: %1. Код ошибки: %2. Описание: %3").
+                            arg(tableName, QString::number(errorCode), description));
             }
         }
     }
-    QString s = QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
-            arg(tableName, QString::number(recordCount), QString::number(errorCount), description);
-    saveLog(LogType_Error, LogSource_DB, s);
-    QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
+    saveLog(LogType_Error, LogSource_DB, QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
+            arg(tableName, QString::number(recordCount), QString::number(errorCount), description));
+    const QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
     Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
     return resultJson;
 }

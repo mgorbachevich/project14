@@ -67,6 +67,18 @@ void NetServer::start(const int port)
                 return QHttpServerResponse(response);
             });
         });
+        server->route("/action", [this] (const QHttpServerRequest &request)
+        {
+            return QtConcurrent::run([&request, this]
+            {
+                emit action(NetAction_Command);
+                QByteArray ba = request.body();
+                QString response = RequestParser::parseSetRequest(appManager->db, ba);
+                Tools::debugLog("@@@@@ NetServer::start action response " + response);
+                emit action(NetAction_CommandFinished);
+                return QHttpServerResponse(response);
+            });
+        });
     }
 }
 
