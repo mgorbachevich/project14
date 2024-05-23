@@ -73,6 +73,19 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showDownloadPanel:
+    {
+        target: app
+        function onShowDownloadPanel()
+        {
+            app.debugLog("@@@@@ mainWindow.onShowDownloadPanel");
+            Qt.createComponent("Panels/downloadPanel.qml").createObject(mainWindow,
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight
+            }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showSettingInputBox:
     {
         target: app

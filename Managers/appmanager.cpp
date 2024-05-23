@@ -206,6 +206,13 @@ void AppManager::onTimer()
             // if(!product.isEmpty()) db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
         }
     }
+    // Ожидание окончания сетевых команд:
+    if(netServer->isStarted() && netCommandTime > 0 &&
+       (WAIT_NET_COMMAND_SEC * 1000) < now - netCommandTime)
+    {
+        debugLog("@@@@@ AppManager::onTimer netCommandTime");
+        onNetCommand(NetCommand_StopLoad, "");
+    }
 }
 
 void AppManager::createDefaultData()
@@ -858,28 +865,6 @@ void AppManager::showConfirmation(const ConfirmSelector selector, const QString 
     emit showConfirmationBox(selector, title, text);
 }
 
-void AppManager::onNetCommand(const NetCommand command, const QString& param)
-{
-    debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
-    switch (command)
-    {
-    case NetCommand_Message:
-        showAttention(param);
-        break;
-    case NetCommand_StartLoad:
-        if(!param.isEmpty()) showAttention(QString("StartLoad %1").arg(param));
-        break;
-    case NetCommand_StopLoad:
-        showAttention(QString("StopLoad %1").arg(param));
-        break;
-    case NetCommand_Progress:
-        showAttention(QString("Progress %1").arg(param));
-        break;
-    default:
-        break;
-    }
-}
-
 void AppManager::setProduct(const DBRecord& newProduct)
 {
     product = newProduct;
@@ -1279,6 +1264,43 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
         if(inputPassword == settings->getScaleConfigValue(ScaleConfigField_SystemSettingsPassword))
             settings->nativeSettings(code);
         else showAttention("Неверный пароль");
+        break;
+    default:
+        break;
+    }
+}
+
+void AppManager::onBackgroundDownloadClicked()
+{
+    backgroundDownload = true;
+}
+
+void AppManager::onNetCommand(const NetCommand command, const QString& param)
+{
+    debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
+    switch (command)
+    {
+    case NetCommand_Message:
+        showAttention(param);
+        break;
+    case NetCommand_StartLoad:
+        netCommandTime = Tools::currentDateTimeToUInt();
+        emit showDownloadProgress(-1);
+        if(Tools::stringToInt(param) == 1)
+        {
+            backgroundDownload = false;
+            emit showDownloadPanel();
+        }
+        else backgroundDownload = true;
+        break;
+    case NetCommand_StopLoad:
+        netCommandTime = 0;
+        emit showDownloadProgress(100);
+        backgroundDownload = true;
+        break;
+    case NetCommand_Progress:
+        netCommandTime = Tools::currentDateTimeToUInt();
+        emit showDownloadProgress(Tools::stringToInt(param));
         break;
     default:
         break;

@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.42"
+#define APP_VERSION "2.43"
 
 // Debug log:
 #define DEBUG_LOG
@@ -56,6 +56,7 @@
 #define WAIT_SOUND_MSEC 500
 #define WAIT_DRAWING_MSEC 150
 #define WAIT_NET_ACTION_SEC 3
+#define WAIT_NET_COMMAND_SEC 60
 #define EOL "\r\n"
 #define SHOWCASE_ROW_IMAGES 5
 #define LIST_ROW_DELIMETER "   "
@@ -198,6 +199,7 @@ enum NetAction
 
 enum NetCommand
 {
+    NetCommand_None = 0,
     NetCommand_Message,
     NetCommand_StartLoad,
     NetCommand_StopLoad,

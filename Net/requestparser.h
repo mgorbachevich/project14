@@ -19,7 +19,7 @@ public:
     static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 
 private:
-    QString parseJson(const QByteArray&);
+    QString toJsonString(const QByteArray&);
     QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
     bool parseCommand(const QByteArray&);
 };

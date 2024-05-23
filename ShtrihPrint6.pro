@@ -328,6 +328,7 @@ RESOURCES += \
     Panels/CardTitleText.qml \
     Panels/comboSettingPanel.qml \
     Panels/confirmationPanel.qml \
+    Panels/downloadPanel.qml \
     Panels/editUsersPanel.qml \
     Panels/EmptyButton.qml \
     Panels/inputPasswordPanel.qml \

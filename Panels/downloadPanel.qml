@@ -7,27 +7,30 @@ import RegisteredTypes
 
 Popup
 {
-    id: sliderSettingPanel
+    id: downloadPanel
     padding : 0
-    //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
-    closePolicy: Popup.CloseOnEscape
+    closePolicy: Popup.NoAutoClose
     focus: true
     modal: true
     dim: true
     Material.background: "transparent"
-    property string titleText: "Title"
-    property int settingItemCode: 0
-    property int sliderFrom: 0
-    property int sliderTo: 1
-    property int sliderStep: 1
-    property int sliderValue: 1
     onOpened: app.onPopupOpened(true)
-    onClosed:
-    {
-        app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
-        app.onPopupOpened(false)
-    }
+    onClosed: app.onPopupOpened(false)
 
+    Connections // Slot for signal AppManager::showDownloadProgress:
+    {
+        target: app
+        function onShowDownloadProgress(value)
+        {
+            app.debugLog("@@@@@ downloadPanel.onShowDownloadProgress");
+            if(value >= 100 || value < 0) downloadPanel.close();
+            else
+            {
+                downloadPanelText.text = "%1%".arg(value)
+                downloadPanelProgressBar.value = value
+            }
+        }
+    }
     Rectangle
     {
         anchors.fill: parent
@@ -52,48 +55,25 @@ Popup
                         app.onRewind()
                         break
                     default:
-                        sliderSettingPanel.close()
                         break
                 }
             }
 
-            EmptyButton
-            {
-                Layout.column: 0
-                Layout.row: 0
-                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            }
-
             Rectangle
             {
-                Layout.column: 1
+                Layout.column: 0
                 Layout.row: 0
                 Layout.fillWidth: parent
                 Layout.preferredHeight: screenManager.buttonSize()
                 color: "transparent"
 
-                CardTitleText { text: titleText }
-            }
-
-            RoundIconButton
-            {
-                Layout.column: 2
-                Layout.row: 0
-                Layout.alignment: Qt.AlignTop | Qt.AlignRigth
-                icon.source: "../Icons/close"
-                onClicked:
-                {
-                    app.onUserAction();
-                    app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
-                    sliderSettingPanel.close()
-                }
+                CardTitleText { text: "Подождите, идет загрузка товаров" }
             }
 
             Rectangle
             {
                 Layout.column: 0
                 Layout.row: 1
-                Layout.columnSpan: 3
                 Layout.fillHeight: parent
                 Layout.fillWidth: parent
                 color: "transparent"
@@ -103,14 +83,13 @@ Popup
             {
                 Layout.column: 0
                 Layout.row: 2
-                Layout.columnSpan: 3
                 Layout.fillWidth: parent
                 color: "transparent"
 
                 CardTitleText
                 {
-                    id: sliderValueText
-                    text: settingItemSlider.value
+                    id: downloadPanelText
+                    text: "0%"
                 }
             }
 
@@ -120,28 +99,38 @@ Popup
                 Layout.row: 3
             }
 
-            Slider
+            ProgressBar
             {
-                id: settingItemSlider
+                id: downloadPanelProgressBar
                 Layout.column: 0
                 Layout.row: 4
-                Layout.columnSpan: 3
                 Layout.preferredWidth: screenManager.editWidth()
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                from: sliderFrom
-                to: sliderTo
-                stepSize: sliderStep
-                value: sliderValue
+                from: 0
+                to: 100
+                value: 0
             }
 
             Rectangle
             {
                 Layout.column: 0
                 Layout.row: 5
-                Layout.columnSpan: 3
                 Layout.fillHeight: parent
                 Layout.fillWidth: parent
                 color: "transparent"
+            }
+
+            RoundTextButton
+            {
+                Layout.column: 0
+                Layout.row: 6
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                text: qsTr("ПРОДОЛЖИТЬ В ФОНОВОМ РЕЖИМЕ")
+                onClicked:
+                {
+                    app.onBackgroundDownloadClicked()
+                    downloadPanel.close()
+                }
             }
         }
     }

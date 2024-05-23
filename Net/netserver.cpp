@@ -64,13 +64,13 @@ void NetServer::start(const int port)
                 return QHttpServerResponse(response);
             });
         });
-        server->route("/action", [this] (const QHttpServerRequest &request)
+        server->route("/command", [this] (const QHttpServerRequest &request)
         {
             return QtConcurrent::run([&request, this]
             {
                 emit action(NetAction_Command);
                 QString response = parser->parseSetRequest(request.body());
-                Tools::debugLog("@@@@@ NetServer::start action response " + response);
+                Tools::debugLog("@@@@@ NetServer::start command response " + response);
                 emit action(NetAction_CommandFinished);
                 return QHttpServerResponse(response);
             });

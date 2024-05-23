@@ -14,9 +14,9 @@ RequestParser::RequestParser(AppManager* parent) : ExternalMessager(parent)
     Tools::debugLog("@@@@@ RequestParser::RequestParser");
 }
 
-QString RequestParser::parseJson(const QByteArray& request)
+QString RequestParser::toJsonString(const QByteArray& request)
 {
-    Tools::debugLog("@@@@@ RequestParser::parseJson");
+    Tools::debugLog("@@@@@ RequestParser::toJsonString");
     QByteArray text;
     const int i1 = request.indexOf("{");
     const int i2 = request.lastIndexOf("}");
@@ -183,7 +183,7 @@ QString RequestParser::parseSetRequest(const QByteArray &request)
                 QByteArray nameItemValue = parseHeaderItem(header, "name");
                 if(nameItemValue == "value")
                 {
-                    QString text = parseJson(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
+                    QString text = toJsonString(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
                     Tools::debugLog("@@@@@ RequestParser::parseSetRequest. Text " + text);
                     if(!text.isEmpty())
                     {
@@ -265,7 +265,7 @@ QString RequestParser::parseSetRequest(const QByteArray &request)
 
 bool RequestParser::parseCommand(const QByteArray& request)
 {
-    QString json = parseJson(request);
+    QString json = toJsonString(request);
     Tools::debugLog("@@@@@ RequestParser::parseCommand " + json);
     QJsonObject jo = Tools::stringToJson(json);
     QString method = jo["method"].toString("");
@@ -273,34 +273,34 @@ bool RequestParser::parseCommand(const QByteArray& request)
     QJsonValue jsonParams = jo["params"];
     if (!jsonParams.isArray()) return false;
     QJsonArray ja = jsonParams.toArray();
-    if(method == "message")
-    {
-        if(ja.size() > 0)
-        {
-            appManager->onNetCommand(NetCommand_Message, ja[0].toString(""));
-            return true;
-        }
-    }
-    if(method == "startLoad")
-    {
-        if(ja.size() > 0)
-        {
-            appManager->onNetCommand(NetCommand_StartLoad, Tools::intToString(ja[0].toInt()));
-            return true;
-        }
-    }
+    NetCommand nc = NetCommand_None;
+    QString param = "";
     if(method == "stopLoad")
     {
-        appManager->onNetCommand(NetCommand_StopLoad, "");
-        return true;
+        nc = NetCommand_StopLoad;
     }
-    if(method == "progress")
+    else if(ja.size() > 0)
     {
-        if(ja.size() > 0)
+        if(method == "message")
         {
-            appManager->onNetCommand(NetCommand_Progress, Tools::intToString(ja[0].toInt()));
-            return true;
+            nc = NetCommand_Message;
+            param = ja[0].toString("");
+        }
+        else if(method == "startLoad")
+        {
+            nc = NetCommand_StartLoad;
+            param = Tools::intToString(ja[0].toInt());
+        }
+        else if(method == "progress")
+        {
+            nc = NetCommand_Progress;
+            param = Tools::intToString(ja[0].toInt());
         }
     }
-   return false;
+    if(nc != NetCommand_None)
+    {
+        appManager->onNetCommand(nc, param);
+        return true;
+    }
+    return false;
 }

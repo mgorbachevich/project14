@@ -44,6 +44,7 @@ public:
     Q_INVOKABLE void debugLog(const QString&);
     Q_INVOKABLE void onAddUserClicked();
     Q_INVOKABLE void onAdminSettingsClicked();
+    Q_INVOKABLE void onBackgroundDownloadClicked();
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
@@ -127,12 +128,14 @@ private:
     // Таймер
     QTimer *timer = nullptr;
     quint64 netActionTime = 0;
+    quint64 netCommandTime = 0;
     quint64 userActionTime = 0;
 
     // Сеть:
     NetServer* netServer = nullptr;
     bool isRefreshNeeded = false;
     int netRoutes = 0;
+    bool backgroundDownload = false;
 
     // UI:
     QQmlContext* context = nullptr;
@@ -168,6 +171,8 @@ signals:
     void showDateTime(const QString&);
     void showAdminMenu(bool);
     void showConfirmationBox(const int, const QString&, const QString&);
+    void showDownloadPanel();
+    void showDownloadProgress(const int);
     void showEditUsersPanel();
     void showEnvironmentStatus(const bool, const bool, const bool, const bool);
     void showGroupHierarchyRoot(const bool);
