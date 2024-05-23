@@ -24,7 +24,6 @@ HEADERS += \
     Managers/externalmessager.h \
     Managers/moneycalculator.h \
     Models/edituserspanelmodel.h \
-    Net/netcommand.h \
     constants.h \
     tools.h \
     appinfo.h \
@@ -32,7 +31,6 @@ HEADERS += \
     DB/dbtable.h \
     DB/dbtablecolumn.h \
     DB/database.h \
-    DB/jsonparser.h \
     DB/labelformatdbtable.h \
     DB/logdbtable.h \
     DB/resourcedbtable.h \
@@ -130,7 +128,6 @@ SOURCES += \
     DB/dbtable.cpp \
     DB/jsonarrayfile.cpp \
     DB/jsonfile.cpp \
-    DB/jsonparser.cpp \
     DB/logdbtable.cpp \
     DB/productdbtable.cpp \
     DB/scaleconfig.cpp \
@@ -220,7 +217,6 @@ SOURCES += \
     Models/searchpanelmodel.cpp \
     Models/showcasepanelmodel2.cpp \
     Models/tablepanelmodel.cpp \
-    Net/netcommand.cpp \
     Net/netserver.cpp \
     Net/requestparser.cpp \
     main.cpp \

@@ -4,10 +4,15 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include "requestparser.h"
-#include "database.h"
-#include "jsonparser.h"
+#include "appmanager.h"
 #include "resourcedbtable.h"
 #include "tools.h"
+#include "requestparser.h"
+
+RequestParser::RequestParser(AppManager* parent) : ExternalMessager(parent)
+{
+    Tools::debugLog("@@@@@ RequestParser::RequestParser");
+}
 
 QString RequestParser::parseJson(const QByteArray& request)
 {
@@ -19,17 +24,7 @@ QString RequestParser::parseJson(const QByteArray& request)
     return QString(text);
 }
 
-QString RequestParser::parseGetRequest(DataBase *db, const QByteArray &request)
-{
-    return parseGetRequest(NetAction_Upload, db, request);
-}
-
-QString RequestParser::parseDeleteRequest(DataBase *db, const QByteArray &request)
-{
-    return parseGetRequest(NetAction_Delete, db, request);
-}
-
-QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, const QByteArray &request)
+QString RequestParser::parseGetRequest(const NetAction action, const QByteArray &request)
 {
     // Parse list of codes to upload:
     Tools::debugLog(QString("@@@@@ RequestParser::parseGetRequest %1 %2").arg(QString::number(action), QString(request)));
@@ -88,10 +83,10 @@ QString RequestParser::parseGetRequest(const NetAction action, DataBase* db, con
     switch(action)
     {
     case NetAction_Delete:
-        if(!codesOnly) return db->netDelete(tableName, codes);
+        if(!codesOnly) return appManager->db->netDelete(tableName, codes);
         break;
     case NetAction_Upload:
-        return db->netUpload(tableName, codes, codesOnly);
+        return appManager->db->netUpload(tableName, codes, codesOnly);
     default: break;
     }
     return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
@@ -131,19 +126,24 @@ QByteArray RequestParser::parseHeaderItem(const QByteArray& header, const QByteA
     return header.mid(i2 + 1, i3 - i2 - 1);
 }
 
-QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
+QString RequestParser::parseSetRequest(const QByteArray &request)
 {
     Tools::debugLog("@@@@@ RequestParser::parseSetRequest " + QString::number(request.length()));
     int successCount = 0;
     int errorCount = 0;
     int errorCode = 0;
+    QString description = "Ошибок нет";
 
     // Singlepart:
     if(request.indexOf("{") == 0)
     {
         Tools::debugLog("@@@@@ RequestParser::parseSetRequest Singlepart");
-        parseCommand(request);
-        return makeResultJson(LogError_WrongRequest, "Неверный запрос", "", "");
+        if(!parseCommand(request))
+        {
+            errorCode = LogError_WrongRequest;
+            description = "Неверный запрос";
+        }
+        return makeResultJson(errorCode, description, "", "");
     }
 
     // Multipart:
@@ -187,11 +187,11 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
                     Tools::debugLog("@@@@@ RequestParser::parseSetRequest. Text " + text);
                     if(!text.isEmpty())
                     {
-                        db->onParseSetRequest(text);
-                        for (DBTable* t : db->getTables())
+                        appManager->db->onParseSetRequest(text);
+                        for (DBTable* t : appManager->db->getTables())
                         {
                             if(t == nullptr) continue;
-                            DBRecordList tableRecords = JSONParser::parseTable(t, text);
+                            DBRecordList tableRecords = t->parse(text);
                             if(tableRecords.count() == 0) continue;
                             Tools::debugLog(QString("@@@@@ RequestParser::parseSetRequest. Table %1, records %2").
                                     arg(t->name, QString::number(tableRecords.count())));
@@ -257,8 +257,8 @@ QString RequestParser::parseSetRequest(DataBase* db, const QByteArray &request)
             }
         }
     }
-    db->netDownload(downloadedRecords, successCount, errorCount);
-    QString description = QString("Загружено записей %1 из %2").
+    appManager->db->netDownload(downloadedRecords, successCount, errorCount);
+    description = QString("Загружено записей %1 из %2").
             arg(QString::number(successCount), QString::number(successCount + errorCount));
     return makeResultJson(errorCode, description, "", "");
 }
@@ -267,27 +267,40 @@ bool RequestParser::parseCommand(const QByteArray& request)
 {
     QString json = parseJson(request);
     Tools::debugLog("@@@@@ RequestParser::parseCommand " + json);
-
-    const QJsonObject jo = Tools::stringToJson(json);
-    QJsonValue method = jo["method"];
-    if (!method.isObject())
+    QJsonObject jo = Tools::stringToJson(json);
+    QString method = jo["method"].toString("");
+    if (method.isEmpty()) return false;
+    QJsonValue jsonParams = jo["params"];
+    if (!jsonParams.isArray()) return false;
+    QJsonArray ja = jsonParams.toArray();
+    if(method == "message")
     {
-        Tools::debugLog("@@@@@ RequestParser::parseCommand ERROR !method.isObject()");
-        return false;
-    }
-    QJsonValue params = jo["params"];
-    if (!params.isArray())
-    {
-        Tools::debugLog("@@@@@ RequestParser::parseCommand ERROR !params.isArray()");
-        return false;
-    }
-    QJsonArray ja = params.toArray();
-    for (int i = 0; i < ja.size(); i++)
-    {
-        QJsonValue jai = ja[i];
-        if (jai.isObject())
+        if(ja.size() > 0)
         {
+            appManager->onNetCommand(NetCommand_Message, ja[0].toString(""));
+            return true;
         }
     }
-    return true;
+    if(method == "startLoad")
+    {
+        if(ja.size() > 0)
+        {
+            appManager->onNetCommand(NetCommand_StartLoad, Tools::intToString(ja[0].toInt()));
+            return true;
+        }
+    }
+    if(method == "stopLoad")
+    {
+        appManager->onNetCommand(NetCommand_StopLoad, "");
+        return true;
+    }
+    if(method == "progress")
+    {
+        if(ja.size() > 0)
+        {
+            appManager->onNetCommand(NetCommand_Progress, Tools::intToString(ja[0].toInt()));
+            return true;
+        }
+    }
+   return false;
 }

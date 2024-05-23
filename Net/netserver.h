@@ -13,9 +13,10 @@
 #include <QSslKey>
 #endif
 
-#define SERVER_VERSION "1.4"
+#define SERVER_VERSION "1.5"
 
 class AppManager;
+class RequestParser;
 
 class NetServer : public ExternalMessager
 {
@@ -31,6 +32,7 @@ public:
 
 protected:
     QHttpServer* server = nullptr;
+    RequestParser* parser = nullptr;
 
 signals:
     void action(const int);

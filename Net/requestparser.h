@@ -3,23 +3,25 @@
 
 #include <QByteArray>
 #include <constants.h>
+#include "externalmessager.h"
 
 class DataBase;
 
-class RequestParser
+class RequestParser : public ExternalMessager
 {
+    Q_OBJECT
+
 public:
-    static QString parseGetRequest(DataBase*, const QByteArray&);
-    static QString parseDeleteRequest(DataBase*, const QByteArray&);
-    static QString parseSetRequest(DataBase*, const QByteArray&);
+    explicit RequestParser(AppManager*);
+    QString parseGetRequest(const NetAction, const QByteArray&);
+    QString parseSetRequest(const QByteArray&);
     static QString makeResultJson(const int, const QString&, const QString&, const QString&);
     static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 
 private:
-    static QString parseGetRequest(const NetAction, DataBase*, const QByteArray&);
-    static QString parseJson(const QByteArray&);
-    static QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
-    static bool parseCommand(const QByteArray&);
+    QString parseJson(const QByteArray&);
+    QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
+    bool parseCommand(const QByteArray&);
 };
 
 #endif // REQUESTPARSER_H

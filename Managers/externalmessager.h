@@ -11,10 +11,10 @@ class ExternalMessager : public QObject
 
 public:
     ExternalMessager(AppManager*);
+    void showAttention(const QString&);
 
 protected:
     void showMessage(const QString&, const QString&);
-    void showAttention(const QString&);
 
     AppManager* appManager;
 };

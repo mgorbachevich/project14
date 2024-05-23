@@ -9,6 +9,7 @@
 #include "dbtablecolumn.h"
 
 class DataBase;
+class QJsonObject;
 
 class DBTable : public QObject
 {
@@ -28,10 +29,13 @@ public:
     virtual const DBRecord checkRecord(const DBRecord&);
     static bool isEqual(const DBRecord&, const DBRecord&);
     int columnIndex(const QString&);
+    DBRecordList parse(const QString&);
 
     QString name;
 
 protected:
+    void parseColumn(DBRecord&, const QJsonObject&, const int);
+
     QList<DBTableColumn> columns;
 };
 

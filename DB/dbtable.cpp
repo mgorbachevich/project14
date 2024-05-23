@@ -1,4 +1,6 @@
 #include <QVariant>
+#include <QJsonObject>
+#include <QJsonArray>
 #include "dbtable.h"
 #include "tools.h"
 
@@ -93,4 +95,40 @@ QString DBTable::columnType(const int index) const
     return (index < columns.count() && index >= 0) ? columns[index].type : "";
 }
 
+void DBTable::parseColumn(DBRecord& r, const QJsonObject &jo, const int columnIndex)
+{
+    QString type = columnType(columnIndex);
+    QString value = jo[columnName(columnIndex)].toString("");
+    if (type.contains("INT"))       r[columnIndex] = Tools::stringToInt(value);
+    else if (type.contains("REAL")) r[columnIndex] = Tools::stringToDouble(value);
+    else                            r[columnIndex] = value;
+}
+
+DBRecordList DBTable::parse(const QString &json)
+{
+    DBRecordList records;
+    const QJsonObject jo = Tools::stringToJson(json);
+    QJsonValue data = jo["data"];
+    if (!data.isObject())
+    {
+        Tools::debugLog("@@@@@ DBTable::parse ERROR !data.isObject()");
+        return records;
+    }
+    QJsonValue jt = data.toObject()[name];
+    if(!jt.isArray()) return records;
+    Tools::debugLog("@@@@@ DBTable::parse " + name);
+    QJsonArray ja = jt.toArray();
+    for (int i = 0; i < ja.size(); i++)
+    {
+        QJsonValue jai = ja[i];
+        if (jai.isObject())
+        {
+            DBRecord r = createRecord();
+            for (int j = 0; j < columnCount(); j++) parseColumn(r, jai.toObject(), j);
+            records << r;
+        }
+    }
+    Tools::debugLog(QString("@@@@@ DBTable::parse Done %1").arg(records.count()));
+    return records;
+}
 

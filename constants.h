@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.41"
+#define APP_VERSION "2.42"
 
 // Debug log:
 #define DEBUG_LOG
@@ -194,6 +194,14 @@ enum NetAction
     NetAction_DeleteFinished,
     NetAction_Command,
     NetAction_CommandFinished,
+};
+
+enum NetCommand
+{
+    NetCommand_Message,
+    NetCommand_StartLoad,
+    NetCommand_StopLoad,
+    NetCommand_Progress
 };
 
 enum VirtualKeyboardSet

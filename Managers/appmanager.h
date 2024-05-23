@@ -36,6 +36,7 @@ class AppManager : public QObject
 public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
+    void onNetCommand(const NetCommand, const QString&);
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();

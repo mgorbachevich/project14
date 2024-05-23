@@ -858,6 +858,28 @@ void AppManager::showConfirmation(const ConfirmSelector selector, const QString 
     emit showConfirmationBox(selector, title, text);
 }
 
+void AppManager::onNetCommand(const NetCommand command, const QString& param)
+{
+    debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
+    switch (command)
+    {
+    case NetCommand_Message:
+        showAttention(param);
+        break;
+    case NetCommand_StartLoad:
+        if(!param.isEmpty()) showAttention(QString("StartLoad %1").arg(param));
+        break;
+    case NetCommand_StopLoad:
+        showAttention(QString("StopLoad %1").arg(param));
+        break;
+    case NetCommand_Progress:
+        showAttention(QString("Progress %1").arg(param));
+        break;
+    default:
+        break;
+    }
+}
+
 void AppManager::setProduct(const DBRecord& newProduct)
 {
     product = newProduct;

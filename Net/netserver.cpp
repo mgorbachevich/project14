@@ -2,7 +2,6 @@
 #include <QtConcurrent/QtConcurrent>
 #include "netserver.h"
 #include "requestparser.h"
-#include "database.h"
 #include "tools.h"
 #include "appmanager.h"
 #include "externalmessager.h"
@@ -10,6 +9,7 @@
 NetServer::NetServer(AppManager* parent) : ExternalMessager(parent)
 {
     Tools::debugLog("@@@@@ NetServer::NetServer");
+    parser = new RequestParser(parent);
 }
 
 void NetServer::stop()
@@ -36,8 +36,7 @@ void NetServer::start(const int port)
             return QtConcurrent::run([&request, this]
             {
                 emit action(NetAction_Delete);
-                QByteArray ba = request.query().toString().toUtf8();
-                QString response = RequestParser::parseDeleteRequest(appManager->db, ba);
+                QString response = parser->parseGetRequest(NetAction_Delete, request.query().toString().toUtf8());
                 Tools::debugLog("@@@@@ NetServer::start deleteData " + response);
                 emit action(NetAction_DeleteFinished);
                 return QHttpServerResponse(response);
@@ -48,8 +47,7 @@ void NetServer::start(const int port)
             return QtConcurrent::run([&request, this]
             {
                 emit action(NetAction_Upload);
-                QByteArray ba = request.query().toString().toUtf8();
-                QString response = RequestParser::parseGetRequest(appManager->db, ba);
+                QString response = parser->parseGetRequest(NetAction_Upload, request.query().toString().toUtf8());
                 Tools::debugLog("@@@@@ NetServer::start getData response " + response);
                 emit action(NetAction_UploadFinished);
                 return QHttpServerResponse(response);
@@ -60,8 +58,7 @@ void NetServer::start(const int port)
             return QtConcurrent::run([&request, this]
             {
                 emit action(NetAction_Download);
-                QByteArray ba = request.body();
-                QString response = RequestParser::parseSetRequest(appManager->db, ba);
+                QString response = parser->parseSetRequest(request.body());
                 Tools::debugLog("@@@@@ NetServer::start setData response " + response);
                 emit action(NetAction_DownloadFinished);
                 return QHttpServerResponse(response);
@@ -72,8 +69,7 @@ void NetServer::start(const int port)
             return QtConcurrent::run([&request, this]
             {
                 emit action(NetAction_Command);
-                QByteArray ba = request.body();
-                QString response = RequestParser::parseSetRequest(appManager->db, ba);
+                QString response = parser->parseSetRequest(request.body());
                 Tools::debugLog("@@@@@ NetServer::start action response " + response);
                 emit action(NetAction_CommandFinished);
                 return QHttpServerResponse(response);
