@@ -12,13 +12,11 @@
 #include "printstatus.h"
 
 class ProductPanelModel;
-class TablePanelModel;
 class ViewLogPanelModel;
 class ShowcasePanelModel2;
 class SearchFilterModel;
 class SearchPanelModel;
 class SettingsPanelModel;
-class SettingGroupsPanelModel;
 class UserNameModel;
 class SettingItemListModel;
 class QQmlContext;
@@ -42,6 +40,9 @@ public:
     Q_INVOKABLE void clearLog();
     Q_INVOKABLE void clickSound();
     Q_INVOKABLE void debugLog(const QString&);
+    Q_INVOKABLE bool isAdmin() { return users->isAdmin(users->getUser()); }
+    Q_INVOKABLE bool isAuthorizationOpened() { return mainPageIndex == MainPageIndex_Authorization; }
+    Q_INVOKABLE bool isSettingsOpened() { return isSettings; }
     Q_INVOKABLE void onAddUserClicked();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE void onBackgroundDownloadClicked();
@@ -50,6 +51,7 @@ public:
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
     Q_INVOKABLE void onEditUsersPanelClicked(const int);
     Q_INVOKABLE void onEditUsersPanelClose();
+    Q_INVOKABLE void onHierarchyUpClicked();
     Q_INVOKABLE void onInfoClicked();
     Q_INVOKABLE void onInputUserClosed(const QString&, const QString&, const QString&, const bool);
     Q_INVOKABLE void onLockClicked();
@@ -62,19 +64,20 @@ public:
     Q_INVOKABLE void onProductCodeEdited(const QString&);
     Q_INVOKABLE void onPrintClicked();
     Q_INVOKABLE void onProductDescriptionClicked();
+    Q_INVOKABLE void onProductFavoriteClicked();
     Q_INVOKABLE void onProductPanelCloseClicked();
     Q_INVOKABLE void onProductPanelPiecesClicked();
     Q_INVOKABLE void onRewind();
-    Q_INVOKABLE void onSearchFilterClicked(const int);
+    Q_INVOKABLE void onSearchClicked();
+    Q_INVOKABLE void onSearchFilterClicked(const int, const QString&);
     Q_INVOKABLE void onSearchFilterEdited(const QString&);
     Q_INVOKABLE void onSearchResultClicked(const int);
     Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
     Q_INVOKABLE void onSettingsItemClicked(const int);
     Q_INVOKABLE void onSettingsPanelCloseClicked();
     Q_INVOKABLE void onShowcaseClicked(const int);
+    Q_INVOKABLE void onShowcaseDirectionClicked();
     Q_INVOKABLE void onShowcaseSortClicked(const int);
-    Q_INVOKABLE void onTableBackClicked();
-    Q_INVOKABLE void onTableResultClicked(const int);
     Q_INVOKABLE void onTareClicked();
     Q_INVOKABLE void onUserAction();
     Q_INVOKABLE void onViewLogClicked();
@@ -93,11 +96,8 @@ public:
 private:
     void createDefaultData();
     void createDefaultImages();
-    void filteredSearch();
     void inputDateTime();
-    bool isAuthorizationOpened() { return mainPageIndex == MainPageIndex_Authorization; }
     bool isProduct() { return !product.isEmpty(); }
-    bool isSettingsOpened() { return isSettings; }
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
     void refreshAll();
@@ -106,7 +106,6 @@ private:
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
-    void setShowcaseSort(const int);
     void showAuthorizationUsers();
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void startAuthorization();
@@ -115,9 +114,10 @@ private:
     void stopAuthorization(const QString&, const QString&);
     void stopEquipment();
     void stopSettings();
+    void updateSearch(const QString&, const bool hierarchyRoot = false);
+    void updateShowcase();
     void updateSystemStatus();
     void updateSettings(const int);
-    void updateTablePanel(const bool);
     void updateWeightStatus();
 
     AppInfo appInfo;
@@ -141,17 +141,14 @@ private:
     QQmlContext* context = nullptr;
     int mainPageIndex = MainPageIndex_Authorization; // Авторизация
     int secret = 0;
-    int showcaseSort = Sort_Name;
     bool isSettings = false;
     int popups = 0;
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
     ShowcasePanelModel2* showcasePanelModel = nullptr;
-    TablePanelModel* tablePanelModel = nullptr;
     SearchPanelModel* searchPanelModel = nullptr;
     SettingsPanelModel* settingsPanelModel = nullptr;
-    SettingGroupsPanelModel* settingGroupsPanelModel = nullptr;
     SearchFilterModel* searchFilterModel = nullptr;
     UserNameModel* userNameModel = nullptr;
     ViewLogPanelModel* viewLogPanelModel = nullptr;
@@ -167,6 +164,7 @@ signals:
     void hideToast();
     void previousSettings();
     void resetCurrentProduct();
+    void setCurrentProductFavorite(const bool);
     void showCurrentUser(const int, const QString&);
     void showDateTime(const QString&);
     void showAdminMenu(bool);
@@ -175,7 +173,7 @@ signals:
     void showDownloadProgress(const int);
     void showEditUsersPanel();
     void showEnvironmentStatus(const bool, const bool, const bool, const bool);
-    void showGroupHierarchyRoot(const bool);
+    void showHierarchyRoot(const bool);
     void showInputUserPanel(const QString&, const QString&, const QString&, const bool);
     void showMainPage(const int);
     void showMessageBox(const QString&, const QString&, const bool);
@@ -184,12 +182,13 @@ signals:
     void showProductCodeInputBox(const QString&);
     void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);
+    void showSearchHierarchy(const bool);
+    void showSearchTitle(const QString&);
     void showSettingInputBox(const int, const QString&, const QString&);
     void showSettingComboBox(const int, const QString&, const int, const QString&, const QString&);
     void showSettingSlider(const int, const QString&, const int, const int, const int, const int);
     void showSettingsPanel(const QString&);
-    void showShowcaseSort(const int);
-    void showTablePanelTitle(const QString&);
+    void showShowcaseSort(const int, const bool);
     void showViewLogPanel();
     void showVirtualKeyboard(const int);
     void showWeightParam(const int, const QString&);

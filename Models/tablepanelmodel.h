@@ -11,6 +11,7 @@ class TablePanelModel : public BaseListModel
 public:
     explicit TablePanelModel(AppManager *parent): BaseListModel(parent) {}
     void update(const DBRecordList&);
+
     void root();
     bool groupUp();
     bool groupDown(DBRecord&);

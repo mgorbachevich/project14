@@ -9,17 +9,18 @@ Rectangle
 {
     id: searchPanel
     color: Material.color(Material.Grey, Material.Shade100)
-    property int filterWidth: width * 0.25
+    property int filterWidth: width * 0.2
     property int virtualKeyboardSet: 2
+    property bool hierarchy: true
 
     Connections // Slot for signal AppManager::showMainPage:
     {
         target: app
         function onShowMainPage(index)
         {
-            if (index === 2)
+            if (index === 1)
             {
-                app.debugLog("@@@@@ searchPanel onShowMainPage");
+                //app.debugLog("@@@@@ searchPanel onShowMainPage");
                 searchPanelTextField.forceActiveFocus()
             }
         }
@@ -30,8 +31,48 @@ Rectangle
         target: app
         function onShowVirtualKeyboard(value)
         {
-            app.debugLog("@@@@@ searchPanel onShowVirtualKeyboard %1".arg(value))
-            virtualKeyboardSet = value
+            //app.debugLog("@@@@@ searchPanel onShowVirtualKeyboard %1".arg(value))
+            if(value >= 0 && value <= 2) virtualKeyboardSet = value
+            else searchPanelKeyboard.visible = false;
+        }
+    }
+
+    Connections // Slot for signal AppManager::showHierarchyRoot:
+    {
+        target: app
+        function onShowHierarchyRoot(value)
+        {
+            searchPanelUpButton.icon.source = value ? "../Icons/empty" : "../Icons/arrow_up"
+        }
+    }
+
+    Connections // Slot for signal AppManager::showSearchTitle:
+    {
+        target: app
+        function onShowSearchTitle(value) { searchPanelTitle.text = value }
+    }
+
+    Connections // Slot for signal AppManager::showSearchHierarchy:
+    {
+        target: app
+        function onShowSearchHierarchy(value)
+        {
+            app.debugLog("@@@@@ searchPanel.onShowSearchHierarchy")
+            hierarchy = value
+            if(hierarchy)
+            {
+                searchPanelHomeButton.marked = true;
+                searchPanelKeyboardButton.visible = false
+                searchPanelUpButton.visible = true
+                searchPanelKeyboard.visible = false
+                searchPanelTextField.text = ""
+            }
+            else
+            {
+                searchPanelHomeButton.marked = false;
+                searchPanelKeyboardButton.visible = true
+                searchPanelUpButton.visible = false
+            }
         }
     }
 
@@ -40,14 +81,13 @@ Rectangle
         target: keyEmitter
         function onEnterChar(value)
         {
-            app.debugLog("@@@@@ searchPanel onEnterChar %1".arg(value))
             searchPanelTextField.text += value
+            app.onSearchFilterEdited(searchPanelTextField.text);
         }
     }
 
     GridLayout
     {
-        id: searchPanelLayout
         anchors.fill: parent
         columnSpacing: 0
         rowSpacing: 0
@@ -60,14 +100,13 @@ Rectangle
 
         RoundIconButton
         {
+            id: searchPanelHomeButton
             Layout.column: 1
             Layout.row: 0
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-            icon.source: "../Icons/menu"
-            onClicked:
-            {
-                app.onUserAction();
-            }
+            icon.source: "../Icons/home"
+            marked: true
+            onClicked: app.onSearchClicked()
         }
 
         Spacer
@@ -78,15 +117,23 @@ Rectangle
 
         RoundIconButton
         {
+            id: searchPanelKeyboardButton
             Layout.column: 3
             Layout.row: 0
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
             icon.source: "../Icons/keyboard"
-            onClicked:
-            {
-                app.onUserAction();
-                searchPanelKeyboard.visible = !searchPanelKeyboard.visible
-            }
+            marked: searchPanelKeyboard.visible
+            onClicked: searchPanelKeyboard.visible = !searchPanelKeyboard.visible
+        }
+
+        RoundIconButton
+        {
+            id: searchPanelUpButton
+            Layout.column: 3
+            Layout.row: 0
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            icon.source: "../Icons/arrow_up"
+            onClicked: app.onHierarchyUpClicked()
         }
 
         Rectangle
@@ -97,7 +144,11 @@ Rectangle
             Layout.preferredHeight: screenManager.buttonSize() + screenManager.spacer() * 2
             color: Material.color(Material.Grey, Material.Shade100)
 
-            CardTitleText { text: qsTr("Поиск товаров") }
+            CardTitleText
+            {
+                id: searchPanelTitle
+                text: qsTr("")
+            }
         }
 
         Spacer
@@ -118,16 +169,11 @@ Rectangle
             font { pointSize: screenManager.largeFontSize() }
             placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
-            onTextEdited: app.onUserAction();
-            onTextChanged:
-            {
-                app.debugLog("@@@@@ searchPanelTextField onTextChanged %1".arg(text))
-                app.onSearchFilterEdited(text);
-            }
             focus: true
+            onTextEdited: app.onUserAction();
             Keys.onPressed: (event) =>
             {
-                app.debugLog("@@@@@ searchPanelTextField Keys.onPressed %1".arg(JSON.stringify(event)))
+                app.debugLog("@@@@@ searchPanel.searchPanelTextField.Keys.onPressed")
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
@@ -136,12 +182,15 @@ Rectangle
                     case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:
                     case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
                         text += event.text
+                        app.onSearchFilterEdited(text);
                         break;
                     case Qt.Key_Backspace: case Qt.Key_Delete: case Qt.Key_C:
                         text = text.substring(0, text.length - 1);
+                        app.onSearchFilterEdited(text);
                         break;
                     case Qt.Key_Escape:
                         text = ""
+                        app.onSearchFilterEdited(text);
                         break;
                     case Qt.Key_Left:
                         app.onMainPageSwiped(1)
@@ -149,12 +198,14 @@ Rectangle
                     case Qt.Key_F9: // Ключ
                         app.onLockClicked()
                         break;
+                    /*
                     case Qt.Key_T: // >T<
                         app.onTareClicked()
                         break
                     case Qt.Key_Z: // >0<
                         app.onZeroClicked()
                         break
+                    */
                     case Qt.Key_Up:
                         if (!searchPanelResultList.atYBeginning) searchPanelResultList.flick(0, screenManager.flickVelocity())
                         else app.beepSound()
@@ -260,10 +311,10 @@ Rectangle
                     font
                     {
                         pointSize: screenManager.normalFontSize();
-                        styleName: searchPanelFilterList.currentIndex === index ? 'Bold' : 'Regular'
+                        styleName: (!hierarchy && searchPanelFilterList.currentIndex === index) ? 'Bold' : 'Regular'
                     }
+                    color: (!hierarchy && searchPanelFilterList.currentIndex === index) ? "black" : Material.color(Material.BlueGrey, Material.Shade600)
                     text: model.value // Roles::ValueRole
-                    color: searchPanelFilterList.currentIndex === index ? "black" : Material.color(Material.BlueGrey, Material.Shade600)
                     MouseArea
                     {
                         anchors.fill: parent
@@ -279,7 +330,7 @@ Rectangle
                                 virtualKeyboardSet = 2
                             }
                             searchPanelFilterList.currentIndex = index
-                            app.onSearchFilterClicked(index)
+                            app.onSearchFilterClicked(index, searchPanelTextField.text)
                         }
                     }
                 }

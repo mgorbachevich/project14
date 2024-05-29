@@ -18,7 +18,7 @@ Rectangle
         target: app
         function onShowEnvironmentStatus(value1, value2, value3, value4)
         {
-            app.debugLog("@@@@@ authorizationPanel.onShowEnvironmentStatus");
+            //app.debugLog("@@@@@ authorizationPanel.onShowEnvironmentStatus");
             if(value1) usbIcon.source = "../Icons/usb";
             else       usbIcon.source = "../Icons/usb_white"
             if(value2) bluetoothIcon.source = "../Icons/bluetooth";
@@ -35,7 +35,7 @@ Rectangle
         target: app
         function onShowDateTime(value)
         {
-            app.debugLog("@@@@@ authorizationPanel.onShowDateTime")
+            //app.debugLog("@@@@@ authorizationPanel.onShowDateTime")
             dateTimeText.text = value
         }
     }
@@ -45,7 +45,7 @@ Rectangle
         target: app
         function onShowCurrentUser(index, name)
         {
-            app.debugLog("@@@@@ authorizationPanel.onShowCurrentUser")
+            //app.debugLog("@@@@@ authorizationPanel.onShowCurrentUser")
             loginComboBox.currentIndex = index
             loginComboBox.displayText = name
         }
@@ -58,7 +58,7 @@ Rectangle
         {
             if (index === -1)
             {
-                app.debugLog("@@@@@ authorizationPanel onShowMainPage");
+                //app.debugLog("@@@@@ authorizationPanel onShowMainPage");
                 passwordTextField.text = ""
                 passwordTextField.forceActiveFocus()
             }
@@ -86,7 +86,7 @@ Rectangle
                 anchors.fill: parent
                 onClicked:
                 {
-                    app.debugLog("@@@@@ searchPanelTextField on clicked image")
+                    //app.debugLog("@@@@@ searchPanelTextField on clicked image")
                     app.onInfoClicked()
                 }
             }
@@ -196,7 +196,7 @@ Rectangle
                         anchors.fill: parent
                         onClicked:
                         {
-                            app.debugLog("@@@@@ authorizationPanel.loginComboBox.onClicked %1".arg(index))
+                            //app.debugLog("@@@@@ authorizationPanel.loginComboBox.onClicked %1".arg(index))
                             app.onUserAction();
                             loginComboBox.currentIndex = index
                             loginComboBox.displayText = text
@@ -224,7 +224,7 @@ Rectangle
 
                     Keys.onPressed: (event) =>
                     {
-                        app.debugLog("@@@@@ authorizationPanel.passwordTextField Keys.onPressed %1".arg(JSON.stringify(event)))
+                        //app.debugLog("@@@@@ authorizationPanel.passwordTextField Keys.onPressed %1".arg(JSON.stringify(event)))
                         app.clickSound();
                         app.onUserAction();
                         event.accepted = true;

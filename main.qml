@@ -16,7 +16,7 @@ ApplicationWindow
     color: Material.background
     width: screenManager.screenWidth()
     height: screenManager.screenHeight()
-    property int adminMenuWidth: 0
+    //property int adminMenuWidth: 0
     property int popupWidth: screenManager.popupWidth()
     property int popupHeight: screenManager.popupHeight()
     property int popupX: (width - popupWidth) / 2
@@ -27,7 +27,7 @@ ApplicationWindow
         target: app
         function onStart()
         {
-            app.debugLog("@@@@@ mainWindow.onStart %1 %2".arg(screenManager.screenWidth()).arg(screenManager.screenHeight()));
+            //app.debugLog("@@@@@ mainWindow.onStart %1 %2".arg(screenManager.screenWidth()).arg(screenManager.screenHeight()));
             if (Qt.platform.os === "android") mainWindow.visibility = Window.FullScreen
         }
     }
@@ -37,7 +37,7 @@ ApplicationWindow
         target: app
         function onShowMainPage(value)
         {
-            app.debugLog("@@@@@ mainWindow.onShowMainPage %1".arg(value));
+            //app.debugLog("@@@@@ mainWindow.onShowMainPage %1".arg(value));
             switch(value)
             {
             case -1: // Authorization
@@ -46,13 +46,12 @@ ApplicationWindow
                 mainWeightPanel.visible = false
                 break
             case 0: // Showcase
-            case 1: // Table
                 authorizationPanel.visible = false
                 mainWindowLayout.visible = true
                 mainWeightPanel.visible = true
                 mainSwipeView.setCurrentIndex(value)
                 break
-            case 2: // Search
+            case 1: // Search
                 authorizationPanel.visible = false
                 mainWindowLayout.visible = true
                 mainWeightPanel.visible = false
@@ -67,9 +66,9 @@ ApplicationWindow
         target: app
         function onShowAdminMenu(show)
         {
-            app.debugLog("@@@@@ mainWindow.onShowAdminMenu");
-            adminMenuWidth = show ? screenManager.buttonSize() + screenManager.spacer() * 2 : 0
-            adminMenuPanel.visible = show
+            //app.debugLog("@@@@@ mainWindow.onShowAdminMenu");
+            //adminMenuWidth = show ? screenManager.buttonSize() + screenManager.spacer() * 2 : 0
+            //adminMenuPanel.visible = show
         }
     }
 
@@ -78,7 +77,7 @@ ApplicationWindow
         target: app
         function onShowDownloadPanel()
         {
-            app.debugLog("@@@@@ mainWindow.onShowDownloadPanel");
+            //app.debugLog("@@@@@ mainWindow.onShowDownloadPanel");
             Qt.createComponent("Panels/downloadPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight
@@ -91,7 +90,7 @@ ApplicationWindow
         target: app
         function onShowSettingInputBox(code, name, value)
         {
-            app.debugLog("@@@@@ mainWindow.onShowSettingInputBox %1 %2 %3".arg(code).arg(name).arg(value));
+            //app.debugLog("@@@@@ mainWindow.onShowSettingInputBox %1 %2 %3".arg(code).arg(name).arg(value));
             Qt.createComponent("Panels/inputSettingPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height,
@@ -105,7 +104,7 @@ ApplicationWindow
         target: app
         function onShowPasswordInputBox(code)
         {
-            app.debugLog("@@@@@ mainWindow.onShowPasswordInputBox %1".arg(code));
+            //app.debugLog("@@@@@ mainWindow.onShowPasswordInputBox %1".arg(code));
             Qt.createComponent("Panels/inputPasswordPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, code: code
@@ -118,7 +117,7 @@ ApplicationWindow
         target: app
         function onShowSettingComboBox(code, name, index, value, comment)
         {
-            app.debugLog("@@@@@ mainWindow.onShowSettingComboBox %1 %2 %3 %4 %5".arg(code).arg(name).arg(index).arg(value).arg(comment));
+            //app.debugLog("@@@@@ mainWindow.onShowSettingComboBox %1 %2 %3 %4 %5".arg(code).arg(name).arg(index).arg(value).arg(comment));
             Qt.createComponent("Panels/comboSettingPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight,
@@ -133,7 +132,7 @@ ApplicationWindow
         target: app
         function onShowSettingSlider(code, name, from, to, step, value)
         {
-            app.debugLog("@@@@@ mainWindow.onShowSettingSlider %1 %2".arg(code).arg(name));
+            //app.debugLog("@@@@@ mainWindow.onShowSettingSlider %1 %2".arg(code).arg(name));
             Qt.createComponent("Panels/sliderSettingPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight,
@@ -148,7 +147,7 @@ ApplicationWindow
         target: app
         function onShowProductCodeInputBox(value)
         {
-            app.debugLog("@@@@@ mainWindow.onShowProductCodeInputBox %1".arg(value));
+            //app.debugLog("@@@@@ mainWindow.onShowProductCodeInputBox %1".arg(value));
             Qt.createComponent("Panels/inputProductCodePanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: screenManager.spacer() * 2,
@@ -163,7 +162,7 @@ ApplicationWindow
         target: app
         function onShowPiecesInputBox(number, maxDigits)
         {
-            app.debugLog("@@@@@ mainWindow.onShowPiecesInputBox");
+            //app.debugLog("@@@@@ mainWindow.onShowPiecesInputBox");
             Qt.createComponent("Panels/inputPiecesPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, inputText: number, maxChars: maxDigits
@@ -176,7 +175,7 @@ ApplicationWindow
         target: app
         function onShowViewLogPanel()
         {
-            app.debugLog("@@@@@ mainWindow.onShowViewLogPanel");
+            //app.debugLog("@@@@@ mainWindow.onShowViewLogPanel");
             Qt.createComponent("Panels/viewLogPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height
@@ -217,7 +216,7 @@ ApplicationWindow
         target: app
         function onShowSettingsPanel(title)
         {
-            app.debugLog("@@@@@ mainWindow.onShowSettingsPanel %1".arg(title));
+            //app.debugLog("@@@@@ mainWindow.onShowSettingsPanel %1".arg(title));
             Qt.createComponent("Panels/settingsPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height, panelTitle: title
@@ -230,7 +229,7 @@ ApplicationWindow
         target: app
         function onShowProductPanel(name, isPieceProduct)
         {
-            app.debugLog("@@@@@ mainWindow.onShowProductPanel");
+            //app.debugLog("@@@@@ mainWindow.onShowProductPanel");
             mainWeightPanel.visible = true
             Qt.createComponent("Panels/productPanel.qml").createObject(mainWindow,
             {
@@ -246,7 +245,7 @@ ApplicationWindow
         target: app
         function onShowEditUsersPanel()
         {
-            app.debugLog("@@@@@ mainWindow.onShowEditUsersPanel");
+            //app.debugLog("@@@@@ mainWindow.onShowEditUsersPanel");
             Qt.createComponent("Panels/editUsersPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height
@@ -259,7 +258,7 @@ ApplicationWindow
         target: app
         function onShowInputUserPanel(code, name, password, admin)
         {
-            app.debugLog("@@@@@ mainWindow.onShowInputUserPanel");
+            //app.debugLog("@@@@@ mainWindow.onShowInputUserPanel");
             Qt.createComponent("Panels/inputUserPanel.qml").createObject(mainWindow,
             {
                 x: 0, y: 0, width: mainWindow.width, height: mainWindow.height,
@@ -297,7 +296,7 @@ ApplicationWindow
             height: mainWeightPanel.visible ? parent.height - mainWeightPanel.height : parent.height
             spacing: 0
             padding: 0
-
+/*
             Rectangle
             {
                 id: adminMenuPanel
@@ -311,10 +310,11 @@ ApplicationWindow
                     source: "Panels/adminMenuPanel.qml"
                 }
             }
-
+*/
             Rectangle
             {
-                width: parent.width - adminMenuWidth
+                //width: parent.width - adminMenuWidth
+                width: parent.width
                 height: parent.height
                 color: Material.color(Material.Grey, Material.Shade100)
 
@@ -336,12 +336,6 @@ ApplicationWindow
                         {
                             focus: true
                             source: "Panels/showcasePanel.qml"
-                        }
-
-                        Loader
-                        {
-                            focus: true
-                            source: "Panels/tablePanel.qml"
                         }
 
                         Loader

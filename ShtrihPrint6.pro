@@ -114,7 +114,6 @@ HEADERS += \
     Models/productpanelmodel.h \
     Models/searchpanelmodel.h \
     Models/showcasepanelmodel2.h \
-    Models/tablepanelmodel.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
     Models/usernamemodel.h \
@@ -131,6 +130,7 @@ SOURCES += \
     DB/logdbtable.cpp \
     DB/productdbtable.cpp \
     DB/scaleconfig.cpp \
+    DB/showcasedbtable.cpp \
     DB/transactiondbtable.cpp \
     DB/settings.cpp \
     DB/users.cpp \
@@ -216,7 +216,6 @@ SOURCES += \
     Models/productpanelmodel.cpp \
     Models/searchpanelmodel.cpp \
     Models/showcasepanelmodel2.cpp \
-    Models/tablepanelmodel.cpp \
     Net/netserver.cpp \
     Net/requestparser.cpp \
     main.cpp \
@@ -256,6 +255,7 @@ RESOURCES += \
     Fonts/sserifer.fon \
     Fonts/times.ttf \
     Icons/a.png \
+    Icons/arrow_down.png \
     Icons/arrow_left.png \
     Icons/arrow_up.png \
     Icons/auto_white.png \
@@ -264,18 +264,20 @@ RESOURCES += \
     Icons/bluetooth_orange.png \
     Icons/bluetooth_white.png \
     Icons/close.png \
+    Icons/code.png \
     Icons/delete.png \
     Icons/empty.png \
     Icons/error.png \
     Icons/error_red.png \
     Icons/fix_white.png \
     Icons/folder.png \
+    Icons/home.png \
     Icons/info_outline.png \
     Icons/keyboard.png \
     Icons/lock.png \
     Icons/log.png \
     Icons/menu.png \
-    Icons/n.png \
+    Icons/number.png \
     Icons/net.png \
     Icons/net_orange.png \
     Icons/net_white.png \
@@ -296,7 +298,7 @@ RESOURCES += \
     Icons/wifi_orange.png \
     Icons/wifi_white.png \
     Icons/zero_white.png \
-    Images/image_dummy.png \
+    Images/dummy.png \
     Images/logo.png \
     Labels/60x30.dat/0.bmp \
     Labels/60x30.dat/60x30.par \
@@ -349,7 +351,6 @@ RESOURCES += \
     Panels/sliderSettingPanel.qml \
     Panels/Spacer.qml \
     Panels/SubtitleText.qml \
-    Panels/tablePanel.qml \
     Panels/viewLogPanel.qml \
     Panels/VirtualKeyboardNumeric.qml \
     Panels/VirtualKeyboardCyrillic.qml \

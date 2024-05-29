@@ -23,7 +23,7 @@ Rectangle
         {
             if (index === 0)
             {
-                app.debugLog("@@@@@ showcasePanel onShowMainPage");
+                //app.debugLog("@@@@@ showcasePanel onShowMainPage");
                 showcasePanel.forceActiveFocus()
             }
         }
@@ -32,26 +32,21 @@ Rectangle
     Connections // Slot for signal AppManager::showShowcaseSort
     {
         target: app
-        function onShowShowcaseSort(value)
+        function onShowShowcaseSort(sort, increase)
         {
-            app.debugLog("@@@@@ showcasePanel onSetShowcaseSort");
-            switch (value)
-            {
-                case 0:
-                    showcasePanelCodeButton.Material.foreground = Material.Orange
-                    showcasePanelNameButton.Material.foreground = Material.color(Material.BlueGrey, Material.Shade900)
-                    break;
-                case 1:
-                    showcasePanelCodeButton.Material.foreground = Material.color(Material.BlueGrey, Material.Shade900)
-                    showcasePanelNameButton.Material.foreground = Material.Orange
-                    break;
-            }
+            //app.debugLog("@@@@@ showcasePanel onShowShowcaseSort");
+            showcasePanelCodeButton.  marked = sort === 0;
+            showcasePanelNumberButton.marked = sort === 1;
+            showcasePanelNameButton.  marked = sort === 2;
+            if(increase) showcasePanelDirectionButton.icon.source = "../Icons/arrow_up"
+            else         showcasePanelDirectionButton.icon.source = "../Icons/arrow_down"
+            showcasePanelDirectionButton.marked = !increase
         }
     }
 
     Keys.onPressed: (event) =>
     {
-        app.debugLog("@@@@@ showcasePanel Keys.onPressed %1".arg(JSON.stringify(event)))
+        //app.debugLog("@@@@@ showcasePanel Keys.onPressed %1".arg(JSON.stringify(event)))
         event.accepted = true;
         app.clickSound();
         app.onUserAction();
@@ -110,8 +105,18 @@ Rectangle
             {
                 id: showcasePanelCodeButton
                 anchors.horizontalCenter: parent.horizontalCenter
-                icon.source: "../Icons/n"
+                icon.source: "../Icons/code"
                 onClicked: app.onShowcaseSortClicked(0)
+            }
+
+            Spacer {}
+
+            RoundIconButton
+            {
+                id: showcasePanelNumberButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                icon.source: "../Icons/number"
+                onClicked: app.onShowcaseSortClicked(1)
             }
 
             Spacer {}
@@ -121,7 +126,17 @@ Rectangle
                 id: showcasePanelNameButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: "../Icons/a"
-                onClicked: app.onShowcaseSortClicked(1)
+                onClicked: app.onShowcaseSortClicked(2)
+            }
+
+            Spacer {}
+
+            RoundIconButton
+            {
+                id: showcasePanelDirectionButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                icon.source: "../Icons/arrow_up"
+                onClicked: app.onShowcaseDirectionClicked()
             }
         }
 
@@ -151,7 +166,7 @@ Rectangle
                 width: imageSize
                 height: imageSize
                 horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+                verticalAlignment: Text.AlignBottom
                 wrapMode: Text.WordWrap
                 text: model.first
                 background: Image

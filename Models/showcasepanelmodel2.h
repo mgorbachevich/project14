@@ -14,6 +14,9 @@ public:
     void updateImages(const QStringList&);
     DBRecord& productByIndex(const int);
 
+    int sort = Sort_Name;
+    bool increase = true;
+
 private:
     DBRecordList products;
 };

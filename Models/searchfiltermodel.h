@@ -8,19 +8,7 @@ class SearchFilterModel : public BaseListModel
     Q_OBJECT
 
 public:
-    enum FilterIndex
-    {
-        Code = 0,
-        Number = 1,
-        Barcode = 2,
-        Name = 3
-    };
-
-    explicit SearchFilterModel(AppManager *parent): BaseListModel(parent) {}
-    void update();
-
-    FilterIndex index = FilterIndex::Code;
-    QString filterValue = "";
+    explicit SearchFilterModel(AppManager *);
 };
 
 #endif // SEARCHFILTERMODEL_H

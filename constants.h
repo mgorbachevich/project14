@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.43"
+#define APP_VERSION "2.45"
 
 // Debug log:
 #define DEBUG_LOG
@@ -28,7 +28,7 @@
 #define DB_TEMP_NAME "Temp.db"
 #define DB_PRODUCT_NAME "ShtrihScale.db"
 #define DOWNLOAD_SUBDIR "Downloads"
-#define DUMMY_IMAGE_FILE "../Images/image_dummy.png"
+#define DUMMY_IMAGE_FILE "../Images/dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define DEFAULT_EQUIPMENT_DEMO_CONFIG_FILE ":/Text/json_demo_equipment_config.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
@@ -89,8 +89,7 @@ enum MainPageIndex
 {
     MainPageIndex_Authorization = -1,
     MainPageIndex_Showcase = 0,
-    MainPageIndex_Table = 1,
-    MainPageIndex_Search = 2
+    MainPageIndex_Search = 1
 };
 
 enum ConfirmSelector
@@ -216,7 +215,17 @@ enum VirtualKeyboardSet
 enum Sort
 {
     Sort_Code = 0,
-    Sort_Name = 1,
+    Sort_Number = 1,
+    Sort_Name = 2,
+};
+
+enum SearchFilterIndex
+{
+    SearchFilterIndex_Code = 0,
+    SearchFilterIndex_Number = 1,
+    SearchFilterIndex_Barcode = 2,
+    SearchFilterIndex_Name = 3,
+    //SearchFilterIndex_Hierarchy = -1,
 };
 
 enum EnvironmentType

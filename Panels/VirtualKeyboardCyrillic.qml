@@ -17,6 +17,29 @@ Rectangle
 
         Column
         {
+            visible: app.isAdmin() && !app.isAuthorizationOpened() && !app.isSettingsOpened()
+            KeyboardIconButton
+            {
+                icon.source: "../Icons/settings";
+                marked: true
+                onClicked: app.onAdminSettingsClicked()
+            }
+            KeyboardIconButton
+            {
+                icon.source: "../Icons/lock"
+                marked: true
+                onClicked: app.onLockClicked()
+            }
+            KeyboardIconButton
+            {
+                icon.source: "../Icons/log"
+                marked: true
+                onClicked: app.onViewLogClicked()
+            }
+        }
+
+        Column
+        {
             width: screenManager.buttonSize() * 11
 
             Row
@@ -82,21 +105,21 @@ Rectangle
             KeyboardButton
             {
                 text: qsTr("1.,")
-                width: screenManager.buttonSize() * 3 / 2
+                width: screenManager.buttonSize() * 4 / 3
                 font { pointSize: screenManager.normalFontSize() }
                 onClicked: app.onVirtualKeyboardSet(2)
             }
             KeyboardButton
             {
                 text: qsTr("LAT")
-                width: screenManager.buttonSize() * 3 / 2
+                width: screenManager.buttonSize() * 4 / 3
                 font { pointSize: screenManager.normalFontSize() }
                 onClicked: app.onVirtualKeyboardSet(0)
             }
             KeyboardCharButton
             {
                 text: qsTr(" ");
-                width: screenManager.buttonSize() * 3 / 2
+                width: screenManager.buttonSize() * 4 / 3
             }
         }
     }

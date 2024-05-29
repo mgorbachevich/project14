@@ -11,7 +11,6 @@
 #include "productdbtable.h"
 #include "transactiondbtable.h"
 #include "productpanelmodel.h"
-#include "tablepanelmodel.h"
 #include "usernamemodel.h"
 #include "showcasepanelmodel2.h"
 #include "searchpanelmodel.h"
@@ -67,7 +66,6 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel2(this);
-    tablePanelModel = new TablePanelModel(this);
     settingsPanelModel = new SettingsPanelModel(this);
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
@@ -79,7 +77,6 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
-    context->setContextProperty("tablePanelModel", tablePanelModel);
     context->setContextProperty("settingsPanelModel", settingsPanelModel);
     context->setContextProperty("searchPanelModel", searchPanelModel);
     context->setContextProperty("searchFilterModel", searchFilterModel);
@@ -242,6 +239,17 @@ void AppManager::onProductDescriptionClicked()
     db->select(DBSelector_GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
 }
 
+void AppManager::onProductFavoriteClicked()
+{
+    debugLog("@@@@@ AppManager::onProductFavoriteClicked");
+    onUserAction();
+    if(db->isInShowcase(product)) db->removeFromShowcase(product);
+    else db->addToShowcase(product);
+    const bool v = db->isInShowcase(product);
+    emit setCurrentProductFavorite(v);
+    updateShowcase();
+}
+
 void AppManager::onProductPanelCloseClicked()
 {
     onUserAction();
@@ -267,61 +275,6 @@ void AppManager::onRewind() // Перемотка
     debugLog("@@@@@ AppManager::onRewind ");
     if(isAuthorizationOpened() || isSettingsOpened()) beepSound();
     else equipmentManager->feed();
-}
-
-void AppManager::filteredSearch()
-{
-    // Формирование запросов в БД в зависимости от параметров поиска
-
-    QString& v = searchFilterModel->filterValue;
-    debugLog(QString("@@@@@ AppManager::filteredSearch %1 %2").arg(QString::number(searchFilterModel->index), v));
-    switch(searchFilterModel->index)
-    {
-    case SearchFilterModel::Code:
-        db->select(DBSelector_GetProductsByFilteredCode, v);
-        break;
-    case SearchFilterModel::Number:
-        db->select(DBSelector_GetProductsByFilteredNumber, v);
-        break;
-    case SearchFilterModel::Barcode:
-        db->select(DBSelector_GetProductsByFilteredBarcode, v);
-        break;
-    case SearchFilterModel::Name:
-        db->select(DBSelector_GetProductsByFilteredName, v);
-        break;
-    default:
-        debugLog("@@@@@ AppManager::filteredSearch ERROR");
-        //emit saveLog(LogType_Warning, LogSource_AppManager, "Неизвестный фильтр поиска");
-        break;
-    }
-}
-
-void AppManager::onSearchFilterEdited(const QString& value)
-{
-    // Изменился шаблон поиска
-
-    debugLog("@@@@@ AppManager::onSearchFilterEdited " + value);
-    searchFilterModel->filterValue = value;
-    filteredSearch();
-}
-
-void AppManager::onSearchFilterClicked(const int index)
-{
-    // Изменилось поле поиска (код, штрих-код...)
-
-    debugLog("@@@@@ AppManager::onSearchFilterClicked " + Tools::intToString(index));
-    onUserAction();
-    searchFilterModel->index = (SearchFilterModel::FilterIndex)index;
-    filteredSearch();
-}
-
-void AppManager::onTableBackClicked()
-{
-    // Переход вверх по иерархическому дереву групп товаров
-
-    debugLog("@@@@@ AppManager::onTableBackClicked");
-    onUserAction();
-    if (tablePanelModel->groupUp()) updateTablePanel(false);
 }
 
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
@@ -411,11 +364,6 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
 
     switch(selector)
     {
-    case DBSelector_GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
-        showcasePanelModel->updateProducts(records);
-        db->select(DBSelector_GetShowcaseResources, records);
-        break;
-
     case DBSelector_GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
         if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
             showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
@@ -426,12 +374,13 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
         break;
 
     case DBSelector_GetProductsByGroupCodeIncludeGroups: // Отображение товаров выбранной группы:
-        tablePanelModel->update(records);
+        emit showHierarchyRoot(searchPanelModel->isHierarchyRoot());
+        emit showSearchTitle(searchPanelModel->hierarchyTitle());
+        searchPanelModel->update(records, -1);
         break;
 
     case DBSelector_SetProductByInputCode: // Отображение товара с заданным кодом:
-        if(records.isEmpty())
-            showAttention("Товар не найден!");
+        if(records.isEmpty()) showAttention("Товар не найден!");
         else
         {
             emit closeInputProductPanel();
@@ -448,19 +397,23 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
         break;
 
     case DBSelector_GetProductsByFilteredCode: // Отображение товаров с заданным фрагментом кода:
-        searchPanelModel->update(records, SearchFilterModel::Code);
+        emit showSearchTitle("Поиск товаров по коду");
+        searchPanelModel->update(records, SearchFilterIndex_Code);
         break;
 
     case DBSelector_GetProductsByFilteredNumber: // Отображение товаров с заданным фрагментом номерв:
-        searchPanelModel->update(records, SearchFilterModel::Number);
+        emit showSearchTitle("Поиск товаров по номеру");
+        searchPanelModel->update(records, SearchFilterIndex_Number);
         break;
 
     case DBSelector_GetProductsByFilteredBarcode: // Отображение товаров с заданным фрагментом штрих-кода:
-        searchPanelModel->update(records, SearchFilterModel::Barcode);
+        emit showSearchTitle("Поиск товаров по штрих-коду");
+        searchPanelModel->update(records, SearchFilterIndex_Barcode);
         break;
 
     case DBSelector_GetProductsByFilteredName: // Отображение товаров с заданным фрагментом наименования:
-        searchPanelModel->update(records, SearchFilterModel::Name);
+        emit showSearchTitle("Поиск товаров по наименованию");
+        searchPanelModel->update(records, SearchFilterIndex_Name);
         break;
 
    case DBSelector_RefreshCurrentProduct: // Сброс выбранного товара после изменений в БД:
@@ -470,6 +423,12 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
             //showToast("ВНИМАНИЕ!", "Выбранный товар изменен");
             setProduct(records.at(0));
         }
+        break;
+
+    case DBSelector_GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
+        showcasePanelModel->updateProducts(records);
+        db->select(DBSelector_GetShowcaseResources, records);
+        emit showShowcaseSort(showcasePanelModel->sort, showcasePanelModel->increase);
         break;
 
     case DBSelector_GetShowcaseResources: // Отображение картинок товаров экрана Showcase:
@@ -588,21 +547,6 @@ void AppManager::onInfoClicked()
     debugLog("@@@@@ AppManager::onInfoClicked ");
     onUserAction();
     showMessage("Инфо", appInfo.all("\r\n"));
-}
-
-void AppManager::onTableResultClicked(const int index)
-{
-    debugLog("@@@@@ AppManager::onTableResultClicked " + Tools::intToString(index));
-    onUserAction();
-    if (index < tablePanelModel->productCount())
-    {
-        DBRecord& clickedProduct = tablePanelModel->productByIndex(index);
-        if (ProductDBTable::isGroup(clickedProduct))
-        {
-            if (tablePanelModel->groupDown(clickedProduct)) updateTablePanel(false);
-        }
-        else setProduct(clickedProduct);
-    }
 }
 
 void AppManager::onSettingsItemClicked(const int index)
@@ -726,13 +670,6 @@ void AppManager::onSettingsPanelCloseClicked()
     stopSettings();
 }
 
-void AppManager::onSearchResultClicked(const int index)
-{
-    debugLog("@@@@@ AppManager::onSearchResultClicked " + Tools::intToString(index));
-    onUserAction();
-    setProduct(searchPanelModel->productByIndex(index));
-}
-
 void AppManager::onShowcaseClicked(const int index)
 {
     debugLog("@@@@@ AppManager::onShowcaseClicked " + Tools::intToString(index));
@@ -740,11 +677,19 @@ void AppManager::onShowcaseClicked(const int index)
     setProduct(showcasePanelModel->productByIndex(index));
 }
 
+void AppManager::onShowcaseDirectionClicked()
+{
+    onUserAction();
+    showcasePanelModel->increase = !showcasePanelModel->increase;
+    updateShowcase();
+}
+
 void AppManager::onShowcaseSortClicked(const int sort)
 {
     debugLog("@@@@@ AppManager::onShowcaseSortClicked " + Tools::intToString(sort));
     onUserAction();
-    setShowcaseSort(sort);
+    showcasePanelModel->sort = sort;
+    updateShowcase();
 }
 
 void AppManager::onMainPageSwiped(const int i)
@@ -758,16 +703,6 @@ void AppManager::setMainPage(const int i)
     debugLog("@@@@@ AppManager::setMainPage " + Tools::intToString(i));
     mainPageIndex = i;
     emit showMainPage(mainPageIndex);
-}
-
-void AppManager::updateTablePanel(const bool root)
-{
-    debugLog("@@@@@ AppManager::updateTablePanel");
-    if (root) tablePanelModel->root();
-    emit showTablePanelTitle(tablePanelModel->title());
-    const QString currentGroupCode = tablePanelModel->lastGroupCode();
-    emit showGroupHierarchyRoot(currentGroupCode.isEmpty() || currentGroupCode == "0");
-    db->select(DBSelector_GetProductsByGroupCodeIncludeGroups, currentGroupCode);
 }
 
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
@@ -791,7 +726,7 @@ void AppManager::startSettings()
 void AppManager::stopSettings()
 {
     debugLog("@@@@@ AppManager::stopSettings");
-    setMainPage(mainPageIndex);
+    refreshAll();
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         debugLog("@@@@@ AppManager::stopSettings pause " + Tools::intToString(WAIT_DRAWING_MSEC));
@@ -816,23 +751,22 @@ void AppManager::startAuthorization()
     });
 }
 
-void AppManager::setShowcaseSort(const int sort)
+void AppManager::updateShowcase()
 {
-    showcaseSort = sort;
-    db->select(DBSelector_GetShowcaseProducts, QString::number(sort));
-    emit showShowcaseSort(sort);
+    db->select(DBSelector_GetShowcaseProducts,
+               Tools::intToString(showcasePanelModel->sort),
+               Tools::boolToString(showcasePanelModel->increase));
 }
 
 void AppManager::refreshAll()
 {
     // Обновить всё на экране
     debugLog("@@@@@ AppManager::refreshAll");
-    emit showAdminMenu(users->isAdmin(users->getUser()));
-    setShowcaseSort(showcaseSort);
-    searchFilterModel->update();
-    //searchPanelModel->update();
-    filteredSearch();
-    updateTablePanel(true);
+    setMainPage(mainPageIndex);
+    emit showAdminMenu(isAdmin());
+    updateShowcase();
+    emit showVirtualKeyboard(-1);
+    updateSearch("", true);
 }
 
 void AppManager::showToast(const QString &title, const QString &text, const int delaySec)
@@ -878,6 +812,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
         db->select(DBSelector_GetImageByResourceCode, pictureCode);
         printStatus.onNewProduct();
+        emit setCurrentProductFavorite(db->isInShowcase(product));
         updateWeightStatus();
     }
 }
@@ -1307,8 +1242,92 @@ void AppManager::onNetCommand(const NetCommand command, const QString& param)
     }
 }
 
+void AppManager::updateSearch(const QString& value, const bool hierarchyRoot)
+{
+    searchPanelModel->isHierarchy |= hierarchyRoot;
+    debugLog(QString("@@@@@ AppManager::updateSearch %1 %2 %3 %4").arg(
+                 value,
+                 Tools::boolToString(hierarchyRoot),
+                 Tools::boolToString(searchPanelModel->isHierarchy),
+                 Tools::intToString(searchPanelModel->filterIndex)));
+    emit showSearchHierarchy(searchPanelModel->isHierarchy);
+    if(searchPanelModel->isHierarchy)
+    {
+        searchPanelModel->setHierarchyRoot(hierarchyRoot);
+        db->select(DBSelector_GetProductsByGroupCodeIncludeGroups, searchPanelModel->hierarchyLastCode());
+    }
+    else
+    {
+        DBSelector s = DBSelector_None;
+        switch(searchPanelModel->filterIndex)
+        {
+        case SearchFilterIndex_Code:
+            s = DBSelector_GetProductsByFilteredCode;
+            break;
+        case SearchFilterIndex_Number:
+            s = DBSelector_GetProductsByFilteredNumber;
+            break;
+        case SearchFilterIndex_Barcode:
+            s = DBSelector_GetProductsByFilteredBarcode;
+            break;
+        case SearchFilterIndex_Name:
+            s = DBSelector_GetProductsByFilteredName;
+            break;
+        default:
+            return;
+        }
+        db->select(s, value);
+    }
+}
 
+void AppManager::onSearchClicked()
+{
+    debugLog("@@@@@ AppManager::onSearchClicked ");
+    onUserAction();
+    searchPanelModel->isHierarchy = !searchPanelModel->isHierarchy;
+    updateSearch("", searchPanelModel->isHierarchy);
+}
 
+void AppManager::onSearchFilterEdited(const QString& value)
+{
+    // Изменился шаблон поиска
+    debugLog("@@@@@ AppManager::onSearchFilterEdited " + value);
+    searchPanelModel->isHierarchy = false;
+    onUserAction();
+    updateSearch(value);
+}
+
+void AppManager::onSearchResultClicked(const int index)
+{
+    debugLog("@@@@@ AppManager::onSearchResultClicked " + Tools::intToString(index));
+    onUserAction();
+    if (index >= 0 && index < searchPanelModel->productCount())
+    {
+        DBRecord& clicked = searchPanelModel->productByIndex(index);
+        if (!ProductDBTable::isGroup(clicked)) setProduct(clicked);
+        else if(searchPanelModel->hierarchyDown(clicked)) updateSearch("");
+    }
+}
+
+void AppManager::onSearchFilterClicked(const int index, const QString& value)
+{
+    // Изменилось поле поиска (код, штрих-код...)
+
+    debugLog("@@@@@ AppManager::onSearchFilterClicked " + Tools::intToString(index));
+    onUserAction();
+    searchPanelModel->isHierarchy = false;
+    searchPanelModel->filterIndex = index;
+    updateSearch(value);
+}
+
+void AppManager::onHierarchyUpClicked()
+{
+    // Переход вверх по иерархическому дереву групп товаров
+
+    debugLog("@@@@@ AppManager::onHierarchyUpClicked");
+    onUserAction();
+    if (searchPanelModel->hierarchyUp()) updateSearch("");
+}
 
 
 

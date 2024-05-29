@@ -44,9 +44,9 @@ public:
     const DBRecord checkRecord(const DBRecord&);
     int columnCount() { return Columns::COLUMN_COUNT; }
     static bool isForShowcase(const DBRecord&);
-    static bool isGroup(const DBRecord&);
     static bool isPiece(const DBRecord&);
     static bool is100gBase(const DBRecord&);
+    static bool isGroup(const DBRecord&);
 };
 
 #endif // PRODUCTDBTABLE_H

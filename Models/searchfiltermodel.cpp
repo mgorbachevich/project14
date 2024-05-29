@@ -1,9 +1,9 @@
 #include "searchfiltermodel.h"
 #include "tools.h"
 
-void SearchFilterModel::update()
+SearchFilterModel::SearchFilterModel(AppManager *parent): BaseListModel(parent)
 {
-    Tools::debugLog("@@@@@ SearchFilterModel::update");
+    Tools::debugLog("@@@@@ SearchFilterModel::SearchFilterModel");
     QStringList ss;
     ss << "Код" << "Номер" << "Штрихкод" << "Наименование";
     setStringList(ss);

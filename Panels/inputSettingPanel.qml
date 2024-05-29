@@ -32,7 +32,7 @@ Popup
         target: keyEmitter
         function onEnterChar(value)
         {
-            app.debugLog("@@@@@ inputSettingPanel onEnterChar %1".arg(value))
+            //app.debugLog("@@@@@ inputSettingPanel onEnterChar %1".arg(value))
             inputSettingPanelText.text += value
         }
     }
@@ -42,7 +42,7 @@ Popup
         target: app
         function onShowVirtualKeyboard(value)
         {
-            app.debugLog("@@@@@ inputSettingPanel onShowVirtualKeyboard %1".arg(value))
+            //app.debugLog("@@@@@ inputSettingPanel onShowVirtualKeyboard %1".arg(value))
             virtualKeyboardSet = value
         }
     }
@@ -108,7 +108,7 @@ Popup
 
                 Keys.onPressed: (event) =>
                 {
-                    app.debugLog("@@@@@ inputSettingPanelText Keys.onPressed %1".arg(JSON.stringify(event)))
+                    //app.debugLog("@@@@@ inputSettingPanelText Keys.onPressed %1".arg(JSON.stringify(event)))
                     event.accepted = true;
                     app.clickSound()
                     app.onUserAction();

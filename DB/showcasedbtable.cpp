@@ -1,7 +1,16 @@
 #include "showcasedbtable.h"
+#include "tools.h"
 
-bool ShowcaseDBTable::checkRecordForShow(const DBRecord& record)
+ShowcaseDBTable::ShowcaseDBTable(const QString &name, QObject *parent): DBTable(name, parent)
 {
-    if (record[ProductDBTable::Columns::Type].toInt() == ProductDBTable::ProductType::ProductType_Group)
-
+    Tools::debugLog("@@@@@ ShowcaseDBTable::ShowcaseDBTable");
+    addColumn("Код", "code", "TEXT PRIMARY KEY");
 }
+
+DBRecord ShowcaseDBTable::createRecord(const QString& code)
+{
+    DBRecord r = DBTable::createRecord();
+    r[ShowcaseDBTable::Code] = code;
+    return r;
+}
+

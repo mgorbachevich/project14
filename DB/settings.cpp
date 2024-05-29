@@ -82,6 +82,11 @@ bool Settings::parseDefault() // Добавление недостающих з�
     return items.count() > 0;
 }
 
+bool Settings::isGroup(const DBRecord &r)
+{
+    return getType(r) == SettingType_Group || getType(r) == SettingType_GroupWithPassword;
+}
+
 void Settings::checkDefaultRecord(const int code, DBRecordList& defaults)
 {
     for (DBRecord& r : items)    if (getCode(r) == code) return; // уже есть такая запись
@@ -144,11 +149,6 @@ QString Settings::getStringValue(const SettingCode code)
 {
     DBRecord* r = getByCode(code);
     return r == nullptr ? "" : getStringValue(*r);
-}
-
-bool Settings::isGroup(const DBRecord &r)
-{
-    return getType(r) == SettingType_Group || getType(r) == SettingType_GroupWithPassword;
 }
 
 void Settings::nativeSettings(const int code)

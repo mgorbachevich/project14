@@ -23,7 +23,7 @@ Popup
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
-        app.debugLog("@@@@@ comboSettingPanel onClosed %1".arg(settingItemComboBox.currentIndex))
+        //app.debugLog("@@@@@ comboSettingPanel onClosed %1".arg(settingItemComboBox.currentIndex))
         app.onSettingInputClosed(settingItemCode, settingItemComboBox.currentIndex)
         app.onPopupOpened(false)
     }
@@ -44,7 +44,7 @@ Popup
             focus: true
             Keys.onPressed: (event) =>
             {
-                app.debugLog("@@@@@ comboSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
+                //app.debugLog("@@@@@ comboSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();
@@ -123,7 +123,7 @@ Popup
                             anchors.fill: parent
                             onClicked:
                             {
-                                app.debugLog("@@@@@ comboSettingPanel.settingItemComboBox.onClicked %1".arg(index))
+                                //app.debugLog("@@@@@ comboSettingPanel.settingItemComboBox.onClicked %1".arg(index))
                                 app.onUserAction();
                                 settingItemComboBox.currentIndex = index
                                 settingItemComboBox.displayText = text

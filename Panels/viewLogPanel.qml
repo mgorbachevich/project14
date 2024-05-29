@@ -34,7 +34,7 @@ Popup
         focus: true
         Keys.onPressed: (event) =>
         {
-            app.debugLog("@@@@@ viewLogPanel Keys.onPressed %1".arg(JSON.stringify(event)))
+            //app.debugLog("@@@@@ viewLogPanel Keys.onPressed %1".arg(JSON.stringify(event)))
             event.accepted = true;
             app.clickSound();
             app.onUserAction();

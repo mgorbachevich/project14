@@ -13,7 +13,7 @@ Rectangle
 
     Keys.onPressed: (event) =>
     {
-        app.debugLog("@@@@@ tablePanel Keys.onPressed %1".arg(JSON.stringify(event)))
+        //app.debugLog("@@@@@ tablePanel Keys.onPressed %1".arg(JSON.stringify(event)))
         event.accepted = true;
         app.clickSound();
         app.onUserAction();
@@ -63,7 +63,7 @@ Rectangle
         {
             if (index === 1)
             {
-                app.debugLog("@@@@@ tablePanel onShowMainPage");
+                //app.debugLog("@@@@@ tablePanel onShowMainPage");
                 tablePanel.forceActiveFocus()
             }
         }
@@ -80,7 +80,7 @@ Rectangle
         target: app
         function onShowGroupHierarchyRoot(value)
         {
-            app.debugLog("@@@@@ tablePanel.onShowGroupHierarchyRoot %1".arg(value))
+            //app.debugLog("@@@@@ tablePanel.onShowGroupHierarchyRoot %1".arg(value))
             tablePanelBackButton.icon.source = value ? "../Icons/empty" : "../Icons/arrow_up"
         }
     }

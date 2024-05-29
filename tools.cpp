@@ -57,6 +57,11 @@ int Tools::stringToInt(const QVariant &v, const int defaultValue)
     return stringToInt(v.toString(), defaultValue);
 }
 
+bool Tools::stringToBool(const QString &s)
+{
+    return s == "1" || s == "true" || s == "TRUE";
+}
+
 double Tools::stringToDouble(const QString &s, const double defaultValue)
 {
     bool ok;

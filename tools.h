@@ -49,7 +49,8 @@ public:
     static void sortByString(DBRecordList&, const int, const bool increase = true);
     static double stringToDouble(const QString&, const double defaultValue = 0);
     static int stringToInt(const QString&, const int defaultValue = 0);
-    static int stringToInt(const QVariant &v, const int defaultValue = 0);
+    static int stringToInt(const QVariant&, const int defaultValue = 0);
+    static bool stringToBool(const QString&);
     static QJsonObject stringToJson(const QString&);
     static QString timeFromUInt(quint64, const QString&);
     static bool writeBinaryFile(const QString&, const QByteArray&);

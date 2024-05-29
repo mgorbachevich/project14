@@ -22,7 +22,7 @@ Popup
         target: app
         function onShowDownloadProgress(value)
         {
-            app.debugLog("@@@@@ downloadPanel.onShowDownloadProgress");
+            //app.debugLog("@@@@@ downloadPanel.onShowDownloadProgress");
             if(value >= 100 || value < 0) downloadPanel.close();
             else
             {
@@ -45,7 +45,7 @@ Popup
             focus: true
             Keys.onPressed: (event) =>
             {
-                app.debugLog("@@@@@ sliderSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
+                //app.debugLog("@@@@@ sliderSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
                 app.clickSound();
                 app.onUserAction();

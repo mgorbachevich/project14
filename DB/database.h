@@ -49,7 +49,10 @@ public:
     ~DataBase();
     DBTable* getTable(const QString&) const;
     QString version() { return DB_VERSION; }
+    bool addToShowcase(const DBRecord&);
+    bool removeFromShowcase(const DBRecord&);
     void afterNetAction();
+    bool isInShowcase(const DBRecord&);
     QString netUpload(const QString&, const QString&, const bool codesOnly = false);
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
@@ -58,7 +61,7 @@ public:
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     void select(const DBSelector, const DBRecordList&);
-    void select(const DBSelector, const QString&);
+    void select(const DBSelector, const QString& param1, const QString& param2 = "");
     void clearLog();
     bool isStarted() { return started; }
     QList<DBTable*> getTables() { return tables; };

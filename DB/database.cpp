@@ -253,6 +253,11 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
         Tools::debugLog("@@@@@ DataBase::insertRecord ERROR opened=false");
         return false;
     }
+    if (table == nullptr)
+    {
+        Tools::debugLog("@@@@@ DataBase::insertRecord ERROR table=nullptr");
+        return false;
+    }
     DBRecord r = table->checkRecord(record);
     if (r.isEmpty())
     {
@@ -328,14 +333,16 @@ void DataBase::clearLog()
     if(!executeSQL(logDB, sql, false)) Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
 }
 
-void DataBase::select(const DBSelector selector, const QString& param)
+void DataBase::select(const DBSelector selector, const QString& param1, const QString& param2)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
-    Tools::debugLog(QString("@@@@@ DataBase::select %1 ").arg(selector) + param);
+    Tools::debugLog(QString("@@@@@ DataBase::select %1 ").arg(selector) + param1);
     DBRecordList resultRecords;
     switch(selector)
     {
+    case DBSelector_None: return;
+
     case DBSelector_GetLog:
     // Запрос списка записей лога:
         selectAll(logDB, getTable(DBTABLENAME_LOG), resultRecords);
@@ -353,10 +360,13 @@ void DataBase::select(const DBSelector selector, const QString& param)
             if (selectById(productDB, DBTABLENAME_PRODUCTS,  productCode, r) && ProductDBTable::isForShowcase(r))
                 resultRecords.append(r);
         }
-        switch(Tools::stringToInt(param))
+        const int sort = Tools::stringToInt(param1);
+        const bool increase = Tools::stringToBool(param2);
+        switch(sort)
         {
-        case Sort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code); break;
-        case Sort_Name: Tools::sortByString(resultRecords, ProductDBTable::Name); break;
+        case Sort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code, increase); break;
+        case Sort_Number: Tools::sortByInt(resultRecords, ProductDBTable::Code2, increase); break;
+        case Sort_Name: Tools::sortByString(resultRecords, ProductDBTable::Name, increase); break;
         }
         break;
     }
@@ -365,7 +375,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     // Запрос картинки из ресурсов по коду ресурса:
     {
         DBRecord r;
-        if(selectById(productDB, DBTABLENAME_PICTURES, param, r)) resultRecords.append(r);
+        if(selectById(productDB, DBTABLENAME_PICTURES, param1, r)) resultRecords.append(r);
         break;
     }
 
@@ -374,7 +384,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     // todo
     {
         DBRecord r;
-        if(selectById(productDB, DBTABLENAME_MESSAGES, param, r)) resultRecords.append(r);
+        if(selectById(productDB, DBTABLENAME_MESSAGES, param1, r)) resultRecords.append(r);
         break;
     }
 
@@ -384,7 +394,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     {
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = QString("SELECT * FROM %1").arg(t->name);
-        sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param);
+        sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
         if (selector == DBSelector_GetProductsByGroupCode)
             sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
         sql += QString(" ORDER BY %1 DESC, %2 ASC;").arg(t->columnName(ProductDBTable::Type), t->columnName(ProductDBTable::Name));
@@ -395,7 +405,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     case DBSelector_GetProductsByInputCode:
     // Запрос списка товаров по фрагменту кода:
     {
-        QString p = param.trimmed();
+        QString p = param1.trimmed();
         if (p.isEmpty()) break;
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = QString("SELECT * FROM %1").arg(t->name);
@@ -409,7 +419,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     case DBSelector_GetProductsByFilteredCode:
     // Запрос списка товаров по фрагменту кода исключая группы:
     {
-        QString p = param.trimmed();
+        QString p = param1.trimmed();
         if (p.isEmpty()) break;
         if (!appManager->settings->getBoolValue(SettingCode_SearchType))
         {
@@ -430,7 +440,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     case DBSelector_GetProductsByFilteredNumber:
     // Запрос списка товаров по фрагменту номера исключая группы:
     {
-        QString p = param.trimmed();
+        QString p = param1.trimmed();
         if (p.isEmpty()) break;
         if (!appManager->settings->getBoolValue(SettingCode_SearchType))
         {
@@ -451,7 +461,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     case DBSelector_GetProductsByFilteredBarcode:
     // Запрос списка товаров по фрагменту штрих-кода исключая группы:
     {
-        QString p = param.trimmed();
+        QString p = param1.trimmed();
         if (p.isEmpty()) break;
         if (!appManager->settings->getBoolValue(SettingCode_SearchType))
         {
@@ -472,7 +482,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     case DBSelector_GetProductsByFilteredName:
     // Запрос списка товаров по фрагменту наименования исключая группы:
     {
-        QString p = param.trimmed();
+        QString p = param1.trimmed();
         if (p.isEmpty()) break;
         if (!appManager->settings->getBoolValue(SettingCode_SearchType))
         {
@@ -496,7 +506,7 @@ void DataBase::select(const DBSelector selector, const QString& param)
     // Запрос товара по коду
     {
         DBRecord r;
-        if(selectById(productDB, DBTABLENAME_PRODUCTS, param, r)) resultRecords.append(r);
+        if(selectById(productDB, DBTABLENAME_PRODUCTS, param1, r)) resultRecords.append(r);
         break;
     }
 
@@ -721,4 +731,27 @@ void DataBase::onParseSetRequest(const QString& json)
 {
     if(appManager->settings->insertOrReplace(json)) appManager->settings->write();
     if(appManager->users->insertOrReplace(json)) appManager->users->write();
+}
+
+bool DataBase::isInShowcase(const DBRecord& record)
+{
+    DBRecord r;
+    const QString& code = record[ProductDBTable::Code].toString();
+    return selectById(productDB, getTable(DBTABLENAME_SHOWCASE), code, r) && !r.empty();
+}
+
+bool DataBase::removeFromShowcase(const DBRecord& record)
+{
+    const QString& code = record[ProductDBTable::Code].toString();
+    Tools::debugLog("@@@@@ DataBase::removeFromShowcase " + code);
+    return removeRecord(productDB, getTable(DBTABLENAME_SHOWCASE), code);
+}
+
+
+bool DataBase::addToShowcase(const DBRecord& record)
+{
+    const QString& code = record[ProductDBTable::Code].toString();
+    Tools::debugLog("@@@@@ DataBase::addToShowcase " + code);
+    ShowcaseDBTable* t = (ShowcaseDBTable*)getTable(DBTABLENAME_SHOWCASE);
+    return t != nullptr && insertRecord(productDB, t, t->createRecord(code));
 }

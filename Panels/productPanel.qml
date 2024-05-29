@@ -13,7 +13,6 @@ Popup
     focus: true
     modal: true
     dim: false
-    Material.theme: Material.Dark
     Material.background: Material.color(Material.Grey, Material.Shade900)
     property int imageSize: height - screenManager.buttonSize() - screenManager.spacer()
     property int printButtonSize: screenManager.buttonSize() * 2 + screenManager.spacer()
@@ -58,8 +57,18 @@ Popup
         target: app
         function onResetCurrentProduct()
         {
-            app.debugLog("@@@@@ productPanel onResetCurrentProduct ")
+            //app.debugLog("@@@@@ productPanel onResetCurrentProduct ")
             productPanel.close()
+        }
+    }
+
+    Connections // Slot for signal AppManager::setCurrentProductFavorite:
+    {
+        target: app
+        function onSetCurrentProductFavorite(value)
+        {
+            //app.debugLog("@@@@@ productPanel onSetCurrentProductFavorite ")
+            productPanelFavoriteButton.marked = value;
         }
     }
 
@@ -72,7 +81,7 @@ Popup
         focus: true
         Keys.onPressed: (event) =>
         {
-            app.debugLog("@@@@@ productPanel Keys.onPressed %1".arg(JSON.stringify(event)))
+            //app.debugLog("@@@@@ productPanel Keys.onPressed %1".arg(JSON.stringify(event)))
             event.accepted = true;
             app.clickSound();
             app.onUserAction();
@@ -127,6 +136,16 @@ Popup
             }
         }
 
+        RoundIconButton
+        {
+            id: productPanelFavoriteButton
+            Layout.column: 2
+            Layout.row: 0
+            Layout.alignment: Qt.AlignTop | Qt.AlignRight
+            icon.source: "../Icons/star"
+            onClicked: app.onProductFavoriteClicked()
+        }
+
         Rectangle
         {
             Layout.column: 0
@@ -143,7 +162,7 @@ Popup
                 height: imageSize
                 anchors.centerIn: parent
                 fillMode: Image.PreserveAspectFit
-                source: "../Images/image_dummy"
+                source: "../Images/dummy"
             }
         }
 
@@ -152,6 +171,7 @@ Popup
             Layout.column: 1
             Layout.row: 2
             Layout.rowSpan: 4
+            Layout.columnSpan: 2
             Layout.fillWidth: parent
             Layout.fillHeight: parent
             color: Material.color(Material.Grey, Material.Shade800)
@@ -185,14 +205,14 @@ Popup
 
         Spacer
         {
-            Layout.column: 2
+            Layout.column: 3
             Layout.row: 0
         }
 
         RoundIconButton
         {
             id: productPanelInfoButton
-            Layout.column: 3
+            Layout.column: 4
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
             icon.source: "../Icons/info_outline"
@@ -201,14 +221,14 @@ Popup
 
         Spacer
         {
-            Layout.column: 4
+            Layout.column: 5
             Layout.row: 0
         }
 
         RoundIconButton
         {
             id: productPanelCloseButton
-            Layout.column: 5
+            Layout.column: 6
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             icon.source: "../Icons/close"
@@ -217,13 +237,13 @@ Popup
 
         Spacer
         {
-            Layout.column: 6
+            Layout.column: 7
             Layout.row: 0
         }
 
         Spacer
         {
-            Layout.column: 2
+            Layout.column: 3
             Layout.row: 1
         }
 
@@ -232,7 +252,7 @@ Popup
             id: productPanelPiecesButton
             Layout.preferredWidth: screenManager.buttonSize() * 2 + screenManager.spacer()
             Layout.preferredHeight: screenManager.buttonSize()
-            Layout.column: 3
+            Layout.column: 4
             Layout.row: 2
             Layout.columnSpan: 3
             Layout.alignment: Qt.AlignTop
@@ -244,14 +264,14 @@ Popup
 
         Spacer
         {
-            Layout.column: 2
+            Layout.column: 3
             Layout.row: 3
         }
 
         RoundIconButton
         {
             id: productPanelPrintButton
-            Layout.column: 3
+            Layout.column: 4
             Layout.row: 4
             Layout.columnSpan: 3
             Layout.alignment: Qt.AlignBottom
@@ -265,7 +285,7 @@ Popup
         Rectangle
         {
             id: productPanelPrintMessageRectangle
-            Layout.column: 3
+            Layout.column: 4
             Layout.row: 4
             Layout.columnSpan: 3
             Layout.alignment: Qt.AlignBottom
@@ -285,7 +305,7 @@ Popup
 
         Spacer
         {
-            Layout.column: 2
+            Layout.column: 3
             Layout.row: 5
         }
     }
