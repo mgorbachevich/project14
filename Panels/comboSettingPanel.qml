@@ -110,7 +110,7 @@ Popup
                     currentIndex: comboIndex
                     displayText: comboText
 
-                    model: settingItemListModel
+                    model: settingItemModel
                     delegate: Text
                     {
                         padding: screenManager.spacer()

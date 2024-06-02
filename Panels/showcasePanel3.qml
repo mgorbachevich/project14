@@ -10,10 +10,8 @@ Rectangle
     id:  showcasePanel
     Material.background: Material.color(Material.Grey, Material.Shade100)
     color: Material.background
-    property int spacer: 1
     property int buttonPanelWidth: screenManager.buttonSize() + screenManager.spacer() * 2
-    //property int imageSize: (width - screenManager.scrollBarWidth() - buttonPanelWidth - spacer * 2) / screenManager.showcaseRowImages() - spacer
-    property int imageSize: (width - buttonPanelWidth - screenManager.showcaseRowImages() * spacer) / screenManager.showcaseRowImages()
+    property int imageSize: (width - buttonPanelWidth - screenManager.showcaseRowImages() * 1) / screenManager.showcaseRowImages()
     focus: true
 
     Connections // Slot for signal AppManager::showMainPage:
@@ -21,11 +19,7 @@ Rectangle
         target: app
         function onShowMainPage(index)
         {
-            if (index === 0)
-            {
-                //app.debugLog("@@@@@ showcasePanel onShowMainPage");
-                showcasePanel.forceActiveFocus()
-            }
+            if (index === 0) showcasePanel.forceActiveFocus()
         }
     }
 
@@ -34,7 +28,6 @@ Rectangle
         target: app
         function onShowShowcaseSort(sort, increase)
         {
-            //app.debugLog("@@@@@ showcasePanel onShowShowcaseSort");
             showcasePanelCodeButton.  marked = sort === 0;
             showcasePanelNumberButton.marked = sort === 1;
             showcasePanelNameButton.  marked = sort === 2;
@@ -46,7 +39,6 @@ Rectangle
 
     Keys.onPressed: (event) =>
     {
-        //app.debugLog("@@@@@ showcasePanel Keys.onPressed %1".arg(JSON.stringify(event)))
         event.accepted = true;
         app.clickSound();
         app.onUserAction();
@@ -146,12 +138,12 @@ Rectangle
             width: parent.width - buttonPanelWidth
             height: parent.height
             leftMargin: 0
-            topMargin: spacer
-            rightMargin: spacer
-            bottomMargin: spacer
+            topMargin: 1
+            rightMargin: 1
+            bottomMargin: 1
             clip: true
-            cellWidth: imageSize + spacer
-            cellHeight: imageSize + spacer
+            cellWidth: imageSize + 1
+            cellHeight: imageSize + 1
             /*
             ScrollBar.vertical: ScrollBar
             {
@@ -161,23 +153,60 @@ Rectangle
             }
             */
             model: showcasePanelModel
-            delegate: Label
+            delegate: GridLayout
             {
                 width: imageSize
                 height: imageSize
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignBottom
-                wrapMode: Text.WordWrap
-                text: model.first
-                background: Image
+                columnSpacing: 0
+                rowSpacing: 0
+
+                Image
                 {
+                    Layout.column: 0
+                    Layout.row: 0
+                    Layout.rowSpan: 5
+                    Layout.fillWidth: parent
+                    Layout.fillHeight: parent
                     fillMode: Image.PreserveAspectFit
-                    source: model.second
+                    source: model.image
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        onClicked: app.onShowcaseClicked(index)
+                    }
                 }
-                MouseArea
+
+                Spacer
                 {
-                    anchors.fill: parent
-                    onClicked: app.onShowcaseClicked(index)
+                    Layout.column: 0
+                    Layout.row: 0
+                    height: 1
+                }
+
+                Sticker
+                {
+                    Layout.column: 0
+                    Layout.row: 1
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    text: model.title
+                    visible: model.title !== ""
+                }
+
+                Sticker
+                {
+                    Layout.column: 0
+                    Layout.row: 3
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    text: model.name
+                    visible: model.name !== ""
+                }
+
+                Spacer
+                {
+                    Layout.column: 0
+                    Layout.row: 4
+                    height: 1
                 }
             }
         }

@@ -1,5 +1,6 @@
 #include "searchpanelmodel.h"
 #include "productdbtable.h"
+#include "appmanager.h"
 #include "tools.h"
 
 void SearchPanelModel::update(const DBRecordList &newProducts, const int filterIndex)
@@ -12,29 +13,26 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const int filterI
     {
         DBRecord ri = products[i];
         const QString& name = ri[ProductDBTable::Name].toString();
-        QString s;
+        const QString& price = appManager->priceAsString(ri);
         switch(filterIndex)
         {
         case SearchFilterIndex_Code:
-            s += ri[ProductDBTable::Code].toString() + LIST_ROW_DELIMETER;
-            s += name;
+            ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Code].toString(), name, price);
             break;
-        case SearchFilterIndex_Number:
-            s += ri[ProductDBTable::Code2].toString() + LIST_ROW_DELIMETER;
-            s += name;
+        case SearchFilterIndex_Code2:
+            ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Code2].toString(), name, price);
             break;
         case SearchFilterIndex_Barcode:
-            s += ri[ProductDBTable::Barcode].toString() + LIST_ROW_DELIMETER;
-            s += name;
+            ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Barcode].toString(), name, price);
             break;
         case SearchFilterIndex_Name:
-            s += name;
+            ss << QString("%1   %2   %3").arg( ri[ProductDBTable::Code].toString(), name, price);
             break;
         default: // Hierarchy
-            s += ProductDBTable::isGroup(ri) ? QString("<i>%1</i>").arg(name) : name;
+            if(ProductDBTable::isGroup(ri)) ss << QString("%1").arg(name);
+            else ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Code].toString(), name, price);
             break;
         }
-        ss << s;
     }
     setStringList(ss);
 }

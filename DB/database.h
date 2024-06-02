@@ -28,7 +28,7 @@ enum DBSelector
     DBSelector_GetProductsByGroupCode,
     DBSelector_GetProductsByGroupCodeIncludeGroups,
     DBSelector_GetProductsByFilteredCode,
-    DBSelector_GetProductsByFilteredNumber,
+    DBSelector_GetProductsByFilteredCode2,
     DBSelector_GetProductsByFilteredBarcode,
     DBSelector_GetProductsByFilteredName,
     DBSelector_GetItemsByCodes,

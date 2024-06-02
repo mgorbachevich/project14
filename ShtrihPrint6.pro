@@ -16,17 +16,14 @@ INCLUDEPATH += \
     Equipment/Wm100_Slpa100u \
 
 HEADERS += \
+    Models/showcasepanelmodel3.h \
+    constants.h \
+    tools.h \
+    appinfo.h \
     DB/jsonarrayfile.h \
     DB/jsonfile.h \
     DB/scaleconfig.h \
     DB/users.h \
-    Managers/equipmentmanager.h \
-    Managers/externalmessager.h \
-    Managers/moneycalculator.h \
-    Models/edituserspanelmodel.h \
-    constants.h \
-    tools.h \
-    appinfo.h \
     DB/productdbtable.h \
     DB/dbtable.h \
     DB/dbtablecolumn.h \
@@ -103,17 +100,21 @@ HEADERS += \
     Equipment/Wm100_Slpa100u/Wm100ProtocolDemo.h \
     Equipment/Wm100_Slpa100u/Wm100ProtocolHttp.h \
     Equipment/Wm100_Slpa100u/wm100.h \
+    Managers/equipmentmanager.h \
+    Managers/externalmessager.h \
+    Managers/moneycalculator.h \
     Managers/keyemitter.h \
     Managers/appmanager.h \
     Managers/printstatus.h \
     Managers/screenmanager.h \
-    Models/settingitemlistmodel.h \
+    Models/combolistmodel.h \
+    Models/baselistmodel3.h \
+    Models/edituserspanelmodel.h \
     Models/baselistmodel2.h \
     Models/baselistmodel.h \
     Models/inputproductcodepanelmodel.h \
     Models/productpanelmodel.h \
     Models/searchpanelmodel.h \
-    Models/showcasepanelmodel2.h \
     Models/searchfiltermodel.h \
     Models/settingspanelmodel.h \
     Models/usernamemodel.h \
@@ -123,6 +124,9 @@ HEADERS += \
     Net/requestparser.h \
 
 SOURCES += \
+    Models/showcasepanelmodel3.cpp \
+    main.cpp \
+    tools.cpp \
     DB/database.cpp \
     DB/dbtable.cpp \
     DB/jsonarrayfile.cpp \
@@ -206,20 +210,17 @@ SOURCES += \
     Managers/moneycalculator.cpp \
     Managers/screenmanager.cpp \
     Models/baselistmodel2.cpp \
+    Models/baselistmodel3.cpp \
     Models/edituserspanelmodel.cpp \
     Models/inputproductcodepanelmodel.cpp \
-    Models/searchfiltermodel.cpp \
     Models/settingspanelmodel.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
     Models/baselistmodel.cpp \
     Models/productpanelmodel.cpp \
     Models/searchpanelmodel.cpp \
-    Models/showcasepanelmodel2.cpp \
     Net/netserver.cpp \
     Net/requestparser.cpp \
-    main.cpp \
-    tools.cpp \
 
 RESOURCES += \
     main.qml \
@@ -324,8 +325,8 @@ RESOURCES += \
     Labels/60x60.dat/print.dat \
     Labels/60x60.dat/strings \
     Labels/60x60.lpr \
-    Panels/adminMenuPanel.qml \
     Panels/authorizationPanel.qml \
+    Panels/calendarPanel.qml \
     Panels/CardText.qml \
     Panels/CardTitleText.qml \
     Panels/comboSettingPanel.qml \
@@ -347,10 +348,11 @@ RESOURCES += \
     Panels/RoundTextButton.qml \
     Panels/searchPanel.qml \
     Panels/settingsPanel.qml \
-    Panels/showcasePanel.qml \
+    Panels/showcasePanel3.qml \
     Panels/sliderSettingPanel.qml \
     Panels/Spacer.qml \
     Panels/SubtitleText.qml \
+    Panels/Sticker.qml \
     Panels/viewLogPanel.qml \
     Panels/VirtualKeyboardNumeric.qml \
     Panels/VirtualKeyboardCyrillic.qml \
@@ -373,6 +375,7 @@ android {
 
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
 }
+
 
 
 

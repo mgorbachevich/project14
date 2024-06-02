@@ -34,6 +34,7 @@ public:
     bool isWMDemoMode() const { return WMMode == EquipmentMode_Demo; }
     QString getWMErrorDescription(const int) const;
     bool isWM();
+    QString getWMDescription();
 
     // Print Manager:
     QString PMversion() const;
@@ -63,7 +64,7 @@ private:
     QString parseBarcode(const QString&, const QChar, const QString&);
 
     // Weight Manager:
-    Wm100* wm100 = nullptr;
+    Wm100* wm = nullptr;
     bool isWMStarted = false;
     int WMErrorCode = 0;
     Wm100Protocol::channel_status WMStatus = {0, 0.0, 0.0, 0};

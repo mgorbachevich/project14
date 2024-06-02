@@ -195,9 +195,9 @@ void Settings::nativeSettings(const int code)
 #endif
 }
 
-bool Settings::onInputValue(const int itemCode, const QString& value)
+bool Settings::setValue(const int itemCode, const QString& value)
 {
-    Tools::debugLog(QString("@@@@@ Settings::onInputValue %1 %2").arg(Tools::intToString(itemCode), value));
+    Tools::debugLog(QString("@@@@@ Settings::setValue %1 %2").arg(Tools::intToString(itemCode), value));
     getAll();
     for (DBRecord& r : items)
     {
@@ -205,6 +205,9 @@ bool Settings::onInputValue(const int itemCode, const QString& value)
         {
             if(0 != QString::compare(r[SettingField_Value].toString(), value) && checkValue(r, value))
             {
+                r[SettingField_Value] = value;
+                return true;
+                /*
                 switch(getType(r))
                 {
                 case SettingType_InputNumber:
@@ -214,6 +217,7 @@ bool Settings::onInputValue(const int itemCode, const QString& value)
                     r[SettingField_Value] = value;
                     return true;
                 }
+                */
             }
             return false;
         }

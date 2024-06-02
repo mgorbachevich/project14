@@ -364,9 +364,9 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
         const bool increase = Tools::stringToBool(param2);
         switch(sort)
         {
-        case Sort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code, increase); break;
-        case Sort_Number: Tools::sortByInt(resultRecords, ProductDBTable::Code2, increase); break;
-        case Sort_Name: Tools::sortByString(resultRecords, ProductDBTable::Name, increase); break;
+        case ShowcaseSort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code, increase); break;
+        case ShowcaseSort_Code2: Tools::sortByInt(resultRecords, ProductDBTable::Code2, increase); break;
+        case ShowcaseSort_Name: Tools::sortByString(resultRecords, ProductDBTable::Name, increase); break;
         }
         break;
     }
@@ -437,7 +437,7 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
         break;
     }
 
-    case DBSelector_GetProductsByFilteredNumber:
+    case DBSelector_GetProductsByFilteredCode2:
     // Запрос списка товаров по фрагменту номера исключая группы:
     {
         QString p = param1.trimmed();

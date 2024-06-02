@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.45"
+#define APP_VERSION "2.46"
 
 // Debug log:
 #define DEBUG_LOG
@@ -16,7 +16,7 @@
 // On Start:
 #define CREATE_DEFAULT_DATA_ON_START false
 #define CREATE_DEFAULT_IMAGES_ON_START false
-#define REMOVE_SETTINGS_FILE_ON_START true
+#define REMOVE_SETTINGS_FILE_ON_START false
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START true
@@ -182,6 +182,12 @@ enum ControlParam
     ControlParam_PrintError = 15,
     ControlParam_AutoPrint = 16,
     ControlParam_PrinterStatus = 17,
+    ControlParam_DateTime = 18,
+    ControlParam_ProductImage = 19,
+    ControlParam_SearchTitle = 20,
+    ControlParam_AuthorizationTitle1 = 21,
+    ControlParam_AuthorizationTitle2 = 22,
+    ControlParam_AuthorizationTitle3 = 23,
 };
 
 enum NetAction
@@ -212,20 +218,19 @@ enum VirtualKeyboardSet
     VirtualKeyboardSet_Numeric = 2,
 };
 
-enum Sort
+enum ShowcaseSort
 {
-    Sort_Code = 0,
-    Sort_Number = 1,
-    Sort_Name = 2,
+    ShowcaseSort_Code = 0,
+    ShowcaseSort_Code2 = 1,
+    ShowcaseSort_Name = 2,
 };
 
 enum SearchFilterIndex
 {
     SearchFilterIndex_Code = 0,
-    SearchFilterIndex_Number = 1,
+    SearchFilterIndex_Code2 = 1,
     SearchFilterIndex_Barcode = 2,
     SearchFilterIndex_Name = 3,
-    //SearchFilterIndex_Hierarchy = -1,
 };
 
 enum EnvironmentType
@@ -248,6 +253,14 @@ enum EquipmentMode
     EquipmentMode_None = 0,
     EquipmentMode_Ok = 1,
     EquipmentMode_Demo = 2,
+};
+
+enum ShowcaseProductHeader
+{
+    ShowcaseProductHeader_None = 0,
+    ShowcaseProductHeader_Code = 1,
+    ShowcaseProductHeader_Code2 = 2,
+    ShowcaseProductHeader_Barcode = 3,
 };
 
 enum SettingType
@@ -334,6 +347,8 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_KeyboardSoundVolume = 1052,
     SettingCode_SystemSoundVolume = 1053,
     SettingCode_Brightness = 1054,
+    SettingCode_ShowcaseProductHeader = 1055,
+    SettingCode_ShowcaseProductName = 1056,
     //Группы:
     SettingCode_FactorySettings = 9000,
     /*

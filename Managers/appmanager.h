@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include "constants.h"
 #include "database.h"
+#include "moneycalculator.h"
 #include "users.h"
 #include "settings.h"
 #include "appinfo.h"
@@ -13,12 +14,12 @@
 
 class ProductPanelModel;
 class ViewLogPanelModel;
-class ShowcasePanelModel2;
+class ShowcasePanelModel3;
 class SearchFilterModel;
 class SearchPanelModel;
 class SettingsPanelModel;
 class UserNameModel;
-class SettingItemListModel;
+class ComboListModel;
 class QQmlContext;
 class NetServer;
 class AppInfo;
@@ -35,6 +36,7 @@ public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void onNetCommand(const NetCommand, const QString&);
+    QString priceAsString(const DBRecord& r) { return moneyCalculator->priceAsString(r); }
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
@@ -46,6 +48,7 @@ public:
     Q_INVOKABLE void onAddUserClicked();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE void onBackgroundDownloadClicked();
+    Q_INVOKABLE void onCalendarClosed(const QString&, const QString&, const QString&);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
@@ -96,7 +99,6 @@ public:
 private:
     void createDefaultData();
     void createDefaultImages();
-    void inputDateTime();
     bool isProduct() { return !product.isEmpty(); }
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
@@ -106,8 +108,10 @@ private:
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
+    void setSystemDateTime();
     void showAuthorizationUsers();
     void showToast(const QString&, const QString&, const int delaySec = 5);
+    void showVerificationDateInputPanel();
     void startAuthorization();
     void startEquipment();
     void startSettings();
@@ -146,15 +150,18 @@ private:
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
-    ShowcasePanelModel2* showcasePanelModel = nullptr;
+    ShowcasePanelModel3* showcasePanelModel = nullptr;
     SearchPanelModel* searchPanelModel = nullptr;
     SettingsPanelModel* settingsPanelModel = nullptr;
     SearchFilterModel* searchFilterModel = nullptr;
     UserNameModel* userNameModel = nullptr;
     ViewLogPanelModel* viewLogPanelModel = nullptr;
-    SettingItemListModel* settingItemListModel = nullptr;
     InputProductCodePanelModel* inputProductCodePanelModel = nullptr;
     EditUsersPanelModel* editUsersPanelModel = nullptr;
+    ComboListModel* settingItemModel = nullptr;
+    ComboListModel* calendarDayModel = nullptr;
+    ComboListModel* calendarMonthModel = nullptr;
+    ComboListModel* calendarYearModel = nullptr;
 
 signals:
     void closeLogView();
@@ -165,9 +172,8 @@ signals:
     void previousSettings();
     void resetCurrentProduct();
     void setCurrentProductFavorite(const bool);
+    void showCalendarPanel(const int, const int, const int);
     void showCurrentUser(const int, const QString&);
-    void showDateTime(const QString&);
-    void showAdminMenu(bool);
     void showConfirmationBox(const int, const QString&, const QString&);
     void showDownloadPanel();
     void showDownloadProgress(const int);
@@ -180,10 +186,8 @@ signals:
     void showPasswordInputBox(const int);
     void showPiecesInputBox(const int, const int);
     void showProductCodeInputBox(const QString&);
-    void showProductImage(const QString&);
     void showProductPanel(const QString&, const bool);
     void showSearchHierarchy(const bool);
-    void showSearchTitle(const QString&);
     void showSettingInputBox(const int, const QString&, const QString&);
     void showSettingComboBox(const int, const QString&, const int, const QString&, const QString&);
     void showSettingSlider(const int, const QString&, const int, const int, const int, const int);
@@ -191,7 +195,7 @@ signals:
     void showShowcaseSort(const int, const bool);
     void showViewLogPanel();
     void showVirtualKeyboard(const int);
-    void showWeightParam(const int, const QString&);
+    void showControlParam(const int, const QString&);
     void start();
 
 public slots:

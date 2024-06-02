@@ -46,10 +46,13 @@ Rectangle
         }
     }
 
-    Connections // Slot for signal AppManager::showSearchTitle:
+    Connections // Slot for signal AppManager::showControlParam:
     {
         target: app
-        function onShowSearchTitle(value) { searchPanelTitle.text = value }
+        function onShowControlParam(param, value)
+        {
+            if(param === 20) searchPanelTitle.text = value
+        }
     }
 
     Connections // Slot for signal AppManager::showSearchHierarchy:
@@ -278,7 +281,6 @@ Rectangle
 
         Rectangle
         {
-            id: searchPanelFilterListLayout
             Layout.column: 6
             Layout.row: 1
             Layout.preferredWidth: filterWidth

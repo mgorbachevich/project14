@@ -5,12 +5,12 @@ ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(na
 {
     Tools::debugLog("@@@@@ ProductDBTable::ProductDBTable");
 
-    addColumn("Код",                    "code",              "TEXT PRIMARY KEY");
+    addColumn("Код #",                  "code",              "TEXT PRIMARY KEY");
     addColumn("Штрих-код",              "barcode",           "TEXT");
     addColumn("Наименование",           "name",              "TEXT");
     addColumn("Краткое наименование",   "name2",             "TEXT");
     addColumn("Наименование*",          "upper_name",        "TEXT");
-    addColumn("Короткий код",           "code2",             "TEXT");
+    addColumn("Номер №",                "code2",             "TEXT");
     addColumn("Тип",                    "type",              "INT");
     addColumn("Цена",                   "price",             "INT");
     addColumn("Ценовая база",           "price_base",        "INT");

@@ -13,6 +13,29 @@ Rectangle
     color: Material.background
     property int flagSize: screenManager.flagSize()
 
+    Connections // Slot for signal AppManager::showControlParam:
+    {
+        target: app
+        function onShowControlParam(param, value)
+        {
+            switch(param)
+            {
+            case 18:
+                dateTimeText.text = value
+                break
+            case 21:
+                authorizationPanelTitle1.text = value
+                break
+            case 22:
+                authorizationPanelTitle2.text = value
+                break
+            case 23:
+                authorizationPanelTitle3.text = value
+                break
+            }
+        }
+    }
+
     Connections // Slot for signal AppManager::showEnvironmentStatus
     {
         target: app
@@ -27,16 +50,6 @@ Rectangle
             else       wifiIcon.source = "../Icons/wifi_white";
             if(value4) sdcardIcon.source = "../Icons/sdcard";
             else       sdcardIcon.source = "../Icons/sdcard_white";
-        }
-    }
-
-    Connections // Slot for signal AppManager::showDateTime:
-    {
-        target: app
-        function onShowDateTime(value)
-        {
-            //app.debugLog("@@@@@ authorizationPanel.onShowDateTime")
-            dateTimeText.text = value
         }
     }
 
@@ -166,13 +179,24 @@ Rectangle
                 Rectangle
                 {
                     width: parent.width
+                    height: screenManager.normalFontSize()
+                    color: "transparent"
+
+                    CardText
+                    {
+                        id: authorizationPanelTitle1
+                        color: Material.color(Material.BlueGrey, Material.Shade600)
+                    }
+                }
+
+                Rectangle
+                {
+                    width: parent.width
                     height: screenManager.buttonSize()
-                    color: Material.background
+                    color: "transparent"
 
                     CardTitleText { text: qsTr("Авторизация") }
                 }
-
-                Spacer {}
 
                 SubtitleText { text: qsTr("Пользователь") }
 
@@ -263,7 +287,37 @@ Rectangle
                 }
             }
         }
+
+        Row
+        {
+            Layout.column: 0
+            Layout.row: 2
+            Layout.columnSpan: 2
+            Layout.fillWidth: parent
+            Layout.preferredHeight: screenManager.normalFontSize()
+
+            CardText
+            {
+                id: authorizationPanelTitle2
+                anchors.horizontalCenter: parent.left
+                anchors.leftMargin: 0
+                anchors.rightMargin: 0
+                horizontalAlignment: Text.AlignLeft
+                color: Material.color(Material.BlueGrey, Material.Shade600)
+            }
+
+            CardText
+            {
+                id: authorizationPanelTitle3
+                anchors.horizontalCenter: parent.right
+                anchors.leftMargin: 0
+                anchors.rightMargin: 0
+                horizontalAlignment: Text.AlignRight
+                color: Material.color(Material.BlueGrey, Material.Shade600)
+            }
+        }
     }
 }
+
 
 

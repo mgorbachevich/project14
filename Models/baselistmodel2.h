@@ -14,8 +14,8 @@ public:
     enum Roles { FirstRole = Qt::UserRole + 1, SecondRole = Qt::UserRole + 2 };
 
     explicit BaseListModel2(AppManager *parent): QAbstractListModel((QObject*)parent) { appManager = parent; }
-    QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &) const override { return items.count(); }
+    QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
 protected:
@@ -24,7 +24,6 @@ protected:
     QList<StringPair> items;
     QHash<int, QByteArray> roles;
     AppManager* appManager;
-    DBRecord emptyRecord;
 };
 
 #endif // BASELISTMODEL2_H

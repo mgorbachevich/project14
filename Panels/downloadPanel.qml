@@ -31,6 +31,7 @@ Popup
             }
         }
     }
+
     Rectangle
     {
         anchors.fill: parent

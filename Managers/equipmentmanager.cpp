@@ -18,7 +18,7 @@ EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent
 
 bool EquipmentManager::isWM()
 {
-    return wm100 != nullptr && isWMStarted && WMMode != EquipmentMode_None;
+    return wm != nullptr && isWMStarted && WMMode != EquipmentMode_None;
 }
 
 bool EquipmentManager::isPM()
@@ -58,17 +58,17 @@ void EquipmentManager::create()
     }
 
     createWM();
-    if(wm100 == nullptr)
+    if(wm == nullptr)
     {
         removeWM();
         showAttention(WMPM_MESSAGE_NONE);
         return;
     }
-    int e1 = wm100->readConnectParam(path, "WmUri", WMUri);
-    if(e1 != 0) showAttention(wm100->errorDescription(e1));
+    int e1 = wm->readConnectParam(path, "WmUri", WMUri);
+    if(e1 != 0) showAttention(wm->errorDescription(e1));
     else
     {
-        switch (wm100->checkUri(WMUri))
+        switch (wm->checkUri(WMUri))
         {
         case Wm100Protocol::diDemo:
             WMMode = EquipmentMode_Demo;
@@ -84,8 +84,8 @@ void EquipmentManager::create()
     }
 
     createPM();
-    int e2 = wm100->readConnectParam(path, "PrinterUri", PMUri);
-    if(e2 != 0) showAttention(wm100->errorDescription(e2));
+    int e2 = wm->readConnectParam(path, "PrinterUri", PMUri);
+    if(e2 != 0) showAttention(wm->errorDescription(e2));
     else
     {
         switch (slpa->checkUri(PMUri))
@@ -109,11 +109,11 @@ void EquipmentManager::create()
 void EquipmentManager::createWM()
 {
     Tools::debugLog("@@@@@ EquipmentManager::createWM ");
-    if(wm100 == nullptr)
+    if(wm == nullptr)
     {
-        wm100 = new Wm100(this);
-        connect(wm100, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
-        connect(wm100, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
+        wm = new Wm100(this);
+        connect(wm, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
+        connect(wm, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
     }
  }
 
@@ -122,19 +122,19 @@ int EquipmentManager::startWM() // return error
     Tools::debugLog("@@@@@ EquipmentManager::startWM " + WMUri);
     createWM();
     int e = 0;
-    if (wm100 != nullptr && !isWMStarted)
+    if (wm != nullptr && !isWMStarted)
     {
-        e = wm100->connectDevice(WMUri);
+        e = wm->connectDevice(WMUri);
         isWMStarted = (e == 0);
-        wm100->blockSignals(!isWMStarted);
+        wm->blockSignals(!isWMStarted);
         if(isWMStarted)
         {
             if(isSystemDateTime)
             {
                 Tools::debugLog("@@@@@ EquipmentManager::startWM setSystemDateTime");
-                wm100->setDateTime(QDateTime::currentDateTime());
+                wm->setDateTime(QDateTime::currentDateTime());
             }
-            wm100->startPolling(200);
+            wm->startPolling(200);
         }
         isSystemDateTime = false;
     }
@@ -147,30 +147,30 @@ int EquipmentManager::startWM() // return error
 void EquipmentManager::removeWM()
 {
     Tools::debugLog("@@@@@ EquipmentManager::removeWM");
-    if (wm100 != nullptr)
+    if (wm != nullptr)
     {
         if(isWMStarted)
         {
             isWMStarted = false;
-            wm100->blockSignals(true);
-            wm100->stopPolling();
-            int e = wm100->disconnectDevice();
+            wm->blockSignals(true);
+            wm->stopPolling();
+            int e = wm->disconnectDevice();
             Tools::debugLog("@@@@@ EquipmentManager::removeWM error " + Tools::intToString(e));
         }
-        disconnect(wm100, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
-        disconnect(wm100, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
-        delete wm100;
-        wm100 = nullptr;
+        disconnect(wm, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
+        disconnect(wm, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
+        delete wm;
+        wm = nullptr;
     }
     isSystemDateTime = false;
 }
 
 QString EquipmentManager::WMversion() const
 {
-    if (wm100 != nullptr)
+    if (wm != nullptr)
     {
         Wm100Protocol::device_metrics dm;
-        if(wm100->getDeviceMetrics(&dm) >= 0) return Tools::intToString(dm.protocol_version);
+        if(wm->getDeviceMetrics(&dm) >= 0) return Tools::intToString(dm.protocol_version);
     }
     return "-";
 }
@@ -178,15 +178,15 @@ QString EquipmentManager::WMversion() const
 void EquipmentManager::setWMParam(const int param)
 {
     Tools::debugLog("@@@@@ EquipmentManager::setWMParam " + Tools::intToString(param));
-    if (wm100 == nullptr || !isWMStarted) return;
+    if (wm == nullptr || !isWMStarted) return;
     switch (param)
     {
     case ControlParam_Tare:
-        wm100->setTare();
+        wm->setTare();
         break;
     case ControlParam_Zero:
-        wm100->setZero();
-        wm100->setTare();
+        wm->setZero();
+        wm->setTare();
         break;
     default:
         break;
@@ -215,7 +215,7 @@ QString EquipmentManager::getWMErrorDescription(const int e) const
     case 5007: return "Ошибка: нет ответа от АЦП";
     //default: return "Неизвестная ошибка";
     }
-    return wm100 == nullptr ? "Весовой модуль не подключен" : wm100->errorDescription(e);
+    return wm == nullptr ? "Весовой модуль не подключен" : wm->errorDescription(e);
 }
 
 void EquipmentManager::onWMStatusChanged(Wm100Protocol::channel_status &s)
@@ -291,7 +291,7 @@ int EquipmentManager::startPM()
             slpa->startPolling(200);
             e = slpa->setBrightness(appManager->settings->getIntValue(SettingCode_PrinterBrightness) + 8);
             if(e >= 0) e = slpa->setOffset(appManager->settings->getIntValue(SettingCode_PrintOffset) + 8);
-            if(e >= 0) e = slpa->setPaper(appManager->settings->getIntValue(SettingCode_PrintPaper) == 0 ?
+            if(e >= 0) e = slpa->setPaper(appManager->settings->getIntValue(SettingCode_PrintPaper, true) == 0 ?
                                           Slpa100uProtocol::papertype::ptSticker :
                                           Slpa100uProtocol::papertype::ptRibbon);
             if(e >= 0) e = slpa->setSensor(appManager->settings->getBoolValue(SettingCode_PrintLabelSensor));
@@ -507,4 +507,34 @@ int EquipmentManager::print(const DBRecord& user, const DBRecord& product,
     if(e != 0) showAttention("Ошибка печати " + getPMErrorDescription(e));
     else if(isPMDemoMode()) showAttention("Демо-печать");
     return e;
+}
+
+QString EquipmentManager::getWMDescription()
+{
+    startWM();
+    Wm100Protocol::channel_specs cp;
+    wm->getChannelParam(&cp);
+    QString res, max, min, dis, tar;
+    max = "Max ";
+    int i = 0;
+    while (i < 3 && cp.ranges[i])
+    {
+        max += QString("%1/").arg(cp.ranges[i]);
+        ++i;
+    }
+    max += QString("%1 кг").arg(cp.max);
+    min = QString("Min %1 г").arg(cp.min*1000);
+    dis = "e=";
+    i = 0;
+    while (i < 4 && cp.discreteness[i])
+    {
+        if (i) dis += "/";
+        dis += QString("%1").arg(cp.discreteness[i]*1000);
+        ++i;
+    }
+    dis += " г";
+    tar = QString("T=-%1 кг").arg(cp.tare);
+    res = QString("%1   %2   %3   %4").arg(max, min, dis, tar);
+    removeWM();
+    return res;
 }

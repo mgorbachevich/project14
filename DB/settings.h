@@ -37,7 +37,7 @@ public:
     QStringList getValueList(const DBRecord& r) { return r[SettingField_ValueList].toString().split(','); }
     bool isGroup(const DBRecord& r);
     void nativeSettings(const int);
-    bool onInputValue(const int, const QString&);
+    bool setValue(const int, const QString&);
     void update(const int);
     void clear() {}
     bool read();

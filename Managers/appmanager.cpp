@@ -5,14 +5,14 @@
 #include <QThread>
 #include <QSslSocket>
 #include <QtConcurrent/QtConcurrent>
-#include "settingitemlistmodel.h"
+#include "combolistmodel.h"
 #include "appmanager.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
 #include "transactiondbtable.h"
 #include "productpanelmodel.h"
 #include "usernamemodel.h"
-#include "showcasepanelmodel2.h"
+#include "showcasepanelmodel3.h"
 #include "searchpanelmodel.h"
 #include "inputproductcodepanelmodel.h"
 #include "settingspanelmodel.h"
@@ -25,7 +25,6 @@
 #include "screenmanager.h"
 #include "keyemitter.h"
 #include "edituserspanelmodel.h"
-#include "moneycalculator.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
     QObject(application), context(qmlContext)
@@ -65,15 +64,18 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
 
     productPanelModel = new ProductPanelModel(this);
-    showcasePanelModel = new ShowcasePanelModel2(this);
+    showcasePanelModel = new ShowcasePanelModel3(this);
     settingsPanelModel = new SettingsPanelModel(this);
     searchPanelModel = new SearchPanelModel(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
     viewLogPanelModel = new ViewLogPanelModel(this);
-    settingItemListModel = new SettingItemListModel(this);
     inputProductCodePanelModel = new InputProductCodePanelModel(this);
     editUsersPanelModel = new EditUsersPanelModel(this);
+    settingItemModel = new ComboListModel(this);
+    calendarDayModel = new ComboListModel(this);
+    calendarMonthModel = new ComboListModel(this);
+    calendarYearModel = new ComboListModel(this);
 
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
@@ -82,9 +84,20 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("searchFilterModel", searchFilterModel);
     context->setContextProperty("userNameModel", userNameModel);
     context->setContextProperty("viewLogPanelModel", viewLogPanelModel);
-    context->setContextProperty("settingItemListModel", settingItemListModel);
     context->setContextProperty("inputProductCodePanelModel", inputProductCodePanelModel);
     context->setContextProperty("editUsersPanelModel", editUsersPanelModel);
+    context->setContextProperty("settingItemModel", settingItemModel);
+    context->setContextProperty("calendarDayModel", calendarDayModel);
+    context->setContextProperty("calendarMonthModel", calendarMonthModel);
+    context->setContextProperty("calendarYearModel", calendarYearModel);
+
+    QStringList days, months, years;
+    for (int i = 1; i <= 31; i++) days << Tools::intToString(i);
+    for (int i = 1; i <= 12; i++) months << Tools::intToString(i);
+    for (int i = 1; i <= 25; i++) years << Tools::intToString(i + 2023);
+    calendarDayModel->update(days);
+    calendarMonthModel->update(months);
+    calendarYearModel->update(years);
 
     if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") ||
        !Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE"))
@@ -288,7 +301,7 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
         showAttention("Ошибка настройки (неизвестная запись)!");
         return;
     }
-    if(!settings->onInputValue(settingItemCode, value)) return;
+    if(!settings->setValue(settingItemCode, value)) return;
     updateSettings(settings->getCurrentGroupCode());
     settings->write();
     QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
@@ -375,7 +388,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
 
     case DBSelector_GetProductsByGroupCodeIncludeGroups: // Отображение товаров выбранной группы:
         emit showHierarchyRoot(searchPanelModel->isHierarchyRoot());
-        emit showSearchTitle(searchPanelModel->hierarchyTitle());
+        emit showControlParam(ControlParam_SearchTitle, searchPanelModel->hierarchyTitle());
         searchPanelModel->update(records, -1);
         break;
 
@@ -397,22 +410,22 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
         break;
 
     case DBSelector_GetProductsByFilteredCode: // Отображение товаров с заданным фрагментом кода:
-        emit showSearchTitle("Поиск товаров по коду");
+        emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по коду");
         searchPanelModel->update(records, SearchFilterIndex_Code);
         break;
 
-    case DBSelector_GetProductsByFilteredNumber: // Отображение товаров с заданным фрагментом номерв:
-        emit showSearchTitle("Поиск товаров по номеру");
-        searchPanelModel->update(records, SearchFilterIndex_Number);
+    case DBSelector_GetProductsByFilteredCode2: // Отображение товаров с заданным фрагментом номерв:
+        emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по номеру");
+        searchPanelModel->update(records, SearchFilterIndex_Code2);
         break;
 
     case DBSelector_GetProductsByFilteredBarcode: // Отображение товаров с заданным фрагментом штрих-кода:
-        emit showSearchTitle("Поиск товаров по штрих-коду");
+        emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по штрих-коду");
         searchPanelModel->update(records, SearchFilterIndex_Barcode);
         break;
 
     case DBSelector_GetProductsByFilteredName: // Отображение товаров с заданным фрагментом наименования:
-        emit showSearchTitle("Поиск товаров по наименованию");
+        emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по наименованию");
         searchPanelModel->update(records, SearchFilterIndex_Name);
         break;
 
@@ -448,9 +461,8 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
     case DBSelector_GetImageByResourceCode: // Отображение картинки выбранного товара:
     {
         QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
-        emit showProductImage(imagePath);
+        emit showControlParam(ControlParam_ProductImage, imagePath);
         debugLog("@@@@@ AppManager::onDBRequestResult showProductImage " + imagePath);
-        //showMessage("Image file path", imagePath);
         break;
     }
 
@@ -575,7 +587,7 @@ void AppManager::onSettingsItemClicked(const int index)
         emit showSettingInputBox(code, name, settings->getStringValue(*r));
         break;
     case SettingType_List:
-        settingItemListModel->update(settings->getValueList(*r));
+        settingItemModel->update(settings->getValueList(*r));
         emit showSettingComboBox(code, name, settings->getIntValue(*r, true), settings->getStringValue(*r), settings->getComment(*r));
         break;
     case SettingType_IntervalNumber:
@@ -625,7 +637,7 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
         clearLog();
         break;
     case SettingCode_DateTime:
-        inputDateTime();
+        setSystemDateTime();
         break;
     case SettingCode_Equipment:
     case SettingCode_WiFi:
@@ -638,10 +650,27 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     case SettingCode_Users:
         onEditUsersClicked();
         break;
+    case SettingCode_VerificationDate:
+        showVerificationDateInputPanel();
+        break;
     default:
         showMessage(name, "Не поддерживается");
         return;
     }
+}
+
+void AppManager::showVerificationDateInputPanel()
+{
+    QStringList value = settings->getStringValue(SettingCode_VerificationDate).split(".");
+    int d = 1;
+    int m = 1;
+    int y = 2024;
+    if(value.count() > 0) d = Tools::stringToInt(value[0]);
+    if(value.count() > 1) m = Tools::stringToInt(value[1]);
+    if(value.count() > 2) y = Tools::stringToInt(value[2]);
+    QDate date(y, m, d);
+    if(!date.isValid()) { d = m = 1; y = 2024; }
+    emit showCalendarPanel(d, m, y);
 }
 
 void AppManager::updateSettings(const int groupCode)
@@ -747,6 +776,12 @@ void AppManager::startAuthorization()
         updateSystemStatus();
         db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
         showAuthorizationUsers();
+        emit showControlParam(ControlParam_AuthorizationTitle1, QString("%1   № %2").arg(
+                                  settings->getStringValue(SettingCode_ScalesName),
+                                  settings->getStringValue(SettingCode_SerialScalesNumber)));
+        emit showControlParam(ControlParam_AuthorizationTitle2, equipmentManager->getWMDescription());
+        emit showControlParam(ControlParam_AuthorizationTitle3, QString("Поверка %1").arg(
+                                  settings->getStringValue(SettingCode_VerificationDate)));
         debugLog("@@@@@ AppManager::startAuthorization Done");
     });
 }
@@ -763,7 +798,6 @@ void AppManager::refreshAll()
     // Обновить всё на экране
     debugLog("@@@@@ AppManager::refreshAll");
     setMainPage(mainPageIndex);
-    emit showAdminMenu(isAdmin());
     updateShowcase();
     emit showVirtualKeyboard(-1);
     updateSearch("", true);
@@ -780,7 +814,7 @@ void AppManager::updateSystemStatus()
 {
     QString dateTime = Tools::dateTimeFromUInt(Tools::currentDateTimeToUInt(), "%1 %2", "dd.MM", "hh:mm");
     debugLog(QString("@@@@@ AppManager::updateSystemStatus %1").arg(dateTime));
-    emit showDateTime(dateTime);
+    emit showControlParam(ControlParam_DateTime, dateTime);
     emit showEnvironmentStatus(Tools::isEnvironment(EnvironmentType_USB),
                                Tools::isEnvironment(EnvironmentType_Bluetooth),
                                Tools::isEnvironment(EnvironmentType_WiFi),
@@ -806,7 +840,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
-        productPanelModel->update(product, moneyCalculator->priceAsString(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+        productPanelModel->update(product, priceAsString(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
@@ -844,7 +878,7 @@ void AppManager::print() // Печатаем этикетку
     equipmentManager->print(users->getUser(),
                             product,
                             moneyCalculator->quantityAsString(product),
-                            moneyCalculator->priceAsString(product),
+                            priceAsString(product),
                             moneyCalculator->amountAsString(product));
 }
 
@@ -895,7 +929,7 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
         db->saveLog(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").arg(
                     QString::number(errorCode),
                     equipmentManager->getPMErrorDescription(errorCode)));
-        emit showWeightParam(ControlParam_PrinterStatus, errorCode == 0 ? "" :
+        emit showControlParam(ControlParam_PrinterStatus, errorCode == 0 ? "" :
                     equipmentManager->getPMErrorDescription(errorCode));
         break;
     }
@@ -927,15 +961,15 @@ void AppManager::updateWeightStatus()
     if(isZero) printStatus.calculateMode = true;
 
     // Рисуем флажки:
-    emit showWeightParam(ControlParam_Zero, Tools::boolToString(isZero));
-    emit showWeightParam(ControlParam_Tare, Tools::boolToString(isTare));
-    emit showWeightParam(ControlParam_WeightFixed, Tools::boolToString(isFixed));
+    emit showControlParam(ControlParam_Zero, Tools::boolToString(isZero));
+    emit showControlParam(ControlParam_Tare, Tools::boolToString(isTare));
+    emit showControlParam(ControlParam_WeightFixed, Tools::boolToString(isFixed));
     if(isWMError)
-        emit showWeightParam(ControlParam_WeightError, Tools::boolToString(true));
+        emit showControlParam(ControlParam_WeightError, Tools::boolToString(true));
     else if(isAutoPrint)
-        emit showWeightParam(ControlParam_AutoPrint, Tools::boolToString(true));
+        emit showControlParam(ControlParam_AutoPrint, Tools::boolToString(true));
     else
-        emit showWeightParam(ControlParam_WeightError, Tools::boolToString(false));
+        emit showControlParam(ControlParam_WeightError, Tools::boolToString(false));
 
     // Рисуем загаловки:
     QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
@@ -946,36 +980,36 @@ void AppManager::updateWeightStatus()
         if (isPieceProduct) pt += "/шт";
         else pt += ProductDBTable::is100gBase(product) ? "/100г" : "/кг";
     }
-    emit showWeightParam(ControlParam_WeightTitle, wt);
-    emit showWeightParam(ControlParam_PriceTitle, pt);
-    emit showWeightParam(ControlParam_AmountTitle, "СТОИМОСТЬ, руб");
+    emit showControlParam(ControlParam_WeightTitle, wt);
+    emit showControlParam(ControlParam_PriceTitle, pt);
+    emit showControlParam(ControlParam_AmountTitle, "СТОИМОСТЬ, руб");
 
     // Рисуем количество (вес/штуки):
     QString quantity = NO_DATA;
     if(isWM) quantity = isPieceProduct || !isWMError ? moneyCalculator->quantityAsString(product) : "";
-    emit showWeightParam(ControlParam_WeightValue, quantity);
-    emit showWeightParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? activeColor : passiveColor);
+    emit showControlParam(ControlParam_WeightValue, quantity);
+    emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? activeColor : passiveColor);
 
     // Рисуем цену:
     QString ps = moneyCalculator->priceAsString(product);
     bool isPrice = isProduct() && PRICE_MAX_CHARS >= ps.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    QString price = isPrice ? moneyCalculator->priceAsString(product) : NO_DATA;
-    emit showWeightParam(ControlParam_PriceValue, price);
-    emit showWeightParam(ControlParam_PriceColor, isPrice ? activeColor : passiveColor);
+    QString price = isPrice ? priceAsString(product) : NO_DATA;
+    emit showControlParam(ControlParam_PriceValue, price);
+    emit showControlParam(ControlParam_PriceColor, isPrice ? activeColor : passiveColor);
 
     // Рисуем стоимость:
     QString as = moneyCalculator->amountAsString(product);
     bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWMError)) &&
         AMOUNT_MAX_CHARS >= as.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
     QString amount = isAmount ? moneyCalculator->amountAsString(product) : NO_DATA;
-    emit showWeightParam(ControlParam_AmountValue, amount);
-    emit showWeightParam(ControlParam_AmountColor, isAmount ? activeColor : passiveColor);
+    emit showControlParam(ControlParam_AmountValue, amount);
+    emit showControlParam(ControlParam_AmountColor, isAmount ? activeColor : passiveColor);
 
     // Печатать?
     printStatus.manualPrintEnabled = isAmount && isPM && !equipmentManager->isPMError();
     emit enableManualPrint(printStatus.manualPrintEnabled);
     const bool isAutoPrintEnabled = isAutoPrint && printStatus.manualPrintEnabled;
-    emit showWeightParam(ControlParam_PrinterStatus, isWM && equipmentManager->isPMDemoMode() ? "<b>ДЕМО</b>" : "");
+    emit showControlParam(ControlParam_PrinterStatus, isWM && equipmentManager->isPMDemoMode() ? "<b>ДЕМО</b>" : "");
 
     // Автопечать
     if(printStatus.calculateMode && isPrice)
@@ -1045,9 +1079,9 @@ void AppManager::debugLog(const QString& s)
     Tools::debugLog(s);
 }
 
-void AppManager::inputDateTime()
+void AppManager::setSystemDateTime()
 {
-    debugLog("@@@@@ AppManager::inputDateTime");
+    debugLog("@@@@@ AppManager::setSystemDateTime");
     showConfirmation(ConfirmSelector_SetSystemDateTime, "Подтверждение", "Вы хотите установить системное время?");
 }
 
@@ -1210,6 +1244,19 @@ void AppManager::onBackgroundDownloadClicked()
     backgroundDownload = true;
 }
 
+void AppManager::onCalendarClosed(const QString& day, const QString& month, const QString& year)
+{
+    debugLog(QString("@@@@@ AppManager::onCalendarClosed %1.%2.%3").arg(day, month, year));
+    QDate d(Tools::stringToInt(year), Tools::stringToInt(month), Tools::stringToInt(day));
+    if (d.isValid() && Tools::stringToInt(year) > 2023)
+        onSettingInputClosed(SettingCode_VerificationDate, QString("%1.%2.%3").arg(day, month, year));
+    else
+    {
+       showVerificationDateInputPanel();
+       showAttention("Неверная дата");
+    }
+}
+
 void AppManager::onNetCommand(const NetCommand command, const QString& param)
 {
     debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
@@ -1264,8 +1311,8 @@ void AppManager::updateSearch(const QString& value, const bool hierarchyRoot)
         case SearchFilterIndex_Code:
             s = DBSelector_GetProductsByFilteredCode;
             break;
-        case SearchFilterIndex_Number:
-            s = DBSelector_GetProductsByFilteredNumber;
+        case SearchFilterIndex_Code2:
+            s = DBSelector_GetProductsByFilteredCode2;
             break;
         case SearchFilterIndex_Barcode:
             s = DBSelector_GetProductsByFilteredBarcode;

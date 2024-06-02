@@ -61,17 +61,6 @@ ApplicationWindow
         }
     }
 
-    Connections // Slot for signal AppManager::showAdminMenu:
-    {
-        target: app
-        function onShowAdminMenu(show)
-        {
-            //app.debugLog("@@@@@ mainWindow.onShowAdminMenu");
-            //adminMenuWidth = show ? screenManager.buttonSize() + screenManager.spacer() * 2 : 0
-            //adminMenuPanel.visible = show
-        }
-    }
-
     Connections // Slot for signal AppManager::showDownloadPanel:
     {
         target: app
@@ -81,6 +70,20 @@ ApplicationWindow
             Qt.createComponent("Panels/downloadPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight
+            }).open()
+        }
+    }
+
+    Connections // Slot for signal AppManager::showCalendarPanel:
+    {
+        target: app
+        function onShowCalendarPanel(day, month, year)
+        {
+            //app.debugLog("@@@@@ mainWindow.onShowCalendarPanel");
+            Qt.createComponent("Panels/calendarPanel.qml").createObject(mainWindow,
+            {
+                x: popupX, y: popupY, width: popupWidth, height: popupHeight,
+                titleText: "Дата поверки", calendarDay: day, calendarMonth: month, calendarYear: year
             }).open()
         }
     }
@@ -335,7 +338,8 @@ ApplicationWindow
                         Loader
                         {
                             focus: true
-                            source: "Panels/showcasePanel.qml"
+                            //source: "Panels/showcasePanel.qml"
+                            source: "Panels/showcasePanel3.qml"
                         }
 
                         Loader

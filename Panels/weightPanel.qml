@@ -21,12 +21,11 @@ Rectangle
     Material.background: Material.color(Material.Grey, Material.Shade900)
     color: Material.background
 
-    Connections // Slot for signal AppManager::showWeightParam:
+    Connections // Slot for signal AppManager::showControlParam:
     {
         target: app
-        function onShowWeightParam(param, value)
+        function onShowControlParam(param, value)
         {
-            //app.debugLog("@@@@@ weightPanel.onShowWeightParam %1 %2".arg(param).arg(value));
             switch (param)
             {
             case 3: // TareValue todo

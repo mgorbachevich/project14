@@ -21,22 +21,13 @@ Popup
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
 
-    Connections // Slot for signal AppManager::showWeightParam:
+    Connections // Slot for signal AppManager::showControlParam:
     {
         target: app
-        function onShowWeightParam(param, value)
+        function onShowControlParam(param, value)
         {
             if(param === 17) productPanelPrintMessage.text = value
-        }
-    }
-
-    Connections // Slot for signal AppManager::showProductImage:
-    {
-        target: app
-        function onShowProductImage(value)
-        {
-            //app.debugLog("@@@@@ productPanel onShowProductImage %1".arg(value))
-            productPanelImage.source = value
+            if(param === 19) productPanelImage.source = value
         }
     }
 
