@@ -6,8 +6,8 @@
 QHash<int, QByteArray> ShowcasePanelModel3::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractListModel::roleNames();
-    roles[FirstRole] = "title";
-    roles[SecondRole] = "name";
+    roles[FirstRole] = "top";
+    roles[SecondRole] = "bottom";
     roles[ThirdRole] = "image";
     return roles;
 }
@@ -32,26 +32,48 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
     for (int i = 0; i < products.count() && i < images.count(); i++)
     {
         DBRecord& pi = products[i];
-        QString title;
-        QString name;
+        QString top;
+        QString bottom;
         QString image = images[i];
-        switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductHeader, true))
+        QString code = pi[ProductDBTable::Code].toString();
+        QString code2 = pi[ProductDBTable::Code2].toString();
+        QString barcode = pi[ProductDBTable::Barcode].toString();
+        QString name = pi[ProductDBTable::Name].toString();
+        switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductTopText, true))
         {
-        case ShowcaseProductHeader_Code:
-            title = pi[ProductDBTable::Code].toString();
+        case ShowcaseProductText_Code:
+            top = code;
             break;
-        case ShowcaseProductHeader_Code2:
-            title = pi[ProductDBTable::Code2].toString();
+        case ShowcaseProductText_Code2:
+            top = code2;
             break;
-        case ShowcaseProductHeader_Barcode:
-            title = pi[ProductDBTable::Barcode].toString();
+        case ShowcaseProductText_Barcode:
+            top = barcode;
+            break;
+        case ShowcaseProductText_Name:
+            top = name.left(name.indexOf(" "));
             break;
         }
-        if(image == DUMMY_IMAGE_FILE || appManager->settings->getBoolValue(SettingCode_ShowcaseProductName))
-            name = pi[ProductDBTable::Name].toString();
-        Tools::debugLog(QString("@@@@@ ShowcasePanelModel3::updateImages %1 %2 %3").arg(title, name, image));
+        switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductBottomText, true))
+        {
+        case ShowcaseProductText_Code:
+            bottom = code;
+            break;
+        case ShowcaseProductText_Code2:
+            bottom = code2;
+            break;
+        case ShowcaseProductText_Barcode:
+            bottom = barcode;
+            break;
+        case ShowcaseProductText_Name:
+            bottom = name.left(name.indexOf(" "));
+            break;
+        }
+        if(image == DUMMY_IMAGE_FILE && top.isEmpty() && bottom.isEmpty())
+            bottom = name.left(name.indexOf(" "));
+        Tools::debugLog(QString("@@@@@ ShowcasePanelModel3::updateImages %1 %2 %3").arg(top, bottom, image));
         QStringList data;
-        data << title << name.left(name.indexOf(" ")) << image;
+        data << top << bottom << image;
         addItem(data);
     }
     endResetModel();

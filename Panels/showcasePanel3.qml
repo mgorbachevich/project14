@@ -189,8 +189,8 @@ Rectangle
                     Layout.column: 0
                     Layout.row: 1
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    text: model.title
-                    visible: model.title !== ""
+                    text: model.top
+                    visible: model.top !== ""
                 }
 
                 Sticker
@@ -198,8 +198,8 @@ Rectangle
                     Layout.column: 0
                     Layout.row: 3
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    text: model.name
-                    visible: model.name !== ""
+                    text: model.bottom
+                    visible: model.bottom !== ""
                 }
 
                 Spacer

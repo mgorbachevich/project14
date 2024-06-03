@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.46"
+#define APP_VERSION "2.47"
 
 // Debug log:
 #define DEBUG_LOG
@@ -14,9 +14,9 @@
 #define DEBUG_WEIGHT_STATUS false
 
 // On Start:
+#define REMOVE_SETTINGS_FILE_ON_START false
 #define CREATE_DEFAULT_DATA_ON_START false
 #define CREATE_DEFAULT_IMAGES_ON_START false
-#define REMOVE_SETTINGS_FILE_ON_START false
 #define REMOVE_DEBUG_LOG_ON_START true
 #define REMOVE_PRODUCT_DB_ON_START false
 #define REMOVE_LOG_DB_ON_START true
@@ -99,7 +99,9 @@ enum ConfirmSelector
     ConfirmSelector_ClearLog,
     ConfirmSelector_SetSystemDateTime,
     ConfirmSelector_ReplaceUser,
-    ConfirmSelector_DeleteUser
+    ConfirmSelector_DeleteUser,
+    ConfirmSelector_AddToShowcase,
+    ConfirmSelector_RemoveFromShowcase,
 };
 
 enum LogType
@@ -257,10 +259,11 @@ enum EquipmentMode
 
 enum ShowcaseProductHeader
 {
-    ShowcaseProductHeader_None = 0,
-    ShowcaseProductHeader_Code = 1,
-    ShowcaseProductHeader_Code2 = 2,
-    ShowcaseProductHeader_Barcode = 3,
+    ShowcaseProductText_None = 0,
+    ShowcaseProductText_Code = 1,
+    ShowcaseProductText_Code2 = 2,
+    ShowcaseProductText_Barcode = 3,
+    ShowcaseProductText_Name = 4,
 };
 
 enum SettingType
@@ -347,8 +350,9 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_KeyboardSoundVolume = 1052,
     SettingCode_SystemSoundVolume = 1053,
     SettingCode_Brightness = 1054,
-    SettingCode_ShowcaseProductHeader = 1055,
-    SettingCode_ShowcaseProductName = 1056,
+    SettingCode_ShowcaseProductTopText = 1055,
+    SettingCode_ShowcaseProductBottomText = 1056,
+    SettingCode_ChangeShowcase = 1057,
     //Группы:
     SettingCode_FactorySettings = 9000,
     /*

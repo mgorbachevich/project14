@@ -256,11 +256,13 @@ void AppManager::onProductFavoriteClicked()
 {
     debugLog("@@@@@ AppManager::onProductFavoriteClicked");
     onUserAction();
-    if(db->isInShowcase(product)) db->removeFromShowcase(product);
-    else db->addToShowcase(product);
-    const bool v = db->isInShowcase(product);
-    emit setCurrentProductFavorite(v);
-    updateShowcase();
+    if(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase))
+    {
+        if(db->isInShowcase(product))
+            showConfirmation(ConfirmSelector_RemoveFromShowcase, "Подтверждение", "Удалить товар из витрины?");
+        else
+            showConfirmation(ConfirmSelector_AddToShowcase, "Подтверждение", "Добавить товар в витрину?");
+    }
 }
 
 void AppManager::onProductPanelCloseClicked()
@@ -544,6 +546,16 @@ void AppManager::onConfirmationClicked(const int selector)
         break;
     case ConfirmSelector_SetSystemDateTime:
         equipmentManager->setSystemDateTime(true);
+        break;
+    case ConfirmSelector_RemoveFromShowcase:
+        db->removeFromShowcase(product);
+        emit setCurrentProductFavorite(db->isInShowcase(product));
+        updateShowcase();
+        break;
+    case ConfirmSelector_AddToShowcase:
+        db->addToShowcase(product);
+        emit setCurrentProductFavorite(db->isInShowcase(product));
+        updateShowcase();
         break;
     }
 }
