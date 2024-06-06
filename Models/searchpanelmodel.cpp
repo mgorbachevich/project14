@@ -17,20 +17,20 @@ void SearchPanelModel::update(const DBRecordList &newProducts, const int filterI
         switch(filterIndex)
         {
         case SearchFilterIndex_Code:
-            ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Code].toString(), name, price);
+            ss << QString("#%1   %2   %3").arg(ri[ProductDBTable::Code].toString(), name, price);
             break;
         case SearchFilterIndex_Code2:
-            ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Code2].toString(), name, price);
+            ss << QString("№%1   %2   %3").arg(ri[ProductDBTable::Code2].toString(), name, price);
             break;
         case SearchFilterIndex_Barcode:
             ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Barcode].toString(), name, price);
             break;
         case SearchFilterIndex_Name:
-            ss << QString("%1   %2   %3").arg( ri[ProductDBTable::Code].toString(), name, price);
+            ss << QString("#%1   %2   %3").arg( ri[ProductDBTable::Code].toString(), name, price);
             break;
         default: // Hierarchy
             if(ProductDBTable::isGroup(ri)) ss << QString("%1").arg(name);
-            else ss << QString("%1   %2   %3").arg(ri[ProductDBTable::Code].toString(), name, price);
+            else ss << QString("#%1   %2   %3").arg(ri[ProductDBTable::Code].toString(), name, price);
             break;
         }
     }

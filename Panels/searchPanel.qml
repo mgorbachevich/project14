@@ -332,6 +332,7 @@ Rectangle
                                 virtualKeyboardSet = 2
                             }
                             searchPanelFilterList.currentIndex = index
+                            searchPanelTextField.text = ""
                             app.onSearchFilterClicked(index, searchPanelTextField.text)
                         }
                     }

@@ -9,8 +9,7 @@ void EditUsersPanelModel::update(Users* userList)
     for (int i = 0; i < users->count(); i++)
     {
         const DBRecord& ui = users->get(i);
-        const QString name = Users::isAdmin(ui) ? Users::toAdminName(Users::getName(ui)) : Users::getName(ui);
-        ss << Tools::intToString(Users::getCode(ui)) + LIST_ROW_DELIMETER + name;
+        ss << Tools::intToString(Users::getCode(ui)) + LIST_ROW_DELIMETER + Users::getDisplayName(ui);
     }
     setStringList(ss);
 }

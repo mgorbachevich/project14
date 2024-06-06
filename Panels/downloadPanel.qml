@@ -23,12 +23,12 @@ Popup
         function onShowDownloadProgress(value)
         {
             //app.debugLog("@@@@@ downloadPanel.onShowDownloadProgress");
-            if(value >= 100 || value < 0) downloadPanel.close();
-            else
+            if(value >= 0 && value < 100)
             {
                 downloadPanelText.text = "%1%".arg(value)
                 downloadPanelProgressBar.value = value
             }
+            else downloadPanel.close()
         }
     }
 
@@ -127,11 +127,7 @@ Popup
                 Layout.row: 6
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 text: qsTr("ПРОДОЛЖИТЬ В ФОНОВОМ РЕЖИМЕ")
-                onClicked:
-                {
-                    app.onBackgroundDownloadClicked()
-                    downloadPanel.close()
-                }
+                onClicked: if(app.onBackgroundDownloadClicked()) downloadPanel.close()
             }
         }
     }

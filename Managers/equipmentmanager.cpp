@@ -447,7 +447,7 @@ QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& qu
     return result.length() != barcodeTemplate.length() ? "" : result;
 }
 
-int EquipmentManager::print(const DBRecord& user, const DBRecord& product,
+int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product,
                          const QString& quantity, const QString& price, const QString& amount)
 {
     Tools::debugLog("@@@@@ EquipmentManager::print");
@@ -474,10 +474,10 @@ int EquipmentManager::print(const DBRecord& user, const DBRecord& product,
         pd.validity = ""; // todo
         pd.price2 = product[ProductDBTable::Price2].toString();
         pd.certificate = product[ProductDBTable::Certificate].toString();
-        pd.message = appManager->db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
+        pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
         pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
-        pd.operatorcode = user[UserField_Code].toString();
-        pd.operatorname = user[UserField_Name].toString();
+        pd.operatorcode =  Tools::intToString(Users::getCode(user));
+        pd.operatorname = Users::getName(user);
         pd.date = Tools::dateFromUInt(dateTime, "dd.MM.yyyy");
         pd.time = Tools::timeFromUInt(dateTime, "hh:mm:ss");
         pd.labelnumber = QString::number(labelNumber);
@@ -489,12 +489,12 @@ int EquipmentManager::print(const DBRecord& user, const DBRecord& product,
     }
     if(e == 0)
     {
-        TransactionDBTable* t = (TransactionDBTable*)(appManager->db->getTable(DBTABLENAME_TRANSACTIONS));
+        TransactionDBTable* t = (TransactionDBTable*)(db->getTable(DBTABLENAME_TRANSACTIONS));
         if(t != nullptr)
         {
             DBRecord r = t->createRecord(
                         dateTime,
-                        user[UserField_Code].toInt(),
+                        Users::getCode(user),
                         Tools::stringToInt(product[ProductDBTable::Code]),
                         labelNumber,
                         Tools::stringToDouble(quantity),

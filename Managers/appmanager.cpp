@@ -54,7 +54,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     timer = new QTimer(this);
 
     connect(this, &AppManager::start, db, &DataBase::onAppStart);
-    connect(netServer, &NetServer::action, this, &AppManager::onNetAction);
+    connect(netServer, &NetServer::netCommand, this, &AppManager::onNetCommand);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
     connect(equipmentManager, &EquipmentManager::printed, this, &AppManager::onPrinted);
@@ -259,9 +259,9 @@ void AppManager::onProductFavoriteClicked()
     if(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase))
     {
         if(db->isInShowcase(product))
-            showConfirmation(ConfirmSelector_RemoveFromShowcase, "Подтверждение", "Удалить товар из витрины?");
+            showConfirmation(ConfirmSelector_RemoveFromShowcase,  "Удалить товар из витрины?");
         else
-            showConfirmation(ConfirmSelector_AddToShowcase, "Подтверждение", "Добавить товар в витрину?");
+            showConfirmation(ConfirmSelector_AddToShowcase, "Добавить товар в витрину?");
     }
 }
 
@@ -321,7 +321,7 @@ void AppManager::onLockClicked()
 {
     debugLog("@@@@@ AppManager::onLockClicked");
     onUserAction();
-    showConfirmation(ConfirmSelector::ConfirmSelector_Authorization, "Подтверждение", "Вы хотите сменить пользователя?");
+    showConfirmation(ConfirmSelector::ConfirmSelector_Authorization, "Вы хотите сменить пользователя?");
 }
 
 void AppManager::onNumberClicked(const QString &s)
@@ -635,7 +635,7 @@ void AppManager::onSettingsItemClicked(const int index)
 void AppManager::clearLog()
 {
     debugLog("@@@@@ AppManager::clearLog");
-    showConfirmation(ConfirmSelector_ClearLog, "Подтверждение", "Вы хотите очистить лог?");
+    showConfirmation(ConfirmSelector_ClearLog, "Вы хотите очистить лог?");
 }
 
 void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
@@ -749,9 +749,33 @@ void AppManager::setMainPage(const int i)
 void AppManager::onCheckAuthorizationClicked(const QString& login, const QString& password)
 {
     onUserAction();
-    QString normalizedLogin = Users::fromAdminName(login);
-    debugLog(QString("@@@@@ AppManager::onCheckAuthorizationClick %1 %2").arg(normalizedLogin, password));
-    stopAuthorization(normalizedLogin, password);
+    QString name = Users::normalizedName(login);
+    debugLog(QString("@@@@@ AppManager::onCheckAuthorizationClick %1 %2").arg(name, password));
+    stopAuthorization(name, password);
+}
+
+void AppManager::startDownload(const bool background)
+{
+    debugLog("@@@@@ AppManager::startDownload");
+    netCommandTime = Tools::currentDateTimeToUInt();
+    emit showDownloadProgress(-1);
+    if(ENABLE_BACKGROUND_DOWNLOADING)
+    {
+        if(!background) emit showDownloadPanel();
+    }
+    else
+    {
+        equipmentManager->stop();
+        emit showDownloadPanel();
+    }
+}
+
+void AppManager::stopDownload()
+{
+    debugLog("@@@@@ AppManager::stopDownload");
+    netCommandTime = 0;
+    emit showDownloadProgress(100);
+    if(!ENABLE_BACKGROUND_DOWNLOADING) equipmentManager->start();
 }
 
 void AppManager::startSettings()
@@ -845,6 +869,11 @@ void AppManager::showConfirmation(const ConfirmSelector selector, const QString 
     emit showConfirmationBox(selector, title, text);
 }
 
+void AppManager::showConfirmation(const ConfirmSelector selector, const QString &text)
+{
+    showConfirmation(selector, "Подтверждение", text);
+}
+
 void AppManager::setProduct(const DBRecord& newProduct)
 {
     product = newProduct;
@@ -887,7 +916,8 @@ void AppManager::onUserAction()
 void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
-    equipmentManager->print(users->getUser(),
+    equipmentManager->print(db,
+                            users->getCurrentUser(),
                             product,
                             moneyCalculator->quantityAsString(product),
                             priceAsString(product),
@@ -1094,7 +1124,7 @@ void AppManager::debugLog(const QString& s)
 void AppManager::setSystemDateTime()
 {
     debugLog("@@@@@ AppManager::setSystemDateTime");
-    showConfirmation(ConfirmSelector_SetSystemDateTime, "Подтверждение", "Вы хотите установить системное время?");
+    showConfirmation(ConfirmSelector_SetSystemDateTime, "Вы хотите установить системное время?");
 }
 
 void AppManager::onPopupOpened(const bool open)
@@ -1181,13 +1211,13 @@ void AppManager::showAuthorizationUsers()
     // Обновить список пользователей на экране авторизации
     DBRecordList records = users->getAll();
     userNameModel->update(records);
-    const int currentUserCode = Users::getCode(users->getUser());
+    const int currentUserCode = Users::getCode(users->getCurrentUser());
     for (int i = 0; i < records.count(); i++)
     {
         DBRecord& r = records[i];
         if(records.count() == 1 || Users::getCode(r) == currentUserCode)
         {
-            emit showCurrentUser(i, Users::getName(r));
+            emit showCurrentUser(i, Users::getDisplayName(r));
             break;
         }
     }
@@ -1209,12 +1239,12 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
             onUserAction();
             return;
         }
-        users->setUser(u);
+        users->setCurrentUser(u);
     }
 
     debugLog("@@@@@ AppManager::stopAuthorization OK");
     db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
-                    title, login, Tools::intToString(Users::getCode(users->getUser()))));
+                    title, login, Tools::intToString(Users::getCode(users->getCurrentUser()))));
     setMainPage(MainPageIndex_Showcase);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
@@ -1227,6 +1257,22 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
         users->clear();
         debugLog("@@@@@ AppManager::stopAuthorization Done");
     });
+}
+
+void AppManager::onParseSetRequest(const QString& json, QHash<DBTable*, DBRecordList>& downloadedRecords)
+{
+    if(settings->insertOrReplace(json)) settings->write();
+    if(users->insertOrReplace(json)) users->write();
+
+    for (DBTable* t : db->getTables())
+    {
+        if(t == nullptr) continue;
+        DBRecordList tableRecords = t->parse(json);
+        if(tableRecords.count() == 0) continue;
+        Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Table %1, records %2").
+                arg(t->name, QString::number(tableRecords.count())));
+        downloadedRecords.insert(t, tableRecords);
+    }
 }
 
 void AppManager::onPasswordInputClosed(const int code, const QString& inputPassword)
@@ -1251,9 +1297,10 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
     }
 }
 
-void AppManager::onBackgroundDownloadClicked()
+bool AppManager::onBackgroundDownloadClicked()
 {
-    backgroundDownload = true;
+    if(!ENABLE_BACKGROUND_DOWNLOADING) showAttention("Фоновая загрузка запрещена");
+    return ENABLE_BACKGROUND_DOWNLOADING;
 }
 
 void AppManager::onCalendarClosed(const QString& day, const QString& month, const QString& year)
@@ -1269,7 +1316,7 @@ void AppManager::onCalendarClosed(const QString& day, const QString& month, cons
     }
 }
 
-void AppManager::onNetCommand(const NetCommand command, const QString& param)
+void AppManager::onNetCommand(const int command, const QString& param)
 {
     debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
     switch (command)
@@ -1278,19 +1325,10 @@ void AppManager::onNetCommand(const NetCommand command, const QString& param)
         showAttention(param);
         break;
     case NetCommand_StartLoad:
-        netCommandTime = Tools::currentDateTimeToUInt();
-        emit showDownloadProgress(-1);
-        if(Tools::stringToInt(param) == 1)
-        {
-            backgroundDownload = false;
-            emit showDownloadPanel();
-        }
-        else backgroundDownload = true;
+        startDownload(Tools::stringToInt(param) == 1);
         break;
     case NetCommand_StopLoad:
-        netCommandTime = 0;
-        emit showDownloadProgress(100);
-        backgroundDownload = true;
+        stopDownload();
         break;
     case NetCommand_Progress:
         netCommandTime = Tools::currentDateTimeToUInt();

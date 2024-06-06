@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
     QFontDatabase::addApplicationFont(":/Fonts/impact.ttf");
     QFontDatabase::addApplicationFont(":/Fonts/sserifer.fon");
     QFontDatabase::addApplicationFont(":/Fonts/times.ttf");
-    //qDebug() <<  "@@@@@ main font families: " << QFontDatabase::families();
 
     QSize screenSize = QSize(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
 

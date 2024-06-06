@@ -57,7 +57,6 @@ public:
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
     QString getProductMessageById(const QString&);
-    void onParseSetRequest(const QString&);
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     void select(const DBSelector, const DBRecordList&);
@@ -83,6 +82,7 @@ protected:
     bool executeSelectSQL(const QSqlDatabase&, DBTable*, const QString&, DBRecordList&);
     bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
     void removeOldLogRecords();
+    bool isLogging(const int);
 
     bool started = false;
     QSqlDatabase productDB;

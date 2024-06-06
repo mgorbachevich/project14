@@ -35,19 +35,24 @@ class AppManager : public QObject
 public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
-    void onNetCommand(const NetCommand, const QString&);
+    void showConfirmation(const ConfirmSelector, const QString&);
     QString priceAsString(const DBRecord& r) { return moneyCalculator->priceAsString(r); }
+    void onNetAction(const int);
+    void netDownload(QHash<DBTable*, DBRecordList> rs, int& s, int& e) { db->netDownload(rs, s, e); }
+    QString netDelete(const QString& t, const QString& s) { return db->netDelete(t, s); }
+    QString netUpload(const QString& t, const QString& s, const bool b) { return db->netUpload(t, s, b); }
+    void onParseSetRequest(const QString&, QHash<DBTable*, DBRecordList>&);
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
     Q_INVOKABLE void clickSound();
     Q_INVOKABLE void debugLog(const QString&);
-    Q_INVOKABLE bool isAdmin() { return users->isAdmin(users->getUser()); }
+    Q_INVOKABLE bool isAdmin() { return users->isAdmin(users->getCurrentUser()); }
     Q_INVOKABLE bool isAuthorizationOpened() { return mainPageIndex == MainPageIndex_Authorization; }
     Q_INVOKABLE bool isSettingsOpened() { return isSettings; }
     Q_INVOKABLE void onAddUserClicked();
     Q_INVOKABLE void onAdminSettingsClicked();
-    Q_INVOKABLE void onBackgroundDownloadClicked();
+    Q_INVOKABLE bool onBackgroundDownloadClicked();
     Q_INVOKABLE void onCalendarClosed(const QString&, const QString&, const QString&);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
@@ -90,7 +95,6 @@ public:
     Q_INVOKABLE void showAttention(const QString& s) { showMessage("ВНИМАНИЕ!", s); }
     Q_INVOKABLE void showMessage(const QString&, const QString&);
 
-    DataBase* db = nullptr;
     Settings* settings = nullptr;
     Users* users = nullptr;
     EquipmentManager* equipmentManager = nullptr;
@@ -113,9 +117,11 @@ private:
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showVerificationDateInputPanel();
     void startAuthorization();
+    void startDownload(const bool);
     void startEquipment();
     void startSettings();
     void stopAuthorization(const QString&, const QString&);
+    void stopDownload();
     void stopEquipment();
     void stopSettings();
     void updateSearch(const QString&, const bool hierarchyRoot = false);
@@ -124,6 +130,7 @@ private:
     void updateSettings(const int);
     void updateWeightStatus();
 
+    DataBase* db = nullptr;
     AppInfo appInfo;
     DBRecord product;
     bool isResetProductNeeded = false;
@@ -139,7 +146,6 @@ private:
     NetServer* netServer = nullptr;
     bool isRefreshNeeded = false;
     int netRoutes = 0;
-    bool backgroundDownload = false;
 
     // UI:
     QQmlContext* context = nullptr;
@@ -204,9 +210,9 @@ public slots:
     void onEnterChar(const QChar) { clickSound(); onUserAction(); }
     void onEnterKey(const Qt::Key) { clickSound(); onUserAction(); }
     void onEquipmentParamChanged(const int, const int);
-    void onNetAction(const int);
     void onPrinted(const DBRecord&);
     void onTimer();
+    void onNetCommand(const int, const QString&);
 };
 
 #endif // APPMANAGER_H

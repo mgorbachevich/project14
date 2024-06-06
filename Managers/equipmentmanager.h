@@ -7,6 +7,7 @@
 #include "externalmessager.h"
 
 class AppManager;
+class DataBase;
 class Slpa100u;
 class LabelCreator;
 
@@ -38,7 +39,7 @@ public:
 
     // Print Manager:
     QString PMversion() const;
-    int print(const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
+    int print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
     bool isPMDemoMode() const { return PMMode == EquipmentMode_Demo; }
     QString getPMErrorDescription(const int) const;

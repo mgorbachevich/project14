@@ -35,8 +35,8 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
         QString top;
         QString bottom;
         QString image = images[i];
-        QString code = pi[ProductDBTable::Code].toString();
-        QString code2 = pi[ProductDBTable::Code2].toString();
+        QString code = "#" + pi[ProductDBTable::Code].toString();
+        QString code2 = "№" + pi[ProductDBTable::Code2].toString();
         QString barcode = pi[ProductDBTable::Barcode].toString();
         QString name = pi[ProductDBTable::Name].toString();
         switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductTopText, true))
@@ -47,8 +47,8 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
         case ShowcaseProductText_Code2:
             top = code2;
             break;
-        case ShowcaseProductText_Barcode:
-            top = barcode;
+        case ShowcaseProductText_Sort:
+            top = (sort == ShowcaseSort_Code2) ? code2 : code;
             break;
         case ShowcaseProductText_Name:
             top = name.left(name.indexOf(" "));
@@ -62,8 +62,8 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
         case ShowcaseProductText_Code2:
             bottom = code2;
             break;
-        case ShowcaseProductText_Barcode:
-            bottom = barcode;
+        case ShowcaseProductText_Sort:
+            bottom = (sort == ShowcaseSort_Code2) ? code2 : code;
             break;
         case ShowcaseProductText_Name:
             bottom = name.left(name.indexOf(" "));

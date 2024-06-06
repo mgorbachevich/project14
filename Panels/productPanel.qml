@@ -82,7 +82,7 @@ Popup
                     app.onProductPanelCloseClicked()
                     break
                 case Qt.Key_Q: // Поиск
-                    app.onMainPageSwiped(2)
+                    app.onMainPageSwiped(1)
                     app.onProductPanelCloseClicked()
                     break;
                 case Qt.Key_T: // >T<

@@ -7,6 +7,7 @@
 #include <QHttpServer>
 #include <QHttpServerResponse>
 #include "externalmessager.h"
+#include <constants.h>
 
 #ifdef SSL
 #include <QSslCertificate>
@@ -16,7 +17,6 @@
 #define SERVER_VERSION "1.5"
 
 class AppManager;
-class RequestParser;
 
 class NetServer : public ExternalMessager
 {
@@ -29,13 +29,21 @@ public:
     void stop();
     QString version() { return SERVER_VERSION; }
     bool isStarted() { return server != nullptr; }
+    static QString makeResultJson(const int, const QString&, const QString&, const QString&);
+    static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 
 protected:
+    QString parseGetRequest(const NetAction, const QByteArray&);
+    QString parseSetRequest(const QByteArray&);
+    QString toJsonString(const QByteArray&);
+    QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
+    bool parseCommand(const QByteArray&);
+    static QHttpServerResponse makeResponse(const QString&);
+
     QHttpServer* server = nullptr;
-    RequestParser* parser = nullptr;
 
 signals:
-    void action(const int);
+    void netCommand(const int, const QString&);
 };
 
 #endif // NETSERVER_H

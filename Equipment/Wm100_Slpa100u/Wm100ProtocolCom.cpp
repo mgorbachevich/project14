@@ -1,3 +1,4 @@
+#include <QThread>
 #include <QRegularExpression>
 #include "Wm100ProtocolCom.h"
 #include "IO/iocom.h"
@@ -35,43 +36,47 @@ int Wm100ProtocolCom::executeCommand(wmcommand cmd, const QByteArray &out, QByte
 
     int res = 0;
 
-    io->clear();
-    QByteArray buf;
-
-    buf += out.size()+1;
-    buf += cmd;
-    buf += out;
-    buf += crc(buf);
-    buf.push_front(STX);
-
-    if (!io->write(buf)) res = -4;
-
-    buf.clear();
-    // ACK
-    if (!res)
-        if (!io->read(buf,1) || buf[0] != ACK) res = -5;
-    // STX
-    if (!res)
-        if (!io->read(buf,1) || buf[1] != STX) res = -5;
-    // length
-    if (!res)
-        if (!io->read(buf,1) || buf[2] < 2) res = -5;
-    // other
-    if (!res)
-        if (!io->read(buf,buf[2]) || buf[3] != (char)cmd) res = -5;
-    // crc
-    if (!res)
+    for (int i = 0; i < 3; i++)
     {
-        buf.remove(0,2);
-        char c = crc(buf);
-        if (!io->read(buf,1) || buf[buf.size()-1] != c) res = -5;
-        else
+        io->clear();
+        QByteArray buf;
+
+        buf += out.size()+1;
+        buf += cmd;
+        buf += out;
+        buf += crc(buf);
+        buf.push_front(STX);
+
+        if (!io->write(buf)) res = -4;
+
+        buf.clear();
+        // ACK
+        if (!res)
+            if (!io->read(buf,1) || buf[0] != ACK) res = -5;
+        // STX
+        if (!res)
+            if (!io->read(buf,1) || buf[1] != STX) res = -5;
+        // length
+        if (!res)
+            if (!io->read(buf,1) || buf[2] < 2) res = -5;
+        // other
+        if (!res)
+            if (!io->read(buf,buf[2]) || buf[3] != (char)cmd) res = -5;
+        // crc
+        if (!res)
         {
-            res = static_cast<quint8>(buf[2]);
-            in = buf.mid(3,buf.size()-4);
+            buf.remove(0,2);
+            char c = crc(buf);
+            if (!io->read(buf,1) || buf[buf.size()-1] != c) res = -5;
+            else
+            {
+                res = static_cast<quint8>(buf[2]);
+                in = buf.mid(3,buf.size()-4);
+            }
+            if (!res) break;
+            QThread::msleep(50);
         }
     }
-    io->clear();
     return res;
 }
 

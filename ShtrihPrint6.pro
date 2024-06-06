@@ -121,7 +121,6 @@ HEADERS += \
     Models/viewlogpanelmodel.h \
     Net/netparams.h \
     Net/netserver.h \
-    Net/requestparser.h \
 
 SOURCES += \
     Models/showcasepanelmodel3.cpp \
@@ -220,7 +219,6 @@ SOURCES += \
     Models/productpanelmodel.cpp \
     Models/searchpanelmodel.cpp \
     Net/netserver.cpp \
-    Net/requestparser.cpp \
 
 RESOURCES += \
     main.qml \

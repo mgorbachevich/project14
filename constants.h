@@ -4,10 +4,10 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.47"
+#define APP_VERSION "2.48"
 
 // Debug log:
-#define DEBUG_LOG
+//#define DEBUG_LOG_FILE
 #define DEBUG_ONTIMER_MESSAGE false
 #define DEBUG_MEMORY_MESSAGE false
 #define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
@@ -68,6 +68,7 @@
 #define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 #define DEFAULT_ADMIN_CODE 0
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS true
+#define ENABLE_BACKGROUND_DOWNLOADING false
 
 // UI:
 #define DEFAULT_SCREEN_WIDTH 568
@@ -262,7 +263,7 @@ enum ShowcaseProductHeader
     ShowcaseProductText_None = 0,
     ShowcaseProductText_Code = 1,
     ShowcaseProductText_Code2 = 2,
-    ShowcaseProductText_Barcode = 3,
+    ShowcaseProductText_Sort = 3,
     ShowcaseProductText_Name = 4,
 };
 

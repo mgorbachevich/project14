@@ -14,12 +14,12 @@ Users::Users(AppManager *parent): JsonArrayFile(USERS_FILE, parent)
     fields.insert(UserField_Password, "password");
 }
 
-DBRecord &Users::getUser()
+DBRecord &Users::getCurrentUser()
 {
     if(user.isEmpty())
     {
         getAll();
-        setUser(items[0]);
+        setCurrentUser(items[0]);
     }
     return user;
 }
@@ -53,7 +53,7 @@ void Users::onDeleteUser(const  QString& code)
     }
     inputUser = createUser(code, getName(*p), getPassword(*p), isAdmin(*p));
     appManager->showConfirmation(ConfirmSelector::ConfirmSelector_DeleteUser,
-                "Подтверждение", QString("Удалить пользователя %1 с кодом %2?").arg(getName(*p), code));
+                QString("Удалить пользователя %1 с кодом %2?").arg(getName(*p), code));
 }
 
 void Users::onInputUser(const QString& code, const QString& name, const QString& password, const bool admin)
@@ -79,7 +79,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     {
         if(!isEqual(*p, inputUser))
             appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
-                "Подтверждение", QString("Уже есть пользователь с кодом %1, заменить?").arg(code));
+                QString("Уже есть пользователь с кодом %1, заменить?").arg(code));
         return;
     }
     DBRecord u = getByName(name);
@@ -87,7 +87,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     {
         if(!isEqual(u, inputUser))
             appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
-                "Подтверждение", QString("Уже есть пользователь с именем %1, заменить?").arg(name));
+                QString("Уже есть пользователь с именем %1, заменить?").arg(name));
         return;
     }
     if(!isEqual(u, inputUser)) replaceOrInsertInputUser();
@@ -148,13 +148,19 @@ void Users::update()
 
 QString Users::toAdminName(const QString& name)
 {
-    return USER_ADMIN_PREFIX + name + USER_ADMIN_POSTFIX;
+    return name + USER_ADMIN_POSTFIX;
 }
 
-QString Users::fromAdminName(const QString& name)
+QString Users::normalizedName(const QString& name)
 {
     QString s = name;
-    return s.remove(USER_ADMIN_PREFIX).remove(USER_ADMIN_POSTFIX);
+    return s.remove(USER_ADMIN_POSTFIX);
+}
+
+QString Users::getDisplayName(const DBRecord& r)
+{
+    const QString name = getName(r);
+    return isAdmin(r) ? toAdminName(name) : name;
 }
 
 bool Users::isEqual(const DBRecord& u1, const DBRecord& u2)

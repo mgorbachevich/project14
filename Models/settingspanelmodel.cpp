@@ -8,7 +8,6 @@ void SettingsPanelModel::update(Settings& settings)
     beginResetModel();
     items.clear();
     QList<int> groupItemCodes = settings.getCurrentGroupCodes();
-    //qDebug() << "@@@@@ SettingsPanelModel::update groupItemCodes =" << groupItemCodes;
     for (int i = 0; i < groupItemCodes.count(); i++)
     {
         int itemCode = groupItemCodes[i];

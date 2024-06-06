@@ -10,7 +10,7 @@
 #include "logdbtable.h"
 #include "tools.h"
 #include "constants.h"
-#include "requestparser.h"
+#include "netserver.h"
 #include "appmanager.h"
 
 DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
@@ -291,11 +291,15 @@ bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
     return false;
 }
 
+bool DataBase::isLogging(const int type)
+{
+    int logging = appManager->settings->getIntValue(SettingCode_Logging);
+    return logging > 0 && type > 0 && type <= logging;
+}
+
 void DataBase::saveLog(const int type, const int source, const QString &comment)
 {
-    if (!started) return;
-    int logging = appManager->settings->getIntValue(SettingCode_Logging);
-    if (type > 0 && type <= logging)
+    if (started && isLogging(type))
     {
         Tools::debugLog(QString("@@@@@ DataBase::saveLog %1 %2 %3").arg(QString::number(type), QString::number(source), comment));
         LogDBTable* t = (LogDBTable*)getTable(DBTABLENAME_LOG);
@@ -566,8 +570,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    int logging = appManager->settings->getIntValue(SettingCode_Logging);
-    bool detailedLog = logging >= LogType_Info;
+    bool detailedLog = isLogging(LogType_Info);
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
 
@@ -615,7 +618,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
             arg(tableName, QString::number(errorCount), description);
     saveLog(LogType_Error, LogSource_DB, s);
     DBRecordList records;
-    QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
+    QString resultJson = NetServer::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
     Tools::debugLog(QString("@@@@@ DataBase::netDelete result = %1").arg(resultJson));
     return resultJson;
 }
@@ -632,7 +635,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
-    bool detailedLog = appManager->settings->getIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = isLogging(LogType_Info);
     DBRecordList records;
     DBTable* t = getTable(tableName);
     QStringList codes = codesToUpload.split(','); // Коды через запятую
@@ -648,7 +651,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
         QStringList codes = selectAllCodes(tempDB, t);
         saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов завершена. Таблица: %1. Записи: %2").
                 arg(tableName, QString::number(codes.count())));
-        const QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, codes);
+        const QString resultJson = NetServer::makeResultJson(errorCode, description, tableName, codes);
         Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
         return resultJson;
     }
@@ -691,7 +694,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     }
     saveLog(LogType_Error, LogSource_DB, QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
             arg(tableName, QString::number(recordCount), QString::number(errorCount), description));
-    const QString resultJson = RequestParser::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
+    const QString resultJson = NetServer::makeResultJson(errorCode, description, tableName, DBTable::toJsonString(t, records));
     Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
     return resultJson;
 }
@@ -700,7 +703,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
 {
     Tools::debugLog("@@@@@ DataBase::netDownload");
     if(!open(tempDB, DB_TEMP_NAME)) return;
-    bool detailedLog = appManager->settings->getIntValue(SettingCode_Logging) >= LogType_Info;
+    bool detailedLog = isLogging(LogType_Info);
     QList tables = records.keys();
     for (DBTable* table : tables)
     {
@@ -725,12 +728,6 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
             Tools::debugLog("@@@@@ DataBase::netDownload "+ s);
         }
     }
-}
-
-void DataBase::onParseSetRequest(const QString& json)
-{
-    if(appManager->settings->insertOrReplace(json)) appManager->settings->write();
-    if(appManager->users->insertOrReplace(json)) appManager->users->write();
 }
 
 bool DataBase::isInShowcase(const DBRecord& record)

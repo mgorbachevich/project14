@@ -392,7 +392,7 @@ void Tools::debugLog(const QString &text)
 {
     QString s = text;
     qDebug() << s.replace("\n", " ").replace("\r", " ");
-#ifdef DEBUG_LOG
+#ifdef DEBUG_LOG_FILE
     QFile f(dbPath(DEBUG_LOG_NAME));
     if (f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
     {

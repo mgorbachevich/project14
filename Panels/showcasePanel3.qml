@@ -11,7 +11,7 @@ Rectangle
     Material.background: Material.color(Material.Grey, Material.Shade100)
     color: Material.background
     property int buttonPanelWidth: screenManager.buttonSize() + screenManager.spacer() * 2
-    property int imageSize: (width - buttonPanelWidth - screenManager.showcaseRowImages() * 1) / screenManager.showcaseRowImages()
+    property int imageSize: (width - buttonPanelWidth) / screenManager.showcaseRowImages()
     focus: true
 
     Connections // Slot for signal AppManager::showMainPage:
@@ -57,11 +57,8 @@ Rectangle
             case Qt.Key_Z: // >0<
                 app.onZeroClicked()
                 break
-            case Qt.Key_Right:
+            case Qt.Key_Right: case Qt.Key_Q:
                 app.onMainPageSwiped(1)
-                break;
-            case Qt.Key_Q:
-                app.onMainPageSwiped(2)
                 break;
             case Qt.Key_Up:
                 if (!showcasePanelGrid.atYBeginning) showcasePanelGrid.flick(0, screenManager.flickVelocity())
@@ -138,12 +135,12 @@ Rectangle
             width: parent.width - buttonPanelWidth
             height: parent.height
             leftMargin: 0
-            topMargin: 1
-            rightMargin: 1
-            bottomMargin: 1
+            topMargin: 0
+            rightMargin: 0
+            bottomMargin: 0
             clip: true
-            cellWidth: imageSize + 1
-            cellHeight: imageSize + 1
+            cellWidth: imageSize
+            cellHeight: imageSize
             /*
             ScrollBar.vertical: ScrollBar
             {
@@ -165,8 +162,9 @@ Rectangle
                     Layout.column: 0
                     Layout.row: 0
                     Layout.rowSpan: 5
-                    Layout.fillWidth: parent
-                    Layout.fillHeight: parent
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Layout.preferredWidth: imageSize - 2
+                    Layout.preferredHeight: imageSize - 2
                     fillMode: Image.PreserveAspectFit
                     source: model.image
 
@@ -175,6 +173,18 @@ Rectangle
                         anchors.fill: parent
                         onClicked: app.onShowcaseClicked(index)
                     }
+                }
+
+                Rectangle
+                {
+                    Layout.column: 0
+                    Layout.row: 0
+                    Layout.rowSpan: 5
+                    Layout.fillWidth: parent
+                    Layout.fillHeight: parent
+                    color: "transparent"
+                    border.width: 1
+                    border.color: Material.color(Material.BlueGrey, Material.Shade100)
                 }
 
                 Spacer
