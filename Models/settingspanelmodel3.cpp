@@ -1,10 +1,18 @@
-#include "settingspanelmodel.h"
+#include "settingspanelmodel3.h"
 #include "settings.h"
 #include "tools.h"
 
-void SettingsPanelModel::update(Settings& settings)
+QHash<int, QByteArray> SettingsPanelModel3::roleNames() const
 {
-    Tools::debugLog("@@@@@ SettingsPanelModel::update " + Tools::intToString(settings.getCurrentGroupCode()));
+    QHash<int, QByteArray> roles = QAbstractListModel::roleNames();
+    roles[FirstRole] = "name";
+    roles[SecondRole] = "value";
+    return roles;
+}
+
+void SettingsPanelModel3::update(Settings& settings)
+{
+    Tools::debugLog("@@@@@ SettingsPanelModel3::update " + Tools::intToString(settings.getCurrentGroupCode()));
     beginResetModel();
     items.clear();
     QList<int> groupItemCodes = settings.getCurrentGroupCodes();
@@ -23,8 +31,9 @@ void SettingsPanelModel::update(Settings& settings)
                 color = "<font color='#78909c'>";
                 break;
             }
-            addItem(color + settings.getName(*ri),
-                    color + settings.getStringValue(*ri));
+            QStringList data;
+            data << color + settings.getName(*ri) << color + settings.getStringValue(*ri);
+            addItem(data);
         }
     }
     endResetModel();

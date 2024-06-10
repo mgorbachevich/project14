@@ -19,9 +19,10 @@ public:
     EquipmentManager(AppManager*);
     ~EquipmentManager() { stop(); }
     void create();
-    void start() { startWM(); startPM(); }
-    void stop() { removeWM(); removePM(); }
+    void start();
+    void stop();
     void setSystemDateTime(const bool v) { isSystemDateTime = v; }
+    void pause(const bool);
 
     // Weight Manager:
     QString WMversion() const;

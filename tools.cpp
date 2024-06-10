@@ -298,6 +298,14 @@ bool Tools::copyFile(const QString& from, const QString& to)
     return QFile::copy(from, to);
 }
 
+bool Tools::renameFile(const QString& from, const QString& to)
+{
+    debugLog(QString("@@@@@ Tools::renameFile %1 >> %2").arg(from, to));
+    if (!isFileExists(from)) return false;
+    removeFile(to);
+    return QFile::rename(from, to);
+}
+
 bool Tools::removeFile(const QString &path)
 {
     debugLog("@@@@@ Tools::removeFile " + path);

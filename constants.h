@@ -4,14 +4,16 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.48"
+#define APP_VERSION "2.49"
 
-// Debug log:
+// Debug and Log:
 //#define DEBUG_LOG_FILE
 #define DEBUG_ONTIMER_MESSAGE false
 #define DEBUG_MEMORY_MESSAGE false
 #define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
 #define DEBUG_WEIGHT_STATUS false
+#define DB_PATH_MESSAGE false
+#define WRITE_CONFIG_FILE_MESSAGE false
 
 // On Start:
 #define REMOVE_SETTINGS_FILE_ON_START false
@@ -48,18 +50,15 @@
 #endif
 
 // Other:
-#define SHOW_PATH_MESSAGE false
 #define SERVER_WAIT_FOR_REPLY_MSEC 5000
 #define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define WAIT_SOUND_MSEC 500
 #define WAIT_DRAWING_MSEC 150
-#define WAIT_NET_ACTION_SEC 3
 #define WAIT_NET_COMMAND_SEC 60
 #define EOL "\r\n"
 #define SHOWCASE_ROW_IMAGES 5
-#define LIST_ROW_DELIMETER "   "
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
 #define PRICE_MAX_CHARS 6
 #define AMOUNT_MAX_CHARS 8
@@ -69,6 +68,7 @@
 #define DEFAULT_ADMIN_CODE 0
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS true
 #define ENABLE_BACKGROUND_DOWNLOADING false
+#define EQUIPMENT_POLLING_INTERVAL 200
 
 // UI:
 #define DEFAULT_SCREEN_WIDTH 568
@@ -191,18 +191,6 @@ enum ControlParam
     ControlParam_AuthorizationTitle1 = 21,
     ControlParam_AuthorizationTitle2 = 22,
     ControlParam_AuthorizationTitle3 = 23,
-};
-
-enum NetAction
-{
-    NetAction_Upload,
-    NetAction_UploadFinished,
-    NetAction_Download,
-    NetAction_DownloadFinished,
-    NetAction_Delete,
-    NetAction_DeleteFinished,
-    NetAction_Command,
-    NetAction_CommandFinished,
 };
 
 enum NetCommand

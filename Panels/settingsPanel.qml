@@ -122,23 +122,18 @@ Popup
                 model: settingsPanelModel
                 delegate: Row
                 {
+                    leftPadding: screenManager.spacer() * 2
+                    topPadding: screenManager.spacer()
+                    rightPadding: screenManager.spacer()
+                    bottomPadding: screenManager.spacer()
+                    spacing: screenManager.spacer() * 2
+
                     Label
                     {
-                        width: settingPanelList.width * 6 / 10
-                        leftPadding: screenManager.spacer() * 2
-                        topPadding: screenManager.spacer()
-                        rightPadding: screenManager.spacer()
-                        bottomPadding: screenManager.spacer()
+                        width: (settingPanelList.width - screenManager.spacer() * 5) * 0.6
                         font { pointSize: screenManager.normalFontSize() }
                         wrapMode: Text.WordWrap
-                        text: model.first // Roles::FirstRole
-                        /*
-                        background: Rectangle
-                        {
-                            color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
-                                                     Material.color(Material.Grey, Material.Shade200)
-                        }
-                        */
+                        text: model.name
                         MouseArea
                         {
                             anchors.fill: parent
@@ -148,18 +143,10 @@ Popup
 
                     Label
                     {
-                        width: settingPanelList.width * 4 / 10
+                        width: (settingPanelList.width - screenManager.spacer() * 5) * 0.4
                         font { pointSize: screenManager.normalFontSize() }
-                        padding: screenManager.spacer()
                         wrapMode: Text.WordWrap
-                        text: model.second // Roles::SecondRole
-                        /*
-                        background: Rectangle
-                        {
-                            color: index % 2 === 0 ? Material.color(Material.Grey, Material.Shade50) :
-                                                     Material.color(Material.Grey, Material.Shade200)
-                        }
-                        */
+                        text: model.value
                         MouseArea
                         {
                             anchors.fill: parent

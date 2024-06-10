@@ -187,7 +187,7 @@ Popup
                 {
                     leftPadding: screenManager.spacer() * 2
                     rightPadding: screenManager.spacer()
-                    font { pointSize: screenManager.normalFontSize(); family: "Roboto" }
+                    font.pointSize: screenManager.normalFontSize()
                     color: Material.color(Material.BlueGrey, Material.Shade50)
                     text: model.value // Roles::ValueRole
                 }

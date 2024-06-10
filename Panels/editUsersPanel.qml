@@ -126,20 +126,40 @@ Popup
                 }
                 */
                 model: editUsersPanelModel
-                delegate: Label
+                delegate: Row
                 {
-                    width: editUsersPanelList.width
-                    font { pointSize: screenManager.normalFontSize() }
                     leftPadding: screenManager.spacer() * 2
                     topPadding: screenManager.spacer()
                     rightPadding: screenManager.spacer()
                     bottomPadding: screenManager.spacer()
-                    color: Material.color(Material.BlueGrey, Material.Shade900)
-                    text: model.value // Roles::ValueRole
-                    MouseArea
+                    spacing: screenManager.spacer() * 2
+
+                    Label
                     {
-                        anchors.fill: parent
-                        onClicked: app.onEditUsersPanelClicked(index)
+                        width: (editUsersPanelList.width - screenManager.spacer() * 5) * 0.08
+                        font { pointSize: screenManager.normalFontSize() }
+                        color: Material.color(Material.BlueGrey, Material.Shade900)
+                        horizontalAlignment: Text.AlignRight
+                        text: model.code
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onEditUsersPanelClicked(index)
+                        }
+                    }
+
+                    Label
+                    {
+                        width: (editUsersPanelList.width - screenManager.spacer() * 5) * 0.92
+                        font { pointSize: screenManager.normalFontSize() }
+                        color: Material.color(Material.BlueGrey, Material.Shade900)
+                        horizontalAlignment: Text.AlignLeft
+                        text: model.name
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onEditUsersPanelClicked(index)
+                        }
                     }
                 }
             }

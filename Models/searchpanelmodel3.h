@@ -1,15 +1,16 @@
-#ifndef SEARCHPANELMODEL_H
-#define SEARCHPANELMODEL_H
+#ifndef SEARCHPANELMODEL3_H
+#define SEARCHPANELMODEL3_H
 
-#include "baselistmodel.h"
+#include "baselistmodel3.h"
 #include "constants.h"
 
-class SearchPanelModel : public BaseListModel
+class SearchPanelModel3 : public BaseListModel3
 {
     Q_OBJECT
 
 public:
-    explicit SearchPanelModel(AppManager *parent): BaseListModel(parent) {}
+    explicit SearchPanelModel3(AppManager *parent): BaseListModel3(parent) {}
+    QHash<int, QByteArray> roleNames() const override;
     DBRecord &productByIndex(const int);
     void setHierarchyRoot(const bool v) { if(v) groupHierarchy.clear(); }
     bool isHierarchyRoot();
@@ -28,4 +29,4 @@ private:
     DBRecordList groupHierarchy;
 };
 
-#endif // SEARCHPANELMODEL_H
+#endif // SEARCHPANELMODEL3_H

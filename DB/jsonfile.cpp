@@ -12,7 +12,7 @@ bool JsonFile::write()
     bool ok = Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ JsonFile::write %1 %2").arg(fileName, Tools::boolToString(ok)));
     if(!ok) showAttention("Ошибка записи файла " + fileName);
-    else showAttention("Файл записан " + fileName);
+    else if(WRITE_CONFIG_FILE_MESSAGE) showAttention("Файл записан " + fileName);
     return ok;
 }
 

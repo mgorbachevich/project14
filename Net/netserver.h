@@ -33,7 +33,7 @@ public:
     static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 
 protected:
-    QString parseGetRequest(const NetAction, const QByteArray&);
+    QString parseGetRequest(const bool, const QByteArray&);
     QString parseSetRequest(const QByteArray&);
     QString toJsonString(const QByteArray&);
     QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");

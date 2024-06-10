@@ -16,16 +16,16 @@ class ProductPanelModel;
 class ViewLogPanelModel;
 class ShowcasePanelModel3;
 class SearchFilterModel;
-class SearchPanelModel;
-class SettingsPanelModel;
+class SearchPanelModel3;
+class SettingsPanelModel3;
 class UserNameModel;
-class ComboListModel;
+class BaseListModel;
 class QQmlContext;
 class NetServer;
 class AppInfo;
 class EquipmentManager;
-class InputProductCodePanelModel;
-class EditUsersPanelModel;
+class InputProductCodePanelModel3;
+class EditUsersPanelModel3;
 class MoneyCalculator;
 
 class AppManager : public QObject
@@ -37,10 +37,9 @@ public:
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showConfirmation(const ConfirmSelector, const QString&);
     QString priceAsString(const DBRecord& r) { return moneyCalculator->priceAsString(r); }
-    void onNetAction(const int);
-    void netDownload(QHash<DBTable*, DBRecordList> rs, int& s, int& e) { db->netDownload(rs, s, e); }
-    QString netDelete(const QString& t, const QString& s) { return db->netDelete(t, s); }
-    QString netUpload(const QString& t, const QString& s, const bool b) { return db->netUpload(t, s, b); }
+    void netDownload(QHash<DBTable*, DBRecordList>, int&, int&);
+    QString netDelete(const QString&, const QString&);
+    QString netUpload(const QString&, const QString&, const bool);
     void onParseSetRequest(const QString&, QHash<DBTable*, DBRecordList>&);
 
     Q_INVOKABLE void beepSound();
@@ -99,6 +98,7 @@ public:
     Users* users = nullptr;
     EquipmentManager* equipmentManager = nullptr;
     PrintStatus printStatus;
+    bool isRefreshNeeded = false;
 
 private:
     void createDefaultData();
@@ -117,12 +117,10 @@ private:
     void showToast(const QString&, const QString&, const int delaySec = 5);
     void showVerificationDateInputPanel();
     void startAuthorization();
-    void startDownload(const bool);
-    void startEquipment();
+    void startAll();
     void startSettings();
     void stopAuthorization(const QString&, const QString&);
-    void stopDownload();
-    void stopEquipment();
+    void stopAll();
     void stopSettings();
     void updateSearch(const QString&, const bool hierarchyRoot = false);
     void updateShowcase();
@@ -138,14 +136,11 @@ private:
 
     // Таймер
     QTimer *timer = nullptr;
-    quint64 netActionTime = 0;
     quint64 netCommandTime = 0;
     quint64 userActionTime = 0;
 
     // Сеть:
     NetServer* netServer = nullptr;
-    bool isRefreshNeeded = false;
-    int netRoutes = 0;
 
     // UI:
     QQmlContext* context = nullptr;
@@ -157,17 +152,17 @@ private:
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
     ShowcasePanelModel3* showcasePanelModel = nullptr;
-    SearchPanelModel* searchPanelModel = nullptr;
-    SettingsPanelModel* settingsPanelModel = nullptr;
+    SearchPanelModel3* searchPanelModel = nullptr;
+    SettingsPanelModel3* settingsPanelModel = nullptr;
     SearchFilterModel* searchFilterModel = nullptr;
     UserNameModel* userNameModel = nullptr;
     ViewLogPanelModel* viewLogPanelModel = nullptr;
-    InputProductCodePanelModel* inputProductCodePanelModel = nullptr;
-    EditUsersPanelModel* editUsersPanelModel = nullptr;
-    ComboListModel* settingItemModel = nullptr;
-    ComboListModel* calendarDayModel = nullptr;
-    ComboListModel* calendarMonthModel = nullptr;
-    ComboListModel* calendarYearModel = nullptr;
+    InputProductCodePanelModel3* inputProductCodePanelModel = nullptr;
+    EditUsersPanelModel3* editUsersPanelModel = nullptr;
+    BaseListModel* settingItemModel = nullptr;
+    BaseListModel* calendarDayModel = nullptr;
+    BaseListModel* calendarMonthModel = nullptr;
+    BaseListModel* calendarYearModel = nullptr;
 
 signals:
     void closeLogView();

@@ -57,12 +57,15 @@ void DataBase::onAppStart()
         started &= createTable(productDB, getTable(DBTABLENAME_SHOWCASE));
         if(!started) message += "\nОШИБКА! Не создана БД товаров";
     }
+    Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
+    /*
     if (started)
     {
-        Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
-        copyDBFiles(DB_PRODUCT_NAME, DB_TEMP_NAME);
+        //Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
+        copyDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
         started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
     }
+    */
     if (started)
     {
         path = Tools::dbPath(DB_LOG_NAME);
@@ -283,14 +286,6 @@ bool DataBase::insertRecord(const QSqlDatabase& sqlDb, DBTable *table, const DBR
     return executeSQL(sqlDb, sql);
 }
 
-bool DataBase::copyDBFiles(const QString& fromName, const QString& toName)
-{
-    Tools::debugLog(QString("@@@@@ DataBase::copyDBFiles %1 %2").arg(fromName, toName));
-    if(Tools::copyFile(Tools::dbPath(fromName), Tools::dbPath(toName))) return true;
-    Tools::debugLog("@@@@@ DataBase::copyDBFiles ERROR");
-    return false;
-}
-
 bool DataBase::isLogging(const int type)
 {
     int logging = appManager->settings->getIntValue(SettingCode_Logging);
@@ -392,17 +387,24 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
         break;
     }
 
-    case DBSelector_GetProductsByGroupCode:
     case DBSelector_GetProductsByGroupCodeIncludeGroups:
-    // Запрос списка товаров по коду группы (исключая / включая группы):
+    // Запрос списка товаров по коду группы включая группы:
     {
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-        QString sql = QString("SELECT * FROM %1").arg(t->name);
+        QString sql;
+        DBRecordList rs;
+        sql = QString("SELECT * FROM %1").arg(t->name);
         sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
-        if (selector == DBSelector_GetProductsByGroupCode)
-            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-        sql += QString(" ORDER BY %1 DESC, %2 ASC;").arg(t->columnName(ProductDBTable::Type), t->columnName(ProductDBTable::Name));
-        executeSelectSQL(productDB, t, sql, resultRecords);
+        sql += QString(" AND %1 = '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+        sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Name));
+        executeSelectSQL(productDB, t, sql, rs);
+        resultRecords.append(rs);
+        sql = QString("SELECT * FROM %1").arg(t->name);
+        sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
+        sql += QString(" AND %1 != '%2';").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+        executeSelectSQL(productDB, t, sql, rs);
+        Tools::sortByInt(rs, ProductDBTable::Code);
+        resultRecords.append(rs);
         break;
     }
 
@@ -435,9 +437,9 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += QString(" WHERE %1 LIKE '%2%3'").arg(t->columnName(ProductDBTable::Code), p, "%");
-        sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-        sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code));
+        sql += QString(" AND %1 != '%2';").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
         executeSelectSQL(productDB, t, sql, resultRecords);
+        Tools::sortByInt(resultRecords, ProductDBTable::Code); break;
         break;
     }
 
@@ -456,9 +458,9 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
         DBTable* t = getTable(DBTABLENAME_PRODUCTS);
         QString sql = QString("SELECT * FROM %1").arg(t->name);
         sql += QString(" WHERE %1 LIKE '%2%3'").arg(t->columnName(ProductDBTable::Code2), p, "%");
-        sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-        sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code2));
+        sql += QString(" AND %1 != '%2';").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
         executeSelectSQL(productDB, t, sql, resultRecords);
+        Tools::sortByInt(resultRecords, ProductDBTable::Code2); break;
         break;
     }
 
@@ -520,15 +522,6 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
     emit requestResult(selector, resultRecords, true);
 }
 
-void DataBase::afterNetAction()
-{
-    Tools::debugLog("@@@@@ DataBase::afterNetAction ");
-    close(tempDB);
-    close(productDB);
-    copyDBFiles(DB_TEMP_NAME, DB_PRODUCT_NAME);
-    open(productDB, DB_PRODUCT_NAME);
-}
-
 void DataBase::select(const DBSelector selector, const DBRecordList& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
@@ -559,6 +552,28 @@ void DataBase::saveTransaction(const DBRecord& t)
 {
     Tools::debugLog("@@@@@ DataBase::saveTransaction");
     insertRecord(logDB, getTable(DBTABLENAME_TRANSACTIONS), t);
+}
+
+bool DataBase::isInShowcase(const DBRecord& record)
+{
+    DBRecord r;
+    const QString& code = record[ProductDBTable::Code].toString();
+    return selectById(productDB, getTable(DBTABLENAME_SHOWCASE), code, r) && !r.empty();
+}
+
+bool DataBase::removeFromShowcase(const DBRecord& record)
+{
+    const QString& code = record[ProductDBTable::Code].toString();
+    Tools::debugLog("@@@@@ DataBase::removeFromShowcase " + code);
+    return removeRecord(productDB, getTable(DBTABLENAME_SHOWCASE), code);
+}
+
+bool DataBase::addToShowcase(const DBRecord& record)
+{
+    const QString& code = record[ProductDBTable::Code].toString();
+    Tools::debugLog("@@@@@ DataBase::addToShowcase " + code);
+    ShowcaseDBTable* t = (ShowcaseDBTable*)getTable(DBTABLENAME_SHOWCASE);
+    return t != nullptr && insertRecord(productDB, t, t->createRecord(code));
 }
 
 QString DataBase::netDelete(const QString& tableName, const QString& codeList)
@@ -730,25 +745,61 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
     }
 }
 
-bool DataBase::isInShowcase(const DBRecord& record)
+void DataBase::afterDownloading()
 {
-    DBRecord r;
-    const QString& code = record[ProductDBTable::Code].toString();
-    return selectById(productDB, getTable(DBTABLENAME_SHOWCASE), code, r) && !r.empty();
+    Tools::debugLog("@@@@@ DataBase::afterDownloading ");
+    close(tempDB);
+    close(productDB);
+    if(ENABLE_BACKGROUND_DOWNLOADING)
+    {
+        copyDBFile(DB_TEMP_NAME, DB_PRODUCT_NAME);
+        Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
+    }
+    else
+    {
+        renameDBFile(DB_TEMP_NAME, DB_PRODUCT_NAME);
+    }
+    open(productDB, DB_PRODUCT_NAME);
 }
 
-bool DataBase::removeFromShowcase(const DBRecord& record)
+void DataBase::beforeDownloading()
 {
-    const QString& code = record[ProductDBTable::Code].toString();
-    Tools::debugLog("@@@@@ DataBase::removeFromShowcase " + code);
-    return removeRecord(productDB, getTable(DBTABLENAME_SHOWCASE), code);
+    Tools::debugLog("@@@@@ DataBase::beforeDownloading ");
+    close(tempDB);
+    close(productDB);
+    if(ENABLE_BACKGROUND_DOWNLOADING)
+    {
+        copyDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
+        open(productDB, DB_PRODUCT_NAME);
+    }
+    else
+    {
+        renameDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
+    }
+    addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME));
 }
 
-
-bool DataBase::addToShowcase(const DBRecord& record)
+bool DataBase::copyDBFile(const QString& fromName, const QString& toName)
 {
-    const QString& code = record[ProductDBTable::Code].toString();
-    Tools::debugLog("@@@@@ DataBase::addToShowcase " + code);
-    ShowcaseDBTable* t = (ShowcaseDBTable*)getTable(DBTABLENAME_SHOWCASE);
-    return t != nullptr && insertRecord(productDB, t, t->createRecord(code));
+    Tools::debugLog(QString("@@@@@ DataBase::copyDBFile %1 %2").arg(fromName, toName));
+    if(Tools::copyFile(Tools::dbPath(fromName), Tools::dbPath(toName))) return true;
+    Tools::debugLog("@@@@@ DataBase::copyDBFile ERROR");
+    return false;
 }
+
+bool DataBase::renameDBFile(const QString& fromName, const QString& toName)
+{
+    Tools::debugLog(QString("@@@@@ DataBase::renameDBFile %1 %2").arg(fromName, toName));
+    if(Tools::renameFile(Tools::dbPath(fromName), Tools::dbPath(toName))) return true;
+    Tools::debugLog("@@@@@ DataBase::renameDBFile ERROR");
+    return false;
+}
+
+/*
+if (started)
+{
+    //Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
+    copyDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
+    started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
+}
+*/

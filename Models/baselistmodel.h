@@ -16,6 +16,7 @@ public:
     explicit BaseListModel(AppManager *parent): QStringListModel((QObject*)parent) { appManager = parent; }
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+    void update(const QStringList& values) { setStringList(values); }
 
 protected:
     AppManager* appManager;

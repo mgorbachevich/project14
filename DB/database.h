@@ -25,7 +25,6 @@ enum DBSelector
     DBSelector_GetShowcaseResources,
     DBSelector_GetImageByResourceCode,
     DBSelector_GetMessageByResourceCode,
-    DBSelector_GetProductsByGroupCode,
     DBSelector_GetProductsByGroupCodeIncludeGroups,
     DBSelector_GetProductsByFilteredCode,
     DBSelector_GetProductsByFilteredCode2,
@@ -51,7 +50,8 @@ public:
     QString version() { return DB_VERSION; }
     bool addToShowcase(const DBRecord&);
     bool removeFromShowcase(const DBRecord&);
-    void afterNetAction();
+    void afterDownloading();
+    void beforeDownloading();
     bool isInShowcase(const DBRecord&);
     QString netUpload(const QString&, const QString&, const bool codesOnly = false);
     QString netDelete(const QString&, const QString&);
@@ -70,7 +70,8 @@ protected:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     bool createTable(const QSqlDatabase& db, DBTable*);
     void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
-    bool copyDBFiles(const QString&, const QString&);
+    bool copyDBFile(const QString&, const QString&);
+    bool renameDBFile(const QString&, const QString&);
     void removeTempDb();
     bool removeAll(const QSqlDatabase&, DBTable*);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);

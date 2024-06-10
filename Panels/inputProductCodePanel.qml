@@ -173,20 +173,40 @@ Popup
                     }
                     */
                     model: inputProductCodePanelModel
-                    delegate: Text
+                    delegate: Row
                     {
-                        width: inputProductCodePanelList.width
-                        font { pointSize: screenManager.normalFontSize() }
                         leftPadding: screenManager.spacer()
                         topPadding: screenManager.spacer()
                         rightPadding: screenManager.spacer()
                         bottomPadding: screenManager.spacer()
-                        color: Material.color(Material.BlueGrey, Material.Shade900)
-                        text: model.value // Roles::ValueRole
-                        MouseArea
+                        spacing: screenManager.spacer() * 2
+
+                        Label
                         {
-                            anchors.fill: parent
-                            onClicked: app.onSetProductByCodeClicked(text)
+                            width: (inputProductCodePanelList.width - screenManager.spacer() * 4) * 0.15
+                            font { pointSize: screenManager.normalFontSize() }
+                            color: Material.color(Material.BlueGrey, Material.Shade600)
+                            horizontalAlignment: Text.AlignRight
+                            text: model.code
+                            MouseArea
+                            {
+                                anchors.fill: parent
+                                onClicked: app.onSetProductByCodeClicked(model.code)
+                            }
+                        }
+
+                        Label
+                        {
+                            width: (inputProductCodePanelList.width - screenManager.spacer() * 4) * 0.85
+                            font { pointSize: screenManager.normalFontSize() }
+                            color: Material.color(Material.BlueGrey, Material.Shade900)
+                            horizontalAlignment: Text.AlignLeft
+                            text: model.name
+                            MouseArea
+                            {
+                                anchors.fill: parent
+                                onClicked: app.onSetProductByCodeClicked(model.code)
+                            }
                         }
                     }
                 }

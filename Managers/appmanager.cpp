@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QSslSocket>
 #include <QtConcurrent/QtConcurrent>
-#include "combolistmodel.h"
+#include "baselistmodel.h"
 #include "appmanager.h"
 #include "resourcedbtable.h"
 #include "productdbtable.h"
@@ -13,9 +13,9 @@
 #include "productpanelmodel.h"
 #include "usernamemodel.h"
 #include "showcasepanelmodel3.h"
-#include "searchpanelmodel.h"
-#include "inputproductcodepanelmodel.h"
-#include "settingspanelmodel.h"
+#include "searchpanelmodel3.h"
+#include "inputproductcodepanelmodel3.h"
+#include "settingspanelmodel3.h"
 #include "viewlogpanelmodel.h"
 #include "searchfiltermodel.h"
 #include "tools.h"
@@ -24,7 +24,7 @@
 #include "netserver.h"
 #include "screenmanager.h"
 #include "keyemitter.h"
-#include "edituserspanelmodel.h"
+#include "edituserspanelmodel3.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
     QObject(application), context(qmlContext)
@@ -65,17 +65,17 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel3(this);
-    settingsPanelModel = new SettingsPanelModel(this);
-    searchPanelModel = new SearchPanelModel(this);
+    settingsPanelModel = new SettingsPanelModel3(this);
+    searchPanelModel = new SearchPanelModel3(this);
     searchFilterModel = new SearchFilterModel(this);
     userNameModel = new UserNameModel(this);
     viewLogPanelModel = new ViewLogPanelModel(this);
-    inputProductCodePanelModel = new InputProductCodePanelModel(this);
-    editUsersPanelModel = new EditUsersPanelModel(this);
-    settingItemModel = new ComboListModel(this);
-    calendarDayModel = new ComboListModel(this);
-    calendarMonthModel = new ComboListModel(this);
-    calendarYearModel = new ComboListModel(this);
+    inputProductCodePanelModel = new InputProductCodePanelModel3(this);
+    editUsersPanelModel = new EditUsersPanelModel3(this);
+    settingItemModel = new BaseListModel(this);
+    calendarDayModel = new BaseListModel(this);
+    calendarMonthModel = new BaseListModel(this);
+    calendarYearModel = new BaseListModel(this);
 
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
@@ -138,30 +138,6 @@ void AppManager::onDBStarted()
     debugLog("@@@@@ AppManager::onDBStarted Done");
 }
 
-void AppManager::onNetAction(const int action)
-{
-    debugLog("@@@@@ AppManager::onNetAction " + QString::number( action));
-    netActionTime = Tools::currentDateTimeToUInt();
-    switch (action)
-    {
-    case NetAction_Upload:
-    case NetAction_Command:
-        netRoutes++;
-        break;
-    case NetAction_Delete:
-    case NetAction_Download:
-        netRoutes++;
-        isRefreshNeeded = true;
-        break;
-    case NetAction_UploadFinished:
-    case NetAction_DeleteFinished:
-    case NetAction_DownloadFinished:
-    case NetAction_CommandFinished:
-        netRoutes--;
-        break;
-    }
-}
-
 void AppManager::onTimer()
 {
     if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer " +
@@ -200,25 +176,7 @@ void AppManager::onTimer()
     }
 
     // Ожидание окончания сетевых запросов:
-    if(netServer->isStarted() && netActionTime > 0 && netRoutes == 0 &&
-       (WAIT_NET_ACTION_SEC * 1000) < now - netActionTime)
-    {
-        debugLog("@@@@@ AppManager::onTimer netActionTime");
-        netActionTime = 0;
-        if(isRefreshNeeded)
-        {
-            debugLog("@@@@@ AppManager::onTimer isRefreshNeeded");
-            isRefreshNeeded = false;
-            db->afterNetAction();
-            refreshAll();
-            resetProduct();
-            showAttention("Данные обновлены!");
-            // if(!product.isEmpty()) db->selectByParam(DataBase::RefreshCurrentProduct, product.at(ProductDBTable::Code).toString());
-        }
-    }
-    // Ожидание окончания сетевых команд:
-    if(netServer->isStarted() && netCommandTime > 0 &&
-       (WAIT_NET_COMMAND_SEC * 1000) < now - netCommandTime)
+    if(netServer->isStarted() && netCommandTime > 0 && (WAIT_NET_COMMAND_SEC * 1000) < now - netCommandTime)
     {
         debugLog("@@@@@ AppManager::onTimer netCommandTime");
         onNetCommand(NetCommand_StopLoad, "");
@@ -356,7 +314,8 @@ void AppManager::onPiecesInputClosed(const QString &value)
 void AppManager::onSetProductByCodeClicked(const QString &value)
 {
     debugLog("@@@@@ AppManager::onSetProductByCodeClicked " + value);
-    db->select(DBSelector_SetProductByInputCode, value.split(LIST_ROW_DELIMETER).at(0));
+    QString s = value;
+    db->select(DBSelector_SetProductByInputCode, s.remove("#"));
 }
 
 void AppManager::onProductCodeEdited(const QString &value)
@@ -416,7 +375,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
         searchPanelModel->update(records, SearchFilterIndex_Code);
         break;
 
-    case DBSelector_GetProductsByFilteredCode2: // Отображение товаров с заданным фрагментом номерв:
+    case DBSelector_GetProductsByFilteredCode2: // Отображение товаров с заданным фрагментом номера:
         emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по номеру");
         searchPanelModel->update(records, SearchFilterIndex_Code2);
         break;
@@ -754,36 +713,11 @@ void AppManager::onCheckAuthorizationClicked(const QString& login, const QString
     stopAuthorization(name, password);
 }
 
-void AppManager::startDownload(const bool background)
-{
-    debugLog("@@@@@ AppManager::startDownload");
-    netCommandTime = Tools::currentDateTimeToUInt();
-    emit showDownloadProgress(-1);
-    if(ENABLE_BACKGROUND_DOWNLOADING)
-    {
-        if(!background) emit showDownloadPanel();
-    }
-    else
-    {
-        equipmentManager->stop();
-        emit showDownloadPanel();
-    }
-}
-
-void AppManager::stopDownload()
-{
-    debugLog("@@@@@ AppManager::stopDownload");
-    netCommandTime = 0;
-    emit showDownloadProgress(100);
-    if(!ENABLE_BACKGROUND_DOWNLOADING) equipmentManager->start();
-}
-
 void AppManager::startSettings()
 {
     debugLog("@@@@@ AppManager::startSettings");
     isSettings = true;
-    resetProduct();
-    stopEquipment();
+    stopAll();
     db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
     emit showSettingsPanel(settings->getCurrentGroupName());
 }
@@ -794,8 +728,7 @@ void AppManager::stopSettings()
     refreshAll();
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
-        debugLog("@@@@@ AppManager::stopSettings pause " + Tools::intToString(WAIT_DRAWING_MSEC));
-        startEquipment();
+        startAll();
         isSettings = false;
     });
 }
@@ -803,8 +736,7 @@ void AppManager::stopSettings()
 void AppManager::startAuthorization()
 {
     debugLog("@@@@@ AppManager::startAuthorization");
-    resetProduct();
-    stopEquipment();
+    stopAll();
     setMainPage(MainPageIndex_Authorization);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
@@ -833,6 +765,7 @@ void AppManager::refreshAll()
 {
     // Обновить всё на экране
     debugLog("@@@@@ AppManager::refreshAll");
+    resetProduct();
     setMainPage(mainPageIndex);
     updateShowcase();
     emit showVirtualKeyboard(-1);
@@ -874,6 +807,24 @@ void AppManager::showConfirmation(const ConfirmSelector selector, const QString 
     showConfirmation(selector, "Подтверждение", text);
 }
 
+void AppManager::netDownload(QHash<DBTable *, QList<QVariantList> > rs, int &s, int &e)
+{
+    netCommandTime = Tools::currentDateTimeToUInt();
+    db->netDownload(rs, s, e);
+}
+
+QString AppManager::netDelete(const QString &t, const QString &s)
+{
+    netCommandTime = Tools::currentDateTimeToUInt();
+    return db->netDelete(t, s);
+}
+
+QString AppManager::netUpload(const QString &t, const QString &s, const bool b)
+{
+    netCommandTime = Tools::currentDateTimeToUInt();
+    return db->netUpload(t, s, b);
+}
+
 void AppManager::setProduct(const DBRecord& newProduct)
 {
     product = newProduct;
@@ -901,8 +852,8 @@ void AppManager::resetProduct() // Сбросить выбранный прод�
         product.clear();
         printStatus.onResetProduct();
         emit resetCurrentProduct();
-        updateWeightStatus();
     }
+    updateWeightStatus();
 }
 
 void AppManager::onUserAction()
@@ -1138,18 +1089,19 @@ void AppManager::onPopupOpened(const bool open)
     }
 }
 
-void AppManager::stopEquipment()
+void AppManager::stopAll()
 {
-    debugLog("@@@@@ AppManager::stopEquipment");
+    debugLog("@@@@@ AppManager::stopAll");
+    resetProduct();
     timer->blockSignals(true);
     netServer->stop();
     equipmentManager->stop();
-    debugLog("@@@@@ AppManager::stopEquipment Done");
+    debugLog("@@@@@ AppManager::stopAll Done");
 }
 
-void AppManager::startEquipment()
+void AppManager::startAll()
 {
-    debugLog("@@@@@ AppManager::startEquipment");
+    debugLog("@@@@@ AppManager::startAll");
 
     const int serverPort = settings->getIntValue(SettingCode_TCPPort);
     debugLog("@@@@@ AppManager::startEquipment serverPort = " + QString::number(serverPort));
@@ -1159,7 +1111,7 @@ void AppManager::startEquipment()
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         timer->blockSignals(false);
-        debugLog("@@@@@ AppManager::startEquipment Done");
+        debugLog("@@@@@ AppManager::startAll Done");
     });
 }
 
@@ -1249,11 +1201,10 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));
-        startEquipment();
+        startAll();
         refreshAll();
-        updateWeightStatus();
         onUserAction();
-        if(SHOW_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
+        if(DB_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
         users->clear();
         debugLog("@@@@@ AppManager::stopAuthorization Done");
     });
@@ -1299,7 +1250,8 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
 
 bool AppManager::onBackgroundDownloadClicked()
 {
-    if(!ENABLE_BACKGROUND_DOWNLOADING) showAttention("Фоновая загрузка запрещена");
+    if(ENABLE_BACKGROUND_DOWNLOADING) {}
+    else showAttention("Фоновая загрузка запрещена");
     return ENABLE_BACKGROUND_DOWNLOADING;
 }
 
@@ -1319,21 +1271,45 @@ void AppManager::onCalendarClosed(const QString& day, const QString& month, cons
 void AppManager::onNetCommand(const int command, const QString& param)
 {
     debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
+    netCommandTime = Tools::currentDateTimeToUInt();
     switch (command)
     {
     case NetCommand_Message:
         showAttention(param);
         break;
+
     case NetCommand_StartLoad:
-        startDownload(Tools::stringToInt(param) == 1);
+        emit showDownloadProgress(-1);
+        if(ENABLE_BACKGROUND_DOWNLOADING)
+        {
+            if(Tools::stringToInt(param) != 1) emit showDownloadPanel();
+        }
+        else
+        {
+            equipmentManager->pause(true);
+            emit showDownloadPanel();
+        }
+        db->beforeDownloading();
         break;
+
     case NetCommand_StopLoad:
-        stopDownload();
+        netCommandTime = 0;
+        emit showDownloadProgress(100);
+        if(isRefreshNeeded)
+        {
+            showAttention("Данные обновлены!");
+            isRefreshNeeded = false;
+            db->afterDownloading();
+            QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
+        }
+        if(ENABLE_BACKGROUND_DOWNLOADING) {}
+        else equipmentManager->pause(false);
         break;
+
     case NetCommand_Progress:
-        netCommandTime = Tools::currentDateTimeToUInt();
         emit showDownloadProgress(Tools::stringToInt(param));
         break;
+
     default:
         break;
     }

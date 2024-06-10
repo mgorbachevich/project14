@@ -259,21 +259,57 @@ Rectangle
                 }
                 */
                 model: searchPanelModel
-                delegate: Label
+                delegate: Row
                 {
                     leftPadding: screenManager.spacer() * 2
                     topPadding: screenManager.spacer()
-                    rightPadding: screenManager.spacer()
+                    rightPadding: screenManager.spacer() * 2
                     bottomPadding: screenManager.spacer()
-                    width: searchPanelResultListRectangle.width
-                    font { pointSize: screenManager.normalFontSize() }
-                    color: Material.color(Material.Grey, Material.Shade900)
-                    text: model.value // Roles::ValueRole
+                    spacing: screenManager.spacer() * 2
 
-                    MouseArea
+                    Label
                     {
-                        anchors.fill: parent
-                        onClicked: app.onSearchResultClicked(index)
+                        width: (searchPanelResultListRectangle.width - screenManager.spacer() * 8) * 0.27
+                        font { pointSize: screenManager.normalFontSize() }
+                        color: Material.color(Material.Grey, Material.Shade900)
+                        horizontalAlignment: Text.AlignRight
+                        text: model.code
+
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onSearchResultClicked(index)
+                        }
+                    }
+
+                    Label
+                    {
+                        width: (searchPanelResultListRectangle.width - screenManager.spacer() * 8) * 0.60
+                        font { pointSize: screenManager.normalFontSize() }
+                        color: Material.color(Material.Grey, Material.Shade900)
+                        horizontalAlignment: Text.AlignLeft
+                        text: model.name
+
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onSearchResultClicked(index)
+                        }
+                    }
+
+                    Label
+                    {
+                        width: (searchPanelResultListRectangle.width - screenManager.spacer() * 8) * 0.13
+                        font { pointSize: screenManager.normalFontSize() }
+                        color: Material.color(Material.Grey, Material.Shade900)
+                        horizontalAlignment: Text.AlignRight
+                        text: model.price
+
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onSearchResultClicked(index)
+                        }
                     }
                 }
             }

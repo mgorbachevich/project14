@@ -16,6 +16,10 @@ INCLUDEPATH += \
     Equipment/Wm100_Slpa100u \
 
 HEADERS += \
+    Models/edituserspanelmodel3.h \
+    Models/inputproductcodepanelmodel3.h \
+    Models/searchpanelmodel3.h \
+    Models/settingspanelmodel3.h \
     Models/showcasepanelmodel3.h \
     constants.h \
     tools.h \
@@ -107,22 +111,20 @@ HEADERS += \
     Managers/appmanager.h \
     Managers/printstatus.h \
     Managers/screenmanager.h \
-    Models/combolistmodel.h \
     Models/baselistmodel3.h \
-    Models/edituserspanelmodel.h \
-    Models/baselistmodel2.h \
     Models/baselistmodel.h \
-    Models/inputproductcodepanelmodel.h \
     Models/productpanelmodel.h \
-    Models/searchpanelmodel.h \
     Models/searchfiltermodel.h \
-    Models/settingspanelmodel.h \
     Models/usernamemodel.h \
     Models/viewlogpanelmodel.h \
     Net/netparams.h \
     Net/netserver.h \
 
 SOURCES += \
+    Models/edituserspanelmodel3.cpp \
+    Models/inputproductcodepanelmodel3.cpp \
+    Models/searchpanelmodel3.cpp \
+    Models/settingspanelmodel3.cpp \
     Models/showcasepanelmodel3.cpp \
     main.cpp \
     tools.cpp \
@@ -208,16 +210,11 @@ SOURCES += \
     Managers/keyemitter.cpp \
     Managers/moneycalculator.cpp \
     Managers/screenmanager.cpp \
-    Models/baselistmodel2.cpp \
     Models/baselistmodel3.cpp \
-    Models/edituserspanelmodel.cpp \
-    Models/inputproductcodepanelmodel.cpp \
-    Models/settingspanelmodel.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
     Models/baselistmodel.cpp \
     Models/productpanelmodel.cpp \
-    Models/searchpanelmodel.cpp \
     Net/netserver.cpp \
 
 RESOURCES += \

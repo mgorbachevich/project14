@@ -106,6 +106,22 @@ void EquipmentManager::create()
     if(PMMode == EquipmentMode_None) removePM();
 }
 
+void EquipmentManager::start()
+{
+    Tools::debugLog("@@@@@ EquipmentManager::start ");
+    startWM();
+    startPM();
+    pause(false);
+}
+
+void EquipmentManager::stop()
+{
+    Tools::debugLog("@@@@@ EquipmentManager::stop ");
+    pause(true);
+    removeWM();
+    removePM();
+}
+
 void EquipmentManager::createWM()
 {
     Tools::debugLog("@@@@@ EquipmentManager::createWM ");
@@ -126,7 +142,7 @@ int EquipmentManager::startWM() // return error
     {
         e = wm->connectDevice(WMUri);
         isWMStarted = (e == 0);
-        wm->blockSignals(!isWMStarted);
+        //wm->blockSignals(!isWMStarted);
         if(isWMStarted)
         {
             if(isSystemDateTime)
@@ -134,7 +150,7 @@ int EquipmentManager::startWM() // return error
                 Tools::debugLog("@@@@@ EquipmentManager::startWM setSystemDateTime");
                 wm->setDateTime(QDateTime::currentDateTime());
             }
-            wm->startPolling(200);
+            //wm->startPolling(200);
         }
         isSystemDateTime = false;
     }
@@ -276,6 +292,24 @@ void EquipmentManager::createPM()
     }
 }
 
+void EquipmentManager::pause(const bool v)
+{
+    Tools::debugLog("@@@@@ EquipmentManager::pause " + Tools::boolToIntString(v));
+    if(wm != nullptr && isWMStarted)
+    {
+        if(v) wm->stopPolling();
+        else wm->startPolling(EQUIPMENT_POLLING_INTERVAL);
+        wm->blockSignals(v);
+
+    }
+    if(slpa != nullptr && isPMStarted)
+    {
+        if(v) slpa->stopPolling();
+        else slpa->startPolling(EQUIPMENT_POLLING_INTERVAL);
+        slpa->blockSignals(v);
+    }
+}
+
 int EquipmentManager::startPM()
 {
     Tools::debugLog("@@@@@ EquipmentManager::startPM " + PMUri);
@@ -285,10 +319,10 @@ int EquipmentManager::startPM()
     {
         e = slpa->connectDevice(PMUri);
         isPMStarted = (e == 0);
-        slpa->blockSignals(!isPMStarted);
+        //slpa->blockSignals(!isPMStarted);
         if(isPMStarted)
         {
-            slpa->startPolling(200);
+            //slpa->startPolling(200);
             e = slpa->setBrightness(appManager->settings->getIntValue(SettingCode_PrinterBrightness) + 8);
             if(e >= 0) e = slpa->setOffset(appManager->settings->getIntValue(SettingCode_PrintOffset) + 8);
             if(e >= 0) e = slpa->setPaper(appManager->settings->getIntValue(SettingCode_PrintPaper, true) == 0 ?

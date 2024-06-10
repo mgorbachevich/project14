@@ -34,23 +34,21 @@ void NetServer::start(const int port)
         {
             return QtConcurrent::run([&request, this]
             {
-                appManager->onNetAction(NetAction_Delete);
-                QString response = parseGetRequest(NetAction_Delete, request.query().toString().toUtf8());
+                appManager->isRefreshNeeded = true;
+                QString response = parseGetRequest(false, request.query().toString().toUtf8());
                 Tools::debugLog("@@@@@ NetServer::start deleteData " + response);
-                appManager->onNetAction(NetAction_DeleteFinished);
                 QHttpServerResponse r(response);
                 r.setHeader("Content-Type", "application/json");
                 return r;
             });
         });
+
         server->route("/getData", [this] (const QHttpServerRequest &request)
         {
             return QtConcurrent::run([&request, this]
             {
-                appManager->onNetAction(NetAction_Upload);
-                QString response = parseGetRequest(NetAction_Upload, request.query().toString().toUtf8());
+                QString response = parseGetRequest(true, request.query().toString().toUtf8());
                 Tools::debugLog("@@@@@ NetServer::start getData response " + response);
-                appManager->onNetAction(NetAction_UploadFinished);
                 return makeResponse(response);
             });
         });
@@ -58,21 +56,19 @@ void NetServer::start(const int port)
         {
             return QtConcurrent::run([&request, this]
             {
-                appManager->onNetAction(NetAction_Download);
+                appManager->isRefreshNeeded = true;
                 QString response = parseSetRequest(request.body());
                 Tools::debugLog("@@@@@ NetServer::start setData response " + response);
-                appManager->onNetAction(NetAction_DownloadFinished);
                 return makeResponse(response);
             });
         });
+
         server->route("/command", [this] (const QHttpServerRequest &request)
         {
             return QtConcurrent::run([&request, this]
             {
-                appManager->onNetAction(NetAction_Command);
                 QString response = parseSetRequest(request.body());
                 Tools::debugLog("@@@@@ NetServer::start command response " + response);
-                appManager->onNetAction(NetAction_CommandFinished);
                 return makeResponse(response);
             });
         });
@@ -96,10 +92,10 @@ QString NetServer::toJsonString(const QByteArray& request)
     return QString(text);
 }
 
-QString NetServer::parseGetRequest(const NetAction action, const QByteArray &request)
+QString NetServer::parseGetRequest(const bool upload, const QByteArray &request)
 {
     // Parse list of codes to upload:
-    Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest %1 %2").arg(QString::number(action), QString(request)));
+    Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest %1").arg(QString(request)));
     QByteArray tableName;
     QByteArray codes;
     const QByteArray s1 = "source=";
@@ -152,15 +148,8 @@ QString NetServer::parseGetRequest(const NetAction action, const QByteArray &req
             }
         }
     }
-    switch(action)
-    {
-    case NetAction_Delete:
-        if(!codesOnly) return appManager->netDelete(tableName, codes);
-        break;
-    case NetAction_Upload:
-        return appManager->netUpload(tableName, codes, codesOnly);
-    default: break;
-    }
+    if(upload) return appManager->netUpload(tableName, codes, codesOnly);
+    if(!codesOnly) return appManager->netDelete(tableName, codes);
     return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
 }
 

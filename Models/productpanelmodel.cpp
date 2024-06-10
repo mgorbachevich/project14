@@ -45,7 +45,7 @@ void ProductPanelModel::update(const DBRecord& product, const QString& price, Pr
                 value = QString("%1 кг").arg(product.at(i).toDouble() / 1000000);
             break;
         }
-        if(!value.isEmpty()) ss << productTable->columnTitle(i) + ":" + LIST_ROW_DELIMETER + value;
+        if(!value.isEmpty()) ss << QString("%1: %2").arg(productTable->columnTitle(i), value);
     }
     setStringList(ss);
 }
