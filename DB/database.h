@@ -50,8 +50,6 @@ public:
     QString version() { return DB_VERSION; }
     bool addToShowcase(const DBRecord&);
     bool removeFromShowcase(const DBRecord&);
-    void afterDownloading();
-    void beforeDownloading();
     bool isInShowcase(const DBRecord&);
     QString netUpload(const QString&, const QString&, const bool codesOnly = false);
     QString netDelete(const QString&, const QString&);
@@ -70,9 +68,6 @@ protected:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     bool createTable(const QSqlDatabase& db, DBTable*);
     void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
-    bool copyDBFile(const QString&, const QString&);
-    bool renameDBFile(const QString&, const QString&);
-    void removeTempDb();
     bool removeAll(const QSqlDatabase&, DBTable*);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
     void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
@@ -84,10 +79,11 @@ protected:
     bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
     void removeOldLogRecords();
     bool isLogging(const int);
+    //bool copyDBFile(const QString&, const QString&);
+    //bool renameDBFile(const QString&, const QString&);
 
     bool started = false;
     QSqlDatabase productDB;
-    QSqlDatabase tempDB;
     QSqlDatabase logDB;
     int removeOldLogRecordsCounter = 0;
     QList<DBTable*> tables;

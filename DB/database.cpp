@@ -33,7 +33,6 @@ DataBase::~DataBase()
     Tools::debugLog("@@@@@ DataBase::~DataBase");
     close(productDB);
     close(logDB);
-    close(tempDB);
 }
 
 void DataBase::onAppStart()
@@ -57,15 +56,6 @@ void DataBase::onAppStart()
         started &= createTable(productDB, getTable(DBTABLENAME_SHOWCASE));
         if(!started) message += "\nОШИБКА! Не создана БД товаров";
     }
-    Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
-    /*
-    if (started)
-    {
-        //Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
-        copyDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
-        started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
-    }
-    */
     if (started)
     {
         path = Tools::dbPath(DB_LOG_NAME);
@@ -95,8 +85,7 @@ void DataBase::onAppStart()
         executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '');");
 #endif
     }
-    else
-        message += "\nОШИБКА! Не открыта база данных";
+    else message += "\nОШИБКА! Не открыта база данных";
     if(!message.isEmpty())
         QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this, message]() { showAttention(message); });
     emit dbStarted();
@@ -542,7 +531,6 @@ void DataBase::select(const DBSelector selector, const DBRecordList& param)
         }
         break;
     }
-
     default: break;
     }
     emit requestResult(selector, resultRecords, true);
@@ -589,7 +577,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     DBTable* t = getTable(tableName);
     QStringList codes = codeList.split(','); // Коды товаров через запятую
 
-    if(t == nullptr || !open(tempDB, DB_TEMP_NAME))
+    if(t == nullptr)
     {
         errorCount = 1;
         errorCode = LogError_UnknownTable;
@@ -597,7 +585,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     }
     else if (codes.isEmpty() || codes[0].isEmpty()) // Delete all records
     {
-        if(removeAll(tempDB, t) && detailedLog)
+        if(removeAll(productDB, t) && detailedLog)
         {
             QString s = QString("Удалены все записи таблицы %1").arg(tableName);
             saveLog(LogType_Warning, LogSource_DB, s);
@@ -607,7 +595,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     {
         for (int i = 0; i < codes.count(); i++)
         {
-            if(removeRecord(tempDB, t, codes[i]))
+            if(removeRecord(productDB, t, codes[i]))
             {
                 if (detailedLog)
                 {
@@ -655,7 +643,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     DBTable* t = getTable(tableName);
     QStringList codes = codesToUpload.split(','); // Коды через запятую
 
-    if(t == nullptr || !open(tempDB, DB_TEMP_NAME))
+    if(t == nullptr)
     {
         errorCount = 1;
         errorCode = LogError_UnknownTable;
@@ -663,7 +651,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     }
     else if (codesOnly) // Только коды
     {
-        QStringList codes = selectAllCodes(tempDB, t);
+        QStringList codes = selectAllCodes(productDB, t);
         saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов завершена. Таблица: %1. Записи: %2").
                 arg(tableName, QString::number(codes.count())));
         const QString resultJson = NetServer::makeResultJson(errorCode, description, tableName, codes);
@@ -672,7 +660,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     }
     else if (codes.isEmpty() || codes[0].isEmpty()) // Upload all fields
     {
-        selectAll(tempDB, t, records);
+        selectAll(productDB, t, records);
         recordCount = records.count();
         if (!codesOnly && detailedLog)
         {
@@ -688,7 +676,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
         for (int i = 0; i < codes.count(); i++)
         {
             DBRecord r;
-            if(selectById(tempDB, t, codes[i], r))
+            if(selectById(productDB, t, codes[i], r))
             {
                 recordCount++;
                 records.append(r);
@@ -717,7 +705,6 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
 void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount)
 {
     Tools::debugLog("@@@@@ DataBase::netDownload");
-    if(!open(tempDB, DB_TEMP_NAME)) return;
     bool detailedLog = isLogging(LogType_Info);
     QList tables = records.keys();
     for (DBTable* table : tables)
@@ -727,7 +714,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
         {
             QString code = r.count() > 0 ? r.at(0).toString() : "";
             QString s;
-            if(code.isEmpty() || !insertRecord(tempDB, table, r))
+            if(code.isEmpty() || !insertRecord(productDB, table, r))
             {
                 errorCount++;
                 s = QString("Ошибка загрузки записи. Таблица: %1. Код: %2. Код ошибки: %3. Описание: Некорректная запись").
@@ -744,41 +731,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
         }
     }
 }
-
-void DataBase::afterDownloading()
-{
-    Tools::debugLog("@@@@@ DataBase::afterDownloading ");
-    close(tempDB);
-    close(productDB);
-    if(ENABLE_BACKGROUND_DOWNLOADING)
-    {
-        copyDBFile(DB_TEMP_NAME, DB_PRODUCT_NAME);
-        Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
-    }
-    else
-    {
-        renameDBFile(DB_TEMP_NAME, DB_PRODUCT_NAME);
-    }
-    open(productDB, DB_PRODUCT_NAME);
-}
-
-void DataBase::beforeDownloading()
-{
-    Tools::debugLog("@@@@@ DataBase::beforeDownloading ");
-    close(tempDB);
-    close(productDB);
-    if(ENABLE_BACKGROUND_DOWNLOADING)
-    {
-        copyDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
-        open(productDB, DB_PRODUCT_NAME);
-    }
-    else
-    {
-        renameDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
-    }
-    addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME));
-}
-
+/*
 bool DataBase::copyDBFile(const QString& fromName, const QString& toName)
 {
     Tools::debugLog(QString("@@@@@ DataBase::copyDBFile %1 %2").arg(fromName, toName));
@@ -793,13 +746,5 @@ bool DataBase::renameDBFile(const QString& fromName, const QString& toName)
     if(Tools::renameFile(Tools::dbPath(fromName), Tools::dbPath(toName))) return true;
     Tools::debugLog("@@@@@ DataBase::renameDBFile ERROR");
     return false;
-}
-
-/*
-if (started)
-{
-    //Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
-    copyDBFile(DB_PRODUCT_NAME, DB_TEMP_NAME);
-    started = addAndOpen(tempDB, Tools::dbPath(DB_TEMP_NAME), false);
 }
 */

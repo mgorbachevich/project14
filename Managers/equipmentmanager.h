@@ -48,6 +48,9 @@ public:
     void feed();
 
 private:
+    QString makeBarcode(const DBRecord&, const QString&, const QString&, const QString&);
+    QString parseBarcode(const QString&, const QChar, const QString&);
+
     // Weight Manager:
     void createWM();
     void removeWM();
@@ -61,9 +64,6 @@ private:
     int startPM();
     bool isPMFlag(uint16_t v, int shift) const { return (v & (0x00000001 << shift)) != 0; }
     bool isPMStateError(uint16_t) const;
-
-    QString makeBarcode(const DBRecord&, const QString&, const QString&, const QString&);
-    QString parseBarcode(const QString&, const QChar, const QString&);
 
     // Weight Manager:
     Wm100* wm = nullptr;
@@ -89,11 +89,8 @@ signals:
     void paramChanged(const int, const int);
 
 public slots:
-    // Weight Manager:
     void onWMStatusChanged(Wm100Protocol::channel_status&);
     void onWMErrorStatusChanged(int);
-
-    // Print Manager:
     void onPMStatusChanged(uint16_t);
     void onPMErrorStatusChanged(int);
 };

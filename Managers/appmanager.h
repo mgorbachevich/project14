@@ -136,7 +136,7 @@ private:
 
     // Таймер
     QTimer *timer = nullptr;
-    quint64 netCommandTime = 0;
+    quint64 netActionTime = 0;
     quint64 userActionTime = 0;
 
     // Сеть:

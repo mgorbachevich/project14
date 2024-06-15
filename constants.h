@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.49"
+#define APP_VERSION "2.50"
 
 // Debug and Log:
 //#define DEBUG_LOG_FILE
@@ -27,7 +27,6 @@
 // Files and Pathes:
 #define DEBUG_LOG_NAME "DebugLog.txt"
 #define DB_LOG_NAME "Log.db"
-#define DB_TEMP_NAME "Temp.db"
 #define DB_PRODUCT_NAME "ShtrihScale.db"
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE "../Images/dummy.png"
@@ -67,20 +66,7 @@
 #define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 #define DEFAULT_ADMIN_CODE 0
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS true
-#define ENABLE_BACKGROUND_DOWNLOADING false
 #define EQUIPMENT_POLLING_INTERVAL 200
-
-// UI:
-#define DEFAULT_SCREEN_WIDTH 568
-#define DEFAULT_SCREEN_HEIGHT 320
-#define DEFAULT_SPACER 8
-#define DEFAULT_WEIGHT_VALUE_FONT_SIZE 70
-#define DEFAULT_WEIGHT_TITLE_FONT_SIZE 10
-#define DEFAULT_NORMAL_FONT_SIZE 13
-#define DEFAULT_LARGE_FONT_SIZE 18
-#define DEFAULT_BUTTON_SIZE 40
-#define DEFAULT_FLAG_SIZE 20
-#define DEFAULT_EDIT_WIDTH 200
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -151,18 +137,6 @@ enum ProductPriceBase
     ProductPriceBase_Kg = 0,
     ProductPriceBase_Piece = 1,
     ProductPriceBase_100g = 2
-};
-
-enum UserRole
-{
-    UserRole_Admin = 0,
-    UserRole_Operator = 1,
-};
-
-enum EquipmentDevice
-{
-    EquipmentDevice_Weight = 0,
-    EquipmentDevice_Print = 1,
 };
 
 enum ControlParam
@@ -246,7 +220,7 @@ enum EquipmentMode
     EquipmentMode_Demo = 2,
 };
 
-enum ShowcaseProductHeader
+enum ShowcaseProductText
 {
     ShowcaseProductText_None = 0,
     ShowcaseProductText_Code = 1,

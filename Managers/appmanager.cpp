@@ -127,7 +127,6 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
 void AppManager::onDBStarted()
 {
-    //showToast("", "Инициализация");
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
     if(db->isStarted())
@@ -140,8 +139,8 @@ void AppManager::onDBStarted()
 
 void AppManager::onTimer()
 {
-    if(DEBUG_ONTIMER_MESSAGE) debugLog("@@@@@ AppManager::onTimer " +
-                                       Tools::intToString((int)(userActionTime / 1000)));
+    if(DEBUG_ONTIMER_MESSAGE)
+        debugLog("@@@@@ AppManager::onTimer " + Tools::intToString((int)(userActionTime / 1000)));
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
     const quint64 now = Tools::currentDateTimeToUInt();
 
@@ -176,9 +175,9 @@ void AppManager::onTimer()
     }
 
     // Ожидание окончания сетевых запросов:
-    if(netServer->isStarted() && netCommandTime > 0 && (WAIT_NET_COMMAND_SEC * 1000) < now - netCommandTime)
+    if(netServer->isStarted() && netActionTime > 0 && (WAIT_NET_COMMAND_SEC * 1000) < now - netActionTime)
     {
-        debugLog("@@@@@ AppManager::onTimer netCommandTime");
+        debugLog("@@@@@ AppManager::onTimer netActionTime");
         onNetCommand(NetCommand_StopLoad, "");
     }
 }
@@ -188,7 +187,6 @@ void AppManager::createDefaultData()
     debugLog("@@@@@ AppManager::createDefaultData");
     Tools::removeFile(Tools::dbPath(DB_PRODUCT_NAME));
     Tools::removeFile(Tools::dbPath(DB_LOG_NAME));
-    Tools::removeFile(Tools::dbPath(DB_TEMP_NAME));
     Tools::removeFile(Tools::dbPath(DEBUG_LOG_NAME));
     Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME), Tools::dbPath(DB_PRODUCT_NAME));
 }
@@ -446,6 +444,7 @@ QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
 
 void AppManager::onViewLogClicked()
 {
+    debugLog("@@@@@ AppManager::onViewLogClicked ");
     db->saveLog(LogType_Info, LogSource_Admin, "Просмотр лога");
     onUserAction();
     db->select(DBSelector_GetLog, "");
@@ -492,6 +491,7 @@ void AppManager::onConfirmationClicked(const int selector)
         users->deleteInputUser();
         editUsersPanelModel->update(users);
         break;
+
     case ConfirmSelector_ReplaceUser:
         users->replaceOrInsertInputUser();
         editUsersPanelModel->update(users);
@@ -499,18 +499,22 @@ void AppManager::onConfirmationClicked(const int selector)
     case ConfirmSelector_Authorization:
         startAuthorization();
         break;
+
     case ConfirmSelector_ClearLog:
         emit closeLogView();
         db->clearLog();
         break;
+
     case ConfirmSelector_SetSystemDateTime:
         equipmentManager->setSystemDateTime(true);
         break;
+
     case ConfirmSelector_RemoveFromShowcase:
         db->removeFromShowcase(product);
         emit setCurrentProductFavorite(db->isInShowcase(product));
         updateShowcase();
         break;
+
     case ConfirmSelector_AddToShowcase:
         db->addToShowcase(product);
         emit setCurrentProductFavorite(db->isInShowcase(product));
@@ -646,6 +650,7 @@ void AppManager::showVerificationDateInputPanel()
 
 void AppManager::updateSettings(const int groupCode)
 {
+    debugLog("@@@@@ AppManager::updateSettings ");
     settings->update(groupCode);
     settingsPanelModel->update(*settings);
 }
@@ -809,19 +814,19 @@ void AppManager::showConfirmation(const ConfirmSelector selector, const QString 
 
 void AppManager::netDownload(QHash<DBTable *, QList<QVariantList> > rs, int &s, int &e)
 {
-    netCommandTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::currentDateTimeToUInt();
     db->netDownload(rs, s, e);
 }
 
 QString AppManager::netDelete(const QString &t, const QString &s)
 {
-    netCommandTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::currentDateTimeToUInt();
     return db->netDelete(t, s);
 }
 
 QString AppManager::netUpload(const QString &t, const QString &s, const bool b)
 {
-    netCommandTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::currentDateTimeToUInt();
     return db->netUpload(t, s, b);
 }
 
@@ -1250,9 +1255,8 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
 
 bool AppManager::onBackgroundDownloadClicked()
 {
-    if(ENABLE_BACKGROUND_DOWNLOADING) {}
-    else showAttention("Фоновая загрузка запрещена");
-    return ENABLE_BACKGROUND_DOWNLOADING;
+    showAttention("Фоновая загрузка запрещена");
+    return false;
 }
 
 void AppManager::onCalendarClosed(const QString& day, const QString& month, const QString& year)
@@ -1271,7 +1275,7 @@ void AppManager::onCalendarClosed(const QString& day, const QString& month, cons
 void AppManager::onNetCommand(const int command, const QString& param)
 {
     debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
-    netCommandTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::currentDateTimeToUInt();
     switch (command)
     {
     case NetCommand_Message:
@@ -1280,30 +1284,20 @@ void AppManager::onNetCommand(const int command, const QString& param)
 
     case NetCommand_StartLoad:
         emit showDownloadProgress(-1);
-        if(ENABLE_BACKGROUND_DOWNLOADING)
-        {
-            if(Tools::stringToInt(param) != 1) emit showDownloadPanel();
-        }
-        else
-        {
-            equipmentManager->pause(true);
-            emit showDownloadPanel();
-        }
-        db->beforeDownloading();
+        equipmentManager->pause(true);
+        emit showDownloadPanel();
         break;
 
     case NetCommand_StopLoad:
-        netCommandTime = 0;
+        netActionTime = 0;
         emit showDownloadProgress(100);
         if(isRefreshNeeded)
         {
             showAttention("Данные обновлены!");
             isRefreshNeeded = false;
-            db->afterDownloading();
             QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
         }
-        if(ENABLE_BACKGROUND_DOWNLOADING) {}
-        else equipmentManager->pause(false);
+        equipmentManager->pause(false);
         break;
 
     case NetCommand_Progress:

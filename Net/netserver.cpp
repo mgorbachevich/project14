@@ -187,6 +187,164 @@ QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray
     return header.mid(i2 + 1, i3 - i2 - 1);
 }
 
+bool NetServer::parseCommand(const QByteArray& request)
+{
+    QString json = toJsonString(request);
+    Tools::debugLog("@@@@@ NetServer::parseCommand " + json);
+    QJsonObject jo = Tools::stringToJson(json);
+    QString method = jo["method"].toString("");
+    if (method.isEmpty()) return false;
+    QJsonValue jsonParams = jo["params"];
+    if (!jsonParams.isArray()) return false;
+    QJsonArray ja = jsonParams.toArray();
+    NetCommand nc = NetCommand_None;
+    QString param = "";
+    if(method == "stopLoad")
+    {
+        nc = NetCommand_StopLoad;
+    }
+    else if(ja.size() > 0)
+    {
+        if(method == "message")
+        {
+            nc = NetCommand_Message;
+            param = ja[0].toString("");
+        }
+        else if(method == "startLoad")
+        {
+            nc = NetCommand_StartLoad;
+            param = Tools::intToString(ja[0].toInt());
+        }
+        else if(method == "progress")
+        {
+            nc = NetCommand_Progress;
+            param = Tools::intToString(ja[0].toInt());
+        }
+    }
+    if(nc != NetCommand_None)
+    {
+        emit netCommand(nc, param);
+        return true;
+    }
+    return false;
+}
+/*
+QString NetServer::parseSetRequest(const QByteArray &request)
+{
+    Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
+    //Tools::debugLog("@@@@@ NetServer::parseSetRequest " + request);
+    int successCount = 0;
+    int errorCount = 0;
+    int errorCode = 0;
+    QString description = "Ошибок нет";
+
+    // Singlepart:
+    if(request.indexOf("{") == 0)
+    {
+        Tools::debugLog("@@@@@ NetServer::parseSetRequest Singlepart");
+        if(!parseCommand(request))
+        {
+            errorCode = LogError_WrongRequest;
+            description = "Неверный запрос";
+        }
+        return makeResultJson(errorCode, description, "", "");
+    }
+
+    // Multipart:
+    Tools::debugLog("@@@@@ NetServer::parseSetRequest Multipart");
+    QByteArray boundary = request.mid(0, request.indexOf(EOL));
+    Tools::debugLog("@@@@@ NetServer::parseSetRequest Boundary " + QString(boundary));
+    QList<int> boundaryIndeces;
+    int bi = 0;
+    while(bi >= 0)
+    {
+        boundaryIndeces.append(bi);
+        bi = request.indexOf(QByteArrayView(boundary), bi + boundary.size() + 2);
+    }
+    Tools::debugLog("@@@@@ NetServer::parseSetRequest Boundary indices ");
+
+    const int partCount = boundaryIndeces.count() - 1;
+    Tools::debugLog("@@@@@ NetServer::parseSetRequest Part count " + QString::number(partCount));
+    QHash<DBTable*, DBRecordList> downloadedRecords;
+    for(int partIndex = 0; partIndex < partCount; partIndex++)
+    {
+        QByteArray header;
+        const int d = QByteArray(EOL).length();
+        const int i1 = boundaryIndeces[partIndex] + boundary.size() + d;
+        const int i2 = request.indexOf(EOL, i1) + d;
+        const int i3 = request.indexOf(EOL, i2) + d;
+        header = request.mid(i1, i2 - i1 - d);
+        Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Part %1, header = %2").
+                arg(QString::number(partIndex), header));
+
+        if(partIndex == 0) // Value
+        {
+
+            // Content-Disposition: form-data; name="value"
+            QByteArray nameItemValue = parseHeaderItem(header, "name");
+            if(nameItemValue == "value")
+            {
+                QString text = toJsonString(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
+                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Text " + text);
+                if(!text.isEmpty()) appManager->onParseSetRequest(text, downloadedRecords);
+                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Record count " + QString::number( downloadedRecords.count()));
+            }
+        }
+        else // Resources
+        {
+            QList tables = downloadedRecords.keys();
+            for (DBTable* table : tables)
+            {
+                const int fieldIndex = table->columnIndex("field");
+                if(fieldIndex < 0) continue;
+                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Table " + table->name);
+                DBRecordList tableRecords = downloadedRecords.value(table);
+                for(int ri = 0; ri < tableRecords.count(); ri++)
+                {
+                    DBRecord& record = tableRecords[ri];
+                    // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
+                    QByteArray nameItemValue = parseHeaderItem(header, "name");
+                    if(nameItemValue != record[fieldIndex].toString().toUtf8()) continue;
+                    QByteArray fileNameItemValue = parseHeaderItem(header, "filename");
+                    QString source = QString(fileNameItemValue);
+
+                    // New resource file name (tableName/recordCode.extension):
+                    const int dotIndex = source.lastIndexOf(".");
+                    QString extension =  dotIndex < 0 ? "" : source.mid(dotIndex + 1, source.length());
+                    QString localFilePath = QString("%1/%2.%3").arg(table->name, record[0].toString(), extension);
+
+                    // Write data file:
+                    QByteArray fileData = request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d * 2);
+                    Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number( fileData.length()));
+                    QString fullFilePath = Tools::downloadPath(localFilePath);
+                    Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full file path " + fullFilePath);
+                    if(Tools::writeBinaryFile(fullFilePath, fileData))
+                    {
+                        successCount++;
+                        record[ResourceDBTable::Source] = source;
+                        record[ResourceDBTable::Value] = localFilePath;
+                    }
+                    else
+                    {
+                        errorCount++;
+                        errorCode = LogError_WrongRecord;
+                        record[ResourceDBTable::Source] = "";
+                        record[ResourceDBTable::Value] = "";
+                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
+                    }
+                }
+                downloadedRecords.remove(table);
+                downloadedRecords.insert(table, tableRecords);
+            }
+        }
+    }
+    appManager->netDownload(downloadedRecords, successCount, errorCount);
+    description = QString("Загружено записей %1 из %2").
+            arg(QString::number(successCount), QString::number(successCount + errorCount));
+    return makeResultJson(errorCode, description, "", "");
+}
+*/
+
 QString NetServer::parseSetRequest(const QByteArray &request)
 {
     Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
@@ -237,18 +395,16 @@ QString NetServer::parseSetRequest(const QByteArray &request)
             for(int hi = 0; hi < headers.count(); hi++)
             {
                 QByteArray& header = headers[hi];
-                Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Part %1, header %2 = %3").
-                        arg(QString::number(partIndex), QString::number(hi), header));
-
                 // Content-Disposition: form-data; name="value"
                 QByteArray nameItemValue = parseHeaderItem(header, "name");
-                if(nameItemValue == "value")
-                {
-                    QString text = toJsonString(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
-                    Tools::debugLog("@@@@@ NetServer::parseSetRequest. Text " + text);
-                    if(!text.isEmpty()) appManager->onParseSetRequest(text, downloadedRecords);
-                    Tools::debugLog("@@@@@ NetServer::parseSetRequest. Record count " + QString::number( downloadedRecords.count()));
-                }
+                if(nameItemValue != "value") continue;
+
+                Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Part %1, header %2 = %3").
+                        arg(QString::number(partIndex), QString::number(hi), header));
+                QString text = toJsonString(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
+                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Text " + text);
+                if(!text.isEmpty()) appManager->onParseSetRequest(text, downloadedRecords);
+                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Record count " + QString::number( downloadedRecords.count()));
             }
         }
         else // Resources
@@ -256,23 +412,23 @@ QString NetServer::parseSetRequest(const QByteArray &request)
             for(int hi = 0; hi < headers.count(); hi++)
             {
                 QByteArray& header = headers[hi];
-                Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Part %1, header %2 = %3").
-                        arg(QString::number(partIndex), QString::number(hi), header));
                 QList tables = downloadedRecords.keys();
                 for (DBTable* table : tables)
                 {
-                    const int fieldIndex = table->columnIndex("field");
-                    if(fieldIndex < 0) continue;
+                    //const int fieldIndex = table->columnIndex("field");
+                    //if(fieldIndex < 0) continue;
+                    Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Part %1, header %2 = %3").
+                            arg(QString::number(partIndex), QString::number(hi), header));
                     Tools::debugLog("@@@@@ NetServer::parseSetRequest. Table " + table->name);
                     DBRecordList tableRecords = downloadedRecords.value(table);
                     for(int ri = 0; ri < tableRecords.count(); ri++)
                     {
                         DBRecord& record = tableRecords[ri];
                         // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
-                        QByteArray nameItemValue = parseHeaderItem(header, "name");
-                        if(nameItemValue != record[fieldIndex].toString().toUtf8()) continue;
-                        QByteArray fileNameItemValue = parseHeaderItem(header, "filename");
-                        QString source = QString(fileNameItemValue);
+                        //QByteArray nameItemValue = parseHeaderItem(header, "name");
+                        //if(nameItemValue != record[fieldIndex].toString().toUtf8()) continue;
+                        QString source = QString(parseHeaderItem(header, "filename"));
+                        if(source.isEmpty()) continue;
 
                         // New resource file name (tableName/recordCode.extension):
                         const int dotIndex = source.lastIndexOf(".");
@@ -310,47 +466,4 @@ QString NetServer::parseSetRequest(const QByteArray &request)
             arg(QString::number(successCount), QString::number(successCount + errorCount));
     return makeResultJson(errorCode, description, "", "");
 }
-
-bool NetServer::parseCommand(const QByteArray& request)
-{
-    QString json = toJsonString(request);
-    Tools::debugLog("@@@@@ NetServer::parseCommand " + json);
-    QJsonObject jo = Tools::stringToJson(json);
-    QString method = jo["method"].toString("");
-    if (method.isEmpty()) return false;
-    QJsonValue jsonParams = jo["params"];
-    if (!jsonParams.isArray()) return false;
-    QJsonArray ja = jsonParams.toArray();
-    NetCommand nc = NetCommand_None;
-    QString param = "";
-    if(method == "stopLoad")
-    {
-        nc = NetCommand_StopLoad;
-    }
-    else if(ja.size() > 0)
-    {
-        if(method == "message")
-        {
-            nc = NetCommand_Message;
-            param = ja[0].toString("");
-        }
-        else if(method == "startLoad")
-        {
-            nc = NetCommand_StartLoad;
-            param = Tools::intToString(ja[0].toInt());
-        }
-        else if(method == "progress")
-        {
-            nc = NetCommand_Progress;
-            param = Tools::intToString(ja[0].toInt());
-        }
-    }
-    if(nc != NetCommand_None)
-    {
-        emit netCommand(nc, param);
-        return true;
-    }
-    return false;
-}
-
 

@@ -5,6 +5,12 @@
 #include "constants.h"
 #include "tools.h"
 
+enum UserRole
+{
+    UserRole_Admin = 0,
+    UserRole_Operator = 1,
+};
+
 #define USER_ADMIN_POSTFIX "*"
 
 enum UserField

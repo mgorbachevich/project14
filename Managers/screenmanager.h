@@ -5,6 +5,17 @@
 #include <QSize>
 #include "constants.h"
 
+#define DEFAULT_SCREEN_WIDTH 568
+#define DEFAULT_SCREEN_HEIGHT 320
+#define DEFAULT_SPACER 8
+#define DEFAULT_WEIGHT_VALUE_FONT_SIZE 70
+#define DEFAULT_WEIGHT_TITLE_FONT_SIZE 10
+#define DEFAULT_NORMAL_FONT_SIZE 13
+#define DEFAULT_LARGE_FONT_SIZE 18
+#define DEFAULT_BUTTON_SIZE 40
+#define DEFAULT_FLAG_SIZE 20
+#define DEFAULT_EDIT_WIDTH 200
+
 class ScreenManager : public QObject
 {
     Q_OBJECT
