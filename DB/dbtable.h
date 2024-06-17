@@ -1,10 +1,8 @@
 #ifndef DBTABLE_H
 #define DBTABLE_H
 
-#include <QDebug>
 #include <QObject>
 #include <QVariant>
-#include <QSqlDatabase>
 #include "constants.h"
 #include "dbtablecolumn.h"
 

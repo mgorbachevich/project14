@@ -366,8 +366,11 @@ QString Tools::fileNameFromPath(const QString& path)
 
 void Tools::pause(const int msec, const QString& comment)
 {
-    debugLog(QString("@@@@@ Tools::pause %1 %2").arg(intToString(msec), comment));
-    QThread::currentThread()->msleep(msec);
+    if(msec > 0)
+    {
+        debugLog(QString("@@@@@ Tools::pause %1 %2").arg(intToString(msec), comment));
+        QThread::currentThread()->msleep(msec);
+    }
 }
 
 void Tools::sortByInt(DBRecordList& records, const int field, const bool increase)

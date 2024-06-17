@@ -56,7 +56,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     connect(this, &AppManager::start, db, &DataBase::onAppStart);
     connect(netServer, &NetServer::netCommand, this, &AppManager::onNetCommand);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
-    connect(db, &DataBase::requestResult, this, &AppManager::onDBRequestResult);
+    connect(db, &DataBase::selectResult, this, &AppManager::onSelectResult);
     connect(equipmentManager, &EquipmentManager::printed, this, &AppManager::onPrinted);
     connect(equipmentManager, &EquipmentManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
     connect(keyEmitter, &KeyEmitter::enterChar, this, &AppManager::onEnterChar);
@@ -175,7 +175,7 @@ void AppManager::onTimer()
     }
 
     // Ожидание окончания сетевых запросов:
-    if(netServer->isStarted() && netActionTime > 0 && (WAIT_NET_COMMAND_SEC * 1000) < now - netActionTime)
+    if(netServer->isStarted() && netActionTime > 0 && WAIT_NET_COMMAND_MSEC < now - netActionTime)
     {
         debugLog("@@@@@ AppManager::onTimer netActionTime");
         onNetCommand(NetCommand_StopLoad, "");
@@ -323,11 +323,11 @@ void AppManager::onProductCodeEdited(const QString &value)
     db->select(DBSelector_GetProductsByInputCode, value);
 }
 
-void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList& records, const bool ok)
+void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& records, const bool ok)
 {
     // Получен результ из БД
 
-    debugLog("@@@@@ AppManager::onDBRequestResult " + QString::number(selector));
+    debugLog("@@@@@ AppManager::onSelectResult " + QString::number(selector));
     if (!ok)
     {
         showAttention("Ошибка базы данных!");
@@ -405,12 +405,12 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
 
     case DBSelector_GetShowcaseResources: // Отображение картинок товаров экрана Showcase:
     {
-        debugLog("@@@@@ AppManager::onDBRequestResult GetShowcaseResources"  + QString::number(records.count()));
+        debugLog("@@@@@ AppManager::onSelectResult GetShowcaseResources"  + QString::number(records.count()));
         QStringList fileNames;
         for (int i = 0; i < records.count(); i++)
         {
             QString s = getImageFileWithQmlPath(records[i]);
-            // debugLog("@@@@@ AppManager::onDBRequestResult GetShowcaseResources" << s;
+            // debugLog("@@@@@ AppManager::onSelectResult GetShowcaseResources" << s;
             fileNames.append(s);
         }
         showcasePanelModel->updateImages(fileNames);
@@ -421,7 +421,7 @@ void AppManager::onDBRequestResult(const DBSelector selector, const DBRecordList
     {
         QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
         emit showControlParam(ControlParam_ProductImage, imagePath);
-        debugLog("@@@@@ AppManager::onDBRequestResult showProductImage " + imagePath);
+        debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
         break;
     }
 
@@ -1255,8 +1255,8 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
 
 bool AppManager::onBackgroundDownloadClicked()
 {
-    showAttention("Фоновая загрузка запрещена");
-    return false;
+    if(!BACKGROUND_DOWNLOADING) showAttention("Фоновая загрузка запрещена");
+    return BACKGROUND_DOWNLOADING;
 }
 
 void AppManager::onCalendarClosed(const QString& day, const QString& month, const QString& year)

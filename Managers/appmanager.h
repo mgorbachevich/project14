@@ -200,7 +200,7 @@ signals:
     void start();
 
 public slots:
-    void onDBRequestResult(const DBSelector, const DBRecordList&, const bool);
+    void onSelectResult(const DBSelector, const DBRecordList&, const bool);
     void onDBStarted();
     void onEnterChar(const QChar) { clickSound(); onUserAction(); }
     void onEnterKey(const Qt::Key) { clickSound(); onUserAction(); }

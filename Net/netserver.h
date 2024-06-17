@@ -16,6 +16,14 @@
 
 #define SERVER_VERSION "1.5"
 
+enum RouterRule
+{
+    RouterRule_Delete,
+    RouterRule_Get,
+    RouterRule_Set,
+    RouterRule_Command
+};
+
 class AppManager;
 
 class NetServer : public ExternalMessager
@@ -33,12 +41,11 @@ public:
     static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 
 protected:
-    QString parseGetRequest(const bool, const QByteArray&);
-    QString parseSetRequest(const QByteArray&);
+    QString parseGetRequest(const RouterRule, const QByteArray&);
+    QString parseSetRequest(const RouterRule, const QByteArray&);
     QString toJsonString(const QByteArray&);
     QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
     bool parseCommand(const QByteArray&);
-    static QHttpServerResponse makeResponse(const QString&);
 
     QHttpServer* server = nullptr;
 

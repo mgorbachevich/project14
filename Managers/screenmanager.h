@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QSize>
-#include "constants.h"
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -15,6 +14,7 @@
 #define DEFAULT_BUTTON_SIZE 40
 #define DEFAULT_FLAG_SIZE 20
 #define DEFAULT_EDIT_WIDTH 200
+#define SHOWCASE_ROW_IMAGES 5
 
 class ScreenManager : public QObject
 {

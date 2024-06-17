@@ -4,7 +4,10 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.50"
+#define APP_VERSION "2.51"
+
+#define DBRecord QVariantList
+#define DBRecordList QList<QVariantList>
 
 // Debug and Log:
 //#define DEBUG_LOG_FILE
@@ -14,6 +17,7 @@
 #define DEBUG_WEIGHT_STATUS false
 #define DB_PATH_MESSAGE false
 #define WRITE_CONFIG_FILE_MESSAGE false
+#define DEBUG_INSERT_DB_DELAY_MSEC 0
 
 // On Start:
 #define REMOVE_SETTINGS_FILE_ON_START false
@@ -49,15 +53,14 @@
 #endif
 
 // Other:
-#define SERVER_WAIT_FOR_REPLY_MSEC 5000
-#define SERVER_WAIT_FOR_REPLY_SLEEP_MSEC 10
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define WAIT_SOUND_MSEC 500
 #define WAIT_DRAWING_MSEC 150
-#define WAIT_NET_COMMAND_SEC 60
+#define WAIT_NET_COMMAND_MSEC 60000
+#define SQL_EXECUTION_WAIT_MSEC 30000
+#define SQL_EXECUTION_SLEEP_MSEC 50
 #define EOL "\r\n"
-#define SHOWCASE_ROW_IMAGES 5
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
 #define PRICE_MAX_CHARS 6
 #define AMOUNT_MAX_CHARS 8
@@ -67,10 +70,7 @@
 #define DEFAULT_ADMIN_CODE 0
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS true
 #define EQUIPMENT_POLLING_INTERVAL 200
-
-#define DBRecord QVariantList
-#define DBRecordList QList<QVariantList>
-#define StringPair QPair<QString, QString>
+#define BACKGROUND_DOWNLOADING false
 
 enum MainPageIndex
 {

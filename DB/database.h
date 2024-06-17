@@ -46,39 +46,40 @@ class DataBase : public ExternalMessager
 public:
     explicit DataBase(AppManager*);
     ~DataBase();
-    DBTable* getTable(const QString&) const;
-    QString version() { return DB_VERSION; }
+
     bool addToShowcase(const DBRecord&);
-    bool removeFromShowcase(const DBRecord&);
+    void clearLog();
+    QString getProductMessageById(const QString&);
+    DBTable* getTable(const QString&) const;
+    QList<DBTable*> getTables() { return tables; };
     bool isInShowcase(const DBRecord&);
-    QString netUpload(const QString&, const QString&, const bool codesOnly = false);
+    bool isStarted() { return started; }
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
-    QString getProductMessageById(const QString&);
+    QString netUpload(const QString&, const QString&, const bool codesOnly = false);
+    bool removeFromShowcase(const DBRecord&);
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     void select(const DBSelector, const DBRecordList&);
     void select(const DBSelector, const QString& param1, const QString& param2 = "");
-    void clearLog();
-    bool isStarted() { return started; }
-    QList<DBTable*> getTables() { return tables; };
+    QString version() { return DB_VERSION; }
 
-protected:
-    bool open(QSqlDatabase&, const QString&);
+private:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
-    bool createTable(const QSqlDatabase& db, DBTable*);
     void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
-    bool removeAll(const QSqlDatabase&, DBTable*);
+    bool createTable(const QSqlDatabase& db, DBTable*);
+    bool executeSelectSQL(const QSqlDatabase&, DBTable*, const QString&, DBRecordList&);
+    bool executeSQL(const QSqlDatabase&, const QString&);
     bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
+    bool isLogging(const int);
+    bool open(QSqlDatabase&, const QString&);
+    bool query(const QSqlDatabase&, const QString&, DBTable*, DBRecordList*);
+    bool removeAll(const QSqlDatabase&, DBTable*);
+    bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
     void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
     QStringList selectAllCodes(const QSqlDatabase&, DBTable*);
     bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
     bool selectById(const QSqlDatabase&, DBTable*, const QString&, DBRecord&);
-    bool executeSQL(const QSqlDatabase&, const QString&, const bool log = true);
-    bool executeSelectSQL(const QSqlDatabase&, DBTable*, const QString&, DBRecordList&);
-    bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
-    void removeOldLogRecords();
-    bool isLogging(const int);
     //bool copyDBFile(const QString&, const QString&);
     //bool renameDBFile(const QString&, const QString&);
 
@@ -89,7 +90,7 @@ protected:
     QList<DBTable*> tables;
 
 signals:
-    void requestResult(const DBSelector, const DBRecordList&, const bool);
+    void selectResult(const DBSelector, const DBRecordList&, const bool);
     void dbStarted();
 
 public slots:

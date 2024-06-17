@@ -32,56 +32,31 @@ void NetServer::start(const int port)
     {
         server->route("/deleteData", [this] (const QHttpServerRequest &request)
         {
-            return QtConcurrent::run([&request, this]
-            {
-                appManager->isRefreshNeeded = true;
-                QString response = parseGetRequest(false, request.query().toString().toUtf8());
-                Tools::debugLog("@@@@@ NetServer::start deleteData " + response);
-                QHttpServerResponse r(response);
-                r.setHeader("Content-Type", "application/json");
-                return r;
-            });
+            appManager->isRefreshNeeded = true;
+            return parseGetRequest(RouterRule_Delete, request.query().toString().toUtf8());
         });
-
         server->route("/getData", [this] (const QHttpServerRequest &request)
         {
-            return QtConcurrent::run([&request, this]
-            {
-                QString response = parseGetRequest(true, request.query().toString().toUtf8());
-                Tools::debugLog("@@@@@ NetServer::start getData response " + response);
-                return makeResponse(response);
-            });
+            return parseGetRequest(RouterRule_Get, request.query().toString().toUtf8());
         });
         server->route("/setData", [this] (const QHttpServerRequest &request)
         {
-            return QtConcurrent::run([&request, this]
-            {
-                appManager->isRefreshNeeded = true;
-                QString response = parseSetRequest(request.body());
-                Tools::debugLog("@@@@@ NetServer::start setData response " + response);
-                return makeResponse(response);
-            });
+            appManager->isRefreshNeeded = true;
+            return parseSetRequest(RouterRule_Set, request.body());
         });
-
         server->route("/command", [this] (const QHttpServerRequest &request)
         {
-            return QtConcurrent::run([&request, this]
-            {
-                QString response = parseSetRequest(request.body());
-                Tools::debugLog("@@@@@ NetServer::start command response " + response);
-                return makeResponse(response);
-            });
+            return parseSetRequest(RouterRule_Command, request.body());
+        });
+
+        server->afterRequest([](QHttpServerResponse &&response)
+        {
+            Tools::debugLog("@@@@@ NetServer::start afterRequest");
+            response.setHeader("Content-Type", "application/json");
+            return std::move(response);
         });
     }
 }
-
-QHttpServerResponse NetServer::makeResponse(const QString& s)
-{
-    QHttpServerResponse r(s);
-    r.setHeader("Content-Type", "application/json");
-    return r;
-}
-
 QString NetServer::toJsonString(const QByteArray& request)
 {
     Tools::debugLog("@@@@@ NetServer::toJsonString");
@@ -92,7 +67,7 @@ QString NetServer::toJsonString(const QByteArray& request)
     return QString(text);
 }
 
-QString NetServer::parseGetRequest(const bool upload, const QByteArray &request)
+QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &request)
 {
     // Parse list of codes to upload:
     Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest %1").arg(QString(request)));
@@ -148,19 +123,20 @@ QString NetServer::parseGetRequest(const bool upload, const QByteArray &request)
             }
         }
     }
-    if(upload) return appManager->netUpload(tableName, codes, codesOnly);
+    if(rule == RouterRule_Get) return appManager->netUpload(tableName, codes, codesOnly);
     if(!codesOnly) return appManager->netDelete(tableName, codes);
     return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
 }
 
 QString NetServer::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QString& data)
 {
-    if(tableName.isEmpty() || data.isEmpty())
-        return QString("{\"result\":\"%1\",\"description\":\"%2\"}").
-                arg(QString::number(errorCode), description);
-    else
-        return QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
-            arg(QString::number(errorCode), description, tableName, data);
+    QString s = (tableName.isEmpty() || data.isEmpty()) ?
+                QString("{\"result\":\"%1\",\"description\":\"%2\"}").
+                    arg(QString::number(errorCode), description) :
+                QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
+                    arg(QString::number(errorCode), description, tableName, data);
+    Tools::debugLog("NetServer::makeResultJson " + s);
+    return s;
 }
 
 QString NetServer::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QStringList& values)
@@ -345,7 +321,7 @@ QString NetServer::parseSetRequest(const QByteArray &request)
 }
 */
 
-QString NetServer::parseSetRequest(const QByteArray &request)
+QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
 {
     Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
     int successCount = 0;
