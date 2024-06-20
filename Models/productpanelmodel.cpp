@@ -42,7 +42,7 @@ void ProductPanelModel::update(const DBRecord& product, const QString& price, Pr
             break;
         case ProductDBTable::UnitWeight:
             if(ProductDBTable::isPiece(product))
-                value = QString("%1 кг").arg(product.at(i).toDouble() / 1000000);
+                value = QString("%1 кг").arg(product.at(i).toDouble() / 1000);
             break;
         }
         if(!value.isEmpty()) ss << QString("%1: %2").arg(productTable->columnTitle(i), value);

@@ -17,6 +17,7 @@ Popup
     Material.background: "transparent"
     property string inputText: ""
     property int maxChars: 2
+    property bool clicked: false
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
@@ -105,17 +106,21 @@ Popup
                         {
                             case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:
                             case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
-                                text += event.text
+                                if(clicked) text += event.text
+                                else text = event.text
+                                inputPiecesPanel.clicked = true
                                 break;
                             case Qt.Key_Backspace: case Qt.Key_Delete: case Qt.Key_C:
                                 if(text.length > 0) text = text.substring(0, text.length - 1);
                                 else app.beepSound();
+                                inputPiecesPanel.clicked = true
                                 break;
                             case Qt.Key_F10: // Промотка
                                 app.onRewind()
                                 break
                             case Qt.Key_Escape:
                                 text = ""
+                                inputPiecesPanel.clicked = true
                                 break;
                             case Qt.Key_Enter: case Qt.Key_Return:
                                 inputPiecesPanel.close();
@@ -124,6 +129,7 @@ Popup
                                 app.beepSound();
                                 break;
                         }
+                        inputPiecesPanelText.focus = true
                     }
                 }
             }
@@ -145,10 +151,11 @@ Popup
                     onClicked:
                     {
                         app.onUserAction();
-                        if(inputPiecesPanelText.text != "" && parseInt(inputPiecesPanelText.text) > 0)
+                        if(inputPiecesPanelText.text !== "" && parseInt(inputPiecesPanelText.text) > 0)
                             inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) - 1
                         else app.beepSound();
                         inputPiecesPanelText.focus = true
+                        inputPiecesPanel.clicked = true
                     }
                 }
 
@@ -163,6 +170,7 @@ Popup
                         if(inputPiecesPanelText.text === "") inputPiecesPanelText.text = "1"
                         else inputPiecesPanelText.text = parseInt(inputPiecesPanelText.text) + 1
                         inputPiecesPanelText.focus = true
+                        inputPiecesPanel.clicked = true
                     }
                 }
             }

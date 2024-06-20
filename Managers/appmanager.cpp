@@ -76,6 +76,9 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     calendarDayModel = new BaseListModel(this);
     calendarMonthModel = new BaseListModel(this);
     calendarYearModel = new BaseListModel(this);
+    calendarHourModel = new BaseListModel(this);
+    calendarMinuteModel = new BaseListModel(this);
+    calendarSecondModel = new BaseListModel(this);
 
     context->setContextProperty("productPanelModel", productPanelModel);
     context->setContextProperty("showcasePanelModel", showcasePanelModel);
@@ -90,14 +93,23 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("calendarDayModel", calendarDayModel);
     context->setContextProperty("calendarMonthModel", calendarMonthModel);
     context->setContextProperty("calendarYearModel", calendarYearModel);
+    context->setContextProperty("calendarHourModel", calendarHourModel);
+    context->setContextProperty("calendarMinuteModel", calendarMinuteModel);
+    context->setContextProperty("calendarSecondModel", calendarSecondModel);
 
-    QStringList days, months, years;
+    QStringList days, months, years, hours, minutes, seconds;
     for (int i = 1; i <= 31; i++) days << Tools::intToString(i);
     for (int i = 1; i <= 12; i++) months << Tools::intToString(i);
     for (int i = 1; i <= 25; i++) years << Tools::intToString(i + 2023);
+    for (int i = 0; i <= 23; i++) hours << Tools::intToString(i);
+    for (int i = 0; i <= 59; i++) minutes << Tools::intToString(i);
+    for (int i = 0; i <= 59; i++) seconds << Tools::intToString(i);
     calendarDayModel->update(days);
     calendarMonthModel->update(months);
     calendarYearModel->update(years);
+    calendarHourModel->update(hours);
+    calendarMinuteModel->update(minutes);
+    calendarSecondModel->update(seconds);
 
     if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE") ||
        !Tools::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE"))
@@ -142,7 +154,7 @@ void AppManager::onTimer()
     if(DEBUG_ONTIMER_MESSAGE)
         debugLog("@@@@@ AppManager::onTimer " + Tools::intToString((int)(userActionTime / 1000)));
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
-    const quint64 now = Tools::currentDateTimeToUInt();
+    const quint64 now = Tools::nowMsec();
 
     if(isAuthorizationOpened()) // Авторизация
     {
@@ -178,7 +190,7 @@ void AppManager::onTimer()
     if(netServer->isStarted() && netActionTime > 0 && WAIT_NET_COMMAND_MSEC < now - netActionTime)
     {
         debugLog("@@@@@ AppManager::onTimer netActionTime");
-        onNetCommand(NetCommand_StopLoad, "");
+        onNetCommand(NetCommand_StopLoad, Tools::boolToString(false));
     }
 }
 
@@ -282,7 +294,7 @@ void AppManager::onLockClicked()
 
 void AppManager::onNumberClicked(const QString &s)
 {
-    if(!isAuthorizationOpened() && !isSettingsOpened())
+    if(!isAuthorizationOpened() && !isSettingsOpened() && !isProduct())
     {
         debugLog("@@@@@ AppManager::onNumberClicked " + s);
         emit showProductCodeInputBox(s);
@@ -505,10 +517,6 @@ void AppManager::onConfirmationClicked(const int selector)
         db->clearLog();
         break;
 
-    case ConfirmSelector_SetSystemDateTime:
-        equipmentManager->setSystemDateTime(true);
-        break;
-
     case ConfirmSelector_RemoveFromShowcase:
         db->removeFromShowcase(product);
         emit setCurrentProductFavorite(db->isInShowcase(product));
@@ -612,7 +620,7 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
         clearLog();
         break;
     case SettingCode_DateTime:
-        setSystemDateTime();
+        showDateInputPanel(SettingCode_DateTime, true);
         break;
     case SettingCode_Equipment:
     case SettingCode_WiFi:
@@ -626,7 +634,7 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
         onEditUsersClicked();
         break;
     case SettingCode_VerificationDate:
-        showVerificationDateInputPanel();
+        showDateInputPanel(SettingCode_VerificationDate, false);
         break;
     default:
         showMessage(name, "Не поддерживается");
@@ -634,19 +642,21 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     }
 }
 
-void AppManager::showVerificationDateInputPanel()
+void AppManager::showDateInputPanel(const int settingCode, const bool showTime)
 {
-    QStringList value = settings->getStringValue(SettingCode_VerificationDate).split(".");
-    int d = 1;
-    int m = 1;
-    int y = 2024;
-    if(value.count() > 0) d = Tools::stringToInt(value[0]);
-    if(value.count() > 1) m = Tools::stringToInt(value[1]);
-    if(value.count() > 2) y = Tools::stringToInt(value[2]);
-    QDate date(y, m, d);
-    if(!date.isValid()) { d = m = 1; y = 2024; }
-    emit showCalendarPanel(d, m, y);
+    QDateTime dt = QDateTime::fromString(settings->getStringValue((SettingCode)settingCode), DATE_TIME_FORMAT);
+    if(!dt.date().isValid()) dt = Tools::now();
+    QDate d = dt.date();
+    if(showTime)
+    {
+        QTime t = dt.time();
+        emit showCalendarPanel(settingCode, settings->getName((SettingCode)settingCode),
+                               d.day(), d.month(), d.year(), t.hour(), t.minute(), t.second());
+    }
+    else emit showCalendarPanel(settingCode, settings->getName((SettingCode)settingCode),
+                           d.day(), d.month(), d.year(), -1, -1, -1);
 }
+
 
 void AppManager::updateSettings(const int groupCode)
 {
@@ -786,7 +796,7 @@ void AppManager::showToast(const QString &title, const QString &text, const int 
 
 void AppManager::updateSystemStatus()
 {
-    QString dateTime = Tools::dateTimeFromUInt(Tools::currentDateTimeToUInt(), "%1 %2", "dd.MM", "hh:mm");
+    QString dateTime = Tools::dateTimeFromUInt(Tools::nowMsec(), "%1 %2", "dd.MM", "hh:mm");
     debugLog(QString("@@@@@ AppManager::updateSystemStatus %1").arg(dateTime));
     emit showControlParam(ControlParam_DateTime, dateTime);
     emit showEnvironmentStatus(Tools::isEnvironment(EnvironmentType_USB),
@@ -814,19 +824,19 @@ void AppManager::showConfirmation(const ConfirmSelector selector, const QString 
 
 void AppManager::netDownload(QHash<DBTable *, QList<QVariantList> > rs, int &s, int &e)
 {
-    netActionTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::nowMsec();
     db->netDownload(rs, s, e);
 }
 
 QString AppManager::netDelete(const QString &t, const QString &s)
 {
-    netActionTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::nowMsec();
     return db->netDelete(t, s);
 }
 
 QString AppManager::netUpload(const QString &t, const QString &s, const bool b)
 {
-    netActionTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::nowMsec();
     return db->netUpload(t, s, b);
 }
 
@@ -865,7 +875,7 @@ void AppManager::onUserAction()
 {
     debugLog("@@@@@ AppManager::onUserAction");
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
-    userActionTime = Tools::currentDateTimeToUInt();
+    userActionTime = Tools::nowMsec();
     secret = 0;
 }
 
@@ -984,7 +994,11 @@ void AppManager::updateWeightStatus()
 
     // Рисуем количество (вес/штуки):
     QString quantity = NO_DATA;
-    if(isWM) quantity = isPieceProduct || !isWMError ? moneyCalculator->quantityAsString(product) : "";
+    if(isWM)
+    {
+        if(equipmentManager->isWMOverloaded()) beepSound();
+        else if(isPieceProduct|| !isWMError) quantity = moneyCalculator->quantityAsString(product);
+    }
     emit showControlParam(ControlParam_WeightValue, quantity);
     emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? activeColor : passiveColor);
 
@@ -1024,7 +1038,7 @@ void AppManager::updateWeightStatus()
         }
         else // Штучный товар
         {
-            const double unitWeight = product[ProductDBTable::UnitWeight].toDouble() / 1000000; // Вес единицы, кг
+            const double unitWeight = product[ProductDBTable::UnitWeight].toDouble() / 1000; // Вес единицы, кг
             if(unitWeight > 0) // Задан вес единицы
             {
                 if(isFixed && !isWMError)
@@ -1075,12 +1089,6 @@ void AppManager::clickSound()
 void AppManager::debugLog(const QString& s)
 {
     Tools::debugLog(s);
-}
-
-void AppManager::setSystemDateTime()
-{
-    debugLog("@@@@@ AppManager::setSystemDateTime");
-    showConfirmation(ConfirmSelector_SetSystemDateTime, "Вы хотите установить системное время?");
 }
 
 void AppManager::onPopupOpened(const bool open)
@@ -1259,23 +1267,48 @@ bool AppManager::onBackgroundDownloadClicked()
     return BACKGROUND_DOWNLOADING;
 }
 
-void AppManager::onCalendarClosed(const QString& day, const QString& month, const QString& year)
+void AppManager::onCalendarClosed(const int settingItemCode,
+                                  const QString& day, const QString& month, const QString& year,
+                                  const QString& hour, const QString& minute, const QString& second)
 {
     debugLog(QString("@@@@@ AppManager::onCalendarClosed %1.%2.%3").arg(day, month, year));
-    QDate d(Tools::stringToInt(year), Tools::stringToInt(month), Tools::stringToInt(day));
-    if (d.isValid() && Tools::stringToInt(year) > 2023)
-        onSettingInputClosed(SettingCode_VerificationDate, QString("%1.%2.%3").arg(day, month, year));
-    else
+    int y = Tools::stringToInt(year);
+    QDate d(y, Tools::stringToInt(month), Tools::stringToInt(day));
+    QTime t = QTime(Tools::stringToInt(hour), Tools::stringToInt(minute), Tools::stringToInt(second));
+    if(y < 0)
     {
-       showVerificationDateInputPanel();
-       showAttention("Неверная дата");
+        QDateTime dt = Tools::now();
+        d = dt.date();
+        t = dt.time();
     }
+    if (d.isValid() && d.year() > 2023)
+    {
+        switch(settingItemCode)
+        {
+        case SettingCode_DateTime:
+        {
+            if(t.isValid())
+            {
+                QDateTime dt = QDateTime(d, t);
+                onSettingInputClosed(settingItemCode, dt.toString(DATE_TIME_FORMAT));
+                equipmentManager->setSystemDateTime(dt);
+                return;
+            }
+            break;
+        }
+        case SettingCode_VerificationDate:
+            onSettingInputClosed(settingItemCode, d.toString(DATE_FORMAT));
+            return;
+        }
+    }
+    showDateInputPanel(settingItemCode, settingItemCode == SettingCode_DateTime);
+    showAttention("Неверная дата");
 }
 
 void AppManager::onNetCommand(const int command, const QString& param)
 {
     debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
-    netActionTime = Tools::currentDateTimeToUInt();
+    netActionTime = Tools::nowMsec();
     switch (command)
     {
     case NetCommand_Message:
@@ -1291,7 +1324,11 @@ void AppManager::onNetCommand(const int command, const QString& param)
     case NetCommand_StopLoad:
         netActionTime = 0;
         emit showDownloadProgress(100);
-        if(isRefreshNeeded)
+        if(Tools::stringToBool(param)) // Ok
+        {}
+        else // Timeout
+        {}
+       if(isRefreshNeeded)
         {
             showAttention("Данные обновлены!");
             isRefreshNeeded = false;

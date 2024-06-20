@@ -86,6 +86,7 @@ Rectangle
         {
             searchPanelTextField.text += value
             app.onSearchFilterEdited(searchPanelTextField.text);
+            searchPanelTextField.focus = true
         }
     }
 
@@ -109,7 +110,11 @@ Rectangle
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
             icon.source: "../Icons/home"
             marked: true
-            onClicked: app.onSearchClicked()
+            onClicked:
+            {
+                app.onSearchClicked()
+                searchPanelTextField.focus = true
+            }
         }
 
         Spacer
@@ -126,7 +131,11 @@ Rectangle
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
             icon.source: "../Icons/keyboard"
             marked: searchPanelKeyboard.visible
-            onClicked: searchPanelKeyboard.visible = !searchPanelKeyboard.visible
+            onClicked:
+            {
+                searchPanelKeyboard.visible = !searchPanelKeyboard.visible
+                searchPanelTextField.focus = true
+            }
         }
 
         RoundIconButton
@@ -136,7 +145,11 @@ Rectangle
             Layout.row: 0
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
             icon.source: "../Icons/arrow_up"
-            onClicked: app.onHierarchyUpClicked()
+            onClicked:
+            {
+                app.onHierarchyUpClicked()
+                searchPanelTextField.focus = true
+            }
         }
 
         Rectangle
@@ -224,6 +237,7 @@ Rectangle
                         app.beepSound();
                         break;
                 }
+                searchPanelTextField.focus = true
             }
         }
 
@@ -278,7 +292,11 @@ Rectangle
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onSearchResultClicked(index)
+                            onClicked:
+                            {
+                                app.onSearchResultClicked(index)
+                                searchPanelTextField.focus = true
+                            }
                         }
                     }
 
@@ -293,7 +311,11 @@ Rectangle
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onSearchResultClicked(index)
+                            onClicked:
+                            {
+                                app.onSearchResultClicked(index)
+                                searchPanelTextField.focus = true
+                            }
                         }
                     }
 
@@ -308,7 +330,11 @@ Rectangle
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onSearchResultClicked(index)
+                            onClicked:
+                            {
+                                app.onSearchResultClicked(index)
+                                searchPanelTextField.focus = true
+                            }
                         }
                     }
                 }
@@ -370,6 +396,7 @@ Rectangle
                             searchPanelFilterList.currentIndex = index
                             searchPanelTextField.text = ""
                             app.onSearchFilterClicked(index, searchPanelTextField.text)
+                            searchPanelTextField.focus = true
                         }
                     }
                 }

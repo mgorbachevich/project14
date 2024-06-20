@@ -52,7 +52,7 @@ public:
     Q_INVOKABLE void onAddUserClicked();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE bool onBackgroundDownloadClicked();
-    Q_INVOKABLE void onCalendarClosed(const QString&, const QString&, const QString&);
+    Q_INVOKABLE void onCalendarClosed(const int, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onConfirmationClicked(const int);
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
@@ -112,10 +112,9 @@ private:
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
-    void setSystemDateTime();
     void showAuthorizationUsers();
+    void showDateInputPanel(const int, const bool);
     void showToast(const QString&, const QString&, const int delaySec = 5);
-    void showVerificationDateInputPanel();
     void startAuthorization();
     void startAll();
     void startSettings();
@@ -163,6 +162,9 @@ private:
     BaseListModel* calendarDayModel = nullptr;
     BaseListModel* calendarMonthModel = nullptr;
     BaseListModel* calendarYearModel = nullptr;
+    BaseListModel* calendarHourModel = nullptr;
+    BaseListModel* calendarMinuteModel = nullptr;
+    BaseListModel* calendarSecondModel = nullptr;
 
 signals:
     void closeLogView();
@@ -173,7 +175,7 @@ signals:
     void previousSettings();
     void resetCurrentProduct();
     void setCurrentProductFavorite(const bool);
-    void showCalendarPanel(const int, const int, const int);
+    void showCalendarPanel(const int, const QString&, const int, const int, const int, const int, const int, const int);
     void showCurrentUser(const int, const QString&);
     void showConfirmationBox(const int, const QString&, const QString&);
     void showDownloadPanel();

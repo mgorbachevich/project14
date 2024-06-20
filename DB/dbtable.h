@@ -20,7 +20,7 @@ public:
     QString columnTitle(const int index) const;
     QString columnName(const int index) const;
     QString columnType(const int index) const;
-    DBRecord createRecord();
+    DBRecord createRecord(const QString code = "");
     void addColumn(const QString& title, const QString& name, const QString& type);
     virtual int columnCount() { return 0; }
     virtual const DBRecordList checkList(DataBase*, const DBRecordList&);

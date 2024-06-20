@@ -77,13 +77,15 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showCalendarPanel:
     {
         target: app
-        function onShowCalendarPanel(day, month, year)
+        function onShowCalendarPanel(code, title, day, month, year, hour, minute, second)
         {
             //app.debugLog("@@@@@ mainWindow.onShowCalendarPanel");
             Qt.createComponent("Panels/calendarPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight,
-                titleText: "Дата поверки", calendarDay: day, calendarMonth: month, calendarYear: year
+                code: code, titleText: title,
+                calendarDay: day, calendarMonth: month, calendarYear: year,
+                calendarHour: hour, calendarMinute: minute, calendarSecond: second
             }).open()
         }
     }

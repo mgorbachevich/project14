@@ -138,6 +138,7 @@ Popup
                                 app.beepSound();
                                 break;
                         }
+                        inputProductCodePanelText.focus = true
                     }
                 }
             }

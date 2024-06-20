@@ -31,6 +31,7 @@ public:
     int getIntValue(const SettingCode, const bool listIndex = false);
     int getIntValue(const DBRecord&, const bool listIndex = false);
     QString getName(const DBRecord& r) { return r[SettingField_Name].toString(); }
+    QString getName(const SettingCode code) { return getName(*getByCode(code)); }
     QString getStringValue(const DBRecord&);
     QString getStringValue(const SettingCode);
     int getType(const DBRecord& r) { return r[SettingField_Type].toInt(); }

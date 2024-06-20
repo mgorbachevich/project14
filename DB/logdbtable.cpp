@@ -14,7 +14,7 @@ LogDBTable::LogDBTable(const QString& name, QObject *parent): DBTable(name, pare
 DBRecord LogDBTable::createRecord(const int type, const int source, const QString &comment)
 {
     DBRecord r = DBTable::createRecord();
-    r[LogDBTable::DateTime] = Tools::currentDateTimeToUInt();
+    r[LogDBTable::DateTime] = Tools::nowMsec();
     r[LogDBTable::Type] = type;
     r[LogDBTable::Source] = source;
     r[LogDBTable::Comment] = comment;

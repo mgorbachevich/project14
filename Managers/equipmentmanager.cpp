@@ -118,15 +118,15 @@ void EquipmentManager::stop()
 {
     Tools::debugLog("@@@@@ EquipmentManager::stop ");
     pause(true);
-    removeWM();
-    removePM();
+    stopWM();
+    stopPM();
 }
 
 void EquipmentManager::createWM()
 {
-    Tools::debugLog("@@@@@ EquipmentManager::createWM ");
     if(wm == nullptr)
     {
+        Tools::debugLog("@@@@@ EquipmentManager::createWM ");
         wm = new Wm100(this);
         connect(wm, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
         connect(wm, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
@@ -142,17 +142,6 @@ int EquipmentManager::startWM() // return error
     {
         e = wm->connectDevice(WMUri);
         isWMStarted = (e == 0);
-        //wm->blockSignals(!isWMStarted);
-        if(isWMStarted)
-        {
-            if(isSystemDateTime)
-            {
-                Tools::debugLog("@@@@@ EquipmentManager::startWM setSystemDateTime");
-                wm->setDateTime(QDateTime::currentDateTime());
-            }
-            //wm->startPolling(200);
-        }
-        isSystemDateTime = false;
     }
     if(e) showAttention(QString("\nОшибка весового модуля %1: %2").arg(
                 Tools::intToString(e), getWMErrorDescription(e)));
@@ -160,25 +149,136 @@ int EquipmentManager::startWM() // return error
     return e;
 }
 
+void EquipmentManager::stopWM()
+{
+    if (wm != nullptr && isWMStarted)
+    {
+        Tools::debugLog("@@@@@ EquipmentManager::stopWM");
+        isWMStarted = false;
+        wm->blockSignals(true);
+        wm->stopPolling();
+        int e = wm->disconnectDevice();
+        Tools::debugLog("@@@@@ EquipmentManager::stopWM error " + Tools::intToString(e));
+    }
+}
+
 void EquipmentManager::removeWM()
 {
     Tools::debugLog("@@@@@ EquipmentManager::removeWM");
+    stopWM();
     if (wm != nullptr)
     {
-        if(isWMStarted)
-        {
-            isWMStarted = false;
-            wm->blockSignals(true);
-            wm->stopPolling();
-            int e = wm->disconnectDevice();
-            Tools::debugLog("@@@@@ EquipmentManager::removeWM error " + Tools::intToString(e));
-        }
         disconnect(wm, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
         disconnect(wm, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
         delete wm;
         wm = nullptr;
     }
-    isSystemDateTime = false;
+}
+
+void EquipmentManager::pauseWM(const bool v)
+{
+    Tools::debugLog("@@@@@ EquipmentManager::pauseWM " + Tools::boolToIntString(v));
+    if(wm != nullptr && isWMStarted)
+    {
+        if(v) wm->stopPolling();
+        else wm->startPolling(EQUIPMENT_POLLING_INTERVAL);
+        wm->blockSignals(v);
+
+    }
+}
+
+void EquipmentManager::createPM()
+{
+    if(slpa == nullptr)
+    {
+        Tools::debugLog("@@@@@ EquipmentManager::createPM ");
+        slpa = new Slpa100u(this);
+        labelCreator = new LabelCreator(this);
+        connect(slpa, &Slpa100u::printerErrorChanged, this, &EquipmentManager::onPMErrorStatusChanged);
+        connect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
+    }
+}
+
+int EquipmentManager::startPM()
+{
+    Tools::debugLog("@@@@@ EquipmentManager::startPM " + PMUri);
+    createPM();
+    int e = 0;
+    if (slpa != nullptr && labelCreator != nullptr && !isPMStarted)
+    {
+        e = slpa->connectDevice(PMUri);
+        isPMStarted = (e == 0);
+        //slpa->blockSignals(!isPMStarted);
+        if(isPMStarted)
+        {
+            //slpa->startPolling(200);
+            e = slpa->setBrightness(appManager->settings->getIntValue(SettingCode_PrinterBrightness) + 8);
+            if(e >= 0) e = slpa->setOffset(appManager->settings->getIntValue(SettingCode_PrintOffset) + 8);
+            if(e >= 0) e = slpa->setPaper(appManager->settings->getIntValue(SettingCode_PrintPaper, true) == 0 ?
+                                          Slpa100uProtocol::papertype::ptSticker :
+                                          Slpa100uProtocol::papertype::ptRibbon);
+            if(e >= 0) e = slpa->setSensor(appManager->settings->getBoolValue(SettingCode_PrintLabelSensor));
+        }
+    }
+    if(e) showAttention(QString("\nОшибка принтера %1: %2").arg(
+                Tools::intToString(e), getPMErrorDescription(e)));
+    Tools::debugLog("@@@@@ EquipmentManager::startPM error " + QString::number(e));
+    return e;
+}
+
+void EquipmentManager::stopPM()
+{
+    if (slpa != nullptr && isPMStarted)
+    {
+        Tools::debugLog("@@@@@ EquipmentManager::stopPM");
+        slpa->blockSignals(true);
+        slpa->stopPolling();
+        int e = slpa->disconnectDevice();
+        Tools::debugLog("@@@@@ EquipmentManager::stopPM error " + QString::number(e));
+        isPMStarted = false;
+    }
+}
+
+void EquipmentManager::removePM()
+{
+    Tools::debugLog("@@@@@ EquipmentManager::removePM");
+    stopPM();
+    if (slpa != nullptr)
+    {
+        disconnect(slpa, &Slpa100u::printerErrorChanged, this, &EquipmentManager::onPMErrorStatusChanged);
+        disconnect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
+        delete labelCreator;
+        labelCreator = nullptr;
+        delete slpa;
+        slpa = nullptr;
+    }
+}
+
+void EquipmentManager::pausePM(const bool v)
+{
+    Tools::debugLog("@@@@@ EquipmentManager::pausePM " + Tools::boolToIntString(v));
+    if(slpa != nullptr && isPMStarted)
+    {
+        if(v) slpa->stopPolling();
+        else slpa->startPolling(EQUIPMENT_POLLING_INTERVAL);
+        slpa->blockSignals(v);
+    }
+}
+
+void EquipmentManager::setSystemDateTime(const QDateTime& dt)
+{
+    if (wm != nullptr && dt.isValid())
+    {
+        Tools::debugLog("@@@@@ EquipmentManager::setSystemDateTime " + dt.toString("dd.MM.yyyy HH:mm:ss"));
+        if(isWMStarted)
+            wm->setDateTime(dt);
+        else
+        {
+            startWM();
+            wm->setDateTime(dt);
+            stopWM();
+        }
+    }
 }
 
 QString EquipmentManager::WMversion() const
@@ -256,11 +356,11 @@ void EquipmentManager::onWMStatusChanged(Wm100Protocol::channel_status &s)
     if(b5 || b6 || b7 || b8 || b9) // Ошибка состояния
     {
         param = ControlParam_WeightError;
-        if(b5 && isWMFlag(WMStatus, 5) != b5) e = 5003;
-        if(b6 && isWMFlag(WMStatus, 6) != b6) e = 5004;
-        if(b7 && isWMFlag(WMStatus, 7) != b7) e = 5005;
-        if(b8 && isWMFlag(WMStatus, 8) != b8) e = 5006;
-        if(b9 && isWMFlag(WMStatus, 9) != b9) e = 5007;
+        if(b5 && isWMFlag(WMStatus, 5) != b5) e = WMError_AutoZero;
+        if(b6 && isWMFlag(WMStatus, 6) != b6) e = WMError_Overload;
+        if(b7 && isWMFlag(WMStatus, 7) != b7) e = WMError_Mesure;
+        if(b8 && isWMFlag(WMStatus, 8) != b8) e = WMError_Underload;
+        if(b9 && isWMFlag(WMStatus, 9) != b9) e = WMError_NoReply;
     }
     else if(isWMStateError(WMStatus) && WMErrorCode == 0) param = ControlParam_WeightError; // Ошибка исчезла
 
@@ -277,85 +377,6 @@ void EquipmentManager::onWMErrorStatusChanged(int e)
     {
         WMErrorCode = e;
         emit paramChanged(ControlParam_WeightError, e);
-    }
-}
-
-void EquipmentManager::createPM()
-{
-    if(slpa == nullptr)
-    {
-        Tools::debugLog("@@@@@ EquipmentManager::createPM ");
-        slpa = new Slpa100u(this);
-        labelCreator = new LabelCreator(this);
-        connect(slpa, &Slpa100u::printerErrorChanged, this, &EquipmentManager::onPMErrorStatusChanged);
-        connect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
-    }
-}
-
-void EquipmentManager::pause(const bool v)
-{
-    Tools::debugLog("@@@@@ EquipmentManager::pause " + Tools::boolToIntString(v));
-    if(wm != nullptr && isWMStarted)
-    {
-        if(v) wm->stopPolling();
-        else wm->startPolling(EQUIPMENT_POLLING_INTERVAL);
-        wm->blockSignals(v);
-
-    }
-    if(slpa != nullptr && isPMStarted)
-    {
-        if(v) slpa->stopPolling();
-        else slpa->startPolling(EQUIPMENT_POLLING_INTERVAL);
-        slpa->blockSignals(v);
-    }
-}
-
-int EquipmentManager::startPM()
-{
-    Tools::debugLog("@@@@@ EquipmentManager::startPM " + PMUri);
-    createPM();
-    int e = 0;
-    if (slpa != nullptr && labelCreator != nullptr && !isPMStarted)
-    {
-        e = slpa->connectDevice(PMUri);
-        isPMStarted = (e == 0);
-        //slpa->blockSignals(!isPMStarted);
-        if(isPMStarted)
-        {
-            //slpa->startPolling(200);
-            e = slpa->setBrightness(appManager->settings->getIntValue(SettingCode_PrinterBrightness) + 8);
-            if(e >= 0) e = slpa->setOffset(appManager->settings->getIntValue(SettingCode_PrintOffset) + 8);
-            if(e >= 0) e = slpa->setPaper(appManager->settings->getIntValue(SettingCode_PrintPaper, true) == 0 ?
-                                          Slpa100uProtocol::papertype::ptSticker :
-                                          Slpa100uProtocol::papertype::ptRibbon);
-            if(e >= 0) e = slpa->setSensor(appManager->settings->getBoolValue(SettingCode_PrintLabelSensor));
-        }
-    }
-    if(e) showAttention(QString("\nОшибка принтера %1: %2").arg(
-                Tools::intToString(e), getPMErrorDescription(e)));
-    Tools::debugLog("@@@@@ EquipmentManager::startPM error " + QString::number(e));
-    return e;
-}
-
-void EquipmentManager::removePM()
-{
-    Tools::debugLog("@@@@@ EquipmentManager::removePM");
-    if (slpa != nullptr)
-    {
-        if(isPMStarted)
-        {
-            slpa->blockSignals(true);
-            slpa->stopPolling();
-            int e = slpa->disconnectDevice();
-            Tools::debugLog("@@@@@ EquipmentManager::removePM error " + QString::number(e));
-            isPMStarted = false;
-        }
-        disconnect(slpa, &Slpa100u::printerErrorChanged, this, &EquipmentManager::onPMErrorStatusChanged);
-        disconnect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
-        delete labelCreator;
-        labelCreator = nullptr;
-        delete slpa;
-        slpa = nullptr;
     }
 }
 
@@ -490,7 +511,7 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
     QString barcode = makeBarcode(product, quantity, price, amount);
     if (barcode.isEmpty()) return 1009;
 
-    quint64 dateTime = Tools::currentDateTimeToUInt();
+    quint64 dateTime = Tools::nowMsec();
     int labelNumber = 0; // todo
     int e = labelCreator->loadLabel(":/Labels/60x40.lpr"); // todo
     //int e = slpa->printTest(100);
@@ -512,8 +533,8 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
         pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
         pd.operatorcode =  Tools::intToString(Users::getCode(user));
         pd.operatorname = Users::getName(user);
-        pd.date = Tools::dateFromUInt(dateTime, "dd.MM.yyyy");
-        pd.time = Tools::timeFromUInt(dateTime, "hh:mm:ss");
+        pd.date = Tools::dateFromUInt(dateTime, DATE_FORMAT);
+        pd.time = Tools::timeFromUInt(dateTime, TIME_FORMAT);
         pd.labelnumber = QString::number(labelNumber);
         pd.scalesnumber = appManager->settings->getStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo
@@ -545,7 +566,20 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
 
 QString EquipmentManager::getWMDescription()
 {
-    startWM();
+    QString result;
+    if(isWMStarted)
+        result = getWMDescriptionNow();
+    else
+    {
+        startWM();
+        result = getWMDescriptionNow();
+        stopWM();
+    }
+    return result;
+}
+
+QString EquipmentManager::getWMDescriptionNow()
+{
     Wm100Protocol::channel_specs cp;
     wm->getChannelParam(&cp);
     QString res, max, min, dis, tar;
@@ -569,6 +603,5 @@ QString EquipmentManager::getWMDescription()
     dis += " г";
     tar = QString("T=-%1 кг").arg(cp.tare);
     res = QString("%1   %2   %3   %4").arg(max, min, dis, tar);
-    removeWM();
     return res;
 }

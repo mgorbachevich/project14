@@ -32,6 +32,7 @@ Popup
         {
             //app.debugLog("@@@@@ inputPasswordPanel onEnterChar %1".arg(value))
             inputPasswordPanelText.text += value
+            inputPasswordPanelText.focus = true
         }
     }
 
@@ -130,6 +131,7 @@ Popup
                             app.beepSound();
                             break
                     }
+                    inputPasswordPanelText.focus = true
                 }
             }
         }

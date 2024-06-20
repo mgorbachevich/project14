@@ -17,17 +17,25 @@ Popup
     Material.background: "transparent"
     property string titleText: ""
     property int comboWidth: screenManager.normalFontSize() * 6
+    property int code: 0
     property int startCalendarYear: 2024
     property int calendarDay: 1
     property int calendarMonth: 1
     property int calendarYear: 2024
+    property int calendarHour: 0
+    property int calendarMinute: 0
+    property int calendarSecond: 0
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
         app.onPopupOpened(false)
-        app.onCalendarClosed(calendarPanelDayCombo.displayText,
+        app.onCalendarClosed(code,
+                             calendarPanelDayCombo.displayText,
                              calendarPanelMonthCombo.displayText,
-                             calendarPanelYearCombo.displayText)
+                             calendarPanelYearCombo.displayText,
+                             calendarPanelHourCombo.displayText,
+                             calendarPanelMinuteCombo.displayText,
+                             calendarPanelSecondCombo.displayText)
     }
 
     Rectangle
@@ -221,10 +229,155 @@ Popup
                 }
             }
 
-            Spacer
+            SubtitleText
+            {
+                Layout.column: 1
+                Layout.row: 4
+                text: qsTr("Часы")
+            }
+
+            SubtitleText
             {
                 Layout.column: 2
                 Layout.row: 4
+                text: qsTr("Минуты")
+            }
+
+            SubtitleText
+            {
+                Layout.column: 3
+                Layout.row: 4
+                text: qsTr("Секунды")
+            }
+
+            ComboBox
+            {
+                id: calendarPanelHourCombo
+                Layout.column: 1
+                Layout.row: 5
+                Layout.preferredWidth: comboWidth
+                editable: false
+                popup.modal: true
+                currentIndex: calendarHour
+                displayText: calendarHour
+                visible: calendarHour >= 0
+
+                model: calendarHourModel
+                delegate: Text
+                {
+                    padding: screenManager.spacer()
+                    font { pointSize: screenManager.normalFontSize() }
+                    color: Material.color(Material.BlueGrey, Material.Shade900)
+                    text: model.value // Roles::ValueRole
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        onClicked:
+                        {
+                            app.onUserAction();
+                            calendarPanelHourCombo.currentIndex = index
+                            calendarPanelHourCombo.displayText = index
+                            calendarPanelHourCombo.popup.close()
+                        }
+                    }
+                }
+            }
+
+            ComboBox
+            {
+                id: calendarPanelMinuteCombo
+                Layout.column: 2
+                Layout.row: 5
+                Layout.preferredWidth: comboWidth
+                editable: false
+                popup.modal: true
+                currentIndex: calendarMinute
+                displayText: calendarMinute
+                visible: calendarHour >= 0
+
+                model: calendarMinuteModel
+                delegate: Text
+                {
+                    padding: screenManager.spacer()
+                    font { pointSize: screenManager.normalFontSize() }
+                    color: Material.color(Material.BlueGrey, Material.Shade900)
+                    text: model.value // Roles::ValueRole
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        onClicked:
+                        {
+                            app.onUserAction();
+                            calendarPanelMinuteCombo.currentIndex = index
+                            calendarPanelMinuteCombo.displayText = index
+                            calendarPanelMinuteCombo.popup.close()
+                        }
+                    }
+                }
+            }
+
+            ComboBox
+            {
+                id: calendarPanelSecondCombo
+                Layout.column: 3
+                Layout.row: 5
+                Layout.preferredWidth: comboWidth * 3 / 2
+                editable: false
+                popup.modal: true
+                currentIndex: calendarSecond
+                displayText: calendarSecond
+                visible: calendarHour >= 0
+
+                model: calendarSecondModel
+                delegate: Text
+                {
+                    padding: screenManager.spacer()
+                    font { pointSize: screenManager.normalFontSize() }
+                    color: Material.color(Material.BlueGrey, Material.Shade900)
+                    text: model.value // Roles::ValueRole
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        onClicked:
+                        {
+                            app.onUserAction();
+                            calendarPanelSecondCombo.currentIndex = index
+                            calendarPanelSecondCombo.displayText = index
+                            calendarPanelSecondCombo.popup.close()
+                        }
+                    }
+                }
+            }
+
+            Spacer
+            {
+                Layout.column: 2
+                Layout.row: 6
+            }
+
+            RoundTextButton
+            {
+                Layout.column: 0
+                Layout.row: 7
+                Layout.columnSpan: 5
+                Layout.alignment: Qt.AlignCenter
+                Layout.preferredHeight: screenManager.buttonSize()
+                text: "ТЕКУЩЕЕ ВРЕМЯ"
+                onClicked:
+                {
+                    app.onUserAction();
+                    calendarPanelYearCombo.displayText = -1
+                    calendarPanel.close()
+                }
+            }
+
+            Spacer
+            {
+                Layout.column: 2
+                Layout.row: 8
                 Layout.fillHeight: parent
             }
         }

@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.51"
+#define APP_VERSION "2.52"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -52,6 +52,17 @@
 #define SCALE_CONFIG_FILE Tools::dbPath("scale_config.txt")
 #endif
 
+// DateTime
+#define DATE_FORMAT "dd.MM.yyyy"
+#define TIME_FORMAT "HH:mm:ss"
+#define TIME_MSEC_FORMAT "hh:mm:ss.zzz"
+#define DATE_TIME_FORMAT "dd.MM.yyyy HH:mm:ss"
+
+// UI
+#define PRICE_MAX_CHARS 6
+#define AMOUNT_MAX_CHARS 8
+#define NO_DATA "-----"
+
 // Other:
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
@@ -62,9 +73,6 @@
 #define SQL_EXECUTION_SLEEP_MSEC 50
 #define EOL "\r\n"
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
-#define PRICE_MAX_CHARS 6
-#define AMOUNT_MAX_CHARS 8
-#define NO_DATA "-----"
 //#define DB_EMULATION
 #define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 #define DEFAULT_ADMIN_CODE 0
@@ -84,7 +92,6 @@ enum ConfirmSelector
     ConfirmSelector_None = 0,
     ConfirmSelector_Authorization,
     ConfirmSelector_ClearLog,
-    ConfirmSelector_SetSystemDateTime,
     ConfirmSelector_ReplaceUser,
     ConfirmSelector_DeleteUser,
     ConfirmSelector_AddToShowcase,
@@ -116,6 +123,16 @@ enum LogError
     LogError_WrongRecord = 1102,
     LogError_UnknownTable = 1103,
     LogError_RecordNotFound = 1104,
+};
+
+enum WMError
+{
+    WMError_None = 0,
+    WMError_AutoZero = 5003, // ошибка автонуля при включении
+    WMError_Overload = 5004, // перегрузка по весу
+    WMError_Mesure = 5005, // ошибка при получении измерения (нет градуировки весов или она не правильная)
+    WMError_Underload = 5006, // весы недогружены
+    WMError_NoReply = 5007, // ошибка: нет ответа от АЦП
 };
 
 enum ProductType

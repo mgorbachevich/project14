@@ -5,7 +5,7 @@
 #include "dbtable.h"
 #include "externalmessager.h"
 
-#define DB_VERSION "1.7"
+#define DB_VERSION "1.8"
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"

@@ -4,10 +4,11 @@
 #include "dbtable.h"
 #include "tools.h"
 
-QVariantList DBTable::createRecord()
+QVariantList DBTable::createRecord(const QString code)
 {
     DBRecord r;
     for (int i = 0; i < columnCount(); i++) r << QVariant("");
+    if(!code.isEmpty()) r[0] = code;
     return r;
 }
 

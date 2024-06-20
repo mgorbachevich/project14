@@ -32,7 +32,6 @@ HEADERS += \
     DB/dbtable.h \
     DB/dbtablecolumn.h \
     DB/database.h \
-    DB/labelformatdbtable.h \
     DB/logdbtable.h \
     DB/resourcedbtable.h \
     DB/showcasedbtable.h \

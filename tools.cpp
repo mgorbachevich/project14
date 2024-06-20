@@ -20,7 +20,7 @@ QAudioOutput audioOutput;
 void Tools::sound(const QString& fileName, const int volume)
 {
     if(!mediaPlayer.isAvailable()) return;
-    const quint64 now = Tools::currentDateTimeToUInt();
+    const quint64 now = nowMsec();
     if(now - soundTime < WAIT_SOUND_MSEC) return;
     soundTime = now;
     audioOutput.setVolume(1.0f * volume / 100.0f); // 0 .. 1.0f
@@ -94,11 +94,6 @@ double Tools::round(const double value, const int pointPosition)
     int d = 1;
     for(int i = 0; i < pointPosition; i++) d *= 10;
     return ((double)qRound(value * d)) / d;
-}
-
-quint64 Tools::currentDateTimeToUInt()
-{
-    return QDateTime::currentMSecsSinceEpoch();
 }
 
 /*
@@ -408,7 +403,7 @@ void Tools::debugLog(const QString &text)
     if (f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
     {
          QTextStream out(&f);
-         out << dateTimeFromUInt(currentDateTimeToUInt(), "%1 %2", "dd.MM.yyyy", "hh:mm:ss.zzz") << " " << s.replace("\n", " ").replace("\r", " ") << EOL;
+         out << dateTimeFromUInt(currentDateTimeToUInt(), "%1 %2", DATE_FORMAT, TIME_MSEC_FORMAT) << " " << s.replace("\n", " ").replace("\r", " ") << EOL;
          f.close();
     }
 #endif

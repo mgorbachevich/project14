@@ -18,7 +18,8 @@ public:
     static bool checkPermission(const QString&);
     static bool copyFile(const QString&, const QString&);
     static bool renameFile(const QString&, const QString&);
-    static quint64 currentDateTimeToUInt();
+    static quint64 nowMsec() { return QDateTime::currentMSecsSinceEpoch(); }
+    static QDateTime now() { return QDateTime::currentDateTime(); }
     static QString dateFromUInt(quint64, const QString&);
     static QString dateTimeFromUInt(quint64, const QString&, const QString&, const QString&);
     static QString dbPath(const QString&);

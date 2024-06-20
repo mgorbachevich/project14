@@ -17,12 +17,12 @@ class EquipmentManager : public ExternalMessager
 
 public:
     EquipmentManager(AppManager*);
-    ~EquipmentManager() { stop(); }
+    ~EquipmentManager() { removeWM(); removePM(); }
     void create();
     void start();
     void stop();
-    void setSystemDateTime(const bool v) { isSystemDateTime = v; }
-    void pause(const bool);
+    void setSystemDateTime(const QDateTime&);
+    void pause(const bool v) { pauseWM(v); pausePM(v); }
 
     // Weight Manager:
     QString WMversion() const;
@@ -30,6 +30,7 @@ public:
     double getWeight() const { return WMStatus.weight; }
     double getTare() const { return WMStatus.tare; }
     bool isWMError() const { return WMErrorCode != 0 || isWMStateError(WMStatus); }
+    bool isWMOverloaded() const { return WMErrorCode == WMError_Overload; }
     bool isWeightFixed() const { return isWMFlag(WMStatus, 0); }
     bool isZeroFlag() const { return isWMFlag(WMStatus, 1); }
     bool isTareFlag() const { return isWMFlag(WMStatus, 3); }
@@ -50,11 +51,14 @@ public:
 private:
     QString makeBarcode(const DBRecord&, const QString&, const QString&, const QString&);
     QString parseBarcode(const QString&, const QChar, const QString&);
+    QString getWMDescriptionNow();
 
     // Weight Manager:
     void createWM();
     void removeWM();
+    void stopWM();
     int startWM();
+    void pauseWM(const bool);
     bool isWMFlag(Wm100Protocol::channel_status, int) const;
     bool isWMStateError(Wm100Protocol::channel_status) const;
 
@@ -62,6 +66,8 @@ private:
     void createPM();
     void removePM();
     int startPM();
+    void stopPM();
+    void pausePM(const bool);
     bool isPMFlag(uint16_t v, int shift) const { return (v & (0x00000001 << shift)) != 0; }
     bool isPMStateError(uint16_t) const;
 
@@ -81,8 +87,6 @@ private:
     uint16_t PMStatus = 0;
     QString PMUri;
     EquipmentMode PMMode = EquipmentMode_None;
-
-    bool isSystemDateTime = false;
 
 signals:
     void printed(const DBRecord&);

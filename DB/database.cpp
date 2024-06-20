@@ -5,7 +5,6 @@
 #include "database.h"
 #include "showcasedbtable.h"
 #include "productdbtable.h"
-#include "labelformatdbtable.h"
 #include "transactiondbtable.h"
 #include "resourcedbtable.h"
 #include "logdbtable.h"
@@ -20,7 +19,7 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
 {
     Tools::debugLog("@@@@@ DataBase::DataBase");
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, this));
-    tables.append(new LabelFormatDBTable(DBTABLENAME_LABELFORMATS, this));
+    tables.append(new ResourceDBTable(DBTABLENAME_LABELFORMATS, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGES, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGEFILES, this));
     tables.append(new ResourceDBTable(DBTABLENAME_PICTURES, this));
@@ -161,12 +160,12 @@ bool DataBase::query(const QSqlDatabase& db, const QString& sql, DBTable* table,
         records->clear();
     }
 
-    quint64 t = Tools::currentDateTimeToUInt();
+    quint64 t = Tools::nowMsec();
     while(isExecuting) // жду пока выполнится предыдущий запрос из дркгого потока
     {
         Tools::debugLog("@@@@@ DataBase::query waiting");
         Tools::pause(SQL_EXECUTION_SLEEP_MSEC);
-        if(Tools::currentDateTimeToUInt() - t > SQL_EXECUTION_WAIT_MSEC)
+        if(Tools::nowMsec() - t > SQL_EXECUTION_WAIT_MSEC)
         {
             Tools::debugLog("@@@@@ DataBase::query ERROR timeout");
             return false;
@@ -325,7 +324,7 @@ void DataBase::saveLog(const int type, const int source, const QString &comment)
                 if(t == nullptr || logDuration <= 0) return;
                 if(removeOldLogRecordsCounter == 0)
                 {
-                    quint64 first = Tools::currentDateTimeToUInt() - logDuration * 24 * 60 * 60 * 1000;
+                    quint64 first = Tools::nowMsec() - logDuration * 24 * 60 * 60 * 1000;
                     QString sql = QString("DELETE FROM %1 WHERE %2 < '%3';").arg(
                                 t->name, t->columnName(LogDBTable::DateTime), QString::number(first));
                     if(!executeSQL(logDB, sql)) Tools::debugLog("@@@@@ DataBase::removeOldLogRecords ERROR");

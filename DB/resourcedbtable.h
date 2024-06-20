@@ -10,9 +10,9 @@ public:
     enum Columns
     {
         Code = 0,
+        Name,
         Value,
         Hash,
-        Field,
         Source,
         COLUMN_COUNT
     };
@@ -21,13 +21,13 @@ public:
     {
         Tools::debugLog("@@@@@ ResourceDBTable::ResourceDBTable");
 
-        addColumn("Код",      "code",   "INT PRIMARY KEY");
-        addColumn("Значение", "value",  "TEXT");
-        addColumn("Хэш",      "hash",   "TEXT");
-        addColumn("Поле",     "field",  "TEXT");
-        addColumn("Источник", "source", "TEXT");
+        addColumn("Код",          "code",   "INT PRIMARY KEY");
+        addColumn("Наименование", "name",   "TEXT");
+        addColumn("Значение",     "value",  "TEXT");
+        addColumn("Хэш",          "hash",   "TEXT");
+        addColumn("Источник",     "source", "TEXT");
     }
-    int columnCount() { return Columns::COLUMN_COUNT; }
+    int columnCount() { return COLUMN_COUNT; }
 };
 
 #endif // RESOURCEDBTABLE_H

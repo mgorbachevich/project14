@@ -178,6 +178,7 @@ bool NetServer::parseCommand(const QByteArray& request)
     if(method == "stopLoad")
     {
         nc = NetCommand_StopLoad;
+        param = Tools::boolToString(true);
     }
     else if(ja.size() > 0)
     {
@@ -399,24 +400,34 @@ QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
                     DBRecordList tableRecords = downloadedRecords.value(table);
                     for(int ri = 0; ri < tableRecords.count(); ri++)
                     {
-                        DBRecord& record = tableRecords[ri];
                         // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
-                        //QByteArray nameItemValue = parseHeaderItem(header, "name");
-                        //if(nameItemValue != record[fieldIndex].toString().toUtf8()) continue;
                         QString source = QString(parseHeaderItem(header, "filename"));
                         if(source.isEmpty()) continue;
 
                         // New resource file name (tableName/recordCode.extension):
+                        DBRecord& record = tableRecords[ri];
                         const int dotIndex = source.lastIndexOf(".");
                         QString extension =  dotIndex < 0 ? "" : source.mid(dotIndex + 1, source.length());
                         QString localFilePath = QString("%1/%2.%3").arg(table->name, record[0].toString(), extension);
-
                         // Write data file:
                         QByteArray fileData = request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d * 2);
                         Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number( fileData.length()));
                         QString fullFilePath = Tools::downloadPath(localFilePath);
                         Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full file path " + fullFilePath);
-                        if(Tools::writeBinaryFile(fullFilePath, fileData))
+
+                        if(!Tools::writeBinaryFile(fullFilePath, fileData))
+                        {
+                            errorCount++;
+                            errorCode = LogError_WrongRecord;
+                            record = table->createRecord(record[0].toString());
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
+                        }
+                        else if(table->name == DBTABLENAME_LABELFORMATS ||
+                                table->name == DBTABLENAME_MESSAGES ||
+                                table->name == DBTABLENAME_MESSAGEFILES ||
+                                table->name == DBTABLENAME_PICTURES ||
+                                table->name == DBTABLENAME_MOVIES ||
+                                table->name == DBTABLENAME_SOUNDS)
                         {
                             successCount++;
                             record[ResourceDBTable::Source] = source;
@@ -425,10 +436,10 @@ QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
                         else
                         {
                             errorCount++;
-                            errorCode = LogError_WrongRecord;
-                            record[ResourceDBTable::Source] = "";
-                            record[ResourceDBTable::Value] = "";
-                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
+                            errorCode = LogError_UnknownTable;
+                            record = table->createRecord();
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Unknown table ERROR");
+                            continue;
                         }
                     }
                     downloadedRecords.remove(table);
