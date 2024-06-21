@@ -12,7 +12,7 @@ QHash<int, QByteArray> SettingsPanelModel3::roleNames() const
 
 void SettingsPanelModel3::update(Settings& settings)
 {
-    Tools::debugLog("@@@@@ SettingsPanelModel3::update " + Tools::intToString(settings.getCurrentGroupCode()));
+    Tools::debugLog("@@@@@ SettingsPanelModel3::update " + Tools::toString(settings.getCurrentGroupCode()));
     beginResetModel();
     items.clear();
     QList<int> groupItemCodes = settings.getCurrentGroupCodes();

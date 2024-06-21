@@ -12,51 +12,58 @@ class Tools
 public:
     explicit Tools(QApplication* a) { app = a; }
 
-    static QString boolToString(const bool);
-    static int boolToInt(const bool);
-    static QString boolToIntString(const bool);
-    static bool checkPermission(const QString&);
-    static bool copyFile(const QString&, const QString&);
-    static bool renameFile(const QString&, const QString&);
-    static quint64 nowMsec() { return QDateTime::currentMSecsSinceEpoch(); }
-    static QDateTime now() { return QDateTime::currentDateTime(); }
+    // Type conversion:
+    static bool toBool(const QString& s) { return s == "1" || s.toUpper() == "TRUE"; }
+    static double toDouble(const QString &s) { bool ok; double v = s.toDouble(&ok); return ok ? v : 0; }
+    static int toInt(const bool v) { return v ? 1 : 0; }
+    static int toInt(const QString &s) { bool ok; int v = s.toInt(&ok); return ok ? v : 0; }
+    static int toInt(const QVariant& v) { return toInt(v.toString()); }
+    static QString toIntString(const bool v) { return v ? "1" : "0"; }
+    static QString toString(const bool v) { return v ? "true" : "false"; }
+    static QString toString(const double, const int);
+    static QString toString(const int v) { return QString::number(v); }
+    static QString toString(const quint64 v) { return QString::number(v); }
+    static QString toString(const qsizetype v) { return QString::number(v); }
+    static QString toString(const QJsonObject&);
+    static QJsonObject toJson(const QString&);
     static QString dateFromUInt(quint64, const QString&);
     static QString dateTimeFromUInt(quint64, const QString&, const QString&, const QString&);
-    static QString dbPath(const QString&);
-    static void debugLog(const QString&);
-    static void debugMemory();
-    static QString doubleToString(const double, const int);
-    static QString downloadPath(const QString&);
-    static QString exchangePath(const QString&);
-    static QString fileNameFromPath(const QString&);
-    static QString intToString(const int);
-    static bool isEnvironment(const EnvironmentType);
-    static bool isFileExists(const QString&);
-    static bool isFileExistsInDownloadPath(const QString&);
-    static QString jsonToString(const QJsonObject&);
-    static qint64 getFileSize(const QString&);
-    static int getMemory(const MemoryType);
-    static NetParams getNetParams();
-    static QString makeDirs(const bool, const QString&);
-    //static void memoryCheck();
-    static void pause(const int, const QString& comment = "");
+    static QString timeFromUInt(quint64, const QString&);
+
+    // Files:
+    static bool copyFile(const QString&, const QString&);
+    static bool renameFile(const QString&, const QString&);
+    static bool removeFile(const QString&);
+    static QString dbPath(const QString& localPath) { return makeDirs("", localPath); }
+    static QString downloadPath(const QString& localPath) { return makeFullPath(DOWNLOAD_SUBDIR, localPath); }
+    static QString fileNameFromPath(const QString& path) { return path.mid(path.lastIndexOf("/") + 1); }
     static QString qmlFilePath(const QString&); // Read only
+    static bool isFileExists(const QString &path) { return QFile::exists(path); }
+    static bool isFileExistsInDownloadPath(const QString&);
+    static qint64 getFileSize(const QString&);
     static QByteArray readBinaryFile(const QString&);
     static QString readTextFile(const QString&);
+    static bool writeBinaryFile(const QString&, const QByteArray&);
+    static bool writeTextFile(const QString&, const QString&);
+    static QString makeDirs(const bool, const QString&);
+    //static QString exchangePath(const QString&);
+
+    // Other:
+    static bool checkPermission(const QString&);
+    static quint64 nowMsec() { return QDateTime::currentMSecsSinceEpoch(); }
+    static QDateTime now() { return QDateTime::currentDateTime(); }
+    static void debugLog(const QString&);
+    static void debugMemory();
+    static bool isEnvironment(const EnvironmentType);
+    static int getMemory(const MemoryType);
+    static NetParams getNetParams();
+    static void pause(const int, const QString& comment = "");
     static void removeDebugLog();
-    static bool removeFile(const QString&);
     static double round(const double, const int);
     static void sound(const QString&, const int);
     static void sortByInt(DBRecordList&, const int, const bool increase = true);
     static void sortByString(DBRecordList&, const int, const bool increase = true);
-    static double stringToDouble(const QString&, const double defaultValue = 0);
-    static int stringToInt(const QString&, const int defaultValue = 0);
-    static int stringToInt(const QVariant&, const int defaultValue = 0);
-    static bool stringToBool(const QString&);
-    static QJsonObject stringToJson(const QString&);
-    static QString timeFromUInt(quint64, const QString&);
-    static bool writeBinaryFile(const QString&, const QByteArray&);
-    static bool writeTextFile(const QString&, const QString&);
+    //static void memoryCheck();
 
 private:
     static QString makeFullPath(const QString&, const QString&);

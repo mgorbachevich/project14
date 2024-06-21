@@ -45,8 +45,8 @@ const DBRecord ProductDBTable::checkRecord(const DBRecord& record)
         Tools::debugLog("@@@@@ ProductDBTable::checkRecord ERROR");
         return result;
     }
-    int code = Tools::stringToInt(record.at(Columns::Code), 0);
-    int groupCode = Tools::stringToInt(record.at(Columns::GroupCode), 0);
+    int code = Tools::toInt(record.at(Columns::Code));
+    int groupCode = Tools::toInt(record.at(Columns::GroupCode));
     result.append(record);
     result.replace(Columns::Code, QString("%1").arg(code));
     result.replace(Columns::GroupCode, QString("%1").arg(groupCode));

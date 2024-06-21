@@ -37,6 +37,7 @@ public:
     void stop();
     QString version() { return SERVER_VERSION; }
     bool isStarted() { return server != nullptr; }
+    static QString makeResultJson(const int, const QString&, const QString&);
     static QString makeResultJson(const int, const QString&, const QString&, const QString&);
     static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 

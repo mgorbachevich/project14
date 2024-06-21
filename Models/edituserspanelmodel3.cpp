@@ -19,7 +19,7 @@ void EditUsersPanelModel3::update(Users* users)
     {
         const DBRecord& ui = users->get(i);
         QStringList data;
-        data << Tools::intToString(Users::getCode(ui)) << Users::getDisplayName(ui);
+        data << Tools::toString(Users::getCode(ui)) << Users::getDisplayName(ui);
         addItem(data);
     }
     endResetModel();

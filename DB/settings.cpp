@@ -11,7 +11,7 @@ Settings::Settings(AppManager *parent): JsonArrayFile(SETTINGS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Settings::Settings");
     mainObjectName = "data";
-    itemArrayName = "settings";
+    itemArrayName = DBTABLENAME_SETTINGS;
     fields.insert(SettingField_Code,      "code");
     fields.insert(SettingField_Type,      "type");
     fields.insert(SettingField_GroupCode, "group_code");
@@ -34,7 +34,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
     switch (getCode(record))
     {
     case SettingCode_ScalesNumber:
-        if(Tools::stringToInt(value) == 0)
+        if(Tools::toInt(value) == 0)
         {
            showAttention(getName(record) + ". Неверное значение");
             return false;
@@ -46,7 +46,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
         }
         break;
     case SettingCode_SerialScalesNumber:
-        if(Tools::stringToInt(value) == 0)
+        if(Tools::toInt(value) == 0)
         {
             showAttention(getName(record) + ". Неверное значение");
             return false;
@@ -78,19 +78,31 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
 bool Settings::parseDefault() // Добавление недостающих значений по умолчанию:
 {
     DBRecordList defaultRecords = parse(Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    for(int i = 0; i < SettingCode_Max; i++) checkDefaultRecord(i, defaultRecords);
+    Tools::sortByInt(defaultRecords, SettingField_Code);
+    for(int code = 0; code < SettingCode_Max; code++)
+    {
+        for (DBRecord& r : defaultRecords)
+        {
+            if (getCode(r) > code) break;
+            if (getCode(r) == code) // найдена запись по умолчанию
+            {
+                DBRecord* item = getByCode(code);
+                if(item != nullptr)
+                {
+                    r[SettingField_Value] = item->at(SettingField_Value);
+                    items.removeAt(getIndex(code));
+                }
+                items.append(r);
+                break;
+            }
+        }
+    }
     return items.count() > 0;
 }
 
 bool Settings::isGroup(const DBRecord &r)
 {
     return getType(r) == SettingType_Group || getType(r) == SettingType_GroupWithPassword;
-}
-
-void Settings::checkDefaultRecord(const int code, DBRecordList& defaults)
-{
-    for (DBRecord& r : items)    if (getCode(r) == code) return; // уже есть такая запись
-    for (DBRecord& r : defaults) if (getCode(r) == code) { items.append(r); return; }
 }
 
 QVariantList *Settings::getByIndexInCurrentGroup(const int indexInGroup)
@@ -133,15 +145,15 @@ int Settings::getIntValue(const SettingCode code, const bool listIndex)
 int Settings::getIntValue(const DBRecord& r, const bool listIndex)
 {
     return (listIndex && getType(r) == SettingType_List) ?
-            Tools::stringToInt((r.at(SettingField_Value)).toString()) :
-                Tools::stringToInt(getStringValue(r));
+            Tools::toInt((r.at(SettingField_Value)).toString()) :
+                Tools::toInt(getStringValue(r));
 }
 
 QString Settings::getStringValue(const DBRecord& r)
 {
     if(getType(r) != SettingType_List) return (r.at(SettingField_Value)).toString();
     QStringList values = getValueList(r);
-    int i = Tools::stringToInt((r.at(SettingField_Value)).toString());
+    int i = Tools::toInt((r.at(SettingField_Value)).toString());
     return (i < values.count()) ? values[i].trimmed() : "";
 }
 
@@ -197,7 +209,7 @@ void Settings::nativeSettings(const int code)
 
 bool Settings::setValue(const int itemCode, const QString& value)
 {
-    Tools::debugLog(QString("@@@@@ Settings::setValue %1 %2").arg(Tools::intToString(itemCode), value));
+    Tools::debugLog(QString("@@@@@ Settings::setValue %1 %2").arg(Tools::toString(itemCode), value));
     getAll();
     for (DBRecord& r : items)
     {
@@ -238,10 +250,13 @@ bool Settings::read()
 {
     Tools::debugLog("@@@@@ Settings::read");
     bool ok = JsonArrayFile::read();
-    scaleConfig->read();
-    (*getByCode(SettingCode_ScalesName))[SettingField_Value] = scaleConfig->get(ScaleConfigField_Model);
-    (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value] = scaleConfig->get(ScaleConfigField_SerialNumber);
-    (*getByCode(SettingCode_VerificationDate))[SettingField_Value] = scaleConfig->get(ScaleConfigField_VerificationDate);
+    if(ok)
+    {
+        scaleConfig->read();
+        (*getByCode(SettingCode_ScalesName))[SettingField_Value] = scaleConfig->get(ScaleConfigField_Model);
+        (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value] = scaleConfig->get(ScaleConfigField_SerialNumber);
+        (*getByCode(SettingCode_VerificationDate))[SettingField_Value] = scaleConfig->get(ScaleConfigField_VerificationDate);
+    }
     return ok;
 }
 
@@ -254,12 +269,26 @@ bool Settings::write()
     scaleConfig->set(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value]);
     scaleConfig->write();
     apply();
-    return JsonArrayFile::write();
+    bool ok = Tools::writeTextFile(fileName, toString());
+    Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::toString(ok)));
+    if(!ok) showAttention("Ошибка записи файла " + fileName);
+    else if(WRITE_CONFIG_FILE_MESSAGE) showAttention("Файл записан " + fileName);
+    wasRead = false;
+    return ok;
 }
 
 void Settings::sort()
 {
     getAll();
     Tools::sortByInt(items, SettingField_Code);
+}
+
+void Settings::appendItemToJson(DBRecord& r, QJsonArray& ja)
+{
+    QJsonObject ji;
+    ji.insert(fields.value(SettingField_Name), r.at(SettingField_Name).toJsonValue());
+    ji.insert(fields.value(SettingField_Code), r.at(SettingField_Code).toJsonValue());
+    ji.insert(fields.value(SettingField_Value), r.at(SettingField_Value).toJsonValue());
+    ja.append(ji);
 }
 

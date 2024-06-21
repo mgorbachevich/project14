@@ -36,25 +36,25 @@ QString MoneyCalculator::quantityAsString(const DBRecord& product)
     if(ProductDBTable::isPiece(product))
     {
         double v = Tools::round(q, 0);
-        return Tools::doubleToString(v, 0);
+        return Tools::toString(v, 0);
     }
     if(appManager->equipmentManager->isWMError()) return "";
     double v = Tools::round(q, WEIGHT_POINT_POSITION);
-    return Tools::doubleToString(v, WEIGHT_POINT_POSITION);
+    return Tools::toString(v, WEIGHT_POINT_POSITION);
 }
 
 QString MoneyCalculator::priceAsString(const DBRecord& product)
 {
     double p = price(product).toDouble() / moneyMultiplier();
     double v = Tools::round(p, MONEY_POINT_POSITION);
-    return Tools::doubleToString(v, MONEY_POINT_POSITION);
+    return Tools::toString(v, MONEY_POINT_POSITION);
 }
 
 QString MoneyCalculator::amountAsString(const DBRecord& product)
 {
     double a = quantityAsDouble(product) * (double)(price(product).toLongLong()) / moneyMultiplier();
     double v = Tools::round(a, MONEY_POINT_POSITION);
-    return Tools::doubleToString(v, MONEY_POINT_POSITION);
+    return Tools::toString(v, MONEY_POINT_POSITION);
 }
 
 

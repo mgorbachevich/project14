@@ -9,10 +9,14 @@ JsonArrayFile::JsonArrayFile(const QString &file, AppManager* parent) : JsonFile
 
 bool JsonArrayFile::read()
 {
-    items = parse(Tools::readTextFile(fileName));
-    parseDefault();
-    sort();
-    Tools::debugLog("@@@@@ JsonArrayFile::read " + Tools::intToString(items.count()));
+    if(!wasRead)
+    {
+        wasRead = true;
+        items = parse(Tools::readTextFile(fileName));
+        parseDefault();
+        sort();
+        Tools::debugLog("@@@@@ JsonArrayFile::read " + Tools::toString(items.count()));
+    }
     return items.count() > 0;
 }
 
@@ -47,7 +51,7 @@ bool JsonArrayFile::insertOrReplace(const QString& json)
         sort();
     }
     Tools::debugLog(QString("@@@@@ JsonArrayFile::insertOrReplace %1 %2").arg(
-        Tools::intToString(n), Tools::intToString(items.count())));
+        Tools::toString(n), Tools::toString(items.count())));
     return n > 0;
 }
 
@@ -60,6 +64,7 @@ bool JsonArrayFile::write()
 DBRecordList JsonArrayFile::parse(const QString& json)
 {
     DBRecordList records;
+    if(json.isEmpty()) return records;
     const QJsonObject jo = QJsonDocument::fromJson(json.toUtf8()).object();
     QJsonValue data = jo[mainObjectName];
     if (!data.isObject())
@@ -111,13 +116,7 @@ QJsonObject JsonArrayFile::toJson()
 {
     getAll();
     QJsonArray ja;
-    for (DBRecord& r : items)
-    {
-        QJsonObject ji;
-        for(int i = 0; i < r.count() && i < fields.count(); i++)
-            ji.insert(fields.value(i), r.at(i).toJsonValue());
-        ja.append(ji);
-    }
+    for (DBRecord& r : items) appendItemToJson(r, ja);
     QJsonObject jo;
     jo[itemArrayName] = ja;
     QJsonObject result;
@@ -125,4 +124,11 @@ QJsonObject JsonArrayFile::toJson()
     return result;
 }
 
+void JsonArrayFile::appendItemToJson(DBRecord& r, QJsonArray& ja)
+{
+    QJsonObject ji;
+    for(int i = 0; i < r.count() && i < fields.count(); i++)
+        ji.insert(fields.value(i), r.at(i).toJsonValue());
+    ja.append(ji);
+}
 

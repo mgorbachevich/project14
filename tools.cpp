@@ -29,62 +29,18 @@ void Tools::sound(const QString& fileName, const int volume)
     mediaPlayer.play();
 }
 
-QString Tools::jsonToString(const QJsonObject &jo)
+QString Tools::toString(const QJsonObject &jo)
 {
     QJsonDocument jd(jo);
     return QString(jd.toJson());
 }
 
-QString Tools::intToString(const int v)
-{
-    return QString::number(v);
-}
-
-QJsonObject Tools::stringToJson(const QString &s)
+QJsonObject Tools::toJson(const QString &s)
 {
     return QJsonDocument::fromJson(s.toUtf8()).object();
 }
 
-int Tools::stringToInt(const QString &s, const int defaultValue)
-{
-    bool ok;
-    int v = s.toInt(&ok);
-    return ok ? v : defaultValue;
-}
-
-int Tools::stringToInt(const QVariant &v, const int defaultValue)
-{
-    return stringToInt(v.toString(), defaultValue);
-}
-
-bool Tools::stringToBool(const QString &s)
-{
-    return s == "1" || s == "true" || s == "TRUE";
-}
-
-double Tools::stringToDouble(const QString &s, const double defaultValue)
-{
-    bool ok;
-    double v = s.toDouble(&ok);
-    return ok ? v : defaultValue;
-}
-
-QString Tools::boolToString(const bool value)
-{
-    return QVariant(value).toString();
-}
-
-int Tools::boolToInt(const bool value)
-{
-    return value ? 1 : 0;
-}
-
-QString Tools::boolToIntString(const bool value)
-{
-    return intToString(value ? 1 : 0);
-}
-
-QString Tools::doubleToString(const double value, const int pointPosition)
+QString Tools::toString(const double value, const int pointPosition)
 {
     return QString("%1").arg(value, 0, 'f', pointPosition);
 }
@@ -158,7 +114,7 @@ QString Tools::makeDirs(const bool internalStorage, const QString& localPath)
         if(!dir.exists(path))
         {
             bool ok = dir.mkdir(path);
-            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::boolToString(ok), path));
+            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::toString(ok), path));
         }
     }
     path += "/" + dirs.last(); // file name
@@ -206,7 +162,7 @@ bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
     }
     quint64 n1 = file.write(data);
     quint64 n2 = file.size();
-    debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(intToString(n1), intToString(n2)));
+    debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(toString(n1), toString(n2)));
     file.close();
     return true;
 }
@@ -247,7 +203,7 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
         if(!dir.exists(path))
         {
             bool ok = dir.mkdir(path);
-            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::boolToString(ok), path));
+            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::toString(ok), path));
         }
     }
     path += "/" + dirs.last(); // file name
@@ -269,7 +225,7 @@ bool Tools::isFileExistsInDownloadPath(const QString &localPath)
             ok = true;
         }
     }
-    debugLog(QString("@@@@@ Tools::isFileExistsInDownloadPath %1 %2").arg(Tools::boolToString(ok), localPath));
+    debugLog(QString("@@@@@ Tools::isFileExistsInDownloadPath %1 %2").arg(Tools::toString(ok), localPath));
     return ok;
 }
 
@@ -289,7 +245,7 @@ bool Tools::copyFile(const QString& from, const QString& to)
 {
     debugLog(QString("@@@@@ Tools::copyFile %1 >> %2").arg(from, to));
     if (!isFileExists(from)) return false;
-    removeFile(to);
+    if(isFileExists(to)) QFile::remove(to);
     return QFile::copy(from, to);
 }
 
@@ -297,7 +253,7 @@ bool Tools::renameFile(const QString& from, const QString& to)
 {
     debugLog(QString("@@@@@ Tools::renameFile %1 >> %2").arg(from, to));
     if (!isFileExists(from)) return false;
-    removeFile(to);
+    if(isFileExists(to)) QFile::remove(to);
     return QFile::rename(from, to);
 }
 
@@ -305,11 +261,6 @@ bool Tools::removeFile(const QString &path)
 {
     debugLog("@@@@@ Tools::removeFile " + path);
     return isFileExists(path) ? QFile::remove(path) : true;
-}
-
-bool Tools::isFileExists(const QString &path)
-{
-    return QFile::exists(path);
 }
 
 qint64 Tools::getFileSize(const QString &path)
@@ -323,19 +274,7 @@ qint64 Tools::getFileSize(const QString &path)
     }
     return size;
 }
-
-QString Tools::dbPath(const QString& localFilePath)
-{
-    QString v = makeDirs("", localFilePath);
-    //debugLog("@@@@@ Tools::dbPath " + v);
-    return v;
-}
-
-QString Tools::downloadPath(const QString& localPath)
-{
-    return makeFullPath(DOWNLOAD_SUBDIR, localPath);
-}
-
+/*
 QString Tools::exchangePath(const QString &localPath)
 {
     //https://forum.qt.io/topic/34940/does-qstandardpaths-work-with-sdcard-on-android/2
@@ -353,17 +292,12 @@ QString Tools::exchangePath(const QString &localPath)
     debugLog("@@@@@ Tools::exchangePath result " + result);
     return result;
 }
-
-QString Tools::fileNameFromPath(const QString& path)
-{
-    return path.mid(path.lastIndexOf("/") + 1);
-}
-
+*/
 void Tools::pause(const int msec, const QString& comment)
 {
     if(msec > 0)
     {
-        debugLog(QString("@@@@@ Tools::pause %1 %2").arg(intToString(msec), comment));
+        debugLog(QString("@@@@@ Tools::pause %1 %2").arg(toString(msec), comment));
         QThread::currentThread()->msleep(msec);
     }
 }
@@ -471,7 +405,7 @@ bool Tools::isEnvironment(const EnvironmentType type)
     default: break;
     }
 
-    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(intToString(type), boolToString(result)));
+    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(toString(type), toString(result)));
     return result;
 }
 

@@ -144,8 +144,8 @@ int EquipmentManager::startWM() // return error
         isWMStarted = (e == 0);
     }
     if(e) showAttention(QString("\nОшибка весового модуля %1: %2").arg(
-                Tools::intToString(e), getWMErrorDescription(e)));
-    Tools::debugLog("@@@@@ EquipmentManager::startWM error " + Tools::intToString(e));
+                Tools::toString(e), getWMErrorDescription(e)));
+    Tools::debugLog("@@@@@ EquipmentManager::startWM error " + Tools::toString(e));
     return e;
 }
 
@@ -158,7 +158,7 @@ void EquipmentManager::stopWM()
         wm->blockSignals(true);
         wm->stopPolling();
         int e = wm->disconnectDevice();
-        Tools::debugLog("@@@@@ EquipmentManager::stopWM error " + Tools::intToString(e));
+        Tools::debugLog("@@@@@ EquipmentManager::stopWM error " + Tools::toString(e));
     }
 }
 
@@ -177,7 +177,7 @@ void EquipmentManager::removeWM()
 
 void EquipmentManager::pauseWM(const bool v)
 {
-    Tools::debugLog("@@@@@ EquipmentManager::pauseWM " + Tools::boolToIntString(v));
+    Tools::debugLog("@@@@@ EquipmentManager::pauseWM " + Tools::toIntString(v));
     if(wm != nullptr && isWMStarted)
     {
         if(v) wm->stopPolling();
@@ -221,7 +221,7 @@ int EquipmentManager::startPM()
         }
     }
     if(e) showAttention(QString("\nОшибка принтера %1: %2").arg(
-                Tools::intToString(e), getPMErrorDescription(e)));
+                Tools::toString(e), getPMErrorDescription(e)));
     Tools::debugLog("@@@@@ EquipmentManager::startPM error " + QString::number(e));
     return e;
 }
@@ -256,7 +256,7 @@ void EquipmentManager::removePM()
 
 void EquipmentManager::pausePM(const bool v)
 {
-    Tools::debugLog("@@@@@ EquipmentManager::pausePM " + Tools::boolToIntString(v));
+    Tools::debugLog("@@@@@ EquipmentManager::pausePM " + Tools::toIntString(v));
     if(slpa != nullptr && isPMStarted)
     {
         if(v) slpa->stopPolling();
@@ -286,14 +286,14 @@ QString EquipmentManager::WMversion() const
     if (wm != nullptr)
     {
         Wm100Protocol::device_metrics dm;
-        if(wm->getDeviceMetrics(&dm) >= 0) return Tools::intToString(dm.protocol_version);
+        if(wm->getDeviceMetrics(&dm) >= 0) return Tools::toString(dm.protocol_version);
     }
     return "-";
 }
 
 void EquipmentManager::setWMParam(const int param)
 {
-    Tools::debugLog("@@@@@ EquipmentManager::setWMParam " + Tools::intToString(param));
+    Tools::debugLog("@@@@@ EquipmentManager::setWMParam " + Tools::toString(param));
     if (wm == nullptr || !isWMStarted) return;
     switch (param)
     {
@@ -478,7 +478,7 @@ QString EquipmentManager::parseBarcode(const QString& barcodeTemplate, const QCh
             result += v;
         }
     }
-    Tools::debugLog(QString("@@@@@ EquipmentManager::parseBarcode %1 %2 %3 %4").arg(barcodeTemplate, value, result, Tools::intToString(n)));
+    Tools::debugLog(QString("@@@@@ EquipmentManager::parseBarcode %1 %2 %3 %4").arg(barcodeTemplate, value, result, Tools::toString(n)));
     return result;
 }
 
@@ -531,7 +531,7 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
         pd.certificate = product[ProductDBTable::Certificate].toString();
         pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
         pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
-        pd.operatorcode =  Tools::intToString(Users::getCode(user));
+        pd.operatorcode =  Tools::toString(Users::getCode(user));
         pd.operatorname = Users::getName(user);
         pd.date = Tools::dateFromUInt(dateTime, DATE_FORMAT);
         pd.time = Tools::timeFromUInt(dateTime, TIME_FORMAT);
@@ -550,11 +550,11 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
             DBRecord r = t->createRecord(
                         dateTime,
                         Users::getCode(user),
-                        Tools::stringToInt(product[ProductDBTable::Code]),
+                        Tools::toInt(product[ProductDBTable::Code]),
                         labelNumber,
-                        Tools::stringToDouble(quantity),
-                        Tools::stringToInt(price),
-                        Tools::stringToInt(amount));
+                        Tools::toDouble(quantity),
+                        Tools::toInt(price),
+                        Tools::toInt(amount));
             emit printed(r);
         }
         else Tools::debugLog("@@@@@ EquipmentManager::print ERROR (get Transactions Table)");

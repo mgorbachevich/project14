@@ -29,18 +29,20 @@ public:
     virtual bool read();
     virtual bool write();
     virtual bool insertOrReplace(const QString&);
-    virtual void clear() { items.clear(); }
+    virtual void clear() { wasRead = false; items.clear(); }
     virtual DBRecordList getAll();
     int count() { return items.count(); }
-    DBRecord get(const int i) { return i >= 0 && i < count() ? items[i] : DBRecord(); }
+    virtual DBRecord get(const int i) { return i >= 0 && i < count() ? items[i] : DBRecord(); }
     virtual DBRecord* getByCode(const int);
+    QString getTableName() { return itemArrayName; }
 
 protected:
     virtual QJsonObject toJson();
     virtual bool parseDefault() { return true; }
     virtual void sort() {}
-    DBRecordList parse(const QString&);
+    virtual DBRecordList parse(const QString&);
     virtual int getIndex(const int);
+    virtual void appendItemToJson(DBRecord&, QJsonArray&);
 
     DBRecordList items;
     QString itemArrayName;

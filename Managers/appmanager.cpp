@@ -98,12 +98,12 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     context->setContextProperty("calendarSecondModel", calendarSecondModel);
 
     QStringList days, months, years, hours, minutes, seconds;
-    for (int i = 1; i <= 31; i++) days << Tools::intToString(i);
-    for (int i = 1; i <= 12; i++) months << Tools::intToString(i);
-    for (int i = 1; i <= 25; i++) years << Tools::intToString(i + 2023);
-    for (int i = 0; i <= 23; i++) hours << Tools::intToString(i);
-    for (int i = 0; i <= 59; i++) minutes << Tools::intToString(i);
-    for (int i = 0; i <= 59; i++) seconds << Tools::intToString(i);
+    for (int i = 1; i <= 31; i++) days << Tools::toString(i);
+    for (int i = 1; i <= 12; i++) months << Tools::toString(i);
+    for (int i = 1; i <= 25; i++) years << Tools::toString(i + 2023);
+    for (int i = 0; i <= 23; i++) hours << Tools::toString(i);
+    for (int i = 0; i <= 59; i++) minutes << Tools::toString(i);
+    for (int i = 0; i <= 59; i++) seconds << Tools::toString(i);
     calendarDayModel->update(days);
     calendarMonthModel->update(months);
     calendarYearModel->update(years);
@@ -152,7 +152,7 @@ void AppManager::onDBStarted()
 void AppManager::onTimer()
 {
     if(DEBUG_ONTIMER_MESSAGE)
-        debugLog("@@@@@ AppManager::onTimer " + Tools::intToString((int)(userActionTime / 1000)));
+        debugLog("@@@@@ AppManager::onTimer " + Tools::toString((int)(userActionTime / 1000)));
     if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
     const quint64 now = Tools::nowMsec();
 
@@ -190,16 +190,16 @@ void AppManager::onTimer()
     if(netServer->isStarted() && netActionTime > 0 && WAIT_NET_COMMAND_MSEC < now - netActionTime)
     {
         debugLog("@@@@@ AppManager::onTimer netActionTime");
-        onNetCommand(NetCommand_StopLoad, Tools::boolToString(false));
+        onNetCommand(NetCommand_StopLoad, Tools::toString(false));
     }
 }
 
 void AppManager::createDefaultData()
 {
     debugLog("@@@@@ AppManager::createDefaultData");
-    Tools::removeFile(Tools::dbPath(DB_PRODUCT_NAME));
-    Tools::removeFile(Tools::dbPath(DB_LOG_NAME));
-    Tools::removeFile(Tools::dbPath(DEBUG_LOG_NAME));
+    DataBase::removeDBFile(DB_PRODUCT_NAME);
+    DataBase::removeDBFile(DB_LOG_NAME);
+    DataBase::removeDBFile(DEBUG_LOG_NAME);
     Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME), Tools::dbPath(DB_PRODUCT_NAME));
 }
 
@@ -227,9 +227,9 @@ void AppManager::onProductFavoriteClicked()
     if(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase))
     {
         if(db->isInShowcase(product))
-            showConfirmation(ConfirmSelector_RemoveFromShowcase,  "Удалить товар из витрины?");
+            showConfirmation(ConfirmSelector_RemoveFromShowcase,  "Удалить товар из витрины?", "");
         else
-            showConfirmation(ConfirmSelector_AddToShowcase, "Добавить товар в витрину?");
+            showConfirmation(ConfirmSelector_AddToShowcase, "Добавить товар в витрину?", "");
     }
 }
 
@@ -246,8 +246,8 @@ void AppManager::onProductPanelPiecesClicked()
     if(ProductDBTable::isPiece(product))
     {
         debugLog(QString("@@@@@ AppManager::onProductPanelPiecesClicked %1 %2").arg(
-                     Tools::intToString(printStatus.pieces),
-                     Tools::intToString(settings->getIntValue(SettingCode_CharNumberPieces))));
+                     Tools::toString(printStatus.pieces),
+                     Tools::toString(settings->getIntValue(SettingCode_CharNumberPieces))));
         emit showPiecesInputBox(printStatus.pieces, settings->getIntValue(SettingCode_CharNumberPieces));
     }
     else beepSound();
@@ -274,6 +274,7 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     if(!settings->setValue(settingItemCode, value)) return;
     updateSettings(settings->getCurrentGroupCode());
     settings->write();
+    showToast("Настройки сохранены");
     QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
     db->saveLog(LogType_Warning, LogSource_Admin, s);
 }
@@ -289,7 +290,7 @@ void AppManager::onLockClicked()
 {
     debugLog("@@@@@ AppManager::onLockClicked");
     onUserAction();
-    showConfirmation(ConfirmSelector::ConfirmSelector_Authorization, "Вы хотите сменить пользователя?");
+    showConfirmation(ConfirmSelector::ConfirmSelector_Authorization, "Вы хотите сменить пользователя?", "");
 }
 
 void AppManager::onNumberClicked(const QString &s)
@@ -305,12 +306,12 @@ void AppManager::onPiecesInputClosed(const QString &value)
 {
     debugLog("@@@@@ AppManager::onPiecesInputClosed " + value);
     onUserAction();
-    int v = Tools::stringToInt(value);
+    int v = Tools::toInt(value);
     const int maxChars = settings->getIntValue(SettingCode_CharNumberPieces);
     if(value.length() > maxChars)
     {
-        v = Tools::stringToInt(value.leftJustified(maxChars));
-        showAttention("Максимальная длина " + Tools::intToString(maxChars));
+        v = Tools::toInt(value.leftJustified(maxChars));
+        showAttention("Максимальная длина " + Tools::toString(maxChars));
     }
     if(v < 1)
     {
@@ -465,14 +466,14 @@ void AppManager::onViewLogClicked()
 
 void AppManager::onVirtualKeyboardSet(const int v)
 {
-    debugLog("@@@@@ AppManager::onVirtualKeyboardSet " + Tools::intToString(v));
+    debugLog("@@@@@ AppManager::onVirtualKeyboardSet " + Tools::toString(v));
     onUserAction();
     emit showVirtualKeyboard(v);
 }
 
 void AppManager::onWeightPanelClicked(const int param)
 {
-    debugLog("@@@@@ AppManager::onWeightPanelClicked " + Tools::intToString(param));
+    debugLog("@@@@@ AppManager::onWeightPanelClicked " + Tools::toString(param));
     if(param == 1) QTimer::singleShot(WAIT_SECRET_MSEC, this, [this]() { onUserAction(); } );
     if(param == secret + 1 && (++secret) == 3) onLockClicked();
 }
@@ -493,12 +494,54 @@ void AppManager::onZeroClicked()
     updateWeightStatus();
 }
 
-void AppManager::onConfirmationClicked(const int selector)
+void AppManager::onCalendarClosed(const int settingItemCode,
+                                  const QString& day, const QString& month, const QString& year,
+                                  const QString& hour, const QString& minute, const QString& second)
 {
-    debugLog("@@@@@ AppManager::onConfirmationClicked " + Tools::intToString(selector));
+    debugLog(QString("@@@@@ AppManager::onCalendarClosed %1.%2.%3 %4:%5:%6").arg(
+                 day, month, year, hour, minute, second));
+    QDate d(Tools::toInt(year), Tools::toInt(month), Tools::toInt(day));
+    QTime t(Tools::toInt(hour), Tools::toInt(minute), Tools::toInt(second));
+    if (d.isValid() && d.year() > 2023)
+    {
+        switch(settingItemCode)
+        {
+        case SettingCode_DateTime:
+        {
+            if(t.isValid())
+            {
+                QString s = QDateTime(d, t).toString(DATE_TIME_FORMAT);
+                showConfirmation(ConfirmSelector_SetDateTime, "Установить дату и время? " + s, s);
+                return;
+            }
+            break;
+        }
+        case SettingCode_VerificationDate:
+        {
+            QString s = d.toString(DATE_FORMAT);
+            showConfirmation(ConfirmSelector_SetVerificationDate, "Установить дату поверки? " + s, s);
+            return;
+        }}
+    }
+    showDateInputPanel(settingItemCode);
+    showAttention("Неверная дата");
+}
+
+void AppManager::onConfirmationClicked(const int selector, const QString& param)
+{
+    debugLog(QString("@@@@@ AppManager::onConfirmationClicked %1 %2").arg(Tools::toString(selector), param));
     onUserAction();
     switch (selector)
     {
+    case ConfirmSelector_SetDateTime:
+        onSettingInputClosed(SettingCode_DateTime, param);
+        equipmentManager->setSystemDateTime(QDateTime::fromString(param, DATE_TIME_FORMAT));
+        break;
+
+    case ConfirmSelector_SetVerificationDate:
+        onSettingInputClosed(SettingCode_VerificationDate, param);
+       break;
+
     case ConfirmSelector_DeleteUser:
         users->deleteInputUser();
         editUsersPanelModel->update(users);
@@ -508,6 +551,7 @@ void AppManager::onConfirmationClicked(const int selector)
         users->replaceOrInsertInputUser();
         editUsersPanelModel->update(users);
         break;
+
     case ConfirmSelector_Authorization:
         startAuthorization();
         break;
@@ -550,14 +594,14 @@ void AppManager::onSettingsItemClicked(const int index)
     DBRecord* r = settings->getByIndexInCurrentGroup(index);
     if(r == nullptr || r->empty())
     {
-        debugLog("@@@@@ AppManager::onSettingsItemClicked ERROR " + Tools::intToString(index));
+        debugLog("@@@@@ AppManager::onSettingsItemClicked ERROR " + Tools::toString(index));
         return;
     }
 
     const int code = settings->getCode(*r);
     const QString& name = settings->getName(*r);
     const int type = settings->getType(*r);
-    debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::intToString(code), name, QString::number(type)));
+    debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::toString(code), name, QString::number(type)));
 
     switch (type)
     {
@@ -578,8 +622,8 @@ void AppManager::onSettingsItemClicked(const int index)
         QStringList list = settings->getValueList(*r);
         if(list.count() >= 2)
         {
-            int from = Tools::stringToInt(list[0]);
-            int to = Tools::stringToInt(list[1]);
+            int from = Tools::toInt(list[0]);
+            int to = Tools::toInt(list[1]);
             int value = settings->getIntValue(*r);
             emit showSettingSlider(code, name, from, to, 1, value);
         }
@@ -606,21 +650,18 @@ void AppManager::onSettingsItemClicked(const int index)
 void AppManager::clearLog()
 {
     debugLog("@@@@@ AppManager::clearLog");
-    showConfirmation(ConfirmSelector_ClearLog, "Вы хотите очистить лог?");
+    showConfirmation(ConfirmSelector_ClearLog, "Вы хотите очистить лог?", "");
 }
 
 void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
 {
     const int code = settings->getCode(r);
     const QString& name = settings->getName(r);
-    debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::intToString(code), name));
+    debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::toString(code), name));
     switch (code)
     {
      case SettingCode_ClearLog:
         clearLog();
-        break;
-    case SettingCode_DateTime:
-        showDateInputPanel(SettingCode_DateTime, true);
         break;
     case SettingCode_Equipment:
     case SettingCode_WiFi:
@@ -633,8 +674,9 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     case SettingCode_Users:
         onEditUsersClicked();
         break;
+    case SettingCode_DateTime:
     case SettingCode_VerificationDate:
-        showDateInputPanel(SettingCode_VerificationDate, false);
+        showDateInputPanel(code);
         break;
     default:
         showMessage(name, "Не поддерживается");
@@ -642,21 +684,34 @@ void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
     }
 }
 
-void AppManager::showDateInputPanel(const int settingCode, const bool showTime)
+void AppManager::showDateInputPanel(const int settingCode)
 {
-    QDateTime dt = QDateTime::fromString(settings->getStringValue((SettingCode)settingCode), DATE_TIME_FORMAT);
-    if(!dt.date().isValid()) dt = Tools::now();
-    QDate d = dt.date();
-    if(showTime)
+    const SettingCode code = (SettingCode)settingCode;
+    switch(code)
     {
+    case SettingCode_DateTime:
+    {
+        QDateTime dt = Tools::now();
+        QDate d = dt.date();
         QTime t = dt.time();
-        emit showCalendarPanel(settingCode, settings->getName((SettingCode)settingCode),
+        debugLog(QString("@@@@@ AppManager::showDateInputPanel %1.%2.%3 %4:%5:%6").arg(
+                     Tools::toString(d.day()), Tools::toString(d.month()),Tools::toString(d.year()),
+                     Tools::toString(t.hour()), Tools::toString(t.minute()), Tools::toString(t.second())));
+        emit showCalendarPanel(code, settings->getName(code),
                                d.day(), d.month(), d.year(), t.hour(), t.minute(), t.second());
+        break;
     }
-    else emit showCalendarPanel(settingCode, settings->getName((SettingCode)settingCode),
-                           d.day(), d.month(), d.year(), -1, -1, -1);
+    case SettingCode_VerificationDate:
+    {
+        QDate d = QDate::fromString(settings->getStringValue(code), DATE_FORMAT);
+        debugLog(QString("@@@@@ AppManager::showDateInputPanel %1.%2.%3").arg(
+                     Tools::toString(d.day()), Tools::toString(d.month()),Tools::toString(d.year())));
+        emit showCalendarPanel(code, settings->getName(code), d.day(), d.month(), d.year(), -1, -1, -1);
+        break;
+    }
+    default: break;
+    }
 }
-
 
 void AppManager::updateSettings(const int groupCode)
 {
@@ -667,7 +722,7 @@ void AppManager::updateSettings(const int groupCode)
 
 void AppManager::onSettingsPanelCloseClicked()
 {
-    debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked " + Tools::intToString(settings->getCurrentGroupCode()));
+    debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked " + Tools::toString(settings->getCurrentGroupCode()));
     onUserAction();
     emit previousSettings();
     const int groupCode = settings->getCurrentGroupCode();
@@ -687,7 +742,7 @@ void AppManager::onSettingsPanelCloseClicked()
 
 void AppManager::onShowcaseClicked(const int index)
 {
-    debugLog("@@@@@ AppManager::onShowcaseClicked " + Tools::intToString(index));
+    debugLog("@@@@@ AppManager::onShowcaseClicked " + Tools::toString(index));
     onUserAction();
     setProduct(showcasePanelModel->productByIndex(index));
 }
@@ -701,7 +756,7 @@ void AppManager::onShowcaseDirectionClicked()
 
 void AppManager::onShowcaseSortClicked(const int sort)
 {
-    debugLog("@@@@@ AppManager::onShowcaseSortClicked " + Tools::intToString(sort));
+    debugLog("@@@@@ AppManager::onShowcaseSortClicked " + Tools::toString(sort));
     onUserAction();
     showcasePanelModel->sort = sort;
     updateShowcase();
@@ -709,13 +764,13 @@ void AppManager::onShowcaseSortClicked(const int sort)
 
 void AppManager::onMainPageSwiped(const int i)
 {
-    debugLog("@@@@@ AppManager::onMainPageSwiped " + Tools::intToString(i));
+    debugLog("@@@@@ AppManager::onMainPageSwiped " + Tools::toString(i));
     setMainPage(i);
 }
 
 void AppManager::setMainPage(const int i)
 {
-    debugLog("@@@@@ AppManager::setMainPage " + Tools::intToString(i));
+    debugLog("@@@@@ AppManager::setMainPage " + Tools::toString(i));
     mainPageIndex = i;
     emit showMainPage(mainPageIndex);
 }
@@ -755,7 +810,7 @@ void AppManager::startAuthorization()
     setMainPage(MainPageIndex_Authorization);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
-        debugLog("@@@@@ AppManager::startAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));
+        debugLog("@@@@@ AppManager::startAuthorization pause " + Tools::toString(WAIT_DRAWING_MSEC));
         updateSystemStatus();
         db->saveLog(LogType_Warning, LogSource_User, "Авторизация");
         showAuthorizationUsers();
@@ -772,8 +827,8 @@ void AppManager::startAuthorization()
 void AppManager::updateShowcase()
 {
     db->select(DBSelector_GetShowcaseProducts,
-               Tools::intToString(showcasePanelModel->sort),
-               Tools::boolToString(showcasePanelModel->increase));
+               Tools::toString(showcasePanelModel->sort),
+               Tools::toString(showcasePanelModel->increase));
 }
 
 void AppManager::refreshAll()
@@ -787,11 +842,11 @@ void AppManager::refreshAll()
     updateSearch("", true);
 }
 
-void AppManager::showToast(const QString &title, const QString &text, const int delaySec)
+void AppManager::showToast(const QString &text, const int delaySec)
 {
-    debugLog(QString("@@@@@ AppManager::showToast %1 %2").arg(title, text));
-    emit showMessageBox(title, text, false);
-    QTimer::singleShot(delaySec * 1000, this, [this]() { emit hideToast(); } );
+    debugLog(QString("@@@@@ AppManager::showToast %1").arg(text));
+    emit showToastBox(text);
+    QTimer::singleShot(delaySec * 1000, this, [this]() { emit hideToastBox(); } );
 }
 
 void AppManager::updateSystemStatus()
@@ -811,15 +866,10 @@ void AppManager::showMessage(const QString &title, const QString &text)
     emit showMessageBox(title, text, true);
 }
 
-void AppManager::showConfirmation(const ConfirmSelector selector, const QString &title, const QString &text)
+void AppManager::showConfirmation(const ConfirmSelector selector, const QString &text, const QString &param)
 {
-    debugLog(QString("@@@@@ AppManager::showConfirmation %1 %2 %3").arg(QString::number(selector), title, text));
-    emit showConfirmationBox(selector, title, text);
-}
-
-void AppManager::showConfirmation(const ConfirmSelector selector, const QString &text)
-{
-    showConfirmation(selector, "Подтверждение", text);
+    debugLog(QString("@@@@@ AppManager::showConfirmation %1 %2 %3").arg(QString::number(selector), text, param));
+    emit showConfirmationBox(selector, "Подтверждение", text, param);
 }
 
 void AppManager::netDownload(QHash<DBTable *, QList<QVariantList> > rs, int &s, int &e)
@@ -917,7 +967,7 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 {
     // Изменился параметр оборудования
     if(DEBUG_WEIGHT_STATUS) debugLog(QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(
-                 Tools::intToString(param), Tools::intToString(errorCode)));
+                 Tools::toString(param), Tools::toString(errorCode)));
 
     switch (param)
     {
@@ -969,15 +1019,15 @@ void AppManager::updateWeightStatus()
     if(isZero) printStatus.calculateMode = true;
 
     // Рисуем флажки:
-    emit showControlParam(ControlParam_Zero, Tools::boolToString(isZero));
-    emit showControlParam(ControlParam_Tare, Tools::boolToString(isTare));
-    emit showControlParam(ControlParam_WeightFixed, Tools::boolToString(isFixed));
+    emit showControlParam(ControlParam_Zero, Tools::toString(isZero));
+    emit showControlParam(ControlParam_Tare, Tools::toString(isTare));
+    emit showControlParam(ControlParam_WeightFixed, Tools::toString(isFixed));
     if(isWMError)
-        emit showControlParam(ControlParam_WeightError, Tools::boolToString(true));
+        emit showControlParam(ControlParam_WeightError, Tools::toString(true));
     else if(isAutoPrint)
-        emit showControlParam(ControlParam_AutoPrint, Tools::boolToString(true));
+        emit showControlParam(ControlParam_AutoPrint, Tools::toString(true));
     else
-        emit showControlParam(ControlParam_WeightError, Tools::boolToString(false));
+        emit showControlParam(ControlParam_WeightError, Tools::toString(false));
 
     // Рисуем загаловки:
     QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
@@ -1033,7 +1083,7 @@ void AppManager::updateWeightStatus()
             if(!isWMError && isFixed && isAutoPrintEnabled && wg > 0)
             {
                 if(wg >= settings->getIntValue(SettingCode_PrintAutoWeight)) print(); // Автопечать
-                else showToast("ВНИМАНИЕ!", "Вес слишком мал для автопечати");
+                else showToast("Вес слишком мал для автопечати");
             }
         }
         else // Штучный товар
@@ -1063,16 +1113,16 @@ void AppManager::updateWeightStatus()
 
     if(DEBUG_WEIGHT_STATUS)
         debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9%10 %11 %12 %13").arg(
-                 Tools::boolToIntString(isWMError),
-                 Tools::boolToIntString(isAutoPrint),
-                 Tools::boolToIntString(isFixed),
-                 Tools::boolToIntString(isTare),
-                 Tools::boolToIntString(isZero),
-                 Tools::boolToIntString(isWM),
-                 Tools::boolToIntString(isPM),
-                 Tools::boolToIntString(isPieceProduct),
-                 Tools::boolToIntString(printStatus.manualPrintEnabled),
-                 Tools::boolToIntString(isAutoPrintEnabled),
+                 Tools::toIntString(isWMError),
+                 Tools::toIntString(isAutoPrint),
+                 Tools::toIntString(isFixed),
+                 Tools::toIntString(isTare),
+                 Tools::toIntString(isZero),
+                 Tools::toIntString(isWM),
+                 Tools::toIntString(isPM),
+                 Tools::toIntString(isPieceProduct),
+                 Tools::toIntString(printStatus.manualPrintEnabled),
+                 Tools::toIntString(isAutoPrintEnabled),
                  quantity, price, amount));
 }
 
@@ -1093,7 +1143,7 @@ void AppManager::debugLog(const QString& s)
 
 void AppManager::onPopupOpened(const bool open)
 {
-    debugLog(QString("@@@@@ AppManager::onPopupOpened %1 %2").arg(Tools::boolToString(open), Tools::intToString(popups)));
+    debugLog(QString("@@@@@ AppManager::onPopupOpened %1 %2").arg(Tools::toString(open), Tools::toString(popups)));
     if(open) popups++;
     else if((--popups) < 1)
     {
@@ -1131,7 +1181,7 @@ void AppManager::startAll()
 void AppManager::onEditUsersClicked()
 {
     users->getAll();
-    debugLog("@@@@@ AppManager::onEditUsersClicked " + Tools::intToString(users->count()));
+    debugLog("@@@@@ AppManager::onEditUsersClicked " + Tools::toString(users->count()));
     editUsersPanelModel->update(users);
     emit showEditUsersPanel();
 }
@@ -1149,8 +1199,8 @@ void AppManager::onEditUsersPanelClicked(const int index)
     const QString password = users->getPassword(u);
     const bool isAdmin = users->isAdmin(u);
     debugLog(QString("@@@@@ AppManager::onEditUsersPanelClicked %1 %2 %3 %4 %5").arg(
-        Tools::intToString(index), Tools::intToString(code), name, password, Tools::boolToString(isAdmin)));
-    emit showInputUserPanel(Tools::intToString(code), name, password, isAdmin);
+        Tools::toString(index), Tools::toString(code), name, password, Tools::toString(isAdmin)));
+    emit showInputUserPanel(Tools::toString(code), name, password, isAdmin);
 }
 
 void AppManager::onEditUsersPanelClose()
@@ -1209,11 +1259,11 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
 
     debugLog("@@@@@ AppManager::stopAuthorization OK");
     db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
-                    title, login, Tools::intToString(Users::getCode(users->getCurrentUser()))));
+                    title, login, Tools::toString(Users::getCode(users->getCurrentUser()))));
     setMainPage(MainPageIndex_Showcase);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
-        debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::intToString(WAIT_DRAWING_MSEC));
+        debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::toString(WAIT_DRAWING_MSEC));
         startAll();
         refreshAll();
         onUserAction();
@@ -1267,47 +1317,9 @@ bool AppManager::onBackgroundDownloadClicked()
     return BACKGROUND_DOWNLOADING;
 }
 
-void AppManager::onCalendarClosed(const int settingItemCode,
-                                  const QString& day, const QString& month, const QString& year,
-                                  const QString& hour, const QString& minute, const QString& second)
-{
-    debugLog(QString("@@@@@ AppManager::onCalendarClosed %1.%2.%3").arg(day, month, year));
-    int y = Tools::stringToInt(year);
-    QDate d(y, Tools::stringToInt(month), Tools::stringToInt(day));
-    QTime t = QTime(Tools::stringToInt(hour), Tools::stringToInt(minute), Tools::stringToInt(second));
-    if(y < 0)
-    {
-        QDateTime dt = Tools::now();
-        d = dt.date();
-        t = dt.time();
-    }
-    if (d.isValid() && d.year() > 2023)
-    {
-        switch(settingItemCode)
-        {
-        case SettingCode_DateTime:
-        {
-            if(t.isValid())
-            {
-                QDateTime dt = QDateTime(d, t);
-                onSettingInputClosed(settingItemCode, dt.toString(DATE_TIME_FORMAT));
-                equipmentManager->setSystemDateTime(dt);
-                return;
-            }
-            break;
-        }
-        case SettingCode_VerificationDate:
-            onSettingInputClosed(settingItemCode, d.toString(DATE_FORMAT));
-            return;
-        }
-    }
-    showDateInputPanel(settingItemCode, settingItemCode == SettingCode_DateTime);
-    showAttention("Неверная дата");
-}
-
 void AppManager::onNetCommand(const int command, const QString& param)
 {
-    debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::intToString(command), param));
+    debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::toString(command), param));
     netActionTime = Tools::nowMsec();
     switch (command)
     {
@@ -1318,27 +1330,43 @@ void AppManager::onNetCommand(const int command, const QString& param)
     case NetCommand_StartLoad:
         emit showDownloadProgress(-1);
         equipmentManager->pause(true);
+        DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
+        DataBase::copyDBFile(DB_PRODUCT_NAME, DB_PRODUCT_COPY_NAME);
         emit showDownloadPanel();
         break;
 
     case NetCommand_StopLoad:
         netActionTime = 0;
         emit showDownloadProgress(100);
-        if(Tools::stringToBool(param)) // Ok
-        {}
-        else // Timeout
-        {}
-       if(isRefreshNeeded)
+        if(Tools::toBool(param)) // Ok
         {
-            showAttention("Данные обновлены!");
-            isRefreshNeeded = false;
-            QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
+            if(isRefreshNeeded)
+            {
+                isRefreshNeeded = false;
+                showAttention("Загрузка успешно завершена. Данные обновлены!");
+                QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
+            }
         }
+        else // Timeout
+        {
+            if(isRefreshNeeded)
+            {
+                isRefreshNeeded = false;
+                if(DataBase::isDBFileExists(DB_PRODUCT_COPY_NAME))
+                {
+                    showAttention("ОШИБКИ ПРИ ЗАГРУЗКЕ! Данные не обновлены!");
+                    DataBase::renameDBFile(DB_PRODUCT_COPY_NAME, DB_PRODUCT_NAME);
+                }
+                else showAttention("ОШИБКИ ПРИ ЗАГРУЗКЕ! ВОЗМОЖНА ПОТЕРЯ ДАННЫХ! ДАННЫЕ ОБНОВЛЕНЫ!");
+                QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
+            }
+        }
+        DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
         equipmentManager->pause(false);
         break;
 
     case NetCommand_Progress:
-        emit showDownloadProgress(Tools::stringToInt(param));
+        emit showDownloadProgress(Tools::toInt(param));
         break;
 
     default:
@@ -1351,9 +1379,9 @@ void AppManager::updateSearch(const QString& value, const bool hierarchyRoot)
     searchPanelModel->isHierarchy |= hierarchyRoot;
     debugLog(QString("@@@@@ AppManager::updateSearch %1 %2 %3 %4").arg(
                  value,
-                 Tools::boolToString(hierarchyRoot),
-                 Tools::boolToString(searchPanelModel->isHierarchy),
-                 Tools::intToString(searchPanelModel->filterIndex)));
+                 Tools::toString(hierarchyRoot),
+                 Tools::toString(searchPanelModel->isHierarchy),
+                 Tools::toString(searchPanelModel->filterIndex)));
     emit showSearchHierarchy(searchPanelModel->isHierarchy);
     if(searchPanelModel->isHierarchy)
     {
@@ -1403,7 +1431,7 @@ void AppManager::onSearchFilterEdited(const QString& value)
 
 void AppManager::onSearchResultClicked(const int index)
 {
-    debugLog("@@@@@ AppManager::onSearchResultClicked " + Tools::intToString(index));
+    debugLog("@@@@@ AppManager::onSearchResultClicked " + Tools::toString(index));
     onUserAction();
     if (index >= 0 && index < searchPanelModel->productCount())
     {
@@ -1417,7 +1445,7 @@ void AppManager::onSearchFilterClicked(const int index, const QString& value)
 {
     // Изменилось поле поиска (код, штрих-код...)
 
-    debugLog("@@@@@ AppManager::onSearchFilterClicked " + Tools::intToString(index));
+    debugLog("@@@@@ AppManager::onSearchFilterClicked " + Tools::toString(index));
     onUserAction();
     searchPanelModel->isHierarchy = false;
     searchPanelModel->filterIndex = index;

@@ -202,16 +202,28 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showToastBox:
+    {
+        target: app
+        function onShowToastBox(messageText)
+        {
+            Qt.createComponent("Panels/toastPanel.qml").createObject(mainWindow,
+            {
+                messageText: messageText
+            }).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showConfirmationBox:
     {
         target: app
-        function onShowConfirmationBox(selector, titleText, messageText)
+        function onShowConfirmationBox(selector, titleText, messageText, param)
         {
             //app.debugLog("@@@@@ mainWindow.onShowConfirmationBox %1 %2 %3".arg(selector).arg(titleText).arg(messageText));
             Qt.createComponent("Panels/confirmationPanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: popupY, width: popupWidth, height: popupHeight, titleText: titleText,
-                messageText: messageText, confirmSelector: selector
+                messageText: messageText, confirmSelector: selector, param: param
             }).open()
         }
     }

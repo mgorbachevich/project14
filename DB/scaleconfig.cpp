@@ -16,7 +16,7 @@ ScaleConfig::ScaleConfig(AppManager* parent) : JsonFile(SCALE_CONFIG_FILE, paren
 bool ScaleConfig::read()
 {
     data = parse(Tools::readTextFile(fileName));
-    Tools::debugLog("@@@@@ ScaleConfig::read " + Tools::intToString(data.count()));
+    Tools::debugLog("@@@@@ ScaleConfig::read " + Tools::toString(data.count()));
     if(data.count() <= 0) for(int i = 0; i < fields.count(); i++) data << "";
     if(DEFAULT_FACTORY_SETTINGS_PASSWORDS)
     {

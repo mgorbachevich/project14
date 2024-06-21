@@ -9,6 +9,7 @@ ScreenManager::ScreenManager(const QSize &size, QObject* parent): QObject(parent
     const double wk = ((double)w) / DEFAULT_SCREEN_WIDTH;
     const double hk = ((double)h) / DEFAULT_SCREEN_HEIGHT;
     Tools::debugLog(QString("@@@@@ ScreenManager::ScreenManager %1 %2 %3 %4").arg(
-                    Tools::intToString(w), Tools::intToString(h), Tools::intToString(wk), Tools::intToString(hk)));
+                    Tools::toString((int)w), Tools::toString((int)h),
+                    Tools::toString((int)wk), Tools::toString((int)hk)));
     screenScale = wk < hk ? wk : hk;
 }

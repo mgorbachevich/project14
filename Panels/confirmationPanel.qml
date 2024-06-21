@@ -17,6 +17,7 @@ Popup
     Material.background: "transparent"
     property string titleText: "Title"
     property string messageText: "Message"
+    property string param: ""
     property int confirmSelector: 0
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
@@ -102,7 +103,7 @@ Popup
                         text: qsTr("ДА")
                         onClicked:
                         {
-                            app.onConfirmationClicked(confirmSelector)
+                            app.onConfirmationClicked(confirmSelector, param)
                             confirmationPanel.close()
                         }
                     }

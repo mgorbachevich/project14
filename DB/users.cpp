@@ -7,7 +7,7 @@ Users::Users(AppManager *parent): JsonArrayFile(USERS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Users::Users");
     mainObjectName = "data";
-    itemArrayName = "users";
+    itemArrayName = DBTABLENAME_USERS;
     fields.insert(UserField_Code,     "code");
     fields.insert(UserField_Name,     "name");
     fields.insert(UserField_Role,     "role");
@@ -38,14 +38,14 @@ DBRecord Users::createUser(const QString& code, const QString& name, const QStri
     r[UserField_Code] = code;
     r[UserField_Name] = name;
     r[UserField_Password] = password;
-    r[UserField_Role] = admin ? Tools::boolToIntString(UserRole_Admin) : Tools::boolToIntString(UserRole_Operator);
+    r[UserField_Role] = admin ? Tools::toIntString(UserRole_Admin) : Tools::toIntString(UserRole_Operator);
     return r;
 }
 
 void Users::onDeleteUser(const  QString& code)
 {
     Tools::debugLog(QString("@@@@@ Users::onDeleteUser %1").arg(code));
-    DBRecord* p = getByCode(Tools::stringToInt(code));
+    DBRecord* p = getByCode(Tools::toInt(code));
     if(p == nullptr)
     {
         showAttention(QString("Не найден пользователь с кодом %1?").arg(code));
@@ -53,16 +53,16 @@ void Users::onDeleteUser(const  QString& code)
     }
     inputUser = createUser(code, getName(*p), getPassword(*p), isAdmin(*p));
     appManager->showConfirmation(ConfirmSelector::ConfirmSelector_DeleteUser,
-                QString("Удалить пользователя %1 с кодом %2?").arg(getName(*p), code));
+                QString("Удалить пользователя %1 с кодом %2?").arg(getName(*p), code), "");
 }
 
 void Users::onInputUser(const QString& code, const QString& name, const QString& password, const bool admin)
 {
     Tools::debugLog(QString("@@@@@ Users::onInputUser %1 %2 %3 %4").arg(
-                        code, name, password, Tools::boolToString(admin)));
+                        code, name, password, Tools::toString(admin)));
     if(code.isEmpty() && name.isEmpty() && password.isEmpty())
         return;
-    if(Tools::stringToInt(code) <= 0)
+    if(Tools::toInt(code) <= 0)
     {
         showAttention("Неверный код пользователя " + code);
         return;
@@ -74,12 +74,12 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     }
     inputUser = createUser(code, name, password, admin);
 
-    DBRecord* p = getByCode(Tools::stringToInt(code));
+    DBRecord* p = getByCode(Tools::toInt(code));
     if(p != nullptr)
     {
         if(!isEqual(*p, inputUser))
             appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
-                QString("Уже есть пользователь с кодом %1, заменить?").arg(code));
+                QString("Уже есть пользователь с кодом %1, заменить?").arg(code), "");
         return;
     }
     DBRecord u = getByName(name);
@@ -87,7 +87,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     {
         if(!isEqual(u, inputUser))
             appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
-                QString("Уже есть пользователь с именем %1, заменить?").arg(name));
+                QString("Уже есть пользователь с именем %1, заменить?").arg(name), "");
         return;
     }
     if(!isEqual(u, inputUser)) replaceOrInsertInputUser();
@@ -96,7 +96,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
 void Users::replaceOrInsertInputUser()
 {
     const int code = getCode(inputUser);
-    Tools::debugLog("@@@@@ Users::replaceOrInsertInputUser " + Tools::intToString(code));
+    Tools::debugLog("@@@@@ Users::replaceOrInsertInputUser " + Tools::toString(code));
     DBRecord* p = getByCode(code);
     if(p != nullptr) *p = inputUser;
     else items << inputUser;
@@ -107,7 +107,7 @@ void Users::replaceOrInsertInputUser()
 void Users::deleteInputUser()
 {
     const int code = getCode(inputUser);
-    Tools::debugLog("@@@@@ Users::deleteInputUser " + Tools::intToString(code));
+    Tools::debugLog("@@@@@ Users::deleteInputUser " + Tools::toString(code));
     if(getByCode(code) != nullptr)
     {
         const int i = getIndex(code);
@@ -142,7 +142,7 @@ void Users::update()
     // Нужен хотя бы один администратор:
     bool foundAdmin = false;
     for (DBRecord& r : items) foundAdmin |= isAdmin(r);
-    if (!foundAdmin) items << createUser(Tools::intToString(DEFAULT_ADMIN_CODE), DEFAULT_ADMIN_NAME, "", true);
+    if (!foundAdmin) items << createUser(Tools::toString(DEFAULT_ADMIN_CODE), DEFAULT_ADMIN_NAME, "", true);
     sort();
 }
 

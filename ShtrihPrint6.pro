@@ -347,6 +347,7 @@ RESOURCES += \
     Panels/Spacer.qml \
     Panels/SubtitleText.qml \
     Panels/Sticker.qml \
+    Panels/toastPanel.qml \
     Panels/viewLogPanel.qml \
     Panels/VirtualKeyboardNumeric.qml \
     Panels/VirtualKeyboardCyrillic.qml \

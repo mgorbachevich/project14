@@ -48,8 +48,8 @@ public:
 protected:
     void sort();
     bool checkValue(const DBRecord&, const QString&);
-    void checkDefaultRecord(const int, DBRecordList&);
     bool parseDefault();
+    void appendItemToJson(DBRecord&, QJsonArray&);
 
     int currentGroupCode = 0;
     ScaleConfig* scaleConfig;

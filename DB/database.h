@@ -7,17 +7,6 @@
 
 #define DB_VERSION "1.8"
 
-#define DBTABLENAME_SHOWCASE "showcase"
-#define DBTABLENAME_PRODUCTS "products"
-#define DBTABLENAME_LABELFORMATS "labels"
-#define DBTABLENAME_MESSAGES "messages"
-#define DBTABLENAME_MESSAGEFILES "messagefiles"
-#define DBTABLENAME_PICTURES "pictures"
-#define DBTABLENAME_MOVIES "movies"
-#define DBTABLENAME_SOUNDS "sounds"
-#define DBTABLENAME_LOG "log"
-#define DBTABLENAME_TRANSACTIONS "transactions"
-
 enum DBSelector
 {
     DBSelector_None = 0,
@@ -63,6 +52,10 @@ public:
     void select(const DBSelector, const DBRecordList&);
     void select(const DBSelector, const QString& param1, const QString& param2 = "");
     QString version() { return DB_VERSION; }
+    static bool copyDBFile(const QString&, const QString&);
+    static bool renameDBFile(const QString&, const QString&);
+    static bool removeDBFile(const QString&);
+    static bool isDBFileExists(const QString&);
 
 private:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
@@ -80,8 +73,6 @@ private:
     QStringList selectAllCodes(const QSqlDatabase&, DBTable*);
     bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
     bool selectById(const QSqlDatabase&, DBTable*, const QString&, DBRecord&);
-    //bool copyDBFile(const QString&, const QString&);
-    //bool renameDBFile(const QString&, const QString&);
 
     bool started = false;
     QSqlDatabase productDB;

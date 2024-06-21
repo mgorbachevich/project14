@@ -356,28 +356,6 @@ Popup
             {
                 Layout.column: 2
                 Layout.row: 6
-            }
-
-            RoundTextButton
-            {
-                Layout.column: 0
-                Layout.row: 7
-                Layout.columnSpan: 5
-                Layout.alignment: Qt.AlignCenter
-                Layout.preferredHeight: screenManager.buttonSize()
-                text: "ТЕКУЩЕЕ ВРЕМЯ"
-                onClicked:
-                {
-                    app.onUserAction();
-                    calendarPanelYearCombo.displayText = -1
-                    calendarPanel.close()
-                }
-            }
-
-            Spacer
-            {
-                Layout.column: 2
-                Layout.row: 8
                 Layout.fillHeight: parent
             }
         }

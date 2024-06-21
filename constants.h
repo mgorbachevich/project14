@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.52"
+#define APP_VERSION "2.53"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -32,6 +32,7 @@
 #define DEBUG_LOG_NAME "DebugLog.txt"
 #define DB_LOG_NAME "Log.db"
 #define DB_PRODUCT_NAME "ShtrihScale.db"
+#define DB_PRODUCT_COPY_NAME "ShtrihScale_copy.db"
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE "../Images/dummy.png"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
@@ -80,6 +81,19 @@
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
 
+#define DBTABLENAME_SHOWCASE "showcase"
+#define DBTABLENAME_PRODUCTS "products"
+#define DBTABLENAME_LABELFORMATS "labels"
+#define DBTABLENAME_MESSAGES "messages"
+#define DBTABLENAME_MESSAGEFILES "messagefiles"
+#define DBTABLENAME_PICTURES "pictures"
+#define DBTABLENAME_MOVIES "movies"
+#define DBTABLENAME_SOUNDS "sounds"
+#define DBTABLENAME_LOG "log"
+#define DBTABLENAME_TRANSACTIONS "transactions"
+#define DBTABLENAME_SETTINGS "settings"
+#define DBTABLENAME_USERS "users"
+
 enum MainPageIndex
 {
     MainPageIndex_Authorization = -1,
@@ -96,6 +110,8 @@ enum ConfirmSelector
     ConfirmSelector_DeleteUser,
     ConfirmSelector_AddToShowcase,
     ConfirmSelector_RemoveFromShowcase,
+    ConfirmSelector_SetDateTime,
+    ConfirmSelector_SetVerificationDate
 };
 
 enum LogType

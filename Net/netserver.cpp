@@ -118,7 +118,7 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
                     int p3 = request.indexOf(s4);
                     int p4 = request.length();
                     p3 += s4.length();
-                    codesOnly = (1 == Tools::stringToInt(QString(request.mid(p3, p4 - p3))));
+                    codesOnly = (1 == Tools::toInt(QString(request.mid(p3, p4 - p3))));
                 }
             }
         }
@@ -130,11 +130,24 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
 
 QString NetServer::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QString& data)
 {
-    QString s = (tableName.isEmpty() || data.isEmpty()) ?
-                QString("{\"result\":\"%1\",\"description\":\"%2\"}").
-                    arg(QString::number(errorCode), description) :
-                QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
+    QString s;
+    if(tableName.isEmpty() || data.isEmpty())
+        s = QString("{\"result\":\"%1\",\"description\":\"%2\"}"). arg(QString::number(errorCode), description);
+    else
+        s = QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
                     arg(QString::number(errorCode), description, tableName, data);
+    Tools::debugLog("NetServer::makeResultJson " + s);
+    return s;
+}
+
+QString NetServer::makeResultJson(const int errorCode, const QString& description, const QString& data)
+{
+    QString s;
+    if(data.isEmpty())
+        s = QString("{\"result\":\"%1\",\"description\":\"%2\"}").arg(QString::number(errorCode), description);
+    else
+        s = QString("{\"result\":\"%1\",\"description\":\"%2\",%3}").
+                    arg(QString::number(errorCode), description, data);
     Tools::debugLog("NetServer::makeResultJson " + s);
     return s;
 }
@@ -167,7 +180,7 @@ bool NetServer::parseCommand(const QByteArray& request)
 {
     QString json = toJsonString(request);
     Tools::debugLog("@@@@@ NetServer::parseCommand " + json);
-    QJsonObject jo = Tools::stringToJson(json);
+    QJsonObject jo = Tools::toJson(json);
     QString method = jo["method"].toString("");
     if (method.isEmpty()) return false;
     QJsonValue jsonParams = jo["params"];
@@ -178,7 +191,7 @@ bool NetServer::parseCommand(const QByteArray& request)
     if(method == "stopLoad")
     {
         nc = NetCommand_StopLoad;
-        param = Tools::boolToString(true);
+        param = Tools::toString(true);
     }
     else if(ja.size() > 0)
     {
@@ -190,12 +203,12 @@ bool NetServer::parseCommand(const QByteArray& request)
         else if(method == "startLoad")
         {
             nc = NetCommand_StartLoad;
-            param = Tools::intToString(ja[0].toInt());
+            param = Tools::toString(ja[0].toInt());
         }
         else if(method == "progress")
         {
             nc = NetCommand_Progress;
-            param = Tools::intToString(ja[0].toInt());
+            param = Tools::toString(ja[0].toInt());
         }
     }
     if(nc != NetCommand_None)

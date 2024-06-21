@@ -21,7 +21,7 @@ DBRecord& SearchPanelModel3::productByIndex(const int index)
 
 bool SearchPanelModel3::isHierarchyRoot()
 {
-    return Tools::stringToInt(hierarchyLastCode()) == 0;
+    return Tools::toInt(hierarchyLastCode()) == 0;
 }
 
 bool SearchPanelModel3::hierarchyUp()

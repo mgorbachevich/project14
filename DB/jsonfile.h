@@ -12,16 +12,17 @@ class JsonFile : public ExternalMessager
 {
 public:
     JsonFile(const QString&, AppManager*);
-    virtual bool read() { return false; }
+    virtual bool read() { wasRead = true; return false; }
     virtual bool write();
-    virtual void clear() {}
+    virtual void clear() { wasRead = false; }
+    virtual QString toString();
 
 protected:
     virtual QJsonObject toJson() { return QJsonObject(); }
-    virtual QString toString();
 
     QHash<int, QString> fields;
     QString fileName;
+    bool wasRead = false;
 };
 
 #endif // JSONFILE_H

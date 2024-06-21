@@ -35,7 +35,6 @@ class AppManager : public QObject
 public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
-    void showConfirmation(const ConfirmSelector, const QString&);
     QString priceAsString(const DBRecord& r) { return moneyCalculator->priceAsString(r); }
     void netDownload(QHash<DBTable*, DBRecordList>, int&, int&);
     QString netDelete(const QString&, const QString&);
@@ -54,7 +53,7 @@ public:
     Q_INVOKABLE bool onBackgroundDownloadClicked();
     Q_INVOKABLE void onCalendarClosed(const int, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
-    Q_INVOKABLE void onConfirmationClicked(const int);
+    Q_INVOKABLE void onConfirmationClicked(const int, const QString&);
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
     Q_INVOKABLE void onEditUsersPanelClicked(const int);
     Q_INVOKABLE void onEditUsersPanelClose();
@@ -113,8 +112,8 @@ private:
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void showAuthorizationUsers();
-    void showDateInputPanel(const int, const bool);
-    void showToast(const QString&, const QString&, const int delaySec = 5);
+    void showDateInputPanel(const int);
+    void showToast(const QString&, const int delaySec = 5);
     void startAuthorization();
     void startAll();
     void startSettings();
@@ -171,13 +170,13 @@ signals:
     void closeInputProductPanel();
     void enableManualPrint(const bool);
     void enableSetProductByInputCode(const bool);
-    void hideToast();
+    void hideToastBox();
     void previousSettings();
     void resetCurrentProduct();
     void setCurrentProductFavorite(const bool);
     void showCalendarPanel(const int, const QString&, const int, const int, const int, const int, const int, const int);
     void showCurrentUser(const int, const QString&);
-    void showConfirmationBox(const int, const QString&, const QString&);
+    void showConfirmationBox(const int, const QString&, const QString&, const QString&);
     void showDownloadPanel();
     void showDownloadProgress(const int);
     void showEditUsersPanel();
@@ -196,6 +195,7 @@ signals:
     void showSettingSlider(const int, const QString&, const int, const int, const int, const int);
     void showSettingsPanel(const QString&);
     void showShowcaseSort(const int, const bool);
+    void showToastBox(const QString&);
     void showViewLogPanel();
     void showVirtualKeyboard(const int);
     void showControlParam(const int, const QString&);

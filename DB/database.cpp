@@ -44,7 +44,7 @@ void DataBase::onAppStart()
     QString path = Tools::dbPath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::boolToString(exists)));
+    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::toString(exists)));
     started = addAndOpen(productDB, path);
     if(!exists && started)
     {
@@ -63,7 +63,7 @@ void DataBase::onAppStart()
         path = Tools::dbPath(DB_LOG_NAME);
         if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
         exists = QFile(path).exists();
-        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::boolToString(exists)));
+        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::toString(exists)));
         started = addAndOpen(logDB, path);
         if(!exists && started)
         {
@@ -91,7 +91,7 @@ void DataBase::onAppStart()
     if(!message.isEmpty())
         QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this, message]() { showAttention(message); });
     emit dbStarted();
-    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::boolToString(started)));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::toString(started)));
 }
 
 bool DataBase::open(QSqlDatabase& db, const QString& name)
@@ -561,8 +561,8 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
                 if (selectById(productDB, DBTABLENAME_PRODUCTS,  productCode, r) && ProductDBTable::isForShowcase(r))
                     resultRecords.append(r);
             }
-            const int sort = Tools::stringToInt(param1);
-            const bool increase = Tools::stringToBool(param2);
+            const int sort = Tools::toInt(param1);
+            const bool increase = Tools::toBool(param2);
             switch(sort)
             {
             case ShowcaseSort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code, increase); break;
@@ -871,19 +871,34 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
 {
     // Выгрузка из таблицы
 
-    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::boolToString(codesOnly)));
+    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::toString(codesOnly)));
     if(codesOnly) saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1 %2").arg(
-                tableName, Tools::intToString(codesToUpload.split(',').count())));
+                tableName, Tools::toString(codesToUpload.split(',').count())));
     else saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов. Таблица: %1").arg(tableName));
+
     int recordCount = 0;
     int errorCount = 0;
     int errorCode = 0;
     QString description = "Ошибок нет";
+
+    QString json;
+    if(tableName == DBTABLENAME_SETTINGS)
+        json = appManager->settings->toString();
+    else if(tableName == DBTABLENAME_USERS)
+        json = appManager->users->toString();
+    if(!json.isEmpty())
+    {
+        const QString resultJson = NetServer::makeResultJson(errorCode, description, json);
+        Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
+        saveLog(LogType_Error, LogSource_DB, QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
+                arg(tableName, QString::number(recordCount), QString::number(errorCount), description));
+        return resultJson;
+    }
+
     bool detailedLog = isLogging(LogType_Info);
     DBRecordList records;
     DBTable* t = getTable(tableName);
     QStringList codes = codesToUpload.split(','); // Коды через запятую
-
     if(t == nullptr)
     {
         errorCount = 1;
@@ -892,10 +907,10 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     }
     else if (codesOnly) // Только коды
     {
-        QStringList codes = selectAllCodes(productDB, t);
+        QStringList allCodes = selectAllCodes(productDB, t);
         saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов завершена. Таблица: %1. Записи: %2").
-                arg(tableName, QString::number(codes.count())));
-        const QString resultJson = NetServer::makeResultJson(errorCode, description, tableName, codes);
+                arg(tableName, QString::number(allCodes.count())));
+        const QString resultJson = NetServer::makeResultJson(errorCode, description, tableName, allCodes);
         Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
         return resultJson;
     }
@@ -972,20 +987,32 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
         }
     }
 }
-/*
-bool DataBase::copyDBFile(const QString& fromName, const QString& toName)
+
+bool DataBase::copyDBFile(const QString& fromDBName, const QString& toDBName)
 {
-    Tools::debugLog(QString("@@@@@ DataBase::copyDBFile %1 %2").arg(fromName, toName));
-    if(Tools::copyFile(Tools::dbPath(fromName), Tools::dbPath(toName))) return true;
+    Tools::debugLog(QString("@@@@@ DataBase::copyDBFile %1 %2").arg(fromDBName, toDBName));
+    if(Tools::copyFile(Tools::dbPath(fromDBName), Tools::dbPath(toDBName))) return true;
     Tools::debugLog("@@@@@ DataBase::copyDBFile ERROR");
     return false;
 }
 
-bool DataBase::renameDBFile(const QString& fromName, const QString& toName)
+bool DataBase::renameDBFile(const QString& fromDBName, const QString& toDBName)
 {
-    Tools::debugLog(QString("@@@@@ DataBase::renameDBFile %1 %2").arg(fromName, toName));
-    if(Tools::renameFile(Tools::dbPath(fromName), Tools::dbPath(toName))) return true;
+    Tools::debugLog(QString("@@@@@ DataBase::renameDBFile %1 %2").arg(fromDBName, toDBName));
+    if(Tools::renameFile(Tools::dbPath(fromDBName), Tools::dbPath(toDBName))) return true;
     Tools::debugLog("@@@@@ DataBase::renameDBFile ERROR");
     return false;
 }
-*/
+
+bool DataBase::removeDBFile(const QString& dbName)
+{
+    Tools::debugLog(QString("@@@@@ DataBase::removeDBFile %1").arg(dbName));
+    if(Tools::removeFile(Tools::dbPath(dbName))) return true;
+    Tools::debugLog("@@@@@ DataBase::removeDBFile ERROR");
+    return false;
+}
+
+bool DataBase::isDBFileExists(const QString& dbName)
+{
+    return Tools::isFileExists(Tools::dbPath(dbName));
+}

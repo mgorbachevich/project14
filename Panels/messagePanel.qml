@@ -21,12 +21,6 @@ Popup
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
 
-    Connections // Slot for signal AppManager::hideToast
-    {
-        target: app
-        function onHideToast() { messagePanel.close() }
-    }
-
     Rectangle
     {
         anchors.fill: parent

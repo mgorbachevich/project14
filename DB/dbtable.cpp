@@ -100,15 +100,15 @@ void DBTable::parseColumn(DBRecord& r, const QJsonObject &jo, const int columnIn
 {
     QString type = columnType(columnIndex);
     QString value = jo[columnName(columnIndex)].toString("");
-    if (type.contains("INT"))       r[columnIndex] = Tools::stringToInt(value);
-    else if (type.contains("REAL")) r[columnIndex] = Tools::stringToDouble(value);
+    if (type.contains("INT"))       r[columnIndex] = Tools::toInt(value);
+    else if (type.contains("REAL")) r[columnIndex] = Tools::toDouble(value);
     else                            r[columnIndex] = value;
 }
 
 DBRecordList DBTable::parse(const QString &json)
 {
     DBRecordList records;
-    const QJsonObject jo = Tools::stringToJson(json);
+    const QJsonObject jo = Tools::toJson(json);
     QJsonValue data = jo["data"];
     if (!data.isObject())
     {
