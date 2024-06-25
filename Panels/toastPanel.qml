@@ -29,8 +29,8 @@ Popup
         height: screenManager.normalFontSize() * 3
         x: (screenManager.screenWidth() - width) / 2
         y: screenManager.screenHeight() - height - screenManager.spacer()
-        radius: screenManager.spacer()
-        Material.background: Material.color(Material.Grey, Material.Shade200)
+        radius: height / 2
+        //Material.background: Material.color(Material.Grey, Material.Shade200)
         color: Material.color(Material.Grey, Material.Shade100)
         border.color: Material.color(Material.Grey, Material.Shade400)
         border.width: 1

@@ -114,8 +114,7 @@ Popup
                     {
                         //app.debugLog("@@@@@ inputProductCodePanelText Keys.onPressed %1".arg(JSON.stringify(event)))
                         event.accepted = true;
-                        app.clickSound();
-                        app.onUserAction();
+                        app.onClick();
                         switch (event.key)
                         {
                             case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:

@@ -23,7 +23,7 @@ void SettingsPanelModel3::update(Settings& settings)
         if(ri != nullptr)
         {
             QString color = "<font color='#263228'>";
-            switch (settings.getType(*ri))
+            switch (Settings::getType(*ri))
             {
             case SettingType_ReadOnly:
             case SettingType_Unsed:

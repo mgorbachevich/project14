@@ -6,7 +6,6 @@
 Users::Users(AppManager *parent): JsonArrayFile(USERS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Users::Users");
-    mainObjectName = "data";
     itemArrayName = DBTABLENAME_USERS;
     fields.insert(UserField_Code,     "code");
     fields.insert(UserField_Name,     "name");
@@ -52,7 +51,7 @@ void Users::onDeleteUser(const  QString& code)
         return;
     }
     inputUser = createUser(code, getName(*p), getPassword(*p), isAdmin(*p));
-    appManager->showConfirmation(ConfirmSelector::ConfirmSelector_DeleteUser,
+    appManager->showConfirmation(ConfirmSelector_DeleteUser,
                 QString("Удалить пользователя %1 с кодом %2?").arg(getName(*p), code), "");
 }
 
@@ -95,13 +94,11 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
 
 void Users::replaceOrInsertInputUser()
 {
-    const int code = getCode(inputUser);
-    Tools::debugLog("@@@@@ Users::replaceOrInsertInputUser " + Tools::toString(code));
-    DBRecord* p = getByCode(code);
-    if(p != nullptr) *p = inputUser;
-    else items << inputUser;
-    update();
-    write();
+    if(JsonArrayFile::insertOrReplaceRecord(inputUser))
+    {
+        update();
+        write();
+    }
 }
 
 void Users::deleteInputUser()
@@ -111,7 +108,7 @@ void Users::deleteInputUser()
     if(getByCode(code) != nullptr)
     {
         const int i = getIndex(code);
-        if(!get(i).isEmpty())
+        if(!getByIndex(i).isEmpty())
         {
             items.remove(i);
             update();

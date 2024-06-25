@@ -5,7 +5,7 @@
 #include "dbtable.h"
 #include "externalmessager.h"
 
-#define DB_VERSION "1.8"
+#define DB_VERSION "1.9"
 
 enum DBSelector
 {
@@ -36,17 +36,17 @@ public:
     explicit DataBase(AppManager*);
     ~DataBase();
 
-    bool addToShowcase(const DBRecord&);
+    bool addProductToShowcase(const DBRecord&);
     void clearLog();
     QString getProductMessageById(const QString&);
     DBTable* getTable(const QString&) const;
     QList<DBTable*> getTables() { return tables; };
-    bool isInShowcase(const DBRecord&);
+    bool isProductInShowcase(const DBRecord&);
     bool isStarted() { return started; }
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
     QString netUpload(const QString&, const QString&, const bool codesOnly = false);
-    bool removeFromShowcase(const DBRecord&);
+    bool removeProductFromShowcase(const DBRecord&);
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     void select(const DBSelector, const DBRecordList&);

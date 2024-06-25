@@ -1,5 +1,4 @@
 #include <QDebug>
-#include <QtConcurrent/QtConcurrent>
 #include "netserver.h"
 #include "tools.h"
 #include "appmanager.h"
@@ -125,43 +124,10 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
     }
     if(rule == RouterRule_Get) return appManager->netUpload(tableName, codes, codesOnly);
     if(!codesOnly) return appManager->netDelete(tableName, codes);
-    return makeResultJson(LogError_WrongRequest, "Некорректный запрос", "", "");
-}
-
-QString NetServer::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QString& data)
-{
-    QString s;
-    if(tableName.isEmpty() || data.isEmpty())
-        s = QString("{\"result\":\"%1\",\"description\":\"%2\"}"). arg(QString::number(errorCode), description);
-    else
-        s = QString("{\"result\":\"%1\",\"description\":\"%2\",\"data\":{\"%3\":%4}}").
-                    arg(QString::number(errorCode), description, tableName, data);
-    Tools::debugLog("NetServer::makeResultJson " + s);
-    return s;
-}
-
-QString NetServer::makeResultJson(const int errorCode, const QString& description, const QString& data)
-{
-    QString s;
-    if(data.isEmpty())
-        s = QString("{\"result\":\"%1\",\"description\":\"%2\"}").arg(QString::number(errorCode), description);
-    else
-        s = QString("{\"result\":\"%1\",\"description\":\"%2\",%3}").
-                    arg(QString::number(errorCode), description, data);
-    Tools::debugLog("NetServer::makeResultJson " + s);
-    return s;
-}
-
-QString NetServer::makeResultJson(const int errorCode, const QString& description, const QString& tableName, const QStringList& values)
-{
-    QString data;
-    if(values.count() > 0)
-    {
-        data += QString("%1").arg(values[0]);
-        for(int i = 1; i < values.count(); i++) data += QString(",%1").arg(values[i]);
-    }
-    return QString("{\"result\":\"%1\",\"description\":\"%2\",\"codelist\":{\"%3\":[%4]}}").
-        arg(QString::number(errorCode), description, tableName, data);
+    NetActionResult result(appManager, RouterRule_Get);
+    result.errorCode = LogError_WrongRequest;
+    result.description = "Некорректный сетевой запрос";
+    return result.makeJson();
 }
 
 QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray& item, const QByteArray& title)
@@ -338,10 +304,7 @@ QString NetServer::parseSetRequest(const QByteArray &request)
 QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
 {
     Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
-    int successCount = 0;
-    int errorCount = 0;
-    int errorCode = 0;
-    QString description = "Ошибок нет";
+    NetActionResult result(appManager, RouterRule_Set);
 
     // Singlepart:
     if(request.indexOf("{") == 0)
@@ -349,10 +312,10 @@ QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
         Tools::debugLog("@@@@@ NetServer::parseSetRequest Singlepart");
         if(!parseCommand(request))
         {
-            errorCode = LogError_WrongRequest;
-            description = "Неверный запрос";
+            result.errorCode = LogError_WrongRequest;
+            result.description = "Неверный сетевой запрос";
         }
-        return makeResultJson(errorCode, description, "", "");
+        return result.makeJson();
     }
 
     // Multipart:
@@ -430,8 +393,8 @@ QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
 
                         if(!Tools::writeBinaryFile(fullFilePath, fileData))
                         {
-                            errorCount++;
-                            errorCode = LogError_WrongRecord;
+                            result.errorCount++;
+                            result.errorCode = LogError_WrongRecord;
                             record = table->createRecord(record[0].toString());
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
                         }
@@ -442,14 +405,14 @@ QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
                                 table->name == DBTABLENAME_MOVIES ||
                                 table->name == DBTABLENAME_SOUNDS)
                         {
-                            successCount++;
+                            result.successCount++;
                             record[ResourceDBTable::Source] = source;
                             record[ResourceDBTable::Value] = localFilePath;
                         }
                         else
                         {
-                            errorCount++;
-                            errorCode = LogError_UnknownTable;
+                            result.errorCount++;
+                            result.errorCode = LogError_UnknownTable;
                             record = table->createRecord();
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. Unknown table ERROR");
                             continue;
@@ -461,9 +424,10 @@ QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
             }
         }
     }
-    appManager->netDownload(downloadedRecords, successCount, errorCount);
-    description = QString("Загружено записей %1 из %2").
-            arg(QString::number(successCount), QString::number(successCount + errorCount));
-    return makeResultJson(errorCode, description, "", "");
+    appManager->netDownload(downloadedRecords, result.successCount, result.errorCount);
+    result.description = QString("Загружено записей %1 из %2").arg(
+                QString::number(result.successCount),
+                QString::number(result.successCount + result.errorCount));
+    return result.makeJson();
 }
 

@@ -15,10 +15,13 @@ class KeyEmitter : public QObject
     Q_OBJECT
 
 public:
-    KeyEmitter(QObject* parent = nullptr);
+    KeyEmitter(AppManager *parent);
 
     Q_INVOKABLE void emitKey(Qt::Key);
     Q_INVOKABLE void emitChar(QChar);
+
+protected:
+    AppManager* appManager;
 
 signals:
     void enterChar(const QChar v);

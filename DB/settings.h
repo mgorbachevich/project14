@@ -23,27 +23,29 @@ public:
     void apply();
     bool getBoolValue(const SettingCode code) { return getIntValue(code, true) != 0; }
     DBRecord* getByIndexInCurrentGroup(const int);
-    int getCode(const DBRecord& r) { return r[SettingField_Code].toInt(); }
-    QString getComment(const DBRecord& r) { return r[SettingField_Comment].toString(); }
+    static int getCode(const DBRecord& r) { return r[SettingField_Code].toInt(); }
+    static QString getComment(const DBRecord& r) { return r[SettingField_Comment].toString(); }
     QList<int> getCurrentGroupCodes();
     int getCurrentGroupCode() { return currentGroupCode; }
     QString getCurrentGroupName();
     int getIntValue(const SettingCode, const bool listIndex = false);
     int getIntValue(const DBRecord&, const bool listIndex = false);
-    QString getName(const DBRecord& r) { return r[SettingField_Name].toString(); }
+    static QString getName(const DBRecord& r) { return r[SettingField_Name].toString(); }
     QString getName(const SettingCode code) { return getName(*getByCode(code)); }
     QString getStringValue(const DBRecord&);
     QString getStringValue(const SettingCode);
-    int getType(const DBRecord& r) { return r[SettingField_Type].toInt(); }
-    QStringList getValueList(const DBRecord& r) { return r[SettingField_ValueList].toString().split(','); }
-    bool isGroup(const DBRecord& r);
+    static int getType(const DBRecord& r) { return r[SettingField_Type].toInt(); }
+    static QStringList getValueList(const DBRecord& r) { return r[SettingField_ValueList].toString().split(','); }
+    static bool isGroup(const DBRecord& r);
     void nativeSettings(const int);
     bool setValue(const int, const QString&);
     void update(const int);
     void clear() {}
     bool read();
     bool write();
-    QString getScaleConfigValue(const ScaleConfigField field) { return scaleConfig->get(field).toString(); }
+    QString getConfigValue(const ScaleConfigField f) { return scaleConfig->get(f).toString(); }
+    void setConfigValue(const ScaleConfigField f, const QVariant& v) { scaleConfig->set(f, v); }
+    void setLoadDateTime(const ScaleConfigField);
 
 protected:
     void sort();

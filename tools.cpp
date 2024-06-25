@@ -263,6 +263,15 @@ bool Tools::removeFile(const QString &path)
     return isFileExists(path) ? QFile::remove(path) : true;
 }
 
+QString Tools::sharedPath(const QString& localPath)
+{
+#ifdef Q_OS_ANDROID
+    return ANDROID_SHARED_PATH + localPath;
+#else
+    return Tools::dbPath(localPath);
+#endif
+}
+
 qint64 Tools::getFileSize(const QString &path)
 {
     qint64 size = 0;
@@ -424,9 +433,9 @@ void Tools::debugMemory()
 {
 #ifdef Q_OS_ANDROID
     debugLog(QString("@@@@@ Tools::debugMemory %1 %2 %3").arg(
-                 Tools::intToString(getMemory(MemoryType_Max)),
-                 Tools::intToString(getMemory(MemoryType_Available)),
-                 Tools::intToString(getMemory(MemoryType_Used))));
+                 Tools::toString(getMemory(MemoryType_Max)),
+                 Tools::toString(getMemory(MemoryType_Available)),
+                 Tools::toString(getMemory(MemoryType_Used))));
 #endif
 }
 
@@ -437,7 +446,7 @@ bool Tools::checkPermission(const QString& permission)
 #ifdef Q_OS_ANDROID
     if (QtAndroidPrivate::checkPermission(permission).result() == QtAndroidPrivate::Denied)
         ok = (QtAndroidPrivate::requestPermission(permission).result() != QtAndroidPrivate::Denied);
-    debugLog(QString("@@@@@ Tools::checkPermission %1 %2").arg(permission, boolToString(ok)));
+    debugLog(QString("@@@@@ Tools::checkPermission %1 %2").arg(permission, toString(ok)));
 #endif
 
     return ok;

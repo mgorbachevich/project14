@@ -7,7 +7,7 @@
 #include <QHttpServer>
 #include <QHttpServerResponse>
 #include "externalmessager.h"
-#include <constants.h>
+#include "netactionresult.h"
 
 #ifdef SSL
 #include <QSslCertificate>
@@ -15,14 +15,6 @@
 #endif
 
 #define SERVER_VERSION "1.5"
-
-enum RouterRule
-{
-    RouterRule_Delete,
-    RouterRule_Get,
-    RouterRule_Set,
-    RouterRule_Command
-};
 
 class AppManager;
 
@@ -37,9 +29,6 @@ public:
     void stop();
     QString version() { return SERVER_VERSION; }
     bool isStarted() { return server != nullptr; }
-    static QString makeResultJson(const int, const QString&, const QString&);
-    static QString makeResultJson(const int, const QString&, const QString&, const QString&);
-    static QString makeResultJson(const int, const QString&, const QString&, const QStringList&);
 
 protected:
     QString parseGetRequest(const RouterRule, const QByteArray&);

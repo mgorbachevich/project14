@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.53"
+#define APP_VERSION "2.54"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -16,8 +16,8 @@
 #define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
 #define DEBUG_WEIGHT_STATUS false
 #define DB_PATH_MESSAGE false
-#define WRITE_CONFIG_FILE_MESSAGE false
 #define DEBUG_INSERT_DB_DELAY_MSEC 0
+#define LOG_LOAD_RECORDS false
 
 // On Start:
 #define REMOVE_SETTINGS_FILE_ON_START false
@@ -29,6 +29,10 @@
 #define CHECK_AUTHORIZATION true
 
 // Files and Pathes:
+#ifdef Q_OS_ANDROID
+#define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
+#define ANDROID_SHARED_PATH "/storage/emulated/0/shtrihm/"
+#endif
 #define DEBUG_LOG_NAME "DebugLog.txt"
 #define DB_LOG_NAME "Log.db"
 #define DB_PRODUCT_NAME "ShtrihScale.db"
@@ -39,19 +43,11 @@
 #define DEFAULT_EQUIPMENT_DEMO_CONFIG_FILE ":/Text/json_demo_equipment_config.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
-
-#ifdef Q_OS_ANDROID
-#define ANDROID_NATIVE_CLASS_NAME "ru.shtrih_m.shtrihprint6/AndroidNative"
-#define EQUIPMENT_CONFIG_FILE "/storage/emulated/0/shtrihm/json_settingsfile.txt"
-#define SETTINGS_FILE "/storage/emulated/0/shtrihm/config.txt"
-#define USERS_FILE "/storage/emulated/0/shtrihm/users.txt"
-#define SCALE_CONFIG_FILE "/storage/emulated/0/shtrihm/scale_config.txt"
-#else
-#define EQUIPMENT_CONFIG_FILE Tools::dbPath("json_settingsfile.txt")
-#define SETTINGS_FILE Tools::dbPath("config.txt")
-#define USERS_FILE Tools::dbPath("users.txt")
-#define SCALE_CONFIG_FILE Tools::dbPath("scale_config.txt")
-#endif
+#define EQUIPMENT_CONFIG_FILE Tools::sharedPath("json_settingsfile.txt")
+#define SETTINGS_FILE Tools::sharedPath("config.txt")
+#define USERS_FILE Tools::sharedPath("users.txt")
+#define SHOWCASE_FILE Tools::sharedPath("showcase.txt")
+#define SCALE_CONFIG_FILE Tools::sharedPath("scale_config.txt")
 
 // DateTime
 #define DATE_FORMAT "dd.MM.yyyy"
@@ -72,6 +68,9 @@
 #define WAIT_NET_COMMAND_MSEC 60000
 #define SQL_EXECUTION_WAIT_MSEC 30000
 #define SQL_EXECUTION_SLEEP_MSEC 50
+#define ALARM_PAUSE_MSEC 1000
+#define SHOW_SHORT_TOAST_SEC 5
+#define SHOW_LONG_TOAST_SEC 10
 #define EOL "\r\n"
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
 //#define DB_EMULATION
@@ -207,6 +206,14 @@ enum NetCommand
     NetCommand_StartLoad,
     NetCommand_StopLoad,
     NetCommand_Progress
+};
+
+enum RouterRule
+{
+    RouterRule_Delete,
+    RouterRule_Get,
+    RouterRule_Set,
+    RouterRule_Command
 };
 
 enum VirtualKeyboardSet

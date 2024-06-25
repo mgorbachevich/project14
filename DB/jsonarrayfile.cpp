@@ -5,6 +5,7 @@
 JsonArrayFile::JsonArrayFile(const QString &file, AppManager* parent) : JsonFile(file, parent)
 {
     Tools::debugLog("@@@@@ JsonArrayFile::JsonArrayFile " + fileName);
+    mainObjectName = "data";
 }
 
 bool JsonArrayFile::read()
@@ -15,7 +16,7 @@ bool JsonArrayFile::read()
         items = parse(Tools::readTextFile(fileName));
         parseDefault();
         sort();
-        Tools::debugLog("@@@@@ JsonArrayFile::read " + Tools::toString(items.count()));
+        Tools::debugLog("@@@@@ JsonArrayFile::read " + Tools::toString((int)(items.count())));
     }
     return items.count() > 0;
 }
@@ -51,8 +52,30 @@ bool JsonArrayFile::insertOrReplace(const QString& json)
         sort();
     }
     Tools::debugLog(QString("@@@@@ JsonArrayFile::insertOrReplace %1 %2").arg(
-        Tools::toString(n), Tools::toString(items.count())));
+        Tools::toString(n), Tools::toString((int)(items.count()))));
     return n > 0;
+}
+
+bool JsonArrayFile::insertOrReplaceRecord(const DBRecord& r)
+{
+    if(r.isEmpty()) return false;
+    const int code = r[0].toInt();
+    Tools::debugLog("@@@@@ JsonArrayFile::insertOrReplace " + Tools::toString(code));
+    DBRecord* p = getByCode(code);
+    if(p != nullptr) *p = r;
+    else items << r;
+    return true;
+}
+
+void JsonArrayFile::removeByCode(const QString& code)
+{
+    Tools::debugLog("@@@@@ JsonArrayFile::removeByCode " + code);
+    const int ic = Tools::toInt(code);
+    if(getByCode(ic) != nullptr)
+    {
+        const int i = getIndex(ic);
+        if(!getByIndex(i).isEmpty()) items.remove(i);
+    }
 }
 
 bool JsonArrayFile::write()

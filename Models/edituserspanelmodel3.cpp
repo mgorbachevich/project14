@@ -17,7 +17,7 @@ void EditUsersPanelModel3::update(Users* users)
     items.clear();
     for (int i = 0; i < users->count(); i++)
     {
-        const DBRecord& ui = users->get(i);
+        const DBRecord& ui = users->getByIndex(i);
         QStringList data;
         data << Tools::toString(Users::getCode(ui)) << Users::getDisplayName(ui);
         addItem(data);

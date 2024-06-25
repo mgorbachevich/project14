@@ -47,6 +47,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
 
     settings = new Settings(this);
     users = new Users(this);
+    showcase = new Showcase(this);
     db = new DataBase(this);
     netServer = new NetServer(this);
     equipmentManager = new EquipmentManager(this);
@@ -59,8 +60,6 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectResult);
     connect(equipmentManager, &EquipmentManager::printed, this, &AppManager::onPrinted);
     connect(equipmentManager, &EquipmentManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
-    connect(keyEmitter, &KeyEmitter::enterChar, this, &AppManager::onEnterChar);
-    connect(keyEmitter, &KeyEmitter::enterKey, this, &AppManager::onEnterKey);
     connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
 
     productPanelModel = new ProductPanelModel(this);
@@ -158,10 +157,13 @@ void AppManager::onTimer()
 
     if(isAuthorizationOpened()) // Авторизация
     {
+        isAlarm = false;
         updateSystemStatus();
     }
     else if(isSettingsOpened()) // Настройки
-    {}
+    {
+        isAlarm = false;
+    }
     else
     {
         // Сброс товара при бездействии:
@@ -226,7 +228,7 @@ void AppManager::onProductFavoriteClicked()
     onUserAction();
     if(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase))
     {
-        if(db->isInShowcase(product))
+        if(db->isProductInShowcase(product))
             showConfirmation(ConfirmSelector_RemoveFromShowcase,  "Удалить товар из витрины?", "");
         else
             showConfirmation(ConfirmSelector_AddToShowcase, "Добавить товар в витрину?", "");
@@ -274,7 +276,6 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     if(!settings->setValue(settingItemCode, value)) return;
     updateSettings(settings->getCurrentGroupCode());
     settings->write();
-    showToast("Настройки сохранены");
     QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
     db->saveLog(LogType_Warning, LogSource_Admin, s);
 }
@@ -405,7 +406,7 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         resetProduct();
         if (!records.isEmpty() && !records.at(0).isEmpty())
         {
-            //showToast("ВНИМАНИЕ!", "Выбранный товар изменен");
+            //showToast("ВНИМАНИЕ! Выбранный товар изменен");
             setProduct(records.at(0));
         }
         break;
@@ -562,14 +563,14 @@ void AppManager::onConfirmationClicked(const int selector, const QString& param)
         break;
 
     case ConfirmSelector_RemoveFromShowcase:
-        db->removeFromShowcase(product);
-        emit setCurrentProductFavorite(db->isInShowcase(product));
+        db->removeProductFromShowcase(product);
+        emit setCurrentProductFavorite(db->isProductInShowcase(product));
         updateShowcase();
         break;
 
     case ConfirmSelector_AddToShowcase:
-        db->addToShowcase(product);
-        emit setCurrentProductFavorite(db->isInShowcase(product));
+        db->addProductToShowcase(product);
+        emit setCurrentProductFavorite(db->isProductInShowcase(product));
         updateShowcase();
         break;
     }
@@ -598,9 +599,9 @@ void AppManager::onSettingsItemClicked(const int index)
         return;
     }
 
-    const int code = settings->getCode(*r);
-    const QString& name = settings->getName(*r);
-    const int type = settings->getType(*r);
+    const int code = Settings::getCode(*r);
+    const QString& name = Settings::getName(*r);
+    const int type = Settings::getType(*r);
     debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::toString(code), name, QString::number(type)));
 
     switch (type)
@@ -614,12 +615,12 @@ void AppManager::onSettingsItemClicked(const int index)
         emit showSettingInputBox(code, name, settings->getStringValue(*r));
         break;
     case SettingType_List:
-        settingItemModel->update(settings->getValueList(*r));
+        settingItemModel->update(Settings::getValueList(*r));
         emit showSettingComboBox(code, name, settings->getIntValue(*r, true), settings->getStringValue(*r), settings->getComment(*r));
         break;
     case SettingType_IntervalNumber:
     {
-        QStringList list = settings->getValueList(*r);
+        QStringList list = Settings::getValueList(*r);
         if(list.count() >= 2)
         {
             int from = Tools::toInt(list[0]);
@@ -655,8 +656,8 @@ void AppManager::clearLog()
 
 void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
 {
-    const int code = settings->getCode(r);
-    const QString& name = settings->getName(r);
+    const int code = Settings::getCode(r);
+    const QString& name = Settings::getName(r);
     debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::toString(code), name));
     switch (code)
     {
@@ -729,7 +730,7 @@ void AppManager::onSettingsPanelCloseClicked()
     if(groupCode != 0)
     {
         DBRecord* r = settings->getByCode(groupCode);
-        if(r != nullptr && !r->empty() && settings->isGroup(*r))
+        if(r != nullptr && !r->empty() && Settings::isGroup(*r))
         {
             // Переход вверх:
             updateSettings(r->at(SettingField_GroupCode).toInt());
@@ -795,10 +796,10 @@ void AppManager::startSettings()
 void AppManager::stopSettings()
 {
     debugLog("@@@@@ AppManager::stopSettings");
-    refreshAll();
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         startAll();
+        refreshAll();
         isSettings = false;
     });
 }
@@ -826,6 +827,7 @@ void AppManager::startAuthorization()
 
 void AppManager::updateShowcase()
 {
+    showcase->getAll();
     db->select(DBSelector_GetShowcaseProducts,
                Tools::toString(showcasePanelModel->sort),
                Tools::toString(showcasePanelModel->increase));
@@ -844,9 +846,12 @@ void AppManager::refreshAll()
 
 void AppManager::showToast(const QString &text, const int delaySec)
 {
-    debugLog(QString("@@@@@ AppManager::showToast %1").arg(text));
-    emit showToastBox(text);
-    QTimer::singleShot(delaySec * 1000, this, [this]() { emit hideToastBox(); } );
+    if(!text.isEmpty())
+    {
+        debugLog(QString("@@@@@ AppManager::showToast %1").arg(text));
+        emit showToastBox(text);
+        QTimer::singleShot(delaySec * 1000, this, [this]() { emit hideToastBox(); } );
+    }
 }
 
 void AppManager::updateSystemStatus()
@@ -887,7 +892,9 @@ QString AppManager::netDelete(const QString &t, const QString &s)
 QString AppManager::netUpload(const QString &t, const QString &s, const bool b)
 {
     netActionTime = Tools::nowMsec();
-    return db->netUpload(t, s, b);
+    QString result = db->netUpload(t, s, b);
+
+    return result;
 }
 
 void AppManager::setProduct(const DBRecord& newProduct)
@@ -903,7 +910,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
         db->select(DBSelector_GetImageByResourceCode, pictureCode);
         printStatus.onNewProduct();
-        emit setCurrentProductFavorite(db->isInShowcase(product));
+        emit setCurrentProductFavorite(db->isProductInShowcase(product));
         updateWeightStatus();
     }
 }
@@ -995,6 +1002,20 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
     updateWeightStatus();
 }
 
+void AppManager::alarm()
+{
+    if(isAlarm) return;
+    auto future = QtConcurrent::run([this]
+    {
+        isAlarm = true;
+        while(isAlarm)
+        {
+            beepSound();
+            Tools::pause(ALARM_PAUSE_MSEC);
+        }
+    });
+}
+
 void AppManager::updateWeightStatus()
 {
     if(DEBUG_WEIGHT_STATUS) debugLog("@@@@@ AppManager::updateWeightStatus");
@@ -1046,8 +1067,14 @@ void AppManager::updateWeightStatus()
     QString quantity = NO_DATA;
     if(isWM)
     {
-        if(equipmentManager->isWMOverloaded()) beepSound();
-        else if(isPieceProduct|| !isWMError) quantity = moneyCalculator->quantityAsString(product);
+        if(equipmentManager->isWMOverloaded())
+            alarm();
+        else
+        {
+            isAlarm = false;
+            if(isPieceProduct|| !isWMError)
+                quantity = moneyCalculator->quantityAsString(product);
+        }
     }
     emit showControlParam(ControlParam_WeightValue, quantity);
     emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? activeColor : passiveColor);
@@ -1155,6 +1182,7 @@ void AppManager::onPopupOpened(const bool open)
 void AppManager::stopAll()
 {
     debugLog("@@@@@ AppManager::stopAll");
+    isAlarm = false;
     resetProduct();
     timer->blockSignals(true);
     netServer->stop();
@@ -1188,16 +1216,16 @@ void AppManager::onEditUsersClicked()
 
 void AppManager::onEditUsersPanelClicked(const int index)
 {
-    DBRecord u = users->get(index);
-    const int code = users->getCode(u);
+    DBRecord u = users->getByIndex(index);
+    const int code =  Users::getCode(u);
     if(code <= 0)
     {
         showAttention("Редактирование запрещено");
         return;
     }
-    const QString name = users->getName(u);
-    const QString password = users->getPassword(u);
-    const bool isAdmin = users->isAdmin(u);
+    const QString name = Users::getName(u);
+    const QString password =  Users::getPassword(u);
+    const bool isAdmin = Users::isAdmin(u);
     debugLog(QString("@@@@@ AppManager::onEditUsersPanelClicked %1 %2 %3 %4 %5").arg(
         Tools::toString(index), Tools::toString(code), name, password, Tools::toString(isAdmin)));
     emit showInputUserPanel(Tools::toString(code), name, password, isAdmin);
@@ -1277,6 +1305,7 @@ void AppManager::onParseSetRequest(const QString& json, QHash<DBTable*, DBRecord
 {
     if(settings->insertOrReplace(json)) settings->write();
     if(users->insertOrReplace(json)) users->write();
+    if(showcase->insertOrReplace(json)) showcase->write();
 
     for (DBTable* t : db->getTables())
     {
@@ -1294,7 +1323,7 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
     switch(code)
     {
     case SettingCode_FactorySettings:
-        if(inputPassword == settings->getScaleConfigValue(ScaleConfigField_FactorySettingsPassword))
+        if(inputPassword == settings->getConfigValue(ScaleConfigField_FactorySettingsPassword))
         {
             updateSettings(code);
             emit showSettingsPanel(settings->getCurrentGroupName());
@@ -1302,7 +1331,7 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
         else showAttention("Неверный пароль");
         break;
     case SettingCode_SystemSettings:
-        if(inputPassword == settings->getScaleConfigValue(ScaleConfigField_SystemSettingsPassword))
+        if(inputPassword == settings->getConfigValue(ScaleConfigField_SystemSettingsPassword))
             settings->nativeSettings(code);
         else showAttention("Неверный пароль");
         break;
@@ -1315,63 +1344,6 @@ bool AppManager::onBackgroundDownloadClicked()
 {
     if(!BACKGROUND_DOWNLOADING) showAttention("Фоновая загрузка запрещена");
     return BACKGROUND_DOWNLOADING;
-}
-
-void AppManager::onNetCommand(const int command, const QString& param)
-{
-    debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::toString(command), param));
-    netActionTime = Tools::nowMsec();
-    switch (command)
-    {
-    case NetCommand_Message:
-        showAttention(param);
-        break;
-
-    case NetCommand_StartLoad:
-        emit showDownloadProgress(-1);
-        equipmentManager->pause(true);
-        DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
-        DataBase::copyDBFile(DB_PRODUCT_NAME, DB_PRODUCT_COPY_NAME);
-        emit showDownloadPanel();
-        break;
-
-    case NetCommand_StopLoad:
-        netActionTime = 0;
-        emit showDownloadProgress(100);
-        if(Tools::toBool(param)) // Ok
-        {
-            if(isRefreshNeeded)
-            {
-                isRefreshNeeded = false;
-                showAttention("Загрузка успешно завершена. Данные обновлены!");
-                QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
-            }
-        }
-        else // Timeout
-        {
-            if(isRefreshNeeded)
-            {
-                isRefreshNeeded = false;
-                if(DataBase::isDBFileExists(DB_PRODUCT_COPY_NAME))
-                {
-                    showAttention("ОШИБКИ ПРИ ЗАГРУЗКЕ! Данные не обновлены!");
-                    DataBase::renameDBFile(DB_PRODUCT_COPY_NAME, DB_PRODUCT_NAME);
-                }
-                else showAttention("ОШИБКИ ПРИ ЗАГРУЗКЕ! ВОЗМОЖНА ПОТЕРЯ ДАННЫХ! ДАННЫЕ ОБНОВЛЕНЫ!");
-                QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
-            }
-        }
-        DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
-        equipmentManager->pause(false);
-        break;
-
-    case NetCommand_Progress:
-        emit showDownloadProgress(Tools::toInt(param));
-        break;
-
-    default:
-        break;
-    }
 }
 
 void AppManager::updateSearch(const QString& value, const bool hierarchyRoot)
@@ -1459,6 +1431,91 @@ void AppManager::onHierarchyUpClicked()
     debugLog("@@@@@ AppManager::onHierarchyUpClicked");
     onUserAction();
     if (searchPanelModel->hierarchyUp()) updateSearch("");
+}
+
+void AppManager::onNetCommand(const int command, const QString& param)
+{
+    debugLog(QString("@@@@@ AppManager::onNetCommand %1 %2").arg(Tools::toString(command), param));
+    netActionTime = Tools::nowMsec();
+    switch (command)
+    {
+    case NetCommand_Message:
+        showAttention(param);
+        break;
+
+    case NetCommand_StartLoad:
+        emit showDownloadProgress(-1);
+        equipmentManager->pause(true);
+        DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
+        DataBase::copyDBFile(DB_PRODUCT_NAME, DB_PRODUCT_COPY_NAME);
+        emit showDownloadPanel();
+        break;
+
+    case NetCommand_StopLoad:
+        netActionTime = 0;
+        emit showDownloadProgress(100);
+        if(!isRefreshNeeded) showToast("Данные загружены");
+        else
+        {
+            isRefreshNeeded = false;
+            QString s;
+            if(Tools::toBool(param)) // Ok
+            {
+                settings->setLoadDateTime(ScaleConfigField_LastDownloadDateTime);
+                s = "Загрузка успешно завершена. Данные обновлены!";
+            }
+            else // Timeout
+            {
+                if(DataBase::isDBFileExists(DB_PRODUCT_COPY_NAME))
+                {
+                    s += "ОШИБКИ ПРИ ЗАГРУЗКЕ! ДАННЫЕ НЕ ОБНОВЛЕНЫ!";
+                    s += "\nПоследняя успешная загрузка ";
+                    s += settings->getConfigValue(ScaleConfigField_LastDownloadDateTime);
+                    DataBase::renameDBFile(DB_PRODUCT_COPY_NAME, DB_PRODUCT_NAME);
+                }
+                else s = "ОШИБКИ ПРИ ЗАГРУЗКЕ! ВОЗМОЖНА ПОТЕРЯ ДАННЫХ! ДАННЫЕ ОБНОВЛЕНЫ!";
+            }
+            showAttention(s);
+            QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
+        }
+        DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
+        equipmentManager->pause(false);
+        break;
+
+    case NetCommand_Progress:
+        emit showDownloadProgress(Tools::toInt(param));
+        break;
+
+    default: break;
+    }
+}
+
+void AppManager::onNetResult(NetActionResult& result)
+{
+    debugLog("@@@@@ AppManager::onNetResult");
+    QString toast;
+    switch(result.rule)
+    {
+    case RouterRule_Delete:
+        settings->setLoadDateTime(ScaleConfigField_LastDeleteDateTime);
+        toast = "Данные удалены";
+        if(isRefreshNeeded)
+        {
+            isRefreshNeeded = false;
+            QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
+        }
+        break;
+
+    case RouterRule_Get:
+        settings->setLoadDateTime(ScaleConfigField_LastUploadDateTime);
+        toast = "Данные выгружены";
+        break;
+
+    case RouterRule_Set: // -> onNetCommand
+    default: return;
+    }
+    if(result.errorCount > 0) toast += QString(". ОШИБКИ: %1").arg(Tools::toString(result.errorCount));
+    showToast(toast);
 }
 
 

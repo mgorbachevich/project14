@@ -16,11 +16,13 @@ INCLUDEPATH += \
     Equipment/Wm100_Slpa100u \
 
 HEADERS += \
+    DB/showcase.h \
     Models/edituserspanelmodel3.h \
     Models/inputproductcodepanelmodel3.h \
     Models/searchpanelmodel3.h \
     Models/settingspanelmodel3.h \
     Models/showcasepanelmodel3.h \
+    Net/netactionresult.h \
     constants.h \
     tools.h \
     appinfo.h \
@@ -34,7 +36,6 @@ HEADERS += \
     DB/database.h \
     DB/logdbtable.h \
     DB/resourcedbtable.h \
-    DB/showcasedbtable.h \
     DB/transactiondbtable.h \
     DB/settings.h \
     Equipment/Wm100_Slpa100u/IO/RequestSender.h \
@@ -120,11 +121,13 @@ HEADERS += \
     Net/netserver.h \
 
 SOURCES += \
+    DB/showcase.cpp \
     Models/edituserspanelmodel3.cpp \
     Models/inputproductcodepanelmodel3.cpp \
     Models/searchpanelmodel3.cpp \
     Models/settingspanelmodel3.cpp \
     Models/showcasepanelmodel3.cpp \
+    Net/netactionresult.cpp \
     main.cpp \
     tools.cpp \
     DB/database.cpp \
@@ -134,7 +137,6 @@ SOURCES += \
     DB/logdbtable.cpp \
     DB/productdbtable.cpp \
     DB/scaleconfig.cpp \
-    DB/showcasedbtable.cpp \
     DB/transactiondbtable.cpp \
     DB/settings.cpp \
     DB/users.cpp \

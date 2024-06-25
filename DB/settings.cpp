@@ -2,6 +2,7 @@
 #include <QJsonDocument>
 #include "settings.h"
 #include "tools.h"
+#include "appmanager.h"
 
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
@@ -263,18 +264,23 @@ bool Settings::read()
 bool Settings::write()
 {
     Tools::debugLog("@@@@@ Settings::write");
-    scaleConfig->set(ScaleConfigField_Model, (*getByCode(SettingCode_ScalesName))[SettingField_Value]);
-    scaleConfig->set(ScaleConfigField_ModelName, getStringValue(SettingCode_ScalesName));
-    scaleConfig->set(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value]);
-    scaleConfig->set(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value]);
+    setConfigValue(ScaleConfigField_Model, (*getByCode(SettingCode_ScalesName))[SettingField_Value]);
+    setConfigValue(ScaleConfigField_ModelName, getStringValue(SettingCode_ScalesName));
+    setConfigValue(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value]);
+    setConfigValue(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value]);
     scaleConfig->write();
     apply();
     bool ok = Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::toString(ok)));
-    if(!ok) showAttention("Ошибка записи файла " + fileName);
-    else if(WRITE_CONFIG_FILE_MESSAGE) showAttention("Файл записан " + fileName);
+    appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
     return ok;
+}
+
+void Settings::setLoadDateTime(const ScaleConfigField field)
+{
+    setConfigValue(field, Tools::now().toString(DATE_TIME_FORMAT));
+    write();
 }
 
 void Settings::sort()

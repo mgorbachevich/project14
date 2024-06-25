@@ -8,9 +8,11 @@
 #include "database.h"
 #include "moneycalculator.h"
 #include "users.h"
+#include "showcase.h"
 #include "settings.h"
 #include "appinfo.h"
 #include "printstatus.h"
+#include "netactionresult.h"
 
 class ProductPanelModel;
 class ViewLogPanelModel;
@@ -34,18 +36,20 @@ class AppManager : public QObject
 
 public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
+
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
+    void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
     QString priceAsString(const DBRecord& r) { return moneyCalculator->priceAsString(r); }
     void netDownload(QHash<DBTable*, DBRecordList>, int&, int&);
     QString netDelete(const QString&, const QString&);
     QString netUpload(const QString&, const QString&, const bool);
     void onParseSetRequest(const QString&, QHash<DBTable*, DBRecordList>&);
+    void onNetResult(NetActionResult&);
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
-    Q_INVOKABLE void clickSound();
     Q_INVOKABLE void debugLog(const QString&);
-    Q_INVOKABLE bool isAdmin() { return users->isAdmin(users->getCurrentUser()); }
+    Q_INVOKABLE bool isAdmin() { return Users::isAdmin(users->getCurrentUser()); }
     Q_INVOKABLE bool isAuthorizationOpened() { return mainPageIndex == MainPageIndex_Authorization; }
     Q_INVOKABLE bool isSettingsOpened() { return isSettings; }
     Q_INVOKABLE void onAddUserClicked();
@@ -53,6 +57,7 @@ public:
     Q_INVOKABLE bool onBackgroundDownloadClicked();
     Q_INVOKABLE void onCalendarClosed(const int, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
+    Q_INVOKABLE void onClick() { clickSound(); onUserAction(); }
     Q_INVOKABLE void onConfirmationClicked(const int, const QString&);
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
     Q_INVOKABLE void onEditUsersPanelClicked(const int);
@@ -95,11 +100,14 @@ public:
 
     Settings* settings = nullptr;
     Users* users = nullptr;
+    Showcase* showcase = nullptr;
     EquipmentManager* equipmentManager = nullptr;
     PrintStatus printStatus;
     bool isRefreshNeeded = false;
 
 private:
+    void alarm();
+    void clickSound();
     void createDefaultData();
     void createDefaultImages();
     bool isProduct() { return !product.isEmpty(); }
@@ -113,7 +121,6 @@ private:
     void setProduct(const DBRecord&);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
-    void showToast(const QString&, const int delaySec = 5);
     void startAuthorization();
     void startAll();
     void startSettings();
@@ -131,6 +138,7 @@ private:
     DBRecord product;
     bool isResetProductNeeded = false;
     MoneyCalculator* moneyCalculator = nullptr;
+    bool isAlarm = false;
 
     // Таймер
     QTimer *timer = nullptr;
@@ -204,8 +212,6 @@ signals:
 public slots:
     void onSelectResult(const DBSelector, const DBRecordList&, const bool);
     void onDBStarted();
-    void onEnterChar(const QChar) { clickSound(); onUserAction(); }
-    void onEnterKey(const Qt::Key) { clickSound(); onUserAction(); }
     void onEquipmentParamChanged(const int, const int);
     void onPrinted(const DBRecord&);
     void onTimer();

@@ -46,8 +46,7 @@ Popup
             {
                 //app.debugLog("@@@@@ comboSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
-                app.clickSound();
-                app.onUserAction();
+                app.onClick();
                 switch (event.key)
                 {
                     case Qt.Key_F10: // Промотка

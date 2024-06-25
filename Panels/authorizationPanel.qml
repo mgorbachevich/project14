@@ -249,8 +249,7 @@ Rectangle
                     Keys.onPressed: (event) =>
                     {
                         //app.debugLog("@@@@@ authorizationPanel.passwordTextField Keys.onPressed %1".arg(JSON.stringify(event)))
-                        app.clickSound();
-                        app.onUserAction();
+                        app.onClick();
                         event.accepted = true;
                         switch (event.key)
                         {

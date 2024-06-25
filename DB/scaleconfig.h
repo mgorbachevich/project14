@@ -11,11 +11,14 @@ class AppManager;
 enum ScaleConfigField
 {
     ScaleConfigField_Model = 0,
-    ScaleConfigField_ModelName = 1, // Comment
-    ScaleConfigField_SerialNumber = 2,
-    ScaleConfigField_VerificationDate = 3,
-    ScaleConfigField_FactorySettingsPassword = 4,
-    ScaleConfigField_SystemSettingsPassword = 5,
+    ScaleConfigField_ModelName, // Comment
+    ScaleConfigField_SerialNumber,
+    ScaleConfigField_VerificationDate,
+    ScaleConfigField_FactorySettingsPassword,
+    ScaleConfigField_SystemSettingsPassword,
+    ScaleConfigField_LastDownloadDateTime,
+    ScaleConfigField_LastUploadDateTime,
+    ScaleConfigField_LastDeleteDateTime,
 };
 
 class ScaleConfig : public JsonFile

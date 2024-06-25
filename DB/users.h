@@ -39,7 +39,7 @@ public:
     static bool isAdmin(const DBRecord& u) { return u[UserField_Role].toInt() == UserRole_Admin; }
     static bool isEqual(const DBRecord&, const DBRecord&);
     static QString normalizedName(const QString&);
-    static QString getDisplayName(const DBRecord& r);
+    static QString getDisplayName(const DBRecord&);
 
 protected:
     void sort() { Tools::sortByString(items, UserField_Name);  }

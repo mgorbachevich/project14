@@ -23,7 +23,6 @@ public:
     static QString toString(const double, const int);
     static QString toString(const int v) { return QString::number(v); }
     static QString toString(const quint64 v) { return QString::number(v); }
-    static QString toString(const qsizetype v) { return QString::number(v); }
     static QString toString(const QJsonObject&);
     static QJsonObject toJson(const QString&);
     static QString dateFromUInt(quint64, const QString&);
@@ -34,6 +33,7 @@ public:
     static bool copyFile(const QString&, const QString&);
     static bool renameFile(const QString&, const QString&);
     static bool removeFile(const QString&);
+    static QString sharedPath(const QString&);
     static QString dbPath(const QString& localPath) { return makeDirs("", localPath); }
     static QString downloadPath(const QString& localPath) { return makeFullPath(DOWNLOAD_SUBDIR, localPath); }
     static QString fileNameFromPath(const QString& path) { return path.mid(path.lastIndexOf("/") + 1); }

@@ -48,8 +48,7 @@ Popup
             {
                 //app.debugLog("@@@@@ sliderSettingPanel Keys.onPressed %1".arg(JSON.stringify(event)))
                 event.accepted = true;
-                app.clickSound();
-                app.onUserAction();
+                app.conClick();
                 switch (event.key)
                 {
                     case Qt.Key_F10: // Промотка

@@ -11,8 +11,6 @@ bool JsonFile::write()
 {
     bool ok = Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ JsonFile::write %1 %2").arg(fileName, Tools::toString(ok)));
-    if(!ok) showAttention("Ошибка записи файла " + fileName);
-    else if(WRITE_CONFIG_FILE_MESSAGE) showAttention("Файл записан " + fileName);
     wasRead = false;
     return ok;
 }
