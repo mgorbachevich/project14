@@ -43,13 +43,13 @@ Rectangle
         {
             //app.debugLog("@@@@@ authorizationPanel.onShowEnvironmentStatus");
             if(value1) usbIcon.source = "../Icons/usb";
-            else       usbIcon.source = "../Icons/usb_white"
+            else       usbIcon.source = "../Icons/usb_light"
             if(value2) bluetoothIcon.source = "../Icons/bluetooth";
-            else       bluetoothIcon.source = "../Icons/bluetooth_white";
+            else       bluetoothIcon.source = "../Icons/bluetooth_light";
             if(value3) wifiIcon.source = "../Icons/wifi";
-            else       wifiIcon.source = "../Icons/wifi_white";
+            else       wifiIcon.source = "../Icons/wifi_light";
             if(value4) sdcardIcon.source = "../Icons/sdcard";
-            else       sdcardIcon.source = "../Icons/sdcard_white";
+            else       sdcardIcon.source = "../Icons/sdcard_light";
         }
     }
 
@@ -101,6 +101,27 @@ Rectangle
                 {
                     //app.debugLog("@@@@@ searchPanelTextField on clicked image")
                     app.onInfoClicked()
+                }
+            }
+        }
+
+        Image
+        {
+            Layout.column: 0
+            Layout.row: 1
+            Layout.topMargin: screenManager.spacer()
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+            Layout.preferredWidth: screenManager.buttonSize()
+            Layout.preferredHeight: screenManager.buttonSize()
+            source: "../Images/help"
+
+            MouseArea
+            {
+                anchors.fill: parent
+                onClicked:
+                {
+                    //app.debugLog("@@@@@ searchPanelTextField on clicked image")
+                    app.onHelpClicked()
                 }
             }
         }

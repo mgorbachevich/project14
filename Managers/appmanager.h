@@ -36,6 +36,7 @@ class AppManager : public QObject
 
 public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
+    ~AppManager() { stopAll(); }
 
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
@@ -62,6 +63,7 @@ public:
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
     Q_INVOKABLE void onEditUsersPanelClicked(const int);
     Q_INVOKABLE void onEditUsersPanelClose();
+    Q_INVOKABLE void onHelpClicked();
     Q_INVOKABLE void onHierarchyUpClicked();
     Q_INVOKABLE void onInfoClicked();
     Q_INVOKABLE void onInputUserClosed(const QString&, const QString&, const QString&, const bool);
@@ -119,6 +121,7 @@ private:
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
+    void showFoundProductsToast(const int);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
     void startAuthorization();
@@ -185,6 +188,7 @@ signals:
     void showCalendarPanel(const int, const QString&, const int, const int, const int, const int, const int, const int);
     void showCurrentUser(const int, const QString&);
     void showConfirmationBox(const int, const QString&, const QString&, const QString&);
+    void showControlParam(const int, const QString&);
     void showDownloadPanel();
     void showDownloadProgress(const int);
     void showEditUsersPanel();
@@ -206,7 +210,7 @@ signals:
     void showToastBox(const QString&);
     void showViewLogPanel();
     void showVirtualKeyboard(const int);
-    void showControlParam(const int, const QString&);
+    void showWaitBox(const bool);
     void start();
 
 public slots:

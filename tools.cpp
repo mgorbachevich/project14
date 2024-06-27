@@ -403,13 +403,10 @@ bool Tools::isEnvironment(const EnvironmentType type)
     case EnvironmentType_Bluetooth:
     case EnvironmentType_USB:
     case EnvironmentType_SDCard:
-    {
-        jint jresult = QJniObject::callStaticMethod<jint>(ANDROID_NATIVE_CLASS_NAME,
-                    "isNativeEnvironment", "(I)I", type);
-        result = (jresult == 0);
+        result = (1 == QJniObject::callStaticMethod<jint>(ANDROID_NATIVE_CLASS_NAME,
+                                                          "isNativeEnvironment", "(I)I", type));
         break;
-    }
-#endif
+ #endif
 
     default: break;
     }

@@ -333,6 +333,7 @@ void AppManager::onSetProductByCodeClicked(const QString &value)
 void AppManager::onProductCodeEdited(const QString &value)
 {
     debugLog("@@@@@ AppManager::onProductCodeEdited " + value);
+    emit showWaitBox(true);
     db->select(DBSelector_GetProductByInputCode, value);
     db->select(DBSelector_GetProductsByInputCode, value);
 }
@@ -341,6 +342,7 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
 {
     // Получен результ из БД
 
+    emit showWaitBox(false);
     debugLog("@@@@@ AppManager::onSelectResult " + QString::number(selector));
     if (!ok)
     {
@@ -360,6 +362,7 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         break;
 
     case DBSelector_GetProductsByGroupCodeIncludeGroups: // Отображение товаров выбранной группы:
+        //showFoundProductsToast(records.count());
         emit showHierarchyRoot(searchPanelModel->isHierarchyRoot());
         emit showControlParam(ControlParam_SearchTitle, searchPanelModel->hierarchyTitle());
         searchPanelModel->update(records, -1);
@@ -379,25 +382,30 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         break;
 
     case DBSelector_GetProductsByInputCode: // Отображение товаров с заданным фрагментом кода:
+        showFoundProductsToast(records.count());
         inputProductCodePanelModel->update(records);
         break;
 
     case DBSelector_GetProductsByFilteredCode: // Отображение товаров с заданным фрагментом кода:
+        showFoundProductsToast(records.count());
         emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по коду");
         searchPanelModel->update(records, SearchFilterIndex_Code);
         break;
 
     case DBSelector_GetProductsByFilteredCode2: // Отображение товаров с заданным фрагментом номера:
+        showFoundProductsToast(records.count());
         emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по номеру");
         searchPanelModel->update(records, SearchFilterIndex_Code2);
         break;
 
     case DBSelector_GetProductsByFilteredBarcode: // Отображение товаров с заданным фрагментом штрих-кода:
+        showFoundProductsToast(records.count());
         emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по штрих-коду");
         searchPanelModel->update(records, SearchFilterIndex_Barcode);
         break;
 
     case DBSelector_GetProductsByFilteredName: // Отображение товаров с заданным фрагментом наименования:
+        showFoundProductsToast(records.count());
         emit showControlParam(ControlParam_SearchTitle, "Поиск товаров по наименованию");
         searchPanelModel->update(records, SearchFilterIndex_Name);
         break;
@@ -828,6 +836,7 @@ void AppManager::startAuthorization()
 void AppManager::updateShowcase()
 {
     showcase->getAll();
+    emit showWaitBox(true);
     db->select(DBSelector_GetShowcaseProducts,
                Tools::toString(showcasePanelModel->sort),
                Tools::toString(showcasePanelModel->increase));
@@ -913,6 +922,11 @@ void AppManager::setProduct(const DBRecord& newProduct)
         emit setCurrentProductFavorite(db->isProductInShowcase(product));
         updateWeightStatus();
     }
+}
+
+void AppManager::showFoundProductsToast(const int v)
+{
+    if(v > 1) showToast(QString("Найдено товаров: %1").arg(Tools::toString(v)));
 }
 
 void AppManager::resetProduct() // Сбросить выбранный продукт
@@ -1068,7 +1082,10 @@ void AppManager::updateWeightStatus()
     if(isWM)
     {
         if(equipmentManager->isWMOverloaded())
+        {
+            showToast("ПЕРЕГРУЗКА!");
             alarm();
+        }
         else
         {
             isAlarm = false;
@@ -1237,6 +1254,11 @@ void AppManager::onEditUsersPanelClose()
     users->clear();
 }
 
+void AppManager::onHelpClicked()
+{
+    showAttention("Не поддерживается");
+}
+
 void AppManager::onAddUserClicked()
 {
     debugLog("@@@@@ AppManager::onAddUserClicked ");
@@ -1358,6 +1380,7 @@ void AppManager::updateSearch(const QString& value, const bool hierarchyRoot)
     if(searchPanelModel->isHierarchy)
     {
         searchPanelModel->setHierarchyRoot(hierarchyRoot);
+        emit showWaitBox(true);
         db->select(DBSelector_GetProductsByGroupCodeIncludeGroups, searchPanelModel->hierarchyLastCode());
     }
     else
@@ -1380,6 +1403,7 @@ void AppManager::updateSearch(const QString& value, const bool hierarchyRoot)
         default:
             return;
         }
+        emit showWaitBox(true);
         db->select(s, value);
     }
 }

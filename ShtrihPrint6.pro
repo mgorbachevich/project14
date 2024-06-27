@@ -259,7 +259,7 @@ RESOURCES += \
     Icons/backspace.png \
     Icons/bluetooth.png \
     Icons/bluetooth_orange.png \
-    Icons/bluetooth_white.png \
+    Icons/bluetooth_light.png \
     Icons/close.png \
     Icons/code.png \
     Icons/delete.png \
@@ -277,26 +277,28 @@ RESOURCES += \
     Icons/number.png \
     Icons/net.png \
     Icons/net_orange.png \
+    Icons/net_light.png \
     Icons/net_white.png \
     Icons/ok_outline.png \
     Icons/plus.png \
     Icons/print.png \
     Icons/sdcard.png \
     Icons/sdcard_orange.png \
-    Icons/sdcard_white.png \
+    Icons/sdcard_light.png \
     Icons/settings.png \
     Icons/star.png \
     Icons/tare_white.png \
     Icons/usb.png \
     Icons/usb_orange.png \
-    Icons/usb_white.png \
+    Icons/usb_light.png \
     Icons/user.png \
     Icons/wifi.png \
     Icons/wifi_orange.png \
-    Icons/wifi_white.png \
+    Icons/wifi_light.png \
     Icons/zero_white.png \
     Images/dummy.png \
     Images/logo.png \
+    Images/help.png \
     Labels/60x30.dat/0.bmp \
     Labels/60x30.dat/60x30.par \
     Labels/60x30.dat/description \
@@ -354,6 +356,7 @@ RESOURCES += \
     Panels/VirtualKeyboardNumeric.qml \
     Panels/VirtualKeyboardCyrillic.qml \
     Panels/VirtualKeyboardLatin.qml \
+    Panels/waitPanel.qml \
     Panels/weightPanel.qml \
     Sound/KeypressStandard.mp3 \
     Sound/KeypressInvalid.mp3 \

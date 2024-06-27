@@ -214,6 +214,15 @@ ApplicationWindow
         }
     }
 
+    Connections // Slot for signal AppManager::showWaitBox:
+    {
+        target: app
+        function onShowWaitBox(value)
+        {
+            if(value) Qt.createComponent("Panels/waitPanel.qml").createObject(mainWindow).open()
+        }
+    }
+
     Connections // Slot for signal AppManager::showConfirmationBox:
     {
         target: app

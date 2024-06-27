@@ -13,8 +13,8 @@ Rectangle
     property int flagIconSize: (valueFontSize + titleFontSize + screenManager.spacer()) / 4
     property int flagIconWidth: flagIconSize + screenManager.spacer()
     property int displayWidth: weightPanel.width - flagIconWidth - screenManager.spacer()
-    property int weightWidth: displayWidth * 6 / (6 + 7 + 9)
-    property int priceWidth: displayWidth * 7 / (6 + 7 + 9)
+    property int weightWidth: displayWidth * 6.5 / (6.5 + 6.5 + 8.5)
+    property int priceWidth: displayWidth * 6.5 / (6.5 + 6.5 + 8.5)
     property int amountWidth: displayWidth - weightWidth - priceWidth
 
     height: valueFontSize + titleFontSize + screenManager.spacer()
@@ -146,10 +146,14 @@ Rectangle
             spacing: 0
             padding: 0
 
+            Spacer { height: screenManager.spacer() / 2 }
+
             Text
             {
                 id: weightPanelWeightTitle
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Qt.AlignRight
+                verticalAlignment: Qt.AlignVCenter
+                width: weightWidth
                 height: titleFontSize
                 font { pointSize: titleFontSize }
                 color: Material.color(Material.Grey, Material.Shade400)
@@ -158,7 +162,9 @@ Rectangle
             Text
             {
                 id: weightPanelWeightValue
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Qt.AlignRight
+                verticalAlignment: Qt.AlignVCenter
+                width: weightWidth
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
@@ -177,10 +183,14 @@ Rectangle
             spacing: 0
             padding: 0
 
+            Spacer { height: screenManager.spacer() / 2 }
+
             Text
             {
                 id: weightPanelPriceTitle
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Qt.AlignRight
+                verticalAlignment: Qt.AlignVCenter
+                width: priceWidth
                 height: titleFontSize
                 font { pointSize: titleFontSize }
                 color: Material.color(Material.Grey, Material.Shade400)
@@ -189,7 +199,9 @@ Rectangle
             Text
             {
                 id: weightPanelPriceValue
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Qt.AlignRight
+                verticalAlignment: Qt.AlignVCenter
+                width: priceWidth
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground
@@ -208,10 +220,14 @@ Rectangle
             spacing: 0
             padding: 0
 
+            Spacer { height: screenManager.spacer() / 2 }
+
             Text
             {
                 id: weightPanelAmountTitle
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Qt.AlignRight
+                verticalAlignment: Qt.AlignVCenter
+                width: amountWidth
                 height: titleFontSize
                 font { pointSize: titleFontSize }
                 color: Material.color(Material.Grey, Material.Shade400)
@@ -220,7 +236,9 @@ Rectangle
             Text
             {
                 id: weightPanelAmountValue
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Qt.AlignRight
+                verticalAlignment: Qt.AlignVCenter
+                width: amountWidth
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic' }
                 color: Material.foreground

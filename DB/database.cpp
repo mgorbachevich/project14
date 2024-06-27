@@ -353,8 +353,6 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
         DBRecordList resultRecords;
         switch(selector)
         {
-        case DBSelector_None: return;
-
         case DBSelector_GetLog:
         // Запрос списка записей лога:
             selectAll(logDB, getTable(DBTABLENAME_LOG), resultRecords);
