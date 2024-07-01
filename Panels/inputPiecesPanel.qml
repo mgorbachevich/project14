@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: inputPiecesPanel
@@ -18,12 +17,16 @@ Popup
     property string inputText: ""
     property int maxChars: 2
     property bool clicked: false
+
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
         app.onPiecesInputClosed(inputPiecesPanelText.text)
         app.onPopupOpened(false)
     }
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Rectangle
     {

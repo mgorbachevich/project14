@@ -809,6 +809,8 @@ void AppManager::stopSettings()
         startAll();
         refreshAll();
         isSettings = false;
+        if(users->getByName(users->getName(getCurrentUser())).isEmpty()) // Пользователь сменился
+            startAuthorization();
     });
 }
 
@@ -855,6 +857,7 @@ void AppManager::refreshAll()
 
 void AppManager::showToast(const QString &text, const int delaySec)
 {
+    emit hideToastBox();
     if(!text.isEmpty())
     {
         debugLog(QString("@@@@@ AppManager::showToast %1").arg(text));
@@ -901,9 +904,7 @@ QString AppManager::netDelete(const QString &t, const QString &s)
 QString AppManager::netUpload(const QString &t, const QString &s, const bool b)
 {
     netActionTime = Tools::nowMsec();
-    QString result = db->netUpload(t, s, b);
-
-    return result;
+    return db->netUpload(t, s, b);
 }
 
 void AppManager::setProduct(const DBRecord& newProduct)
@@ -954,7 +955,7 @@ void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
     equipmentManager->print(db,
-                            users->getCurrentUser(),
+                            getCurrentUser(),
                             product,
                             moneyCalculator->quantityAsString(product),
                             priceAsString(product),
@@ -1049,6 +1050,7 @@ void AppManager::updateWeightStatus()
            (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
     const QString passiveColor = "#424242";
     const QString activeColor = "#fafafa";
+    const QString amountColor = "#ffe0b2";
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
     if(isZero) printStatus.calculateMode = true;
@@ -1109,7 +1111,7 @@ void AppManager::updateWeightStatus()
         AMOUNT_MAX_CHARS >= as.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
     QString amount = isAmount ? moneyCalculator->amountAsString(product) : NO_DATA;
     emit showControlParam(ControlParam_AmountValue, amount);
-    emit showControlParam(ControlParam_AmountColor, isAmount ? activeColor : passiveColor);
+    emit showControlParam(ControlParam_AmountColor, isAmount ? amountColor : passiveColor);
 
     // Печатать?
     printStatus.manualPrintEnabled = isAmount && isPM && !equipmentManager->isPMError();
@@ -1276,7 +1278,7 @@ void AppManager::showAuthorizationUsers()
     // Обновить список пользователей на экране авторизации
     DBRecordList records = users->getAll();
     userNameModel->update(records);
-    const int currentUserCode = Users::getCode(users->getCurrentUser());
+    const int currentUserCode = Users::getCode(getCurrentUser());
     for (int i = 0; i < records.count(); i++)
     {
         DBRecord& r = records[i];
@@ -1309,7 +1311,7 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
 
     debugLog("@@@@@ AppManager::stopAuthorization OK");
     db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
-                    title, login, Tools::toString(Users::getCode(users->getCurrentUser()))));
+                    title, login, Tools::toString(Users::getCode(getCurrentUser()))));
     setMainPage(MainPageIndex_Showcase);
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {

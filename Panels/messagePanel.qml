@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: messagePanel
@@ -18,8 +17,12 @@ Popup
     property string titleText: "Title"
     property string messageText: "Message"
     property bool buttonVisibility: true
+
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Rectangle
     {

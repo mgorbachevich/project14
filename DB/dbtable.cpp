@@ -3,6 +3,10 @@
 #include <QJsonArray>
 #include "dbtable.h"
 #include "tools.h"
+#include "database.h"
+
+DBTable::DBTable(const QString &name, QSqlDatabase &sqlDB, DataBase *parent) :
+    QObject((QObject*)parent), name(name), db(parent), sqlDB(sqlDB) {}
 
 QVariantList DBTable::createRecord(const QString code)
 {
@@ -35,13 +39,7 @@ bool DBTable::isEqual(const DBRecord& r1, const DBRecord& r2)
     return false;
 }
 
-int DBTable::columnIndex(const QString& columnName)
-{
-    for(int i = 0; i < columns.size(); i++) if(columns[i].name == columnName) return i;
-    return -1;
-}
-
-const DBRecordList DBTable::checkList(DataBase*, const DBRecordList &records)
+const DBRecordList DBTable::checkList(const DBRecordList &records)
 {
     Tools::debugLog("@@@@@ DBTable::checkList " + name);
     DBRecordList result;
@@ -81,28 +79,28 @@ QString DBTable::toJsonString(DBTable *table, const DBRecordList &records)
     return "[" + json + "]";
 }
 
-QString DBTable::columnTitle(const int index) const
+QString DBTable::columnTitle(const int i) const
 {
-    return (index < columns.count() && index >= 0) ? columns[index].title : "";
+    return (i < columns.count() && i >= 0) ? columns[i].title : "";
 }
 
-QString DBTable::columnName(const int index) const
+QString DBTable::columnName(const int i) const
 {
-    return (index < columns.count() && index >= 0) ? columns[index].name : "";
+    return (i < columns.count() && i >= 0) ? columns[i].name : "";
 }
 
-QString DBTable::columnType(const int index) const
+QString DBTable::columnType(const int i) const
 {
-    return (index < columns.count() && index >= 0) ? columns[index].type : "";
+    return (i < columns.count() && i >= 0) ? columns[i].type : "";
 }
 
-void DBTable::parseColumn(DBRecord& r, const QJsonObject &jo, const int columnIndex)
+void DBTable::parseColumn(DBRecord& r, const QJsonObject &jo, const int i)
 {
-    QString type = columnType(columnIndex);
-    QString value = jo[columnName(columnIndex)].toString("");
-    if (type.contains("INT"))       r[columnIndex] = Tools::toInt(value);
-    else if (type.contains("REAL")) r[columnIndex] = Tools::toDouble(value);
-    else                            r[columnIndex] = value;
+    QString type = columnType(i);
+    QString value = jo[columnName(i)].toString("");
+    if (type.contains("INT"))       r[i] = Tools::toInt(value);
+    else if (type.contains("REAL")) r[i] = Tools::toDouble(value);
+    else                            r[i] = value;
 }
 
 DBRecordList DBTable::parse(const QString &json)
@@ -131,5 +129,29 @@ DBRecordList DBTable::parse(const QString &json)
     }
     Tools::debugLog(QString("@@@@@ DBTable::parse Done %1").arg(records.count()));
     return records;
+}
+
+void DBTable::removeIndexes()
+{
+    if (!db->isStarted() || indexDescriptors.count() < 1) return;
+    Tools::debugLog("DBTable::removeIndexes");
+    for(int i = 0; i < indexDescriptors.count(); i++)
+        db->executeSQL(sqlDB, QString("DROP INDEX IF EXISTS %1").arg(indexDescriptors[i].name));
+}
+
+void DBTable::createIndexes()
+{
+    if (!db->isStarted() || indexDescriptors.count() < 1) return;
+    Tools::debugLog("DBTable::createIndexes");
+    removeIndexes();
+    for(int i = 0; i < indexDescriptors.count(); i++)
+    {
+        QString sql = QString("CREATE INDEX %1 ON %2 (%3) %4").arg(
+                    indexDescriptors[i].name,
+                    name,
+                    columnName(indexDescriptors[i].column),
+                    indexDescriptors[i].param);
+        db->executeSQL(sqlDB, sql);
+    }
 }
 

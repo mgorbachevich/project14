@@ -56,6 +56,7 @@ void NetServer::start(const int port)
         });
     }
 }
+
 QString NetServer::toJsonString(const QByteArray& request)
 {
     Tools::debugLog("@@@@@ NetServer::toJsonString");
@@ -301,7 +302,7 @@ QString NetServer::parseSetRequest(const QByteArray &request)
 }
 */
 
-QString NetServer::parseSetRequest(const RouterRule, const QByteArray &request)
+QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &request)
 {
     Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
     NetActionResult result(appManager, RouterRule_Set);

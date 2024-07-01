@@ -30,7 +30,7 @@ public:
     double getWeight() const { return WMStatus.weight; }
     double getTare() const { return WMStatus.tare; }
     bool isWMError() const { return WMErrorCode != 0 || isWMStateError(WMStatus); }
-    bool isWMOverloaded() const { return WMErrorCode == WMError_Overload; }
+    bool isWMOverloaded() const { return isWMFlag(WMStatus, 6); }
     bool isWeightFixed() const { return isWMFlag(WMStatus, 0); }
     bool isZeroFlag() const { return isWMFlag(WMStatus, 1); }
     bool isTareFlag() const { return isWMFlag(WMStatus, 3); }

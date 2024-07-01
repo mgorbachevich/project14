@@ -16,6 +16,7 @@ INCLUDEPATH += \
     Equipment/Wm100_Slpa100u \
 
 HEADERS += \
+    DB/dbindexdescriptor.h \
     DB/showcase.h \
     Models/edituserspanelmodel3.h \
     Models/inputproductcodepanelmodel3.h \

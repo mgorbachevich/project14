@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: toastPanel
@@ -16,6 +15,9 @@ Popup
     dim: false
     Material.background: "transparent"
     property string messageText: "Message"
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Connections // Slot for signal AppManager::hideToastBox
     {
@@ -30,10 +32,9 @@ Popup
         x: (screenManager.screenWidth() - width) / 2
         y: screenManager.screenHeight() - height - screenManager.spacer()
         radius: height / 2
-        //Material.background: Material.color(Material.Grey, Material.Shade200)
-        color: Material.color(Material.Grey, Material.Shade100)
-        border.color: Material.color(Material.Grey, Material.Shade400)
-        border.width: 1
+        color: Material.color(Material.Orange, Material.Shade100)
+        //border.color: Material.color(Material.Grey, Material.Shade400)
+        //border.width: 1
 
         CardText { text: messageText }
     }

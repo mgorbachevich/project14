@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: confirmationPanel
@@ -19,8 +18,12 @@ Popup
     property string messageText: "Message"
     property string param: ""
     property int confirmSelector: 0
+
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Rectangle
     {

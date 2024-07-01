@@ -16,7 +16,7 @@ public:
         COLUMN_COUNT
     };
 
-    LogDBTable(const QString& name, QObject *parent);
+    LogDBTable(const QString& name, QSqlDatabase&, DataBase *parent);
     int columnCount() { return Columns::COLUMN_COUNT; }
     DBRecord createRecord(const int type, const int source, const QString &comment);
 };

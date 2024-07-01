@@ -40,7 +40,7 @@ public:
         COLUMN_COUNT
     };
 
-    ProductDBTable(const QString&, QObject*);
+    ProductDBTable(const QString&, QSqlDatabase&, DataBase*);
     const DBRecord checkRecord(const DBRecord&);
     int columnCount() { return Columns::COLUMN_COUNT; }
     static bool isForShowcase(const DBRecord&);

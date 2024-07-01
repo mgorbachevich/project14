@@ -72,6 +72,8 @@ void SearchPanelModel3::update(const DBRecordList &newProducts, const int filter
         QString code;
         QString price;
         QString name = ri[ProductDBTable::Name].toString();
+       if(ProductDBTable::isGroup(ri)) name = "<b>" + name + "</b>";
+
         switch(filterIndex)
         {
         case SearchFilterIndex_Code2:

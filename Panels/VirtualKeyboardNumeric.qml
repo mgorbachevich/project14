@@ -11,12 +11,22 @@ Rectangle
     color: Material.color(Material.Grey, Material.Shade100)
     function emitKey(v) { keyEmitter.emitKey(v) }
 
+    Connections // Slot for signal AppManager::showVirtualKeyboard
+    {
+        target: app
+        function onShowVirtualKeyboard(value)
+        {
+            adminButtons.visible = app.isAdmin() && !app.isAuthorizationOpened() && !app.isSettingsOpened();
+        }
+    }
+
     Row
     {
         anchors.horizontalCenter: parent.horizontalCenter
 
         Column
         {
+            id: adminButtons
             visible: app.isAdmin() && !app.isAuthorizationOpened() && !app.isSettingsOpened()
             KeyboardIconButton
             {

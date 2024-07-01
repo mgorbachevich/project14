@@ -4,17 +4,16 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: calendarPanel
     padding : 0
-    //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
     focus: true
     modal: true
     dim: true
     Material.background: "transparent"
+
     property string titleText: ""
     property int comboWidth: screenManager.normalFontSize() * 6
     property int code: 0
@@ -25,6 +24,7 @@ Popup
     property int calendarHour: 0
     property int calendarMinute: 0
     property int calendarSecond: 0
+
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
@@ -37,6 +37,9 @@ Popup
                              calendarPanelMinuteCombo.displayText,
                              calendarPanelSecondCombo.displayText)
     }
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Rectangle
     {

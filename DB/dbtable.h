@@ -5,36 +5,42 @@
 #include <QVariant>
 #include "constants.h"
 #include "dbtablecolumn.h"
+#include "dbindexdescriptor.h"
 
 class DataBase;
 class QJsonObject;
+class QSqlDatabase;
 
 class DBTable : public QObject
 {
     Q_OBJECT
 
 public:
-    DBTable(const QString &name, QObject *parent): QObject(parent), name(name) {}
+    DBTable(const QString &name, QSqlDatabase& sqlDB, DataBase *parent);
     static QString toJsonString(DBTable*, const DBRecord&);
     static QString toJsonString(DBTable*, const DBRecordList&);
-    QString columnTitle(const int index) const;
-    QString columnName(const int index) const;
-    QString columnType(const int index) const;
+    QString columnTitle(const int) const;
+    QString columnName(const int) const;
+    QString columnType(const int) const;
     DBRecord createRecord(const QString code = "");
     void addColumn(const QString& title, const QString& name, const QString& type);
     virtual int columnCount() { return 0; }
-    virtual const DBRecordList checkList(DataBase*, const DBRecordList&);
+    virtual const DBRecordList checkList(const DBRecordList&);
     virtual const DBRecord checkRecord(const DBRecord&);
     static bool isEqual(const DBRecord&, const DBRecord&);
-    int columnIndex(const QString&);
     DBRecordList parse(const QString&);
+    virtual void createIndexes();
+    virtual void removeIndexes();
 
     QString name;
+    QSqlDatabase& sqlDB;
 
 protected:
     void parseColumn(DBRecord&, const QJsonObject&, const int);
 
+    DataBase* db = nullptr;
     QList<DBTableColumn> columns;
+    QList<DBIndexDescriptor> indexDescriptors;
 };
 
 #endif // DBTABLE_H

@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: inputSettingPanel
@@ -20,12 +19,16 @@ Popup
     property string inputText: "Input"
     property int settingItemCode: 0
     property int virtualKeyboardSet: 2
+
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
         app.onSettingInputClosed(settingItemCode, inputSettingPanelText.text)
         app.onPopupOpened(false)
     }
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Connections // Slot for signal KeyEmitter::enterChar
     {

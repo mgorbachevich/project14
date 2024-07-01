@@ -113,6 +113,7 @@ private:
     void createDefaultData();
     void createDefaultImages();
     bool isProduct() { return !product.isEmpty(); }
+    DBRecord& getCurrentUser() { return users->getCurrentUser(); }
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
     void refreshAll();

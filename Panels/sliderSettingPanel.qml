@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: sliderSettingPanel
@@ -21,12 +20,16 @@ Popup
     property int sliderTo: 1
     property int sliderStep: 1
     property int sliderValue: 1
+
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
         app.onSettingInputClosed(settingItemCode, settingItemSlider.value)
         app.onPopupOpened(false)
     }
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Rectangle
     {

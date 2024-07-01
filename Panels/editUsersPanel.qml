@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: editUsersPanel
@@ -14,12 +13,16 @@ Popup
     modal: true
     dim: true
     Material.background: Material.color(Material.Grey, Material.Shade100)
+
     onOpened: app.onPopupOpened(true)
     onClosed:
     {
         app.onEditUsersPanelClose()
         app.onPopupOpened(false)
     }
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     GridLayout
     {

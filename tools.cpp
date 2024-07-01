@@ -317,8 +317,8 @@ void Tools::sortByInt(DBRecordList& records, const int field, const bool increas
     int i, n;
     for (n = 0; n < records.count(); n++) for (i = n + 1; i < records.count(); i++)
     {
-        if (increase && records[n][field].toInt() <= records[i][field].toInt()) continue;
-        if (!increase && records[n][field].toInt() >= records[i][field].toInt()) continue;
+        if (increase && records[n][field].toLongLong() <= records[i][field].toLongLong()) continue;
+        if (!increase && records[n][field].toLongLong() >= records[i][field].toLongLong()) continue;
         records.move(i, n);
         n = 0;
     }

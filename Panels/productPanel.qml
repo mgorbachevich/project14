@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import RegisteredTypes
 
-
 Popup
 {
     id: productPanel
@@ -18,8 +17,12 @@ Popup
     property int printButtonSize: screenManager.buttonSize() * 2 + screenManager.spacer()
     property bool isPiece: false
     property string productName: ""
+
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
+
+    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
+    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
 
     Connections // Slot for signal AppManager::showControlParam:
     {

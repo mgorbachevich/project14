@@ -21,7 +21,7 @@ public:
         COLUMN_COUNT
     };
 
-    TransactionDBTable(const QString& name, QObject *parent);
+    TransactionDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent);
     int columnCount() { return Columns::COLUMN_COUNT; }
     DBRecord createRecord(const qint64, const int, const int, const int, const double, const int, const int);
 };

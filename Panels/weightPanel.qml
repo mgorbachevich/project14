@@ -13,8 +13,8 @@ Rectangle
     property int flagIconSize: (valueFontSize + titleFontSize + screenManager.spacer()) / 4
     property int flagIconWidth: flagIconSize + screenManager.spacer()
     property int displayWidth: weightPanel.width - flagIconWidth - screenManager.spacer()
-    property int weightWidth: displayWidth * 6.5 / (6.5 + 6.5 + 8.5)
-    property int priceWidth: displayWidth * 6.5 / (6.5 + 6.5 + 8.5)
+    property int weightWidth: displayWidth * 5.5 / (5.5 + 6.5 + 8.5)
+    property int priceWidth: displayWidth * 6.5 / (5.5 + 6.5 + 8.5)
     property int amountWidth: displayWidth - weightWidth - priceWidth
 
     height: valueFontSize + titleFontSize + screenManager.spacer()
@@ -241,7 +241,8 @@ Rectangle
                 width: amountWidth
                 height: valueFontSize
                 font { pointSize: valueFontSize; family:'League Gothic' }
-                color: Material.foreground
+                //color: Material.foreground
+                color: Material.color(Material.Orange, Material.Shade100)
                 MouseArea
                 {
                     anchors.fill: parent

@@ -41,7 +41,7 @@ DBRecord Users::createUser(const QString& code, const QString& name, const QStri
     return r;
 }
 
-void Users::onDeleteUser(const  QString& code)
+void Users::onDeleteUser(const QString& code)
 {
     Tools::debugLog(QString("@@@@@ Users::onDeleteUser %1").arg(code));
     DBRecord* p = getByCode(Tools::toInt(code));

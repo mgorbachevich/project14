@@ -1,7 +1,9 @@
 #include "productdbtable.h"
 #include "tools.h"
+#include "database.h"
 
-ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent):
+    DBTable(name, sqlDB, parent)
 {
     Tools::debugLog("@@@@@ ProductDBTable::ProductDBTable");
 
@@ -34,6 +36,16 @@ ProductDBTable::ProductDBTable(const QString& name, QObject *parent): DBTable(na
     addColumn("Код файла ролика",       "movie_code",        "INT");
     addColumn("Код звукового файла",    "sound_code",        "INT");
     addColumn("В избранном",            "favorite",          "INT"); // Да/нет
+
+    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::Code2,
+                                              columnName(ProductDBTable::Code2) + "_index"));
+    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::Barcode,
+                                              columnName(ProductDBTable::Barcode) + "_index"));
+    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::UpperName,
+                                              columnName(ProductDBTable::UpperName) + "_index"));
+    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::Code,
+                                              columnName(ProductDBTable::Code) + "_index_9",
+                                              QString("WHERE %1 LIKE '%2%3'").arg(columnName(ProductDBTable::Code), "9", "%")));
 }
 
 const DBRecord ProductDBTable::checkRecord(const DBRecord& record)
@@ -76,3 +88,4 @@ bool ProductDBTable::is100gBase(const DBRecord& record)
     return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
             record[ProductDBTable::PriceBase].toInt() == ProductPriceBase_100g;
 }
+

@@ -56,29 +56,28 @@ public:
     static bool renameDBFile(const QString&, const QString&);
     static bool removeDBFile(const QString&);
     static bool isDBFileExists(const QString&);
+    bool executeSQL(const QSqlDatabase&, const QString&);
 
 private:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
     void close(QSqlDatabase& db) { if(db.isOpen()) db.close(); }
-    bool createTable(const QSqlDatabase& db, DBTable*);
-    bool executeSelectSQL(const QSqlDatabase&, DBTable*, const QString&, DBRecordList&);
-    bool executeSQL(const QSqlDatabase&, const QString&);
-    bool insertRecord(const QSqlDatabase&, DBTable*, const DBRecord&);
+    bool createTable(DBTable*);
+    bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
+    bool insertRecord(DBTable*, const DBRecord&);
     bool isLogging(const int);
-    bool open(QSqlDatabase&, const QString&);
+    //bool open(QSqlDatabase&, const QString&);
     bool query(const QSqlDatabase&, const QString&, DBTable*, DBRecordList*);
-    bool removeAll(const QSqlDatabase&, DBTable*);
-    bool removeRecord(const QSqlDatabase&, DBTable*, const QString&);
-    void selectAll(const QSqlDatabase&, DBTable*, DBRecordList&);
-    QStringList selectAllCodes(const QSqlDatabase&, DBTable*);
-    bool selectById(const QSqlDatabase&, const QString&, const QString&, DBRecord&);
-    bool selectById(const QSqlDatabase&, DBTable*, const QString&, DBRecord&);
+    bool removeAll(DBTable*);
+    bool removeRecord(DBTable*, const QString&);
+    void selectAll(DBTable*, DBRecordList&);
+    QStringList selectAllCodes(DBTable*);
+    bool selectById(const QString&, const QString&, DBRecord&);
 
     bool started = false;
-    QSqlDatabase productDB;
-    QSqlDatabase logDB;
     int removeOldLogRecordsCounter = 0;
     QList<DBTable*> tables;
+    QSqlDatabase productDB;
+    QSqlDatabase logDB;
 
 signals:
     void selectResult(const DBSelector, const DBRecordList&, const bool);

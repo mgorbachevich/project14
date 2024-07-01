@@ -1,7 +1,8 @@
 #include "transactiondbtable.h"
 #include "tools.h"
 
-TransactionDBTable::TransactionDBTable(const QString& name, QObject *parent): DBTable(name, parent)
+TransactionDBTable::TransactionDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent) :
+    DBTable(name, sqlDB, parent)
 {
     Tools::debugLog("@@@@@ TransactionDBTable::TransactionDBTable");
 
