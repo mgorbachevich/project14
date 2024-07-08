@@ -9,7 +9,7 @@ NetActionResult::~NetActionResult()
 
 QString NetActionResult::makeJson()
 {
-    QString s = QString("{\"result\":\"%1\",\"description\":\"%2\"}"). arg(QString::number(errorCode), description);
+    QString s = QString("{\"result\":\"%1\",\"description\":\"%2\"}").arg(QString::number(errorCode), description);
     Tools::debugLog("NetActionResult::makeJson " + s);
     return s;
 }

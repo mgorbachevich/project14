@@ -10,7 +10,6 @@
 #include "users.h"
 #include "showcase.h"
 #include "settings.h"
-#include "appinfo.h"
 #include "printstatus.h"
 #include "netactionresult.h"
 
@@ -40,12 +39,15 @@ public:
 
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
+    void showWait(const bool);
     QString priceAsString(const DBRecord& r) { return moneyCalculator->priceAsString(r); }
     void netDownload(QHash<DBTable*, DBRecordList>, int&, int&);
     QString netDelete(const QString&, const QString&);
     QString netUpload(const QString&, const QString&, const bool);
     void onParseSetRequest(const QString&, QHash<DBTable*, DBRecordList>&);
     void onNetResult(NetActionResult&);
+    void updateInputCodeList();
+    void updateSearch();
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
@@ -74,7 +76,7 @@ public:
     Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
     Q_INVOKABLE void onPasswordInputClosed(const int, const QString&);
     Q_INVOKABLE void onPopupOpened(const bool);
-    Q_INVOKABLE void onProductCodeEdited(const QString&);
+    Q_INVOKABLE void onInputProductCodeEdited(const QString&);
     Q_INVOKABLE void onPrintClicked();
     Q_INVOKABLE void onProductDescriptionClicked();
     Q_INVOKABLE void onProductFavoriteClicked();
@@ -106,6 +108,7 @@ public:
     EquipmentManager* equipmentManager = nullptr;
     PrintStatus printStatus;
     bool isRefreshNeeded = false;
+    bool isWaiting = false;
 
 private:
     void alarm();
@@ -131,14 +134,12 @@ private:
     void stopAuthorization(const QString&, const QString&);
     void stopAll();
     void stopSettings();
-    void updateSearch(const QString&, const bool hierarchyRoot = false);
     void updateShowcase();
     void updateSystemStatus();
     void updateSettings(const int);
     void updateWeightStatus();
 
     DataBase* db = nullptr;
-    AppInfo appInfo;
     DBRecord product;
     bool isResetProductNeeded = false;
     MoneyCalculator* moneyCalculator = nullptr;
@@ -197,7 +198,7 @@ signals:
     void showHierarchyRoot(const bool);
     void showInputUserPanel(const QString&, const QString&, const QString&, const bool);
     void showMainPage(const int);
-    void showMessageBox(const QString&, const QString&, const bool);
+    void showMessageBox(const QString&, const QString&);
     void showPasswordInputBox(const int);
     void showPiecesInputBox(const int, const int);
     void showProductCodeInputBox(const QString&);

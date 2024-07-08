@@ -40,6 +40,7 @@ public:
     Q_INVOKABLE int showcaseRowImages() const { return SHOWCASE_ROW_IMAGES; }
     Q_INVOKABLE int flickVelocity() const { return 300; }
     Q_INVOKABLE int keyboardHeight() const { return buttonSize() * 3; }
+    int visibleListRowCount() const { return screenHeight() / (spacer() + normalFontSize() + spacer()); }
 
 private:
     QSize screenSize;

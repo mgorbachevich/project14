@@ -1,15 +1,18 @@
 #ifndef SEARCHPANELMODEL3_H
 #define SEARCHPANELMODEL3_H
 
-#include "baselistmodel3.h"
+#include "largelistmodel.h"
 #include "constants.h"
 
-class SearchPanelModel3 : public BaseListModel3
+class SearchPanelModel3 : public LargeListModel
 {
     Q_OBJECT
 
 public:
-    explicit SearchPanelModel3(AppManager *parent): BaseListModel3(parent) {}
+    explicit SearchPanelModel3(const int maxRowCount, AppManager *parent):
+        LargeListModel(maxRowCount, parent) {}
+
+    Q_INVOKABLE bool onFlickTo(const int) override;
     QHash<int, QByteArray> roleNames() const override;
     DBRecord &productByIndex(const int);
     void setHierarchyRoot(const bool v) { if(v) groupHierarchy.clear(); }
@@ -23,6 +26,7 @@ public:
 
     int filterIndex = SearchFilterIndex_Code;
     bool isHierarchy = true;
+    bool isRoot = true;
 
 private:
     DBRecordList products;

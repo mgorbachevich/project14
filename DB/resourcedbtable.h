@@ -21,7 +21,7 @@ public:
     {
         Tools::debugLog("@@@@@ ResourceDBTable::ResourceDBTable");
 
-        addColumn("Код",          "code",   "INT PRIMARY KEY");
+        addColumn("Код",          "code",   "UNSIGNED BIG INT PRIMARY KEY");
         addColumn("Наименование", "name",   "TEXT");
         addColumn("Значение",     "value",  "TEXT");
         addColumn("Хэш",          "hash",   "TEXT");

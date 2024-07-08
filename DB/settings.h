@@ -20,7 +20,6 @@ class Settings : public JsonArrayFile
 {
 public:
     Settings(AppManager*);
-    void apply();
     bool getBoolValue(const SettingCode code) { return getIntValue(code, true) != 0; }
     DBRecord* getByIndexInCurrentGroup(const int);
     static int getCode(const DBRecord& r) { return r[SettingField_Code].toInt(); }
@@ -43,9 +42,11 @@ public:
     void clear() {}
     bool read();
     bool write();
+    bool readConfig() { return scaleConfig->read(); }
+    bool writeConfig();
     QString getConfigValue(const ScaleConfigField f) { return scaleConfig->get(f).toString(); }
-    void setConfigValue(const ScaleConfigField f, const QVariant& v) { scaleConfig->set(f, v); }
-    void setLoadDateTime(const ScaleConfigField);
+    void setConfigValue(const ScaleConfigField f, const QString& v) { scaleConfig->set(f, v); }
+    void setConfigDateTime(const ScaleConfigField);
 
 protected:
     void sort();

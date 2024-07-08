@@ -7,18 +7,18 @@ ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBas
 {
     Tools::debugLog("@@@@@ ProductDBTable::ProductDBTable");
 
-    addColumn("Код #",                  "code",              "TEXT PRIMARY KEY");
+    addColumn("Код #",                  "code",              "UNSIGNED BIG INT PRIMARY KEY");
     addColumn("Штрих-код",              "barcode",           "TEXT");
     addColumn("Наименование",           "name",              "TEXT");
     addColumn("Краткое наименование",   "name2",             "TEXT");
     addColumn("Наименование*",          "upper_name",        "TEXT");
-    addColumn("Номер №",                "code2",             "TEXT");
+    addColumn("Номер №",                "code2",             "UNSIGNED BIG INT");
     addColumn("Тип",                    "type",              "INT");
     addColumn("Цена",                   "price",             "INT");
     addColumn("Ценовая база",           "price_base",        "INT");
     addColumn("Цена 2",                 "price2",            "INT");
     addColumn("Код схемы скидки",       "discount_code",     "INT");
-    addColumn("Код группы",             "group_code",        "TEXT");
+    addColumn("Код группы",             "group_code",        "UNSIGNED BIG INT");
     addColumn("Масса штуки",            "unit_weight",       "INT");
     addColumn("Код формата этикетки",   "label_format",      "INT");
     addColumn("Код формата этикетки 2", "label_format2",     "INT");
@@ -43,9 +43,11 @@ ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBas
                                               columnName(ProductDBTable::Barcode) + "_index"));
     indexDescriptors.append(DBIndexDescriptor(ProductDBTable::UpperName,
                                               columnName(ProductDBTable::UpperName) + "_index"));
+    /*
     indexDescriptors.append(DBIndexDescriptor(ProductDBTable::Code,
                                               columnName(ProductDBTable::Code) + "_index_9",
-                                              QString("WHERE %1 LIKE '%2%3'").arg(columnName(ProductDBTable::Code), "9", "%")));
+                                              QString("WHERE %1 LIKE '%2'").arg(columnName(ProductDBTable::Code), "9%")));
+    */
 }
 
 const DBRecord ProductDBTable::checkRecord(const DBRecord& record)

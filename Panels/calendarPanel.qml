@@ -24,6 +24,7 @@ Popup
     property int calendarHour: 0
     property int calendarMinute: 0
     property int calendarSecond: 0
+    property bool timeIsVisible: calendarHour >= 0
 
     onOpened: app.onPopupOpened(true)
     onClosed:
@@ -38,8 +39,8 @@ Popup
                              calendarPanelSecondCombo.displayText)
     }
 
-    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
-    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
+    enter: Transition { enabled: false }
+    exit: Transition { enabled: false }
 
     Rectangle
     {
@@ -235,6 +236,7 @@ Popup
             {
                 Layout.column: 1
                 Layout.row: 4
+                visible: timeIsVisible
                 text: qsTr("Часы")
             }
 
@@ -242,6 +244,7 @@ Popup
             {
                 Layout.column: 2
                 Layout.row: 4
+                visible: timeIsVisible
                 text: qsTr("Минуты")
             }
 
@@ -249,6 +252,7 @@ Popup
             {
                 Layout.column: 3
                 Layout.row: 4
+                visible: timeIsVisible
                 text: qsTr("Секунды")
             }
 
@@ -262,7 +266,7 @@ Popup
                 popup.modal: true
                 currentIndex: calendarHour
                 displayText: calendarHour
-                visible: calendarHour >= 0
+                visible: timeIsVisible
 
                 model: calendarHourModel
                 delegate: Text
@@ -296,7 +300,7 @@ Popup
                 popup.modal: true
                 currentIndex: calendarMinute
                 displayText: calendarMinute
-                visible: calendarHour >= 0
+                visible: timeIsVisible
 
                 model: calendarMinuteModel
                 delegate: Text
@@ -330,7 +334,7 @@ Popup
                 popup.modal: true
                 currentIndex: calendarSecond
                 displayText: calendarSecond
-                visible: calendarHour >= 0
+                visible: timeIsVisible
 
                 model: calendarSecondModel
                 delegate: Text

@@ -4,13 +4,14 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.56"
+#define APP_VERSION "2.58"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
 
 // Debug and Log:
 //#define DEBUG_LOG_FILE
+#define DEBUG_DB_SELECT_REPETITIONS 0
 #define DEBUG_ONTIMER_MESSAGE false
 #define DEBUG_MEMORY_MESSAGE false
 #define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
@@ -197,6 +198,11 @@ enum ControlParam
     ControlParam_AuthorizationTitle1 = 21,
     ControlParam_AuthorizationTitle2 = 22,
     ControlParam_AuthorizationTitle3 = 23,
+    ControlParam_LastDownloadDateTime = 24,
+    ControlParam_LastUploadDateTime = 25,
+    ControlParam_LastDeleteDateTime = 26,
+    ControlParam_LastDownloadErrors = 27,
+    ControlParam_LastDownloadRecords = 28,
 };
 
 enum NetCommand
@@ -357,8 +363,24 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_ShowcaseProductBottomText = 1056,
     SettingCode_ChangeShowcase = 1057,
     //Группы:
-    SettingCode_FactorySettings = 9000,
-    /*
+    SettingCode_Group_System = 8100,
+    SettingCode_Group_WorkingMode = 8200,
+    SettingCode_Group_Showcase = 8201,
+    SettingCode_Group_Search = 8300,
+    SettingCode_Group_Advertisement = 8300,
+    SettingCode_Group_Video = 8500,
+    SettingCode_Group_Print = 8600,
+    SettingCode_Group_PrintParams = 8601,
+    SettingCode_Group_LabelParams = 8602,
+    SettingCode_Group_Net = 8700,
+    SettingCode_Group_Protocol = 8750,
+    SettingCode_Group_LogAndReports = 8800,
+    SettingCode_Group_Log = 8801,
+    SettingCode_Group_Reports = 8802,
+    SettingCode_Group_Info = 8900,
+    SettingCode_Group_FactorySettings = 9000,
+    SettingCode_Group_Verification = 9001,
+     /*
     SettingCode_Power = 17,
     SettingCode_Cursor = 10,
     SettingCode_Language = 1001,

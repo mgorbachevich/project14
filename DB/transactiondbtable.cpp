@@ -8,7 +8,7 @@ TransactionDBTable::TransactionDBTable(const QString& name, QSqlDatabase& sqlDB,
 
     addColumn("Дата, время",      "date_time",    "UNSIGNED BIG INT PRIMARY KEY");
     addColumn("Код пользователя", "user",         "INT");
-    addColumn("Код товара",       "item_code",    "INT");
+    addColumn("Код товара",       "item_code",    "UNSIGNED BIG INT");
     addColumn("Номер этикетки",   "label_number", "INT");
     addColumn("Вес/количество",   "weight",       "REAL");
     addColumn("Цена",             "price",        "INT");

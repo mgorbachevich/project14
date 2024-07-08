@@ -6,16 +6,16 @@
 class DBIndexDescriptor
 {
 public:
-    DBIndexDescriptor(const int indexColumn, const QString& indexName,  const QString& indexParam = "")
+    DBIndexDescriptor(const int indexColumn, const QString& indexName,  const QString& param = "")
     {
         column = indexColumn;
         name = indexName;
-        param = indexParam;
+        condition = param;
     }
 
     int column;
     QString name;
-    QString param;
+    QString condition;
 };
 
 #endif // DBINDEXDESCRIPTOR_H

@@ -16,13 +16,12 @@ Popup
     Material.background: "transparent"
     property string titleText: "Title"
     property string messageText: "Message"
-    property bool buttonVisibility: true
 
     onOpened: app.onPopupOpened(true)
     onClosed: app.onPopupOpened(false)
 
-    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
-    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
+    enter: Transition { enabled: false }
+    exit: Transition { enabled: false }
 
     Rectangle
     {
@@ -78,7 +77,6 @@ Popup
                 Layout.row: 0
                 Layout.alignment: Qt.AlignTop | Qt.AlignRigth
                 icon.source: "../Icons/close"
-                visible: buttonVisibility
                 onClicked:
                 {
                     app.onUserAction();

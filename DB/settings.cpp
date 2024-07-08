@@ -23,13 +23,6 @@ Settings::Settings(AppManager *parent): JsonArrayFile(SETTINGS_FILE, parent)
     scaleConfig = new ScaleConfig(parent);
 }
 
-void Settings::apply()
-{
-#ifdef Q_OS_ANDROID
-    Tools::debugLog("@@@@@ Settings::apply");
-#endif
-}
-
 bool Settings::checkValue(const DBRecord& record, const QString& value)
 {
     switch (getCode(record))
@@ -250,10 +243,9 @@ void Settings::update(const int groupCode)
 bool Settings::read()
 {
     Tools::debugLog("@@@@@ Settings::read");
-    bool ok = JsonArrayFile::read();
+    bool ok = JsonArrayFile::read() && readConfig();
     if(ok)
     {
-        scaleConfig->read();
         (*getByCode(SettingCode_ScalesName))[SettingField_Value] = scaleConfig->get(ScaleConfigField_Model);
         (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value] = scaleConfig->get(ScaleConfigField_SerialNumber);
         (*getByCode(SettingCode_VerificationDate))[SettingField_Value] = scaleConfig->get(ScaleConfigField_VerificationDate);
@@ -264,23 +256,27 @@ bool Settings::read()
 bool Settings::write()
 {
     Tools::debugLog("@@@@@ Settings::write");
-    setConfigValue(ScaleConfigField_Model, (*getByCode(SettingCode_ScalesName))[SettingField_Value]);
-    setConfigValue(ScaleConfigField_ModelName, getStringValue(SettingCode_ScalesName));
-    setConfigValue(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value]);
-    setConfigValue(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value]);
-    scaleConfig->write();
-    apply();
-    bool ok = Tools::writeTextFile(fileName, toString());
+    bool ok = writeConfig() && Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::toString(ok)));
     appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
     return ok;
 }
 
-void Settings::setLoadDateTime(const ScaleConfigField field)
+bool Settings::writeConfig()
+{
+    Tools::debugLog("@@@@@ Settings::writeConfig");
+    setConfigValue(ScaleConfigField_Model, (*getByCode(SettingCode_ScalesName))[SettingField_Value].toString());
+    setConfigValue(ScaleConfigField_ModelName, getStringValue(SettingCode_ScalesName));
+    setConfigValue(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value].toString());
+    setConfigValue(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value].toString());
+    bool ok = scaleConfig->write();
+    return ok;
+}
+
+void Settings::setConfigDateTime(const ScaleConfigField field)
 {
     setConfigValue(field, Tools::now().toString(DATE_TIME_FORMAT));
-    write();
 }
 
 void Settings::sort()

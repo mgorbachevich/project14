@@ -16,8 +16,8 @@ Popup
     Material.background: "transparent"
     property string messageText: "Message"
 
-    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
-    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
+    enter: Transition { enabled: false }
+    exit: Transition { enabled: false }
 
     Connections // Slot for signal AppManager::hideToastBox
     {

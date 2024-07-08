@@ -16,11 +16,15 @@ Popup
     Material.background: "transparent"
     property string inputText: "Input"
 
-    onOpened: app.onPopupOpened(true)
+    onOpened:
+    {
+        app.onPopupOpened(true)
+        inputProductCodePanelModel.onStart()
+    }
     onClosed: app.onPopupOpened(false)
 
-    enter: Transition { NumberAnimation { property: "opacity"; from: 0.0; to: 1.0 } }
-    exit: Transition { NumberAnimation { property: "opacity"; from: 1.0; to: 0.0 } }
+    enter: Transition { enabled: false }
+    exit: Transition { enabled: false }
 
     Connections // Slot for signal AppManager::closeInputProductPanel
     {
@@ -110,8 +114,7 @@ Popup
                     onTextChanged:
                     {
                         if (parseInt(text) <= 0) text = "";
-                        //app.debugLog("@@@@@ inputProductCodePanelText onTextChanged %1".arg(text))
-                        app.onProductCodeEdited(text);
+                        app.onInputProductCodeEdited(text);
                     }
                     Keys.onPressed: (event) =>
                     {
@@ -175,13 +178,16 @@ Popup
                         policy: ScrollBar.AlwaysOn
                     }
                     */
+
                     model: inputProductCodePanelModel
+                    onContentYChanged: model.onFlickTo(indexAt(0, contentY))
+
                     delegate: Row
                     {
                         leftPadding: screenManager.spacer()
-                        topPadding: screenManager.spacer()
                         rightPadding: screenManager.spacer()
-                        bottomPadding: screenManager.spacer()
+                        topPadding: 0
+                        bottomPadding: 0
                         spacing: screenManager.spacer() * 2
 
                         Label
@@ -190,6 +196,10 @@ Popup
                             font { pointSize: screenManager.normalFontSize() }
                             color: Material.color(Material.BlueGrey, Material.Shade600)
                             horizontalAlignment: Text.AlignRight
+                            leftPadding: 0
+                            rightPadding: 0
+                            topPadding: screenManager.spacer()
+                            bottomPadding: screenManager.spacer()
                             text: model.code
                             MouseArea
                             {
@@ -204,6 +214,10 @@ Popup
                             font { pointSize: screenManager.normalFontSize() }
                             color: Material.color(Material.BlueGrey, Material.Shade900)
                             horizontalAlignment: Text.AlignLeft
+                            leftPadding: 0
+                            rightPadding: 0
+                            topPadding: screenManager.spacer()
+                            bottomPadding: screenManager.spacer()
                             text: model.name
                             MouseArea
                             {

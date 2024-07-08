@@ -19,6 +19,8 @@ enum ScaleConfigField
     ScaleConfigField_LastDownloadDateTime,
     ScaleConfigField_LastUploadDateTime,
     ScaleConfigField_LastDeleteDateTime,
+    ScaleConfigField_LastDownloadSucceded,
+    ScaleConfigField_LastDownloadTotal,
 };
 
 class ScaleConfig : public JsonFile
@@ -28,7 +30,7 @@ public:
     bool read();
     void clear() { data.clear(); }
     QVariant get(ScaleConfigField field) { return data[field]; }
-    void set(ScaleConfigField field, const QVariant& v) { data[field] = v; }
+    void set(ScaleConfigField field, const QString& v) { data[field] = v; }
 
 protected:
     QJsonObject toJson();

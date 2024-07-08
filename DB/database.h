@@ -5,7 +5,7 @@
 #include "dbtable.h"
 #include "externalmessager.h"
 
-#define DB_VERSION "1.9"
+#define DB_VERSION "1.10"
 
 enum DBSelector
 {
@@ -50,7 +50,7 @@ public:
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     void select(const DBSelector, const DBRecordList&);
-    void select(const DBSelector, const QString& param1, const QString& param2 = "");
+    void select(const DBSelector, const QString& param1 = "", const QString& param2 = "", const int offset = 0, const int limit = -1);
     QString version() { return DB_VERSION; }
     static bool copyDBFile(const QString&, const QString&);
     static bool renameDBFile(const QString&, const QString&);

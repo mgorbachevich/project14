@@ -7,7 +7,7 @@
 #include <QHttpServer>
 #include <QHttpServerResponse>
 #include "externalmessager.h"
-#include "netactionresult.h"
+#include "constants.h"
 
 #ifdef SSL
 #include <QSslCertificate>

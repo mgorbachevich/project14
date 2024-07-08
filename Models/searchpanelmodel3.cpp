@@ -1,3 +1,4 @@
+#include <QTimer>
 #include "searchpanelmodel3.h"
 #include "productdbtable.h"
 #include "appmanager.h"
@@ -12,6 +13,14 @@ QHash<int, QByteArray> SearchPanelModel3::roleNames() const
     roles[SecondRole] = "name";
     roles[ThirdRole] = "price";
     return roles;
+}
+
+bool SearchPanelModel3::onFlickTo(const int row)
+{
+    if(!LargeListModel::onFlickTo(row)) return false;
+    isWaiting = true;
+    appManager->updateSearch();
+    return true;
 }
 
 DBRecord& SearchPanelModel3::productByIndex(const int index)
@@ -61,10 +70,12 @@ QString SearchPanelModel3::hierarchyTitle()
 
 void SearchPanelModel3::update(const DBRecordList &newProducts, const int filterIndex)
 {
-    Tools::debugLog("@@@@@ SearchPanelModel3::update " + QString::number(filterIndex));
+    Tools::debugLog(log("@@@@@ SearchPanelModel3::update(1)"));
     items.clear();
     products.clear();
     products.append(newProducts);
+    descriptor.loadRowCout = products.count();
+
     beginResetModel();
     for (int i = 0; i < products.count(); i++)
     {
@@ -94,11 +105,14 @@ void SearchPanelModel3::update(const DBRecordList &newProducts, const int filter
             }
             break;
         }
-        Tools::debugLog(QString("@@@@@ SearchPanelModel3::update %1 %2 %3").arg(code, name, price));
+        //Tools::debugLog(QString("@@@@@ SearchPanelModel3::update %1 %2 %3").arg(code, name, price));
         QStringList data;
         data << code << name << price;
         addItem(data);
     }
     endResetModel();
+
+    Tools::debugLog(log("@@@@@ SearchPanelModel3::update(2)"));
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { isWaiting = false; });
 }
 

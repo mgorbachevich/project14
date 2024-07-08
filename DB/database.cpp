@@ -198,7 +198,19 @@ bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql)
 
 bool DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList& resultRecords)
 {
-    return query(table->sqlDB, sql, table, &resultRecords) && resultRecords.count() > 0;
+    if(DEBUG_DB_SELECT_REPETITIONS <= 0)
+        return query(table->sqlDB, sql, table, &resultRecords) && resultRecords.count() > 0;
+    else
+    {
+        bool ok = false;
+        quint64 t1 = Tools::nowMsec();
+        for(int i = 0; i < DEBUG_DB_SELECT_REPETITIONS; i++)
+            ok = query(table->sqlDB, sql, table, &resultRecords) && resultRecords.count() > 0;
+        QString ts = Tools::toString(Tools::nowMsec() - t1);
+        Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1 ms").arg(ts));
+        //appManager->showToast(QString("%1 ms").arg(ts));
+        return ok;
+    }
 }
 
 bool DataBase::selectById(const QString& tableName, const QString& id, DBRecord& resultRecord)
@@ -341,11 +353,13 @@ void DataBase::clearLog()
     if(!executeSQL(t->sqlDB, sql)) Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
 }
 
-void DataBase::select(const DBSelector selector, const QString& param1, const QString& param2)
+void DataBase::select(const DBSelector selector,
+                      const QString& param1, const QString& param2,
+                      const int offset, const int limit)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
-    auto future = QtConcurrent::run([selector, param1, param2, this]
+    auto future = QtConcurrent::run([selector, param1, param2, offset, limit, this]
     {
         Tools::debugLog(QString("@@@@@ DataBase::select %1 ").arg(selector) + param1);
         DBRecordList resultRecords;
@@ -404,16 +418,17 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
             sql = QString("SELECT * FROM %1").arg(t->name);
             sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
             sql += QString(" AND %1 = '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            //sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::UpperName));
+            sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::UpperName));
             executeSelectSQL(t, sql, rs);
-            Tools::sortByString(resultRecords, ProductDBTable::UpperName);
+            //Tools::sortByString(resultRecords, ProductDBTable::UpperName);
             resultRecords.append(rs);
             // Товары:
             sql = QString("SELECT * FROM %1").arg(t->name);
             sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
-            sql += QString(" AND %1 != '%2';").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code));
             executeSelectSQL(t, sql, rs);
-            Tools::sortByInt(rs, ProductDBTable::Code);
+            //Tools::sortByInt(rs, ProductDBTable::Code);
             resultRecords.append(rs);
             break;
         }
@@ -425,11 +440,13 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
             if (p.isEmpty()) break;
             DBTable* t = getTable(DBTABLENAME_PRODUCTS);
             QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%3'").arg(t->columnName(ProductDBTable::Code), p, "%");
+            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Code), p);
             sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            //sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
+            if(limit > 0 && offset >= 0)
+                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
             executeSelectSQL(t, sql, resultRecords);
-            Tools::sortByInt(resultRecords, ProductDBTable::Code);
+            //Tools::sortByInt(resultRecords, ProductDBTable::Code);
             break;
         }
 
@@ -447,10 +464,13 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
             }
             DBTable* t = getTable(DBTABLENAME_PRODUCTS);
             QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%3'").arg(t->columnName(ProductDBTable::Code), p, "%");
-            sql += QString(" AND %1 != '%2';").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Code), p);
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
+            if(limit > 0 && offset >= 0)
+                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
             executeSelectSQL(t, sql, resultRecords);
-            Tools::sortByInt(resultRecords, ProductDBTable::Code);
+            //Tools::sortByInt(resultRecords, ProductDBTable::Code);
             break;
         }
 
@@ -468,10 +488,13 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
             }
             DBTable* t = getTable(DBTABLENAME_PRODUCTS);
             QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%3'").arg(t->columnName(ProductDBTable::Code2), p, "%");
-            sql += QString(" AND %1 != '%2';").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Code2), p);
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code2));
+            if(limit > 0 && offset >= 0)
+                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
             executeSelectSQL(t, sql, resultRecords);
-            Tools::sortByInt(resultRecords, ProductDBTable::Code2);
+            //Tools::sortByInt(resultRecords, ProductDBTable::Code2);
             break;
         }
 
@@ -489,11 +512,13 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
             }
             DBTable* t = getTable(DBTABLENAME_PRODUCTS);
             QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%3'").arg(t->columnName(ProductDBTable::Barcode), p, "%");
+            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Barcode), p);
             sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            //sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Barcode));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Barcode));
+            if(limit > 0 && offset >= 0)
+                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
             executeSelectSQL(t, sql, resultRecords);
-            Tools::sortByInt(resultRecords, ProductDBTable::Code2);
+            //Tools::sortByInt(resultRecords, ProductDBTable::Code2);
             break;
         }
 
@@ -511,11 +536,13 @@ void DataBase::select(const DBSelector selector, const QString& param1, const QS
             }
             DBTable* t = getTable(DBTABLENAME_PRODUCTS);
             QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%3'").arg(t->columnName(ProductDBTable::UpperName), p.toUpper(), "%");
+            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::UpperName), p.toUpper());
             sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            //sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::UpperName));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::UpperName));
+            if(limit > 0 && offset >= 0)
+                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
             executeSelectSQL(t, sql, resultRecords);
-            Tools::sortByString(resultRecords, ProductDBTable::UpperName);
+            //Tools::sortByString(resultRecords, ProductDBTable::UpperName);
             break;
         }
 

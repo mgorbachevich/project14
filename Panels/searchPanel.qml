@@ -21,6 +21,7 @@ Rectangle
             {
                 //app.debugLog("@@@@@ searchPanel onShowMainPage");
                 searchPanelTextField.forceActiveFocus()
+                searchPanelModel.onStart()
             }
         }
     }
@@ -270,13 +271,16 @@ Rectangle
                     policy: ScrollBar.AlwaysOn
                 }
                 */
+
                 model: searchPanelModel
+                onContentYChanged: model.onFlickTo(indexAt(0, contentY))
+
                 delegate: Row
                 {
-                    leftPadding: screenManager.spacer() * 2
-                    topPadding: screenManager.spacer()
-                    rightPadding: screenManager.spacer() * 2
-                    bottomPadding: screenManager.spacer()
+                    leftPadding: screenManager.spacer()
+                    rightPadding: screenManager.spacer()
+                    topPadding: 0
+                    bottomPadding: 0
                     spacing: screenManager.spacer() * 2
 
                     Label
@@ -285,6 +289,10 @@ Rectangle
                         font { pointSize: screenManager.normalFontSize() }
                         color: Material.color(Material.Grey, Material.Shade900)
                         horizontalAlignment: Text.AlignRight
+                        leftPadding: 0
+                        rightPadding: 0
+                        topPadding: screenManager.spacer()
+                        bottomPadding: screenManager.spacer()
                         text: model.code
 
                         MouseArea
@@ -304,6 +312,12 @@ Rectangle
                         font { pointSize: screenManager.normalFontSize() }
                         color: Material.color(Material.Grey, Material.Shade900)
                         horizontalAlignment: Text.AlignLeft
+                        wrapMode: Label.WordWrap
+                        //maximumLineCount: 1
+                        leftPadding: 0
+                        rightPadding: 0
+                        topPadding: screenManager.spacer()
+                        bottomPadding: screenManager.spacer()
                         text: model.name
 
                         MouseArea
@@ -323,6 +337,10 @@ Rectangle
                         font { pointSize: screenManager.normalFontSize() }
                         color: Material.color(Material.Grey, Material.Shade900)
                         horizontalAlignment: Text.AlignRight
+                        leftPadding: 0
+                        rightPadding: 0
+                        topPadding: screenManager.spacer()
+                        bottomPadding: screenManager.spacer()
                         text: model.price
 
                         MouseArea

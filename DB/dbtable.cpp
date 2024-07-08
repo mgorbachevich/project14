@@ -6,7 +6,7 @@
 #include "database.h"
 
 DBTable::DBTable(const QString &name, QSqlDatabase &sqlDB, DataBase *parent) :
-    QObject((QObject*)parent), name(name), db(parent), sqlDB(sqlDB) {}
+    QObject((QObject*)parent), name(name), sqlDB(sqlDB), db(parent) {}
 
 QVariantList DBTable::createRecord(const QString code)
 {
@@ -150,7 +150,7 @@ void DBTable::createIndexes()
                     indexDescriptors[i].name,
                     name,
                     columnName(indexDescriptors[i].column),
-                    indexDescriptors[i].param);
+                    indexDescriptors[i].condition);
         db->executeSQL(sqlDB, sql);
     }
 }

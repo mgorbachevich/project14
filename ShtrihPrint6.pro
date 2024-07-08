@@ -20,13 +20,14 @@ HEADERS += \
     DB/showcase.h \
     Models/edituserspanelmodel3.h \
     Models/inputproductcodepanelmodel3.h \
+    Models/largelistmodel.h \
+    Models/listviewdescriptor.h \
     Models/searchpanelmodel3.h \
     Models/settingspanelmodel3.h \
     Models/showcasepanelmodel3.h \
     Net/netactionresult.h \
     constants.h \
     tools.h \
-    appinfo.h \
     DB/jsonarrayfile.h \
     DB/jsonfile.h \
     DB/scaleconfig.h \
@@ -125,6 +126,7 @@ SOURCES += \
     DB/showcase.cpp \
     Models/edituserspanelmodel3.cpp \
     Models/inputproductcodepanelmodel3.cpp \
+    Models/largelistmodel.cpp \
     Models/searchpanelmodel3.cpp \
     Models/settingspanelmodel3.cpp \
     Models/showcasepanelmodel3.cpp \
