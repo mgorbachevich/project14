@@ -725,6 +725,17 @@ void AppManager::onSettingsPanelCloseClicked()
     stopSettings();
 }
 
+void AppManager::onShowcaseAutoClicked()
+{
+    switch (printStatus.autoPrintMode)
+    {
+    case AutoProntMode_Off:      return;
+    case AutoProntMode_On:       printStatus.autoPrintMode = AutoProntMode_Disabled; break;
+    case AutoProntMode_Disabled: printStatus.autoPrintMode = AutoProntMode_On; break;
+    }
+    emit showControlParam(ControlParam_AutoPrint, Tools::toString((int)printStatus.autoPrintMode));
+}
+
 void AppManager::onShowcaseClicked(const int index)
 {
     debugLog("@@@@@ AppManager::onShowcaseClicked " + Tools::toString(index));
@@ -744,6 +755,14 @@ void AppManager::onShowcaseSortClicked(const int sort)
     debugLog("@@@@@ AppManager::onShowcaseSortClicked " + Tools::toString(sort));
     onUserAction();
     showcasePanelModel->sort = sort;
+    switch (sort)
+    {
+    case ShowcaseSort_Code:
+    case ShowcaseSort_Code2:
+        showcasePanelModel->lastCodeSort = sort;
+        break;
+    default: break;
+    }
     updateShowcase();
 }
 
@@ -815,6 +834,7 @@ void AppManager::updateShowcase()
 {
     showWait(true);
     showcase->getAll();
+    emit showControlParam(ControlParam_AutoPrint, Tools::toString((int)printStatus.autoPrintMode));
     db->select(DBSelector_GetShowcaseProducts,
                Tools::toString(showcasePanelModel->sort),
                Tools::toString(showcasePanelModel->increase));
@@ -1036,8 +1056,8 @@ void AppManager::updateWeightStatus()
     const bool isWMError = equipmentManager->isWMError() || !isWM;
     const bool isFixed = equipmentManager->isWeightFixed();
 
-    const bool isAutoPrint = settings->getBoolValue(SettingCode_PrintAuto) &&
-           (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
+    const bool isAutoPrint = printStatus.autoPrintMode == AutoProntMode_On &&
+            (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
     const QString passiveColor = "#424242";
     const QString activeColor = "#fafafa";
     const QString amountColor = "#ffe0b2";
@@ -1050,11 +1070,9 @@ void AppManager::updateWeightStatus()
     emit showControlParam(ControlParam_Tare, Tools::toString(isTare));
     emit showControlParam(ControlParam_WeightFixed, Tools::toString(isFixed));
     if(isWMError)
-        emit showControlParam(ControlParam_WeightError, Tools::toString(true));
-    else if(isAutoPrint)
-        emit showControlParam(ControlParam_AutoPrint, Tools::toString(true));
+        emit showControlParam(ControlParam_WeightError, Tools::toString(isWMError));
     else
-        emit showControlParam(ControlParam_WeightError, Tools::toString(false));
+        emit showControlParam(ControlParam_AutoPrint, Tools::toString((int)printStatus.autoPrintMode));
 
     // Рисуем загаловки:
     QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
@@ -1207,6 +1225,10 @@ void AppManager::startAll()
     debugLog("@@@@@ AppManager::startEquipment serverPort = " + QString::number(serverPort));
     netServer->start(serverPort);
     equipmentManager->start();
+    if(settings->getBoolValue(SettingCode_PrintAuto))
+        printStatus.autoPrintMode = AutoProntMode_Disabled;
+    else
+        printStatus.autoPrintMode = AutoProntMode_Off;
 
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {

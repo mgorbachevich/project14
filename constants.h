@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.58"
+#define APP_VERSION "2.59"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -264,6 +264,13 @@ enum EquipmentMode
     EquipmentMode_None = 0,
     EquipmentMode_Ok = 1,
     EquipmentMode_Demo = 2,
+};
+
+enum AutoProntMode
+{
+    AutoProntMode_Off = 0,
+    AutoProntMode_On = 1,
+    AutoProntMode_Disabled = 2,
 };
 
 enum ShowcaseProductText

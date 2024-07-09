@@ -90,6 +90,7 @@ public:
     Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
     Q_INVOKABLE void onSettingsItemClicked(const int);
     Q_INVOKABLE void onSettingsPanelCloseClicked();
+    Q_INVOKABLE void onShowcaseAutoClicked();
     Q_INVOKABLE void onShowcaseClicked(const int);
     Q_INVOKABLE void onShowcaseDirectionClicked();
     Q_INVOKABLE void onShowcaseSortClicked(const int);

@@ -12,6 +12,7 @@ Rectangle
     color: Material.background
     property int buttonPanelWidth: screenManager.buttonSize() + screenManager.spacer() * 2
     property int imageSize: (width - buttonPanelWidth) / screenManager.showcaseRowImages()
+    property int imageBorderWidth: 4
     focus: true
 
     Connections // Slot for signal AppManager::showMainPage:
@@ -34,6 +35,19 @@ Rectangle
             if(increase) showcasePanelDirectionButton.icon.source = "../Icons/arrow_up"
             else         showcasePanelDirectionButton.icon.source = "../Icons/arrow_down"
             showcasePanelDirectionButton.marked = !increase
+        }
+    }
+
+    Connections // Slot for signal AppManager::showControlParam:
+    {
+        target: app
+        function onShowControlParam(param, value)
+        {
+            if(param === 16)
+            {
+                showcasePanelAutoButton.visible = value !== '0'
+                showcasePanelAutoButton.marked = value === '1'
+            }
         }
     }
 
@@ -97,7 +111,7 @@ Rectangle
                 onClicked: app.onShowcaseSortClicked(0)
             }
 
-            Spacer {}
+            Spacer { height: screenManager.spacer() / 4 }
 
             RoundIconButton
             {
@@ -107,17 +121,17 @@ Rectangle
                 onClicked: app.onShowcaseSortClicked(1)
             }
 
-            Spacer {}
+            Spacer { height: screenManager.spacer() / 4 }
 
             RoundIconButton
             {
                 id: showcasePanelNameButton
                 anchors.horizontalCenter: parent.horizontalCenter
-                icon.source: "../Icons/a"
+                icon.source: "../Icons/name"
                 onClicked: app.onShowcaseSortClicked(2)
             }
 
-            Spacer {}
+            Spacer { height: screenManager.spacer() / 4 }
 
             RoundIconButton
             {
@@ -125,6 +139,16 @@ Rectangle
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: "../Icons/arrow_up"
                 onClicked: app.onShowcaseDirectionClicked()
+            }
+
+            Spacer { height: screenManager.spacer() / 4 }
+
+            RoundIconButton
+            {
+                id: showcasePanelAutoButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                icon.source: "../Icons/auto"
+                onClicked: app.onShowcaseAutoClicked()
             }
         }
 
@@ -162,8 +186,8 @@ Rectangle
                     Layout.row: 0
                     Layout.rowSpan: 5
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Layout.preferredWidth: imageSize - 2
-                    Layout.preferredHeight: imageSize - 2
+                    Layout.preferredWidth: imageSize - imageBorderWidth * 2
+                    Layout.preferredHeight: imageSize - imageBorderWidth * 2
                     fillMode: Image.PreserveAspectFit
                     source: model.image
 
@@ -182,15 +206,15 @@ Rectangle
                     Layout.fillWidth: parent
                     Layout.fillHeight: parent
                     color: "transparent"
-                    border.width: 1
-                    border.color: Material.color(Material.BlueGrey, Material.Shade100)
+                    border.width: imageBorderWidth
+                    border.color: Material.color(Material.Grey, Material.Shade100)
                 }
 
                 Spacer
                 {
                     Layout.column: 0
                     Layout.row: 0
-                    height: 1
+                    height: imageBorderWidth + 1
                 }
 
                 Sticker
@@ -215,7 +239,7 @@ Rectangle
                 {
                     Layout.column: 0
                     Layout.row: 4
-                    height: 1
+                    height: imageBorderWidth + 1
                 }
             }
         }

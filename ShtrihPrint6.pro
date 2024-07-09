@@ -254,11 +254,13 @@ RESOURCES += \
     Fonts/impact.ttf \
     Fonts/sserifer.fon \
     Fonts/times.ttf \
-    Icons/a.png \
+    Icons/a_gray.png \
+    Icons/a_orange.png \
+    Icons/a_white.png \
     Icons/arrow_down.png \
     Icons/arrow_left.png \
     Icons/arrow_up.png \
-    Icons/auto_white.png \
+    Icons/auto.png \
     Icons/backspace.png \
     Icons/bluetooth.png \
     Icons/bluetooth_orange.png \
@@ -277,6 +279,7 @@ RESOURCES += \
     Icons/lock.png \
     Icons/log.png \
     Icons/menu.png \
+    Icons/name.png \
     Icons/number.png \
     Icons/net.png \
     Icons/net_orange.png \

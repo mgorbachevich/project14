@@ -76,8 +76,9 @@ Rectangle
                 else                  weightPanelIcon1.source = "../Icons/empty"
                 break
             case 16: // AutoPrint
-                if (value === 'true') weightPanelIcon1.source = "../Icons/auto_white"
-                else                  weightPanelIcon1.source = "../Icons/empty"
+                if (value === '0') weightPanelIcon1.source = "../Icons/empty"
+                if (value === '1') weightPanelIcon1.source = "../Icons/a_orange"
+                if (value === '2') weightPanelIcon1.source = "../Icons/a_gray"
                 break
             }
         }

@@ -32,48 +32,50 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
     for (int i = 0; i < products.count() && i < images.count(); i++)
     {
         DBRecord& pi = products[i];
-        QString top;
-        QString bottom;
+        QString topText;
+        QString bottomText;
         QString image = images[i];
         QString code = "#" + pi[ProductDBTable::Code].toString();
         QString code2 = "№" + pi[ProductDBTable::Code2].toString();
-        QString barcode = pi[ProductDBTable::Barcode].toString();
+        //QString barcode = pi[ProductDBTable::Barcode].toString();
         QString name = pi[ProductDBTable::Name].toString();
+
         switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductTopText, true))
         {
         case ShowcaseProductText_Code:
-            top = code;
+            topText = code;
             break;
         case ShowcaseProductText_Code2:
-            top = code2;
+            topText = code2;
             break;
         case ShowcaseProductText_Sort:
-            top = (sort == ShowcaseSort_Code2) ? code2 : code;
+            topText = (lastCodeSort == ShowcaseSort_Code2) ? code2 : code;
             break;
         case ShowcaseProductText_Name:
-            top = name.left(name.indexOf(" "));
+            topText = name.left(name.indexOf(" "));
             break;
         }
+
         switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductBottomText, true))
         {
         case ShowcaseProductText_Code:
-            bottom = code;
+            bottomText = code;
             break;
         case ShowcaseProductText_Code2:
-            bottom = code2;
+            bottomText = code2;
             break;
         case ShowcaseProductText_Sort:
-            bottom = (sort == ShowcaseSort_Code2) ? code2 : code;
+            bottomText = (lastCodeSort == ShowcaseSort_Code2) ? code2 : code;
             break;
         case ShowcaseProductText_Name:
-            bottom = name.left(name.indexOf(" "));
+            bottomText = name.left(name.indexOf(" "));
             break;
         }
-        if(image == DUMMY_IMAGE_FILE && top.isEmpty() && bottom.isEmpty())
-            bottom = name.left(name.indexOf(" "));
-        Tools::debugLog(QString("@@@@@ ShowcasePanelModel3::updateImages %1 %2 %3").arg(top, bottom, image));
+        //if(image == DUMMY_IMAGE_FILE && bottomText.isEmpty()) bottomText = name.left(name.indexOf(" "));
+
+        Tools::debugLog(QString("@@@@@ ShowcasePanelModel3::updateImages %1 %2 %3").arg(topText, bottomText, image));
         QStringList data;
-        data << top << bottom << image;
+        data << topText << bottomText << image;
         addItem(data);
     }
     endResetModel();

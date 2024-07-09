@@ -16,6 +16,7 @@ public:
     DBRecord& productByIndex(const int);
 
     int sort = ShowcaseSort_Name;
+    int lastCodeSort = ShowcaseSort_Code;
     bool increase = true;
 
 private:
