@@ -25,7 +25,7 @@ QVariant MoneyCalculator::price(const DBRecord& product)
 
 double MoneyCalculator::quantityAsDouble(const DBRecord& product)
 {
-    if(ProductDBTable::isPiece(product)) return (double)(appManager->printStatus.pieces);
+    if(ProductDBTable::isPiece(product)) return (double)(appManager->status.pieces);
     if(appManager->equipmentManager->isWMError()) return 0;
     return appManager->equipmentManager->getWeight() * (ProductDBTable::is100gBase(product) ? 10 : 1);
 }

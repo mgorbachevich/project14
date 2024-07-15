@@ -15,6 +15,7 @@ Popup
     dim: true
     Material.background: "transparent"
     property string inputText: "Input"
+    property string title: "Title"
 
     onOpened:
     {
@@ -73,7 +74,7 @@ Popup
                 Layout.alignment: Qt.AlignCenter
                 color: "transparent"
 
-                CardTitleText { text: "Код товара" }
+                CardTitleText { text: title }
             }
 
             RoundIconButton

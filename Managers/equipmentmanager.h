@@ -25,7 +25,7 @@ public:
     void pause(const bool v) { pauseWM(v); pausePM(v); }
 
     // Weight Manager:
-    QString WMversion() const;
+    QString WMVersion() const;
     void setWMParam(const int);
     double getWeight() const { return WMStatus.weight; }
     double getTare() const { return WMStatus.tare; }
@@ -40,7 +40,7 @@ public:
     QString getWMDescription();
 
     // Print Manager:
-    QString PMversion() const;
+    QString PMVersion() const;
     int print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
     bool isPMDemoMode() const { return PMMode == EquipmentMode_Demo; }

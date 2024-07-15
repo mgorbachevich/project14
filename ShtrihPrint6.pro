@@ -18,6 +18,7 @@ INCLUDEPATH += \
 HEADERS += \
     DB/dbindexdescriptor.h \
     DB/showcase.h \
+    Managers/status.h \
     Models/edituserspanelmodel3.h \
     Models/inputproductcodepanelmodel3.h \
     Models/largelistmodel.h \
@@ -111,7 +112,6 @@ HEADERS += \
     Managers/moneycalculator.h \
     Managers/keyemitter.h \
     Managers/appmanager.h \
-    Managers/printstatus.h \
     Managers/screenmanager.h \
     Models/baselistmodel3.h \
     Models/baselistmodel.h \
@@ -305,6 +305,7 @@ RESOURCES += \
     Images/dummy.png \
     Images/logo.png \
     Images/help.png \
+    Images/splash.jpg \
     Labels/60x30.dat/0.bmp \
     Labels/60x30.dat/60x30.par \
     Labels/60x30.dat/description \

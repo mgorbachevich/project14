@@ -37,17 +37,10 @@ ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBas
     addColumn("Код звукового файла",    "sound_code",        "INT");
     addColumn("В избранном",            "favorite",          "INT"); // Да/нет
 
-    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::Code2,
-                                              columnName(ProductDBTable::Code2) + "_index"));
-    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::Barcode,
-                                              columnName(ProductDBTable::Barcode) + "_index"));
-    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::UpperName,
-                                              columnName(ProductDBTable::UpperName) + "_index"));
-    /*
-    indexDescriptors.append(DBIndexDescriptor(ProductDBTable::Code,
-                                              columnName(ProductDBTable::Code) + "_index_9",
-                                              QString("WHERE %1 LIKE '%2'").arg(columnName(ProductDBTable::Code), "9%")));
-    */
+    indexDescriptors.append(DBIndexDescriptor(Code2, columnName(Code2) + "_index"));
+    indexDescriptors.append(DBIndexDescriptor(Barcode, columnName(Barcode) + "_index"));
+    indexDescriptors.append(DBIndexDescriptor(UpperName, columnName(UpperName) + "_index"));
+    //indexDescriptors.append(DBIndexDescriptor(Code, columnName(Code) + "_index_9", QString(" WHERE %1 LIKE '%2'").arg(columnName(Code), "9%")));
 }
 
 const DBRecord ProductDBTable::checkRecord(const DBRecord& record)

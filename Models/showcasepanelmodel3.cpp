@@ -49,7 +49,7 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
             topText = code2;
             break;
         case ShowcaseProductText_Sort:
-            topText = (lastCodeSort == ShowcaseSort_Code2) ? code2 : code;
+            topText = (appManager->status.lastProductSort == ShowcaseSort_Code2) ? code2 : code;
             break;
         case ShowcaseProductText_Name:
             topText = name.left(name.indexOf(" "));
@@ -65,7 +65,7 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
             bottomText = code2;
             break;
         case ShowcaseProductText_Sort:
-            bottomText = (lastCodeSort == ShowcaseSort_Code2) ? code2 : code;
+            bottomText = (appManager->status.lastProductSort == ShowcaseSort_Code2) ? code2 : code;
             break;
         case ShowcaseProductText_Name:
             bottomText = name.left(name.indexOf(" "));

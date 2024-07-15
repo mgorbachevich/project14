@@ -39,7 +39,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
             return false;
         }
         break;
-    case SettingCode_SerialScalesNumber:
+    case SettingCode_SerialNumber:
         if(Tools::toInt(value) == 0)
         {
             showAttention(getName(record) + ". Неверное значение");
@@ -50,7 +50,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
             showAttention(getName(record) + ". Длина должна быть не больше 7");
             return false;
         }
-        if(getIntValue(SettingCode_ScalesName, true) == 0)
+        if(getIntValue(SettingCode_Model, true) == 0)
         {
             showAttention(getName(record) + ". Необходимо выбрать модель весов");
             return false;
@@ -67,31 +67,6 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
         break;
     }
     return true;
-}
-
-bool Settings::parseDefault() // Добавление недостающих значений по умолчанию:
-{
-    DBRecordList defaultRecords = parse(Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    Tools::sortByInt(defaultRecords, SettingField_Code);
-    for(int code = 0; code < SettingCode_Max; code++)
-    {
-        for (DBRecord& r : defaultRecords)
-        {
-            if (getCode(r) > code) break;
-            if (getCode(r) == code) // найдена запись по умолчанию
-            {
-                DBRecord* item = getByCode(code);
-                if(item != nullptr)
-                {
-                    r[SettingField_Value] = item->at(SettingField_Value);
-                    items.removeAt(getIndex(code));
-                }
-                items.append(r);
-                break;
-            }
-        }
-    }
-    return items.count() > 0;
 }
 
 bool Settings::isGroup(const DBRecord &r)
@@ -236,28 +211,15 @@ void Settings::update(const int groupCode)
     Tools::debugLog("@@@@@ Settings::update");
     currentGroupCode = groupCode;
     (*getByCode(SettingCode_VerificationName))[SettingField_Value] = QString("%1 %2").arg(
-                getStringValue(*getByCode(SettingCode_ScalesName)),
-                getStringValue(*getByCode(SettingCode_SerialScalesNumber)));
-}
-
-bool Settings::read()
-{
-    Tools::debugLog("@@@@@ Settings::read");
-    bool ok = JsonArrayFile::read() && readConfig();
-    if(ok)
-    {
-        (*getByCode(SettingCode_ScalesName))[SettingField_Value] = scaleConfig->get(ScaleConfigField_Model);
-        (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value] = scaleConfig->get(ScaleConfigField_SerialNumber);
-        (*getByCode(SettingCode_VerificationDate))[SettingField_Value] = scaleConfig->get(ScaleConfigField_VerificationDate);
-    }
-    return ok;
+                getStringValue(*getByCode(SettingCode_Model)),
+                getStringValue(*getByCode(SettingCode_SerialNumber)));
 }
 
 bool Settings::write()
 {
     Tools::debugLog("@@@@@ Settings::write");
     bool ok = writeConfig() && Tools::writeTextFile(fileName, toString());
-    Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::toString(ok)));
+    Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::productSortIncrement(ok)));
     appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
     return ok;
@@ -266,23 +228,11 @@ bool Settings::write()
 bool Settings::writeConfig()
 {
     Tools::debugLog("@@@@@ Settings::writeConfig");
-    setConfigValue(ScaleConfigField_Model, (*getByCode(SettingCode_ScalesName))[SettingField_Value].toString());
-    setConfigValue(ScaleConfigField_ModelName, getStringValue(SettingCode_ScalesName));
-    setConfigValue(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value].toString());
+    setConfigValue(ScaleConfigField_Model, (*getByCode(SettingCode_Model))[SettingField_Value].toString());
+    setConfigValue(ScaleConfigField_ModelName, getStringValue(SettingCode_Model));
+    setConfigValue(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialNumber))[SettingField_Value].toString());
     setConfigValue(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value].toString());
-    bool ok = scaleConfig->write();
-    return ok;
-}
-
-void Settings::setConfigDateTime(const ScaleConfigField field)
-{
-    setConfigValue(field, Tools::now().toString(DATE_TIME_FORMAT));
-}
-
-void Settings::sort()
-{
-    getAll();
-    Tools::sortByInt(items, SettingField_Code);
+    return scaleConfig->write();
 }
 
 void Settings::appendItemToJson(DBRecord& r, QJsonArray& ja)
@@ -292,5 +242,77 @@ void Settings::appendItemToJson(DBRecord& r, QJsonArray& ja)
     ji.insert(fields.value(SettingField_Code), r.at(SettingField_Code).toJsonValue());
     ji.insert(fields.value(SettingField_Value), r.at(SettingField_Value).toJsonValue());
     ja.append(ji);
+}
+
+bool Settings::parseDefault() // Добавление недостающих значений по умолчанию:
+{
+    DBRecordList defaultRecords = parse(Tools::readTextFile(DEFAULT_SETTINGS_FILE));
+    //Tools::sortByInt(defaultRecords, SettingField_Code);
+    for(int code = 0; code < SettingCode_Max; code++)
+    {
+        for (DBRecord& r : defaultRecords)
+        {
+            if (getCode(r) > code) break;
+            if (getCode(r) == code) // найдена запись по умолчанию
+            {
+                DBRecord* item = getByCode(code);
+                if(item != nullptr)
+                {
+                    r[SettingField_Value] = item->at(SettingField_Value);
+                    items.removeAt(getIndex(code));
+                }
+                items.append(r);
+                break;
+            }
+        }
+    }
+    return items.count() > 0;
+}
+
+bool Settings::read()
+{
+    Tools::debugLog("@@@@@ Settings::read");
+    if(wasRead) return items.count() > 0;
+
+    wasRead = true;
+    items = parse(Tools::readTextFile(DEFAULT_SETTINGS_FILE));
+    DBRecordList loadedItems = parse(Tools::readTextFile(fileName));
+    for (DBRecord& item : items)
+    {
+        for (DBRecord& r : loadedItems)
+        {
+            if(getCode(item) == getCode(r))
+            {
+                item[SettingField_Value] = r[SettingField_Value];
+                break;
+            }
+        }
+    }
+    bool ok = items.count() > 0;
+    if(ok)
+    {
+        setValue(SettingCode_Version,           APP_VERSION);
+        setValue(SettingCode_DBVersion,         appManager->dbVersion());
+        setValue(SettingCode_ServerVersion,     appManager->serverVersion());
+        setValue(SettingCode_WMSoftwareVersion, appManager->WMVersion());
+        setValue(SettingCode_PMSoftwareVersion, appManager->PMVersion());
+        setValue(SettingCode_IP,                Tools::getNetParams().localHostIP);
+    }
+    ok &= readConfig();
+    if(ok)
+    {
+        setValue(SettingCode_Model,            scaleConfig->get(ScaleConfigField_Model).toString());
+        setValue(SettingCode_ModelInfo,        scaleConfig->get(ScaleConfigField_ModelName).toString());
+        setValue(SettingCode_SerialNumber,     scaleConfig->get(ScaleConfigField_SerialNumber).toString());
+        setValue(SettingCode_SerialNumberInfo, scaleConfig->get(ScaleConfigField_SerialNumber).toString());
+        setValue(SettingCode_VerificationDate, scaleConfig->get(ScaleConfigField_VerificationDate).toString());
+        /*
+        (*getByCode(SettingCode_ScalesName))[SettingField_Value] = scaleConfig->get(ScaleConfigField_Model);
+        (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value] = scaleConfig->get(ScaleConfigField_SerialNumber);
+        (*getByCode(SettingCode_VerificationDate))[SettingField_Value] = scaleConfig->get(ScaleConfigField_VerificationDate);
+        */
+    }
+    Tools::debugLog(QString("@@@@@ JsonArrayFile::read %1 %2").arg(Tools::toString(ok), Tools::toString((int)(items.count()))));
+    return ok;
 }
 

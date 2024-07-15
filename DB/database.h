@@ -23,9 +23,10 @@ enum DBSelector
     DBSelector_GetAuthorizationUsers,
     DBSelector_GetLog,
     DBSelector_RefreshCurrentProduct,
-    DBSelector_SetProductByInputCode,
+    DBSelector_SetProductByCode,
     DBSelector_GetProductsByInputCode,
-    DBSelector_GetProductByInputCode,
+    DBSelector_GetProductByCode,
+    DBSelector_SetProductByCode2,
 };
 
 class DataBase : public ExternalMessager
@@ -50,7 +51,7 @@ public:
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     void select(const DBSelector, const DBRecordList&);
-    void select(const DBSelector, const QString& param1 = "", const QString& param2 = "", const int offset = 0, const int limit = -1);
+    void select(const DBSelector, const QString& param1 = "", const QString& param2 = "", const int offset = -1, const int limit = -1);
     QString version() { return DB_VERSION; }
     static bool copyDBFile(const QString&, const QString&);
     static bool renameDBFile(const QString&, const QString&);

@@ -23,6 +23,7 @@ public:
     QString hierarchyTitle();
     int productCount() { return products.count(); }
     void update(const DBRecordList&, const int);
+    void refresh() { descriptor.reset(""); isRoot = true; }
 
     int filterIndex = SearchFilterIndex_Code;
     bool isHierarchy = true;

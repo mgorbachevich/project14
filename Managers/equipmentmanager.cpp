@@ -281,14 +281,14 @@ void EquipmentManager::setSystemDateTime(const QDateTime& dt)
     }
 }
 
-QString EquipmentManager::WMversion() const
+QString EquipmentManager::WMVersion() const
 {
     if (wm != nullptr)
     {
         Wm100Protocol::device_metrics dm;
         if(wm->getDeviceMetrics(&dm) >= 0) return Tools::toString(dm.protocol_version);
     }
-    return "-";
+    return "";
 }
 
 void EquipmentManager::setWMParam(const int param)
@@ -380,9 +380,9 @@ void EquipmentManager::onWMErrorStatusChanged(int e)
     }
 }
 
-QString EquipmentManager::PMversion() const
+QString EquipmentManager::PMVersion() const
 {
-    return (slpa == nullptr) ? "-" : QString::number(slpa->getPrinterVersion());
+    return (slpa == nullptr) ? "" : QString::number(slpa->getPrinterVersion());
 }
 
 void EquipmentManager::feed()

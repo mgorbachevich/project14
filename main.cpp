@@ -3,16 +3,24 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QScreen>
+#include <QSplashScreen>
 #include "baselistmodel.h"
 #include "appmanager.h"
 #include "screenmanager.h"
-
-//#define RECOMENDED
 
 int main(int argc, char *argv[])
 {
     QApplication application(argc, argv);
     QQmlApplicationEngine engine;
+
+    QSize screenSize;
+#ifdef Q_OS_ANDROID
+    QRect r = application.primaryScreen()->geometry();
+    screenSize = QSize(r.width() > r.height() ? r.width() : r.height(),
+                       r.width() <= r.height() ? r.width() : r.height());
+#else
+    screenSize = QSize(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
+#endif
 
     // GUI fonts:
     //QFontDatabase::addApplicationFont(":/Fonts/LeagueGothic-CondensedRegular.otf");
@@ -35,29 +43,12 @@ int main(int argc, char *argv[])
     QFontDatabase::addApplicationFont(":/Fonts/sserifer.fon");
     QFontDatabase::addApplicationFont(":/Fonts/times.ttf");
 
-    QSize screenSize = QSize(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
-
-#ifdef Q_OS_ANDROID
-    QRect r = application.primaryScreen()->geometry();
-    screenSize = QSize(r.width() > r.height() ? r.width() : r.height(),
-                       r.width() <= r.height() ? r.width() : r.height());
-#endif
-
     AppManager* appManager = new AppManager(engine.rootContext(), screenSize, &application);
     qmlRegisterUncreatableType<BaseListModel>("RegisteredTypes", 1, 0, "BaseListModel", "");
     engine.rootContext()->setContextProperty("app", appManager);
-
-#ifdef RECOMENDED
-    const QUrl url(u"qrc:/ShtrihPrint6/main.qml"_qs);
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &application, [url](QObject *obj, const QUrl &objUrl)
-    {
-        if (!obj && url == objUrl) QCoreApplication::exit(-1);
-    }, Qt::QueuedConnection);
-#else
     const QUrl url("qrc:/main.qml");
-#endif
-
     engine.load(url);
+
     return application.exec();
 }
 

@@ -10,7 +10,7 @@ JsonFile::JsonFile(const QString &file, AppManager* parent) : ExternalMessager(p
 bool JsonFile::write()
 {
     bool ok = Tools::writeTextFile(fileName, toString());
-    Tools::debugLog(QString("@@@@@ JsonFile::write %1 %2").arg(fileName, Tools::toString(ok)));
+    Tools::debugLog(QString("@@@@@ JsonFile::write %1 %2").arg(fileName, Tools::productSortIncrement(ok)));
     wasRead = false;
     return ok;
 }

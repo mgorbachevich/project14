@@ -14,7 +14,6 @@ bool JsonArrayFile::read()
     {
         wasRead = true;
         items = parse(Tools::readTextFile(fileName));
-        parseDefault();
         sort();
         Tools::debugLog("@@@@@ JsonArrayFile::read " + Tools::toString((int)(items.count())));
     }
@@ -46,11 +45,7 @@ bool JsonArrayFile::insertOrReplace(const QString& json)
         }
         if(!found) items << records[i];
     }
-    if(n > 0)
-    {
-        parseDefault();
-        sort();
-    }
+    if(n > 0) sort();
     Tools::debugLog(QString("@@@@@ JsonArrayFile::insertOrReplace %1 %2").arg(
         Tools::toString(n), Tools::toString((int)(items.count()))));
     return n > 0;

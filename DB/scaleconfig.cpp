@@ -11,11 +11,6 @@ ScaleConfig::ScaleConfig(AppManager* parent) : JsonFile(SCALE_CONFIG_FILE, paren
     fields.insert(ScaleConfigField_VerificationDate,        "verification_date");
     fields.insert(ScaleConfigField_FactorySettingsPassword, "factory_settings_password");
     fields.insert(ScaleConfigField_SystemSettingsPassword,  "system_settings_password");
-    fields.insert(ScaleConfigField_LastDownloadDateTime,    "last_download_datetime");
-    fields.insert(ScaleConfigField_LastUploadDateTime,      "last_upload_datetime");
-    fields.insert(ScaleConfigField_LastDeleteDateTime,      "last_delete_datetime");
-    fields.insert(ScaleConfigField_LastDownloadSucceded,    "last_download_succeded");
-    fields.insert(ScaleConfigField_LastDownloadTotal,       "last_download_total");
 }
 
 bool ScaleConfig::read()

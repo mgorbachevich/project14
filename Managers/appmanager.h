@@ -10,8 +10,10 @@
 #include "users.h"
 #include "showcase.h"
 #include "settings.h"
-#include "printstatus.h"
+#include "status.h"
 #include "netactionresult.h"
+#include "netserver.h"
+#include "equipmentmanager.h"
 
 class ProductPanelModel;
 class ViewLogPanelModel;
@@ -22,12 +24,12 @@ class SettingsPanelModel3;
 class UserNameModel;
 class BaseListModel;
 class QQmlContext;
-class NetServer;
 class AppInfo;
 class EquipmentManager;
 class InputProductCodePanelModel3;
 class EditUsersPanelModel3;
 class MoneyCalculator;
+class ScreenManager;
 
 class AppManager : public QObject
 {
@@ -48,13 +50,17 @@ public:
     void onNetResult(NetActionResult&);
     void updateInputCodeList();
     void updateSearch();
+    QString dbVersion() { return db->version(); }
+    QString serverVersion() { return netServer->version(); }
+    QString WMVersion() { return equipmentManager->WMVersion(); }
+    QString PMVersion() { return equipmentManager->PMVersion(); }
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
     Q_INVOKABLE void debugLog(const QString&);
     Q_INVOKABLE bool isAdmin() { return Users::isAdmin(users->getCurrentUser()); }
-    Q_INVOKABLE bool isAuthorizationOpened() { return mainPageIndex == MainPageIndex_Authorization; }
-    Q_INVOKABLE bool isSettingsOpened() { return isSettings; }
+    Q_INVOKABLE bool isAuthorizationOpened();
+    Q_INVOKABLE bool isSettingsOpened() { return status.isSettings; }
     Q_INVOKABLE void onAddUserClicked();
     Q_INVOKABLE void onAdminSettingsClicked();
     Q_INVOKABLE bool onBackgroundDownloadClicked();
@@ -70,8 +76,8 @@ public:
     Q_INVOKABLE void onInfoClicked();
     Q_INVOKABLE void onInputUserClosed(const QString&, const QString&, const QString&, const bool);
     Q_INVOKABLE void onLockClicked();
-    Q_INVOKABLE void onMainPageSwiped(const int);
-    Q_INVOKABLE void onNumberClicked(const QString&);
+    Q_INVOKABLE void onMainPageSwiped(const int i) { setMainPage(i); }
+    Q_INVOKABLE void onNumberToSearchClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
     Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
     Q_INVOKABLE void onPasswordInputClosed(const int, const QString&);
@@ -107,9 +113,7 @@ public:
     Users* users = nullptr;
     Showcase* showcase = nullptr;
     EquipmentManager* equipmentManager = nullptr;
-    PrintStatus printStatus;
-    bool isRefreshNeeded = false;
-    bool isWaiting = false;
+    Status status;
 
 private:
     void alarm();
@@ -144,22 +148,10 @@ private:
     DBRecord product;
     bool isResetProductNeeded = false;
     MoneyCalculator* moneyCalculator = nullptr;
-    bool isAlarm = false;
-
-    // Таймер
     QTimer *timer = nullptr;
-    quint64 netActionTime = 0;
-    quint64 userActionTime = 0;
-
-    // Сеть:
     NetServer* netServer = nullptr;
-
-    // UI:
     QQmlContext* context = nullptr;
-    int mainPageIndex = MainPageIndex_Authorization; // Авторизация
-    int secret = 0;
-    bool isSettings = false;
-    int popups = 0;
+    ScreenManager* screenManager = nullptr;
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;
@@ -202,7 +194,7 @@ signals:
     void showMessageBox(const QString&, const QString&);
     void showPasswordInputBox(const int);
     void showPiecesInputBox(const int, const int);
-    void showProductCodeInputBox(const QString&);
+    void showProductCodeInputBox(const QString&, const QString&);
     void showProductPanel(const QString&, const bool);
     void showSearchHierarchy(const bool);
     void showSettingInputBox(const int, const QString&, const QString&);

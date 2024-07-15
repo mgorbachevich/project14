@@ -31,6 +31,7 @@ public:
     DBRecordList parse(const QString&);
     virtual void createIndexes();
     virtual void removeIndexes();
+    virtual void setColumnNotUploadable(const int c) { notUploadColumns.append(c); }
 
     QString name;
     QSqlDatabase& sqlDB;
@@ -41,6 +42,7 @@ protected:
     DataBase* db = nullptr;
     QList<DBTableColumn> columns;
     QList<DBIndexDescriptor> indexDescriptors;
+    QList<int> notUploadColumns;
 };
 
 #endif // DBTABLE_H

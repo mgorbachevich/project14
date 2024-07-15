@@ -16,11 +16,6 @@ enum ScaleConfigField
     ScaleConfigField_VerificationDate,
     ScaleConfigField_FactorySettingsPassword,
     ScaleConfigField_SystemSettingsPassword,
-    ScaleConfigField_LastDownloadDateTime,
-    ScaleConfigField_LastUploadDateTime,
-    ScaleConfigField_LastDeleteDateTime,
-    ScaleConfigField_LastDownloadSucceded,
-    ScaleConfigField_LastDownloadTotal,
 };
 
 class ScaleConfig : public JsonFile

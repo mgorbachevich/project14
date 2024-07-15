@@ -15,10 +15,6 @@ public:
     void updateImages(const QStringList&);
     DBRecord& productByIndex(const int);
 
-    int sort = ShowcaseSort_Name;
-    int lastCodeSort = ShowcaseSort_Code;
-    bool increase = true;
-
 private:
     DBRecordList products;
     DBRecord emptyRecord;

@@ -58,6 +58,7 @@ QString DBTable::toJsonString(DBTable *table, const DBRecord &record)
     {
         for (int i = 0; i < record.count() && i < table->columnCount(); i++)
         {
+            if(table->notUploadColumns.contains(i)) continue;
             if (i > 0) json += ",";
             json += QString("\"%1\":\"%2\"").arg(table->columnName(i), record.at(i).toString());
         }

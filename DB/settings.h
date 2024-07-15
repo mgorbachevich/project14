@@ -46,10 +46,9 @@ public:
     bool writeConfig();
     QString getConfigValue(const ScaleConfigField f) { return scaleConfig->get(f).toString(); }
     void setConfigValue(const ScaleConfigField f, const QString& v) { scaleConfig->set(f, v); }
-    void setConfigDateTime(const ScaleConfigField);
 
 protected:
-    void sort();
+    void sort() {}
     bool checkValue(const DBRecord&, const QString&);
     bool parseDefault();
     void appendItemToJson(DBRecord&, QJsonArray&);

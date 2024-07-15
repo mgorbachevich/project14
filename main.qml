@@ -150,14 +150,14 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showProductCodeInputBox:
     {
         target: app
-        function onShowProductCodeInputBox(value)
+        function onShowProductCodeInputBox(titleText, value)
         {
             //app.debugLog("@@@@@ mainWindow.onShowProductCodeInputBox %1".arg(value));
             Qt.createComponent("Panels/inputProductCodePanel.qml").createObject(mainWindow,
             {
                 x: popupX, y: screenManager.spacer() * 2,
                 width: popupWidth, height: mainWindow.height - screenManager.spacer() * 4,
-                inputText: value
+                title: titleText, inputText: value
             }).open()
         }
     }

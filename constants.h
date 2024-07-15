@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.59"
+#define APP_VERSION "2.60"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -21,7 +21,7 @@
 #define LOG_LOAD_RECORDS false
 
 // On Start:
-#define REMOVE_SETTINGS_FILE_ON_START false
+#define REMOVE_SETTINGS_FILE_ON_START true
 #define CREATE_DEFAULT_DATA_ON_START false
 #define CREATE_DEFAULT_IMAGES_ON_START false
 #define REMOVE_DEBUG_LOG_ON_START true
@@ -40,6 +40,7 @@
 #define DB_PRODUCT_COPY_NAME "ShtrihScale_copy.db"
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE "../Images/dummy.png"
+#define SPLASH_IMAGE_FILE "../Images/splash.jpg"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
 #define DEFAULT_EQUIPMENT_DEMO_CONFIG_FILE ":/Text/json_demo_equipment_config.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
@@ -83,7 +84,7 @@
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
-#define DBTABLENAME_LABELFORMATS "labels"
+#define DBTABLENAME_LABELS "labels"
 #define DBTABLENAME_MESSAGES "messages"
 #define DBTABLENAME_MESSAGEFILES "messagefiles"
 #define DBTABLENAME_PICTURES "pictures"
@@ -266,11 +267,11 @@ enum EquipmentMode
     EquipmentMode_Demo = 2,
 };
 
-enum AutoProntMode
+enum AutoPrintMode
 {
-    AutoProntMode_Off = 0,
-    AutoProntMode_On = 1,
-    AutoProntMode_Disabled = 2,
+    AutoPrintMode_Off = 0,
+    AutoPrintMode_On = 1,
+    AutoPrintMode_Disabled = 2,
 };
 
 enum ShowcaseProductText
@@ -300,10 +301,29 @@ enum SettingCode // Должны совпадать со значениями в
 {
     SettingCode_None = 0,
     SettingCode_ScalesNumber = 1,
-    SettingCode_ScalesName = 2,
+    SettingCode_Model = 2,
     SettingCode_ProductReset = 7,
     SettingCode_ProductResetTime = 8,
     SettingCode_PointPosition = 12,
+    SettingCode_Site = 13,
+    SettingCode_Support = 14,
+    SettingCode_Phone = 15,
+    SettingCode_LicenseInfo = 16,
+    SettingCode_SettingMngVersion = 17,
+    SettingCode_DemonVersion = 18,
+    SettingCode_DBVersion = 19,
+    SettingCode_ServerVersion = 20,
+    SettingCode_LastDownload = 21,
+    SettingCode_WiFiInfo = 22,
+    SettingCode_IP = 23,
+    SettingCode_Bluetooth = 24,
+    SettingCode_AndroidAssembly = 25,
+    SettingCode_WMHardwareVersion = 26,
+    SettingCode_WMSoftwareVersion = 27,
+    SettingCode_PMHardwareVersion = 28,
+    SettingCode_PMSoftwareVersion = 29,
+    SettingCode_ModelInfo = 30,
+    SettingCode_SerialNumberInfo = 31,
     SettingCode_PrinterAutoFeed = 42,
     SettingCode_CharNumberPieces = 43,
     SettingCode_SearchCodeSymbols = 44,
@@ -327,12 +347,10 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_GoToDescription = 1007,
     SettingCode_Level = 1008,
     SettingCode_License = 1009,
-    SettingCode_SerialScalesNumber = 1010,
+    SettingCode_SerialNumber = 1010,
     SettingCode_VerificationName = 1011,
     SettingCode_VerificationDate = 1012,
     SettingCode_Version = 1013,
-    SettingCode_EquipmentVersion = 1014,
-    SettingCode_Help = 1015,
     SettingCode_ReportsDuration = 1017,
     SettingCode_DateTime = 1020,
     SettingCode_PrintOffset = 1024,

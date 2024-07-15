@@ -31,7 +31,7 @@ void NetServer::start(const int port)
     {
         server->route("/deleteData", [this] (const QHttpServerRequest &request)
         {
-            appManager->isRefreshNeeded = true;
+            appManager->status.isRefreshNeeded = true;
             return parseGetRequest(RouterRule_Delete, request.query().toString().toUtf8());
         });
         server->route("/getData", [this] (const QHttpServerRequest &request)
@@ -40,7 +40,7 @@ void NetServer::start(const int port)
         });
         server->route("/setData", [this] (const QHttpServerRequest &request)
         {
-            appManager->isRefreshNeeded = true;
+            appManager->status.isRefreshNeeded = true;
             return parseSetRequest(RouterRule_Set, request.body());
         });
         server->route("/command", [this] (const QHttpServerRequest &request)
@@ -158,7 +158,7 @@ bool NetServer::parseCommand(const QByteArray& request)
     if(method == "stopLoad")
     {
         nc = NetCommand_StopLoad;
-        param = Tools::toString(true);
+        param = Tools::productSortIncrement(true);
     }
     else if(ja.size() > 0)
     {
@@ -399,7 +399,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                             record = table->createRecord(record[0].toString());
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
                         }
-                        else if(table->name == DBTABLENAME_LABELFORMATS ||
+                        else if(table->name == DBTABLENAME_LABELS ||
                                 table->name == DBTABLENAME_MESSAGES ||
                                 table->name == DBTABLENAME_MESSAGEFILES ||
                                 table->name == DBTABLENAME_PICTURES ||
@@ -429,6 +429,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
     result.description = QString("Загружено записей %1 из %2").arg(
                 QString::number(result.successCount),
                 QString::number(result.successCount + result.errorCount));
+    appManager->showToast(result.description);
     return result.makeJson();
 }
 

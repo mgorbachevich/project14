@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSize>
+#include "constants.h"
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -41,6 +42,10 @@ public:
     Q_INVOKABLE int flickVelocity() const { return 300; }
     Q_INVOKABLE int keyboardHeight() const { return buttonSize() * 3; }
     int visibleListRowCount() const { return screenHeight() / (spacer() + normalFontSize() + spacer()); }
+
+public:
+    int mainPageIndex = MainPageIndex_Authorization;
+    int popupCount = 0;
 
 private:
     QSize screenSize;

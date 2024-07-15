@@ -17,7 +17,7 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
 {
     Tools::debugLog("@@@@@ DataBase::DataBase");
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, productDB, this));
-    tables.append(new ResourceDBTable(DBTABLENAME_LABELFORMATS, productDB, this));
+    tables.append(new ResourceDBTable(DBTABLENAME_LABELS, productDB, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGES, productDB, this));
     tables.append(new ResourceDBTable(DBTABLENAME_MESSAGEFILES, productDB, this));
     tables.append(new ResourceDBTable(DBTABLENAME_PICTURES, productDB, this));
@@ -25,6 +25,13 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
     tables.append(new ResourceDBTable(DBTABLENAME_SOUNDS, productDB, this));
     tables.append(new LogDBTable(DBTABLENAME_LOG, logDB, this));
     tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, logDB, this));
+
+    getTable(DBTABLENAME_PRODUCTS)->setColumnNotUploadable(ProductDBTable::UpperName);
+    getTable(DBTABLENAME_LABELS)->setColumnNotUploadable(ResourceDBTable::Source);
+    getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Name);
+    getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Source);
+    getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Name);
+    getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Source);
 }
 
 DataBase::~DataBase()
@@ -41,12 +48,12 @@ void DataBase::onAppStart()
     QString path = Tools::dbPath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::toString(exists)));
+    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::productSortIncrement(exists)));
     started = addAndOpen(productDB, path);
     if(!exists && started)
     {
         started &= createTable(getTable(DBTABLENAME_PRODUCTS));
-        started &= createTable(getTable(DBTABLENAME_LABELFORMATS));
+        started &= createTable(getTable(DBTABLENAME_LABELS));
         started &= createTable(getTable(DBTABLENAME_MESSAGES));
         started &= createTable(getTable(DBTABLENAME_MESSAGEFILES));
         started &= createTable(getTable(DBTABLENAME_PICTURES));
@@ -59,7 +66,7 @@ void DataBase::onAppStart()
         path = Tools::dbPath(DB_LOG_NAME);
         if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
         exists = QFile(path).exists();
-        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::toString(exists)));
+        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::productSortIncrement(exists)));
         started = addAndOpen(logDB, path);
         if(!exists && started)
         {
@@ -90,7 +97,7 @@ void DataBase::onAppStart()
     if(!message.isEmpty())
         QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this, message]() { showAttention(message); });
     emit dbStarted();
-    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::toString(started)));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::productSortIncrement(started)));
 }
 /*
 bool DataBase::open(QSqlDatabase& db, const QString& name)
@@ -353,216 +360,6 @@ void DataBase::clearLog()
     if(!executeSQL(t->sqlDB, sql)) Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
 }
 
-void DataBase::select(const DBSelector selector,
-                      const QString& param1, const QString& param2,
-                      const int offset, const int limit)
-{
-    // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
-
-    auto future = QtConcurrent::run([selector, param1, param2, offset, limit, this]
-    {
-        Tools::debugLog(QString("@@@@@ DataBase::select %1 ").arg(selector) + param1);
-        DBRecordList resultRecords;
-        switch(selector)
-        {
-        case DBSelector_GetLog:
-        // Запрос списка записей лога:
-            selectAll(getTable(DBTABLENAME_LOG), resultRecords);
-            break;
-
-        case DBSelector_GetShowcaseProducts:
-        // Запрос списка товаров для отображения на экране Showcase:
-        {
-            for (int i = 0; i < appManager->showcase->count(); i++)
-            {
-                QString productCode = Showcase::getProductCode(appManager->showcase->getByIndex(i));
-                DBRecord r;
-                if (selectById(DBTABLENAME_PRODUCTS, productCode, r) && ProductDBTable::isForShowcase(r))
-                    resultRecords.append(r);
-            }
-            const int sort = Tools::toInt(param1);
-            const bool increase = Tools::toBool(param2);
-            switch(sort)
-            {
-            case ShowcaseSort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code, increase); break;
-            case ShowcaseSort_Code2: Tools::sortByInt(resultRecords, ProductDBTable::Code2, increase); break;
-            case ShowcaseSort_Name: Tools::sortByString(resultRecords, ProductDBTable::UpperName, increase); break;
-            }
-            break;
-        }
-
-        case DBSelector_GetImageByResourceCode:
-        // Запрос картинки из ресурсов по коду ресурса:
-        {
-            DBRecord r;
-            if(selectById(DBTABLENAME_PICTURES, param1, r)) resultRecords.append(r);
-            break;
-        }
-
-        case DBSelector_GetMessageByResourceCode:
-        // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
-        // todo
-        {
-            DBRecord r;
-            if(selectById(DBTABLENAME_MESSAGES, param1, r)) resultRecords.append(r);
-            break;
-        }
-
-        case DBSelector_GetProductsByGroupCodeIncludeGroups:
-        // Запрос списка товаров по коду группы включая группы:
-        {
-            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-            QString sql;
-            DBRecordList rs;
-            // Группы:
-            sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
-            sql += QString(" AND %1 = '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::UpperName));
-            executeSelectSQL(t, sql, rs);
-            //Tools::sortByString(resultRecords, ProductDBTable::UpperName);
-            resultRecords.append(rs);
-            // Товары:
-            sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
-            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code));
-            executeSelectSQL(t, sql, rs);
-            //Tools::sortByInt(rs, ProductDBTable::Code);
-            resultRecords.append(rs);
-            break;
-        }
-
-        case DBSelector_GetProductsByInputCode:
-        // Запрос списка товаров по фрагменту кода:
-        {
-            QString p = param1.trimmed();
-            if (p.isEmpty()) break;
-            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-            QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Code), p);
-            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
-            if(limit > 0 && offset >= 0)
-                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
-            executeSelectSQL(t, sql, resultRecords);
-            //Tools::sortByInt(resultRecords, ProductDBTable::Code);
-            break;
-        }
-
-        case DBSelector_GetProductsByFilteredCode:
-        // Запрос списка товаров по фрагменту кода исключая группы:
-        {
-            QString p = param1.trimmed();
-            if (p.isEmpty()) break;
-            if (!appManager->settings->getBoolValue(SettingCode_SearchType))
-            {
-                const int n1 = p.size();
-                const int n2 = appManager->settings->getIntValue(SettingCode_SearchCodeSymbols);
-                Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredCode %1 %2").arg(QString::number(n1), QString::number(n2)));
-                if(n1 < n2) break;
-            }
-            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-            QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Code), p);
-            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code));
-            if(limit > 0 && offset >= 0)
-                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
-            executeSelectSQL(t, sql, resultRecords);
-            //Tools::sortByInt(resultRecords, ProductDBTable::Code);
-            break;
-        }
-
-        case DBSelector_GetProductsByFilteredCode2:
-        // Запрос списка товаров по фрагменту номера исключая группы:
-        {
-            QString p = param1.trimmed();
-            if (p.isEmpty()) break;
-            if (!appManager->settings->getBoolValue(SettingCode_SearchType))
-            {
-                const int n1 = p.size();
-                const int n2 = appManager->settings->getIntValue(SettingCode_SearchCodeSymbols);
-                Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredNumber %1 %2").arg(QString::number(n1), QString::number(n2)));
-                if(n1 < n2) break;
-            }
-            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-            QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Code2), p);
-            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code2));
-            if(limit > 0 && offset >= 0)
-                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
-            executeSelectSQL(t, sql, resultRecords);
-            //Tools::sortByInt(resultRecords, ProductDBTable::Code2);
-            break;
-        }
-
-        case DBSelector_GetProductsByFilteredBarcode:
-        // Запрос списка товаров по фрагменту штрих-кода исключая группы:
-        {
-            QString p = param1.trimmed();
-            if (p.isEmpty()) break;
-            if (!appManager->settings->getBoolValue(SettingCode_SearchType))
-            {
-                const int n1 = p.size();
-                const int n2 = appManager->settings->getIntValue(SettingCode_SearchBarcodeSymbols);
-                Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredBarcode %1 %2").arg(QString::number(n1), QString::number(n2)));
-                if(n1 < n2) break;
-            }
-            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-            QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::Barcode), p);
-            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Barcode));
-            if(limit > 0 && offset >= 0)
-                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
-            executeSelectSQL(t, sql, resultRecords);
-            //Tools::sortByInt(resultRecords, ProductDBTable::Code2);
-            break;
-        }
-
-        case DBSelector_GetProductsByFilteredName:
-        // Запрос списка товаров по фрагменту наименования исключая группы:
-        {
-            QString p = param1.trimmed();
-            if (p.isEmpty()) break;
-            if (!appManager->settings->getBoolValue(SettingCode_SearchType))
-            {
-                const int n1 = p.size();
-                const int n2 = appManager->settings->getIntValue(SettingCode_SearchNameSymbols);
-                Tools::debugLog(QString("@@@@@ DataBase::select GetProductsByFilteredName %1 %2").arg(QString::number(n1), QString::number(n2)));
-                if(n1 < n2) break;
-            }
-            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
-            QString sql = QString("SELECT * FROM %1").arg(t->name);
-            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(ProductDBTable::UpperName), p.toUpper());
-            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
-            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::UpperName));
-            if(limit > 0 && offset >= 0)
-                sql += QString(" LIMIT %1 OFFSET %2").arg(Tools::toString(limit), Tools::toString(offset));
-            executeSelectSQL(t, sql, resultRecords);
-            //Tools::sortByString(resultRecords, ProductDBTable::UpperName);
-            break;
-        }
-
-        case DBSelector_GetProductByInputCode:
-        case DBSelector_SetProductByInputCode:
-        case DBSelector_RefreshCurrentProduct:
-        // Запрос товара по коду
-        {
-            DBRecord r;
-            if(selectById(DBTABLENAME_PRODUCTS, param1, r)) resultRecords.append(r);
-            break;
-        }
-
-        default: break;
-        }
-        Tools::debugLog(QString("@@@@@ DataBase::select records = %1").arg(resultRecords.count()));
-        emit selectResult(selector, resultRecords, true);
-    });
-}
-
 void DataBase::select(const DBSelector selector, const DBRecordList& param)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
@@ -689,19 +486,18 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
 {
     // Выгрузка из таблицы
 
-    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::toString(codesOnly)));
+    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::productSortIncrement(codesOnly)));
     if(codesOnly) saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1 %2").arg(
                 tableName, Tools::toString((int)(codesToUpload.split(',').count()))));
     else saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов. Таблица: %1").arg(tableName));
     NetActionResult result(appManager, RouterRule_Get);
+
     QString json;
-    if(tableName == DBTABLENAME_SETTINGS)
-        json = appManager->settings->toString();
-    else if(tableName == DBTABLENAME_USERS)
-        json = appManager->users->toString();
+    if(tableName == DBTABLENAME_SETTINGS)   json = appManager->settings->toString();
+    else if(tableName == DBTABLENAME_USERS) json = appManager->users->toString();
     if(!json.isEmpty())
     {
-        QString resultJson = result.makeJson(json);
+        QString resultJson = result.makeJson(json.replace(json.lastIndexOf("}"), 1, " ").replace(json.indexOf("{"), 1, " "));
         Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
         QString s = QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
                 arg(tableName, QString::number(result.recordCount), QString::number(result.errorCount), result.description);
@@ -830,6 +626,152 @@ bool DataBase::removeDBFile(const QString& dbName)
 bool DataBase::isDBFileExists(const QString& dbName)
 {
     return Tools::isFileExists(Tools::dbPath(dbName));
+}
+
+void DataBase::select(const DBSelector selector,
+                      const QString& param1, const QString& param2,
+                      const int offset, const int limit)
+{
+    // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
+
+    auto future = QtConcurrent::run([selector, param1, param2, offset, limit, this]
+    {
+        Tools::debugLog(QString("@@@@@ DataBase::select %1 ").arg(selector) + param1);
+        DBRecordList resultRecords;
+
+        switch(selector)
+        {
+        case DBSelector_GetLog: // Запрос списка записей лога:
+            selectAll(getTable(DBTABLENAME_LOG), resultRecords);
+            break;
+
+        case DBSelector_GetProductByCode:
+        case DBSelector_SetProductByCode:
+        case DBSelector_RefreshCurrentProduct: // Запрос товара по коду
+        case DBSelector_GetImageByResourceCode: // Запрос картинки из ресурсов по коду ресурса:
+        case DBSelector_GetMessageByResourceCode: // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
+        {
+            QString table = DBTABLENAME_PRODUCTS;
+            switch (selector)
+            {
+            case DBSelector_GetImageByResourceCode:   table = DBTABLENAME_PICTURES; break;
+            case DBSelector_GetMessageByResourceCode: table = DBTABLENAME_MESSAGES; break;
+            default: break;
+            }
+            DBRecord r;
+            if(selectById(table, param1, r)) resultRecords.append(r);
+            break;
+        }
+
+        case DBSelector_SetProductByCode2:
+        {
+            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
+            QString sql = QString("SELECT * FROM %1").arg(t->name);
+            sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::Code2), param1);
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ProductDBTable::Code2));
+            executeSelectSQL(t, sql, resultRecords);
+            break;
+        }
+
+        case DBSelector_GetShowcaseProducts: // Запрос списка товаров для отображения на экране Showcase:
+        {
+            for (int i = 0; i < appManager->showcase->count(); i++)
+            {
+                QString productCode = Showcase::getProductCode(appManager->showcase->getByIndex(i));
+                DBRecord r;
+                if (selectById(DBTABLENAME_PRODUCTS, productCode, r) && ProductDBTable::isForShowcase(r))
+                    resultRecords.append(r);
+            }
+            const int sort = Tools::toInt(param1);
+            const bool increase = Tools::toBool(param2);
+            switch(sort)
+            {
+            case ShowcaseSort_Code: Tools::sortByInt(resultRecords, ProductDBTable::Code, increase); break;
+            case ShowcaseSort_Code2: Tools::sortByInt(resultRecords, ProductDBTable::Code2, increase); break;
+            case ShowcaseSort_Name: Tools::sortByString(resultRecords, ProductDBTable::UpperName, increase); break;
+            }
+            break;
+        }
+
+        case DBSelector_GetProductsByGroupCodeIncludeGroups: // Запрос списка товаров по коду группы включая группы:
+        {
+            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
+            QString sql;
+            DBRecordList rs;
+            // Группы:
+            sql = QString("SELECT * FROM %1").arg(t->name);
+            sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
+            sql += QString(" AND %1 = '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::UpperName));
+            executeSelectSQL(t, sql, rs);
+            resultRecords.append(rs);
+            // Товары:
+            sql = QString("SELECT * FROM %1").arg(t->name);
+            sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ProductDBTable::GroupCode), param1);
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC;").arg(t->columnName(ProductDBTable::Code));
+            executeSelectSQL(t, sql, rs);
+            resultRecords.append(rs);
+            break;
+        }
+
+        case DBSelector_GetProductsByInputCode: // Запрос списка товаров по фрагменту кода/номера:
+        {
+            QString p = param1.trimmed();
+            if (p.isEmpty()) break;
+            const int field = Tools::toInt(param2) == ShowcaseSort_Code2 ? ProductDBTable::Code2 : ProductDBTable::Code;
+            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
+            QString sql = QString("SELECT * FROM %1").arg(t->name);
+            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(field), p);
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(field));
+            if(limit > 0) sql += QString(" LIMIT %1").arg(Tools::toString(limit));
+            if(offset > 0) sql += QString(" OFFSET %2").arg(Tools::toString(offset));
+            executeSelectSQL(t, sql, resultRecords);
+            break;
+        }
+
+        case DBSelector_GetProductsByFilteredCode:
+        case DBSelector_GetProductsByFilteredCode2:
+        case DBSelector_GetProductsByFilteredBarcode:
+        case DBSelector_GetProductsByFilteredName: // Запрос списка товаров по фрагменту текста исключая группы:
+        {
+            QString p = param1.trimmed().toUpper();
+            if (p.isEmpty()) break;
+            SettingCode symbolsCode = SettingCode_SearchCodeSymbols;
+            switch(selector)
+            {
+            case DBSelector_GetProductsByFilteredBarcode: symbolsCode = SettingCode_SearchBarcodeSymbols; break;
+            case DBSelector_GetProductsByFilteredName:    symbolsCode = SettingCode_SearchNameSymbols; break;
+            default: break;
+            }
+            if (!appManager->settings->getBoolValue(SettingCode_SearchType) &&
+                    p.size() < appManager->settings->getIntValue(symbolsCode)) break;
+            int field = ProductDBTable::Code;
+            switch(selector)
+            {
+            case DBSelector_GetProductsByFilteredCode2:   field = ProductDBTable::Code2; break;
+            case DBSelector_GetProductsByFilteredBarcode: field = ProductDBTable::Barcode; break;
+            case DBSelector_GetProductsByFilteredName:    field = ProductDBTable::UpperName; break;
+            default: break;
+            }
+            DBTable* t = getTable(DBTABLENAME_PRODUCTS);
+            QString sql = QString("SELECT * FROM %1").arg(t->name);
+            sql += QString(" WHERE %1 LIKE '%2%'").arg(t->columnName(field), p);
+            sql += QString(" AND %1 != '%2'").arg(t->columnName(ProductDBTable::Type), QString::number(ProductType_Group));
+            sql += QString(" ORDER BY %1 ASC").arg(t->columnName(field));
+            if(limit > 0) sql += QString(" LIMIT %1").arg(Tools::toString(limit));
+            if(offset > 0) sql += QString(" OFFSET %2").arg(Tools::toString(offset));
+            executeSelectSQL(t, sql, resultRecords);
+            break;
+        }
+
+        default: break;
+        }
+        Tools::debugLog(QString("@@@@@ DataBase::select records = %1").arg(resultRecords.count()));
+        emit selectResult(selector, resultRecords, true);
+    });
 }
 
 

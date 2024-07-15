@@ -40,7 +40,6 @@ public:
 
 protected:
     virtual QJsonObject toJson();
-    virtual bool parseDefault() { return true; }
     virtual void sort() {}
     virtual DBRecordList parse(const QString&);
     virtual int getIndex(const int);
