@@ -79,30 +79,30 @@ public:
 public:
     virtual int open(const QString &uri);
     virtual void close();
-    int cFeed(prnanswer *status);
-    int cBufferSize(const uint16_t value);
-    int cBufferData(const QByteArray &line);
-    int cClearBuffer();
-    int cPrint(prnanswer *status);
-    int cGetStatus(prnanswer *status, const int isPE = 0);
-    int cSetBrightness(const uint8_t value);
-    int cSetOffset(const uint8_t value);
-    int cSetPaperType(const papertype value);
-    int cSensorControl(const bool value);
-    int cReset();
-    int cSetOffset2(const uint8_t value);
-    int cGetOffset2(uint8_t *value);
-    int cGetVersion(uint8_t *versionH, uint8_t *versionL);
-    int cGetPE(uint8_t *value);
-    int cGetLAB(uint8_t *value);
-    int cMemoryTest(memorytest *test);
-    int cPrintTest(const uint16_t lines, prnanswer *status);
-    int cErrorCnt(counters *cnt);
-    int cResetCnt(counters *cnt);
-    int cProtectionCnt(counters *cnt);
-    int cProtectionMode(const bool value);
+    virtual int cFeed(prnanswer *status);
+    virtual int cBufferSize(const uint16_t value);
+    virtual int cBufferData(const QByteArray &line);
+    virtual int cClearBuffer();
+    virtual int cPrint(prnanswer *status);
+    virtual int cGetStatus(prnanswer *status, const int isPE = 0);
+    virtual int cSetBrightness(const uint8_t value);
+    virtual int cSetOffset(const uint8_t value);
+    virtual int cSetPaperType(const papertype value);
+    virtual int cSensorControl(const bool value);
+    virtual int cReset();
+    virtual int cSetOffset2(const uint8_t value);
+    virtual int cGetOffset2(uint8_t *value);
+    virtual int cGetVersion(uint8_t *versionH, uint8_t *versionL);
+    virtual int cGetPE(uint8_t *value);
+    virtual int cGetLAB(uint8_t *value);
+    virtual int cMemoryTest(memorytest *test);
+    virtual int cPrintTest(const uint16_t lines, prnanswer *status);
+    virtual int cErrorCnt(counters *cnt);
+    virtual int cResetCnt(counters *cnt);
+    virtual int cProtectionCnt(counters *cnt);
+    virtual int cProtectionMode(const bool value);
 
-    int getPrinterVersion();
+    virtual int getPrinterVersion();
     deviceinterface getInterface();
 
 protected:

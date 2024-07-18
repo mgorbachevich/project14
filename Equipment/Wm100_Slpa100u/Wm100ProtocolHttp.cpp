@@ -103,7 +103,6 @@ int Wm100ProtocolHttp::executeCommand(wmcommand cmd, const QByteArray &out, QByt
     static uint8_t inf = 0;
     ++inf;
     inf %= 64;
-    int temp = inf;
 
     QByteArray answer;
     int res = 0;

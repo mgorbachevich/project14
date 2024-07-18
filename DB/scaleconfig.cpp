@@ -8,6 +8,7 @@ ScaleConfig::ScaleConfig(AppManager* parent) : JsonFile(SCALE_CONFIG_FILE, paren
     fields.insert(ScaleConfigField_Model,                   "model");
     fields.insert(ScaleConfigField_ModelName,               "model_name");
     fields.insert(ScaleConfigField_SerialNumber,            "serial_number");
+    fields.insert(ScaleConfigField_NetName,                 "net_name");
     fields.insert(ScaleConfigField_VerificationDate,        "verification_date");
     fields.insert(ScaleConfigField_FactorySettingsPassword, "factory_settings_password");
     fields.insert(ScaleConfigField_SystemSettingsPassword,  "system_settings_password");

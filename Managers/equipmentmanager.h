@@ -23,6 +23,8 @@ public:
     void stop();
     void setSystemDateTime(const QDateTime&);
     void pause(const bool v) { pauseWM(v); pausePM(v); }
+    QString daemonVersion() const;
+    QString MODVersion() const { return Wm100::getVersionString(); }
 
     // Weight Manager:
     QString WMVersion() const;

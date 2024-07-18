@@ -21,6 +21,13 @@ Settings::Settings(AppManager *parent): JsonArrayFile(SETTINGS_FILE, parent)
     fields.insert(SettingField_ValueList, "value_list");
     fields.insert(SettingField_Comment,   "comment");
     scaleConfig = new ScaleConfig(parent);
+
+    modelNames.append(QPair<QString, QString>("Не задано",         "Unknown"));
+    modelNames.append(QPair<QString, QString>("Штрих Принт 6 ФA1", "Shtrih_Print_6_FA1"));
+    modelNames.append(QPair<QString, QString>("Штрих Принт 6 ФA2", "Shtrih_Print_6_FA2"));
+    modelNames.append(QPair<QString, QString>("Штрих Принт 6 MA1", "Shtrih_Print_6_MA1"));
+    modelNames.append(QPair<QString, QString>("Штрих Принт 6 MA2", "Shtrih_Print_6_MA2"));
+    modelNames.append(QPair<QString, QString>("Штрих Принт 6 СА",  "Shtrih_Print_6_SA"));
 }
 
 bool Settings::checkValue(const DBRecord& record, const QString& value)
@@ -176,6 +183,15 @@ void Settings::nativeSettings(const int code)
 #endif
 }
 
+void Settings::appendItemToJson(DBRecord& r, QJsonArray& ja)
+{
+    QJsonObject ji;
+    ji.insert(fields.value(SettingField_Name), r.at(SettingField_Name).toJsonValue());
+    ji.insert(fields.value(SettingField_Code), r.at(SettingField_Code).toJsonValue());
+    ji.insert(fields.value(SettingField_Value), r.at(SettingField_Value).toJsonValue());
+    ja.append(ji);
+}
+
 bool Settings::setValue(const int itemCode, const QString& value)
 {
     Tools::debugLog(QString("@@@@@ Settings::setValue %1 %2").arg(Tools::toString(itemCode), value));
@@ -206,78 +222,25 @@ bool Settings::setValue(const int itemCode, const QString& value)
     return false;
 }
 
-void Settings::update(const int groupCode)
-{
-    Tools::debugLog("@@@@@ Settings::update");
-    currentGroupCode = groupCode;
-    (*getByCode(SettingCode_VerificationName))[SettingField_Value] = QString("%1 %2").arg(
-                getStringValue(*getByCode(SettingCode_Model)),
-                getStringValue(*getByCode(SettingCode_SerialNumber)));
-}
-
 bool Settings::write()
 {
     Tools::debugLog("@@@@@ Settings::write");
-    bool ok = writeConfig() && Tools::writeTextFile(fileName, toString());
+    setValuesToConfig();
+    bool ok = scaleConfig->write() && Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::productSortIncrement(ok)));
     appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
     return ok;
 }
 
-bool Settings::writeConfig()
-{
-    Tools::debugLog("@@@@@ Settings::writeConfig");
-    setConfigValue(ScaleConfigField_Model, (*getByCode(SettingCode_Model))[SettingField_Value].toString());
-    setConfigValue(ScaleConfigField_ModelName, getStringValue(SettingCode_Model));
-    setConfigValue(ScaleConfigField_SerialNumber, (*getByCode(SettingCode_SerialNumber))[SettingField_Value].toString());
-    setConfigValue(ScaleConfigField_VerificationDate, (*getByCode(SettingCode_VerificationDate))[SettingField_Value].toString());
-    return scaleConfig->write();
-}
-
-void Settings::appendItemToJson(DBRecord& r, QJsonArray& ja)
-{
-    QJsonObject ji;
-    ji.insert(fields.value(SettingField_Name), r.at(SettingField_Name).toJsonValue());
-    ji.insert(fields.value(SettingField_Code), r.at(SettingField_Code).toJsonValue());
-    ji.insert(fields.value(SettingField_Value), r.at(SettingField_Value).toJsonValue());
-    ja.append(ji);
-}
-
-bool Settings::parseDefault() // Добавление недостающих значений по умолчанию:
-{
-    DBRecordList defaultRecords = parse(Tools::readTextFile(DEFAULT_SETTINGS_FILE));
-    //Tools::sortByInt(defaultRecords, SettingField_Code);
-    for(int code = 0; code < SettingCode_Max; code++)
-    {
-        for (DBRecord& r : defaultRecords)
-        {
-            if (getCode(r) > code) break;
-            if (getCode(r) == code) // найдена запись по умолчанию
-            {
-                DBRecord* item = getByCode(code);
-                if(item != nullptr)
-                {
-                    r[SettingField_Value] = item->at(SettingField_Value);
-                    items.removeAt(getIndex(code));
-                }
-                items.append(r);
-                break;
-            }
-        }
-    }
-    return items.count() > 0;
-}
-
 bool Settings::read()
 {
     Tools::debugLog("@@@@@ Settings::read");
     if(wasRead) return items.count() > 0;
-
     wasRead = true;
     items = parse(Tools::readTextFile(DEFAULT_SETTINGS_FILE));
     DBRecordList loadedItems = parse(Tools::readTextFile(fileName));
-    for (DBRecord& item : items)
+    for (DBRecord& item : items) // Replace default values
     {
         for (DBRecord& r : loadedItems)
         {
@@ -291,28 +254,60 @@ bool Settings::read()
     bool ok = items.count() > 0;
     if(ok)
     {
-        setValue(SettingCode_Version,           APP_VERSION);
-        setValue(SettingCode_DBVersion,         appManager->dbVersion());
-        setValue(SettingCode_ServerVersion,     appManager->serverVersion());
-        setValue(SettingCode_WMSoftwareVersion, appManager->WMVersion());
-        setValue(SettingCode_PMSoftwareVersion, appManager->PMVersion());
-        setValue(SettingCode_IP,                Tools::getNetParams().localHostIP);
+        QString s;
+        for(int i = 0; i < modelNames.size(); i++)
+        {
+            if(i > 0) s += ",";
+            s += modelNames[i].first;
+        }
+         (*getByCode(SettingCode_Model))[SettingField_ValueList] = s;
     }
-    ok &= readConfig();
-    if(ok)
-    {
-        setValue(SettingCode_Model,            scaleConfig->get(ScaleConfigField_Model).toString());
-        setValue(SettingCode_ModelInfo,        scaleConfig->get(ScaleConfigField_ModelName).toString());
-        setValue(SettingCode_SerialNumber,     scaleConfig->get(ScaleConfigField_SerialNumber).toString());
-        setValue(SettingCode_SerialNumberInfo, scaleConfig->get(ScaleConfigField_SerialNumber).toString());
-        setValue(SettingCode_VerificationDate, scaleConfig->get(ScaleConfigField_VerificationDate).toString());
-        /*
-        (*getByCode(SettingCode_ScalesName))[SettingField_Value] = scaleConfig->get(ScaleConfigField_Model);
-        (*getByCode(SettingCode_SerialScalesNumber))[SettingField_Value] = scaleConfig->get(ScaleConfigField_SerialNumber);
-        (*getByCode(SettingCode_VerificationDate))[SettingField_Value] = scaleConfig->get(ScaleConfigField_VerificationDate);
-        */
-    }
+    ok &= scaleConfig->read();
+    if(ok) setValuesFromConfig();
     Tools::debugLog(QString("@@@@@ JsonArrayFile::read %1 %2").arg(Tools::toString(ok), Tools::toString((int)(items.count()))));
     return ok;
+}
+
+void Settings::setInfoValues()
+{
+    int n = (*getByCode(SettingCode_Model))[SettingField_Value].toInt();
+    if(n >= modelNames.size()) n = 0;
+    QString netName = modelNames[n].second + "_" + getStringValue(SettingCode_SerialNumber);
+    setValue(SettingCode_NetName,               netName);
+    setValue(SettingCode_InfoNetName,           netName);
+    setValue(SettingCode_InfoModelName,         getStringValue(SettingCode_Model));
+    setValue(SettingCode_InfoSerialNumber,      getStringValue(SettingCode_SerialNumber));
+    setValue(SettingCode_InfoVersion,           APP_VERSION);
+    setValue(SettingCode_InfoDaemonVersion,     appManager->daemonVersion());
+    setValue(SettingCode_InfoDBVersion,         appManager->dbVersion());
+    setValue(SettingCode_InfoMODVersion,        appManager->MODVersion());
+    setValue(SettingCode_InfoServerVersion,     appManager->serverVersion());
+    setValue(SettingCode_InfoWMSoftwareVersion, appManager->WMVersion());
+    setValue(SettingCode_InfoPMSoftwareVersion, appManager->PMVersion());
+    setValue(SettingCode_InfoIP,                Tools::getNetParams().localHostIP);
+    setValue(SettingCode_InfoLicense,           getStringValue(SettingCode_License));
+    setValue(SettingCode_InfoWiFi,              "Не поддерживается");
+    setValue(SettingCode_InfoBluetooth,         "Не поддерживается");
+    setValue(SettingCode_InfoAndroidAssembly,   "Не поддерживается");
+    setValue(SettingCode_InfoWMHardwareVersion, "Не поддерживается");
+    setValue(SettingCode_InfoPMHardwareVersion, "Не поддерживается");
+}
+
+void Settings::setValuesFromConfig()
+{
+    setValue(SettingCode_Model,            scaleConfig->get(ScaleConfigField_Model).toString());
+    setValue(SettingCode_SerialNumber,     scaleConfig->get(ScaleConfigField_SerialNumber).toString());
+    setValue(SettingCode_VerificationDate, scaleConfig->get(ScaleConfigField_VerificationDate).toString());
+    setInfoValues();
+}
+
+void Settings::setValuesToConfig()
+{
+    setInfoValues();
+    setConfigValue(ScaleConfigField_ModelName,        getStringValue(SettingCode_InfoModelName));
+    setConfigValue(ScaleConfigField_NetName,          getStringValue(SettingCode_InfoNetName));
+    setConfigValue(ScaleConfigField_SerialNumber,     getStringValue(SettingCode_InfoSerialNumber));
+    setConfigValue(ScaleConfigField_Model,            getStringValue(SettingCode_Model));
+    setConfigValue(ScaleConfigField_VerificationDate, getStringValue(SettingCode_VerificationDate));
 }
 

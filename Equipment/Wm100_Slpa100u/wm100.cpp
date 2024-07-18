@@ -8,7 +8,7 @@
 #include "qcoreevent.h"
 #include "wm100.h"
 #include "Wm100ProtocolCom.h"
-#include "Wm100ProtocolHttp.h"
+#include "Wm100ProtocolHttp2.h"
 #include "Wm100ProtocolDemo.h"
 
 
@@ -70,7 +70,7 @@ Wm100Protocol::deviceinterface Wm100::getInterface()
 Wm100Protocol::deviceinterface Wm100::checkUri(const QString &uri)
 {
     if (Wm100ProtocolCom::checkUri(uri)) return Wm100Protocol::diCom;
-    else if (Wm100ProtocolHttp::checkUri(uri)) return Wm100Protocol::diHttp;
+    else if (Wm100ProtocolHttp2::checkUri(uri)) return Wm100Protocol::diHttp;
     else if (Wm100ProtocolDemo::checkUri(uri)) return Wm100Protocol::diDemo;
     return Wm100Protocol::diNone;
 }
@@ -79,7 +79,7 @@ int Wm100::connectDevice(const QString &uri)
 {
     disconnectDevice();
     if (Wm100ProtocolCom::checkUri(uri)) protocol = new Wm100ProtocolCom(this);
-    else if (Wm100ProtocolHttp::checkUri(uri)) protocol = new Wm100ProtocolHttp(this);
+    else if (Wm100ProtocolHttp2::checkUri(uri)) protocol = new Wm100ProtocolHttp2(this);
     else if (Wm100ProtocolDemo::checkUri(uri)) protocol = new Wm100ProtocolDemo(this);
     else return -11;
 
@@ -110,7 +110,7 @@ int Wm100::getStatus(Wm100Protocol::channel_status *status)
 {
     if (!isConnected()) return -20;
     int res = protocol->cGetStatus(status);
-    // if (!res) qDebug() << "getStatus - res =" << res;
+    if (res) qDebug() << "getStatus - res =" << res;
     return res;
 }
 
@@ -194,23 +194,23 @@ int Wm100::controllerId(Wm100Protocol::controller_id *id)
 
 int Wm100::killDaemon()
 {
-    Wm100ProtocolHttp* pr = new Wm100ProtocolHttp(this);
-    int res =  pr->cKillDaemon("http://127.0.0.1:51232");
+    Wm100ProtocolHttp2* pr = new Wm100ProtocolHttp2(this);
+    int res = pr->cKillDaemon("http://127.0.0.1:51232");
     delete pr;
     return res;
 }
 
 int Wm100::getDaemonVersion(QString &version, QString &build)
 {
-    Wm100ProtocolHttp* pr = new Wm100ProtocolHttp(this);
-    int res =  pr->cDaemonVersion(version, build, "http://127.0.0.1:51232");
+    Wm100ProtocolHttp2* pr = new Wm100ProtocolHttp2(this);
+    int res = pr->cDaemonVersion(version, build, "http://127.0.0.1:51232");
     delete pr;
     return res;
 }
 
 int Wm100::setDateTime(const QDateTime &datetime)
 {
-    Wm100ProtocolHttp* pr =  new Wm100ProtocolHttp(this);
+    Wm100ProtocolHttp2* pr =  new Wm100ProtocolHttp2(this);
     int res = pr->cSetDateTime(datetime, "http://127.0.0.1:51232");
     delete pr;
     return res;
@@ -266,11 +266,18 @@ QString Wm100::
     QString desc;
     switch (err)
     {
-    case -35: desc = "Ошибка на линии i2c"; break;
+    case -47:
+    case -46:
+    case -45:
+    case -44:
+    case -43:
+    case -42:
+    case -41: desc = "Ошибка поллинга демона"; break;
+    case -35:
     case -34:
     case -33:
     case -32:
-    case -31: desc = "Устройство отсутствует на линии"; break;
+    case -31: desc = "Ошибка на линии i2c"; break;
     case -26: desc = "Параметр не найден"; break;
     case -25: desc = "Пустой файл"; break;
     case -24: desc = "Ошибка чтения файла"; break;

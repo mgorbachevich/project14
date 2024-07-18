@@ -73,9 +73,9 @@ int Wm100ProtocolCom::executeCommand(wmcommand cmd, const QByteArray &out, QByte
                 res = static_cast<quint8>(buf[2]);
                 in = buf.mid(3,buf.size()-4);
             }
-            if (!res) break;
-            QThread::msleep(50);
         }
+        if (!res) break;
+        QThread::msleep(50);
     }
     return res;
 }

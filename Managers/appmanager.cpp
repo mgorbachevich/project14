@@ -1485,7 +1485,7 @@ void AppManager::onNetCommand(const int command, const QString& param)
             QString s;
             if(Tools::toBool(param)) // Ok
             {
-                settings->setValue(SettingCode_LastDownload, Tools::now().toString(DATE_TIME_FORMAT));
+                settings->setValue(SettingCode_InfoLastDownload, Tools::now().toString(DATE_TIME_FORMAT));
                 settings->write();
                 //s = "Загрузка успешно завершена. Данные обновлены!";
             }
@@ -1495,7 +1495,7 @@ void AppManager::onNetCommand(const int command, const QString& param)
                 {
                     s += "ОШИБКИ ПРИ ЗАГРУЗКЕ! ДАННЫЕ НЕ ОБНОВЛЕНЫ!";
                     s += "\nПоследняя успешная загрузка ";
-                    s += settings->getStringValue(SettingCode_LastDownload);
+                    s += settings->getStringValue(SettingCode_InfoLastDownload);
                     DataBase::renameDBFile(DB_PRODUCT_COPY_NAME, DB_PRODUCT_NAME);
                 }
                 else s = "ОШИБКИ ПРИ ЗАГРУЗКЕ! ВОЗМОЖНА ПОТЕРЯ ДАННЫХ! ДАННЫЕ ОБНОВЛЕНЫ!";
@@ -1557,7 +1557,7 @@ void AppManager::onInfoClicked()
     s += QString("Версия Принтера: %1\n").arg(PMVersion());
     s += QString("Версия Сервера: %1\n").arg(serverVersion());
     s += QString("IP: %1\n").arg(Tools::getNetParams().localHostIP);
-    s += QString("Последняя загрузка: %1").arg(settings->getStringValue(SettingCode_LastDownload));
+    s += QString("Последняя загрузка: %1").arg(settings->getStringValue(SettingCode_InfoLastDownload));
     showMessage(t, s);
 }
 

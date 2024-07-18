@@ -54,6 +54,8 @@ public:
     QString serverVersion() { return netServer->version(); }
     QString WMVersion() { return equipmentManager->WMVersion(); }
     QString PMVersion() { return equipmentManager->PMVersion(); }
+    QString daemonVersion() { return equipmentManager->daemonVersion(); }
+    QString MODVersion() { return equipmentManager->MODVersion(); }
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();

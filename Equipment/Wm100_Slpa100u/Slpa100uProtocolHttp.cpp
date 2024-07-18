@@ -78,7 +78,7 @@ int Slpa100uProtocolHttp::readAnswer(prncommand cmd, const QByteArray &out, QByt
         parseReply(answer, in);
         res = 0;
         if (in.size() > 5 && getCRC16(in.mid(2, in.size()-3))) res = -13;
-        qDebug() << ">> " << in.toHex(' ');
+        //qDebug() << ">> " << in.toHex(' ');
         if (in.size() == 0) qDebug() << answer;
     }
     return res;
@@ -102,7 +102,7 @@ int Slpa100uProtocolHttp::sendCommand(prncommand cmd, const QByteArray &out, QBy
     while (in != "ok" && ++nn < 30);
     if (!b) res = -1;
     if (nn == 30) res = -30;
-    qDebug() << ">> " << cmd16data.toHex(' ') << " -> " << in;
+    //qDebug() << ">> " << cmd16data.toHex(' ') << " -> " << in;
     return res;
 }
 
@@ -175,7 +175,7 @@ int Slpa100uProtocolHttp::flushBuffer(const QByteArray &out, uint16_t offset, ui
     QString txdata(out.toHex());
     io->setOption(2, 1, "txdata", txdata.toUpper());
     if (!io->writeRead(out, answer, 0, 3000)) res = -1;
-    qDebug() << "flushBuffer() writeRead() answer = " << answer << ", res = " << res << ", size = " << out.size() << ", offset = " << offset << ", cmd16 = " << cmd16;
+    //qDebug() << "flushBuffer() writeRead() answer = " << answer << ", res = " << res << ", size = " << out.size() << ", offset = " << offset << ", cmd16 = " << cmd16;
 
     if (!res && answer.toStdString()=="ok" && !lines)
     {
@@ -194,7 +194,7 @@ int Slpa100uProtocolHttp::flushBuffer(const QByteArray &out, uint16_t offset, ui
             {
                 res = 0;
             }
-            qDebug() << "flushBuffer() answer = " << answer.toHex(' ') << ", res = " << res << ", size = " << out.size() << ", offset = " << offset;
+            //qDebug() << "flushBuffer() answer = " << answer.toHex(' ') << ", res = " << res << ", size = " << out.size() << ", offset = " << offset;
         }
         else qDebug() << "flushBuffer() answer = " << answer;
     }

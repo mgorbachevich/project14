@@ -13,6 +13,7 @@ enum ScaleConfigField
     ScaleConfigField_Model = 0,
     ScaleConfigField_ModelName, // Comment
     ScaleConfigField_SerialNumber,
+    ScaleConfigField_NetName,
     ScaleConfigField_VerificationDate,
     ScaleConfigField_FactorySettingsPassword,
     ScaleConfigField_SystemSettingsPassword,

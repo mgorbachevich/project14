@@ -106,6 +106,7 @@ HEADERS += \
     Equipment/Wm100_Slpa100u/Wm100ProtocolCom.h \
     Equipment/Wm100_Slpa100u/Wm100ProtocolDemo.h \
     Equipment/Wm100_Slpa100u/Wm100ProtocolHttp.h \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolHttp2.h \
     Equipment/Wm100_Slpa100u/wm100.h \
     Managers/equipmentmanager.h \
     Managers/externalmessager.h \
@@ -207,6 +208,7 @@ SOURCES += \
     Equipment/Wm100_Slpa100u/Wm100ProtocolCom.cpp \
     Equipment/Wm100_Slpa100u/Wm100ProtocolDemo.cpp \
     Equipment/Wm100_Slpa100u/Wm100ProtocolHttp.cpp \
+    Equipment/Wm100_Slpa100u/Wm100ProtocolHttp2.cpp \
     Equipment/Wm100_Slpa100u/wm100.cpp \
     Managers/appmanager.cpp \
     Managers/equipmentmanager.cpp \

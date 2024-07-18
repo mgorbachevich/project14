@@ -220,7 +220,7 @@ int Wm100Protocol::cGetChannelParam()
         QDataStream ds(in);
         ds.setByteOrder(QDataStream::LittleEndian);
         ds  >> channelParams.flags
-            >> channelParams.reserved0
+            >> channelParams.dec_point
             >> channelParams.measure
             >> max >> min >> tare
             >> ranges[0] >> ranges[1] >> ranges[2]

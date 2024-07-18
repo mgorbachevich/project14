@@ -6,12 +6,15 @@
 #include "Wm100Protocol.h"
 
 
+#define MOD_VERSION "1.15"
+
 class Wm100 : public QObject
 {
     Q_OBJECT
 public:
     explicit Wm100(QObject *parent = nullptr);
     ~Wm100();
+    static QString getVersionString() { return MOD_VERSION; }
 
 public:
     int connectDevice(const QString &uri);

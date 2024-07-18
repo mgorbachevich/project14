@@ -281,6 +281,17 @@ void EquipmentManager::setSystemDateTime(const QDateTime& dt)
     }
 }
 
+QString EquipmentManager::daemonVersion() const
+{
+    if (wm != nullptr)
+    {
+        QString s1, s2;
+        wm->getDaemonVersion(s1, s2);
+        return QString("%1.$2").arg(s1, s2);
+    }
+    return "Не определено";
+}
+
 QString EquipmentManager::WMVersion() const
 {
     if (wm != nullptr)
@@ -288,7 +299,7 @@ QString EquipmentManager::WMVersion() const
         Wm100Protocol::device_metrics dm;
         if(wm->getDeviceMetrics(&dm) >= 0) return Tools::toString(dm.protocol_version);
     }
-    return "";
+    return "Не определено";
 }
 
 void EquipmentManager::setWMParam(const int param)
@@ -382,7 +393,7 @@ void EquipmentManager::onWMErrorStatusChanged(int e)
 
 QString EquipmentManager::PMVersion() const
 {
-    return (slpa == nullptr) ? "" : QString::number(slpa->getPrinterVersion());
+    return (slpa == nullptr) ? "Не определено" : QString::number(slpa->getPrinterVersion());
 }
 
 void EquipmentManager::feed()

@@ -32,7 +32,7 @@ public:
 
     struct channel_specs {
         uint16_t flags;
-        uint8_t  reserved0;
+        uint8_t  dec_point;
         int8_t   measure;
         double_t max;
         double_t min;
@@ -138,11 +138,11 @@ public:
 protected:
     IoBase *io = nullptr;
     deviceinterface deviceInterface = diNone;
-
-private:
     channel_status lastStatus = {0, 0.0, 0.0, 0};
     device_metrics deviceMetrics;
     channel_specs channelParams;
+
+private:
     virtual int executeCommand(wmcommand cmd, const QByteArray &out, QByteArray &in) = 0;
 
 signals:
