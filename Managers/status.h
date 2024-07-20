@@ -20,12 +20,14 @@ public:
     bool isAlarm = false;
     bool isProductSortIncrement = true;
     int pieces = 1;
-    AutoPrintMode autoPrintMode = AutoPrintMode_Off;
     int productSort = ShowcaseSort_Name;
     int lastProductSort = ShowcaseSort_Code; // ShowcaseSort_Code/ShowcaseSort_Code2
     int secret = 0;
+    int downloadedRecords = 0;
+    QString downloadDateTime;
     quint64 netActionTime = 0;
     quint64 userActionTime = 0;
+    AutoPrintMode autoPrintMode = AutoPrintMode_Off;
 };
 
 #endif // STATUS_H

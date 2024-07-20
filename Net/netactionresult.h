@@ -10,7 +10,7 @@ class AppManager;
 class NetActionResult
 {
 public:
-    NetActionResult(AppManager* am, const RouterRule v) { appManager = am; rule = v; }
+    NetActionResult(AppManager* am, const RouterRule r = RouterRule_Set) { appManager = am; rule = r; }
     ~NetActionResult();
 
     QString makeJson();

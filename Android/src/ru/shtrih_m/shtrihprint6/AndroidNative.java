@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.bluetooth.BluetoothAdapter;
 import android.os.Environment;
+import java.lang.reflect.Method;
 
 public class AndroidNative
 {
@@ -107,4 +108,29 @@ public class AndroidNative
         }
         return -2;
     }
+
+    public static String getAndroidBuild()
+    {
+        // https://stackoverflow.com/questions/20697008/how-to-get-device-aosp-build-number-in-android-devices-programmatically
+        try
+        {
+            return android.os.Build.DISPLAY;
+        }
+        catch (Exception e) {}
+        return "";
+    }
+
+    public static String getHostName()
+    {
+        // https://stackoverflow.com/questions/26643989/android-how-to-get-current-device-wifi-direct-name
+        try
+        {
+            Method getString = android.os.Build.class.getDeclaredMethod("getString", String.class);
+            getString.setAccessible(true);
+            return getString.invoke(null, "net.hostname").toString();
+        }
+        catch (Exception e) {}
+        return "";
+    }
 }
+

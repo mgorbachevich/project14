@@ -12,6 +12,7 @@ ScaleConfig::ScaleConfig(AppManager* parent) : JsonFile(SCALE_CONFIG_FILE, paren
     fields.insert(ScaleConfigField_VerificationDate,        "verification_date");
     fields.insert(ScaleConfigField_FactorySettingsPassword, "factory_settings_password");
     fields.insert(ScaleConfigField_SystemSettingsPassword,  "system_settings_password");
+    fields.insert(ScaleConfigField_License,                 "license");
 }
 
 bool ScaleConfig::read()

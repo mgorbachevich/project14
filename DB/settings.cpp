@@ -225,7 +225,7 @@ bool Settings::setValue(const int itemCode, const QString& value)
 bool Settings::write()
 {
     Tools::debugLog("@@@@@ Settings::write");
-    setValuesToConfig();
+    toConfig();
     bool ok = scaleConfig->write() && Tools::writeTextFile(fileName, toString());
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::productSortIncrement(ok)));
     appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
@@ -263,51 +263,91 @@ bool Settings::read()
          (*getByCode(SettingCode_Model))[SettingField_ValueList] = s;
     }
     ok &= scaleConfig->read();
-    if(ok) setValuesFromConfig();
+    if(ok) fromConfig();
     Tools::debugLog(QString("@@@@@ JsonArrayFile::read %1 %2").arg(Tools::toString(ok), Tools::toString((int)(items.count()))));
     return ok;
 }
 
 void Settings::setInfoValues()
 {
-    int n = (*getByCode(SettingCode_Model))[SettingField_Value].toInt();
-    if(n >= modelNames.size()) n = 0;
-    QString netName = modelNames[n].second + "_" + getStringValue(SettingCode_SerialNumber);
-    setValue(SettingCode_NetName,               netName);
-    setValue(SettingCode_InfoNetName,           netName);
-    setValue(SettingCode_InfoModelName,         getStringValue(SettingCode_Model));
-    setValue(SettingCode_InfoSerialNumber,      getStringValue(SettingCode_SerialNumber));
-    setValue(SettingCode_InfoVersion,           APP_VERSION);
-    setValue(SettingCode_InfoDaemonVersion,     appManager->daemonVersion());
-    setValue(SettingCode_InfoDBVersion,         appManager->dbVersion());
-    setValue(SettingCode_InfoMODVersion,        appManager->MODVersion());
-    setValue(SettingCode_InfoServerVersion,     appManager->serverVersion());
-    setValue(SettingCode_InfoWMSoftwareVersion, appManager->WMVersion());
-    setValue(SettingCode_InfoPMSoftwareVersion, appManager->PMVersion());
-    setValue(SettingCode_InfoIP,                Tools::getNetParams().localHostIP);
-    setValue(SettingCode_InfoLicense,           getStringValue(SettingCode_License));
-    setValue(SettingCode_InfoWiFi,              "Не поддерживается");
-    setValue(SettingCode_InfoBluetooth,         "Не поддерживается");
-    setValue(SettingCode_InfoAndroidAssembly,   "Не поддерживается");
-    setValue(SettingCode_InfoWMHardwareVersion, "Не поддерживается");
-    setValue(SettingCode_InfoPMHardwareVersion, "Не поддерживается");
+    setValue(SettingCode_InfoVersion,       APP_VERSION);
+    setValue(SettingCode_InfoDaemonVersion, appManager->daemonVersion());
+    setValue(SettingCode_InfoDBVersion,     appManager->dbVersion());
+    setValue(SettingCode_InfoMODVersion,    appManager->MODVersion());
+    setValue(SettingCode_InfoServerVersion, appManager->serverVersion());
+    setValue(SettingCode_InfoWMVersion,     appManager->WMVersion());
+    setValue(SettingCode_InfoPMVersion,     appManager->PMVersion());
+    setValue(SettingCode_InfoIP,            Tools::getNetParams().localHostIP);
+    setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
+    setValue(SettingCode_InfoWiFi,          Tools::getWiFiName());
+    //setValue(SettingCode_InfoWiFi,          "Не поддерживается");
+    setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
 }
 
-void Settings::setValuesFromConfig()
+void Settings::fromConfig()
 {
     setValue(SettingCode_Model,            scaleConfig->get(ScaleConfigField_Model).toString());
     setValue(SettingCode_SerialNumber,     scaleConfig->get(ScaleConfigField_SerialNumber).toString());
     setValue(SettingCode_VerificationDate, scaleConfig->get(ScaleConfigField_VerificationDate).toString());
-    setInfoValues();
+    setValue(SettingCode_License,          scaleConfig->get(ScaleConfigField_License).toString());
+    setModelValues();
 }
 
-void Settings::setValuesToConfig()
+void Settings::toConfig()
 {
-    setInfoValues();
-    setConfigValue(ScaleConfigField_ModelName,        getStringValue(SettingCode_InfoModelName));
-    setConfigValue(ScaleConfigField_NetName,          getStringValue(SettingCode_InfoNetName));
-    setConfigValue(ScaleConfigField_SerialNumber,     getStringValue(SettingCode_InfoSerialNumber));
-    setConfigValue(ScaleConfigField_Model,            getStringValue(SettingCode_Model));
+    const int m = model();
+    setConfigValue(ScaleConfigField_Model,            Tools::toString(m));
+    setConfigValue(ScaleConfigField_ModelName,        modelNames[m].first);
+    setConfigValue(ScaleConfigField_SerialNumber,     getStringValue(SettingCode_SerialNumber));
     setConfigValue(ScaleConfigField_VerificationDate, getStringValue(SettingCode_VerificationDate));
+    setConfigValue(ScaleConfigField_License,          getStringValue(SettingCode_License));
+    setConfigValue(ScaleConfigField_NetName,          netName());
+    setModelValues();
+}
+
+void Settings::setModelValues()
+{
+    setValue(SettingCode_InfoModelName,    scaleConfig->get(ScaleConfigField_ModelName).toString());
+    setValue(SettingCode_InfoSerialNumber, scaleConfig->get(ScaleConfigField_SerialNumber).toString());
+    setValue(SettingCode_NetName,          scaleConfig->get(ScaleConfigField_NetName).toString());
+    setValue(SettingCode_InfoNetName,      scaleConfig->get(ScaleConfigField_NetName).toString());
+    setValue(SettingCode_InfoLicense,      scaleConfig->get(ScaleConfigField_License).toString());
+}
+
+QString Settings::modelInfo()
+{
+    QString s = "Модель ?";
+    QString mn = getStringValue(SettingCode_Model);
+    if(!mn.isEmpty()) s = QString("%1  № %2").arg(mn, getStringValue(SettingCode_SerialNumber));
+    return s;
+}
+
+int Settings::model()
+{
+    int model = getIntValue(SettingCode_Model, true);
+    if(model >= modelNames.count()) model = 0;
+    return model;
+}
+
+QString Settings::netName()
+{
+    return modelNames[model()].second + "_" + getStringValue(SettingCode_SerialNumber);
+}
+
+QString Settings::aboutInfo()
+{
+    QString s;
+    s += QString("Идентификатор весов: %1\n").arg(netName());
+    s += QString("Версия приложения: %1\n").arg(APP_VERSION);
+    s += QString("Лицензия: %1\n").arg(getStringValue(SettingCode_InfoLicense));
+    s += QString("Версия модуля драйверов: %1\n").arg(appManager->MODVersion());
+    s += QString("Версия демона: %1\n").arg(appManager->daemonVersion());
+    s += QString("Версия БД: %1\n").arg(appManager->dbVersion());
+    s += QString("Версия весового модуля: %1\n").arg(appManager->WMVersion());
+    s += QString("Версия принтера: %1\n").arg(appManager->PMVersion());
+    s += QString("Версия сервера: %1\n").arg(appManager->serverVersion());
+    s += QString("IP: %1\n").arg(Tools::getNetParams().localHostIP);
+    s += QString("Последняя загрузка: %1").arg(getStringValue(SettingCode_InfoLastDownload));
+    return s;
 }
 

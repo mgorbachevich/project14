@@ -33,7 +33,8 @@ Popup
         GridLayout
         {
             anchors.fill: parent
-            anchors.margins: screenManager.spacer()
+            anchors.leftMargin: screenManager.spacer()
+            anchors.rightMargin: screenManager.spacer()
             columnSpacing: 0
             rowSpacing: 0
             focus: true

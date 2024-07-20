@@ -448,3 +448,28 @@ bool Tools::checkPermission(const QString& permission)
 
     return ok;
 }
+
+QByteArray Tools::toBytes(const quint32 v)
+{
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::WriteOnly);
+    stream << v;
+    return ba;
+}
+
+QString Tools::getAndroidBuild()
+{
+#ifdef Q_OS_ANDROID
+    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getAndroidBuild")).toString();
+#endif
+    return "";
+}
+
+QString Tools::getWiFiName()
+{
+#ifdef Q_OS_ANDROID
+    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getHostName")).toString();
+#endif
+    return "";
+}
+

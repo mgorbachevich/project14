@@ -14,6 +14,7 @@ public:
 
     // Type conversion:
     static bool toBool(const QString& s) { return s == "1" || s.toUpper() == "TRUE"; }
+    static QByteArray toBytes(const quint32);
     static double toDouble(const QString &s) { bool ok; double v = s.toDouble(&ok); return ok ? v : 0; }
     static int toInt(const bool v) { return v ? 1 : 0; }
     static int toInt(const QString &s) { bool ok; int v = s.toInt(&ok); return ok ? v : 0; }
@@ -64,6 +65,8 @@ public:
     static void sortByInt(DBRecordList&, const int, const bool increase = true);
     static void sortByString(DBRecordList&, const int, const bool increase = true);
     //static void memoryCheck();
+    static QString getAndroidBuild();
+    static QString getWiFiName();
 
 private:
     static QString makeFullPath(const QString&, const QString&);

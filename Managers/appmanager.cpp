@@ -117,6 +117,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     settings->read();
     updateSettings(0);
     equipmentManager->create();
+    settings->setInfoValues();
 
     onUserAction();
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { emit start(); });
@@ -1482,10 +1483,14 @@ void AppManager::onNetCommand(const int command, const QString& param)
         if(status.isRefreshNeeded)
         {
             status.isRefreshNeeded = false;
-            QString s;
+            QString toast;
             if(Tools::toBool(param)) // Ok
             {
-                settings->setValue(SettingCode_InfoLastDownload, Tools::now().toString(DATE_TIME_FORMAT));
+                status.downloadDateTime = Tools::now().toString(DATE_TIME_FORMAT);
+                QString s = status.downloadDateTime;
+                if(status.downloadedRecords > 0)
+                    s += QString(" (Записи %1)").arg(Tools::toString(status.downloadedRecords));
+                settings->setValue(SettingCode_InfoLastDownload, s);
                 settings->write();
                 //s = "Загрузка успешно завершена. Данные обновлены!";
             }
@@ -1493,14 +1498,14 @@ void AppManager::onNetCommand(const int command, const QString& param)
             {
                 if(DataBase::isDBFileExists(DB_PRODUCT_COPY_NAME))
                 {
-                    s += "ОШИБКИ ПРИ ЗАГРУЗКЕ! ДАННЫЕ НЕ ОБНОВЛЕНЫ!";
-                    s += "\nПоследняя успешная загрузка ";
-                    s += settings->getStringValue(SettingCode_InfoLastDownload);
+                    toast += "ОШИБКИ ПРИ ЗАГРУЗКЕ! ДАННЫЕ НЕ ОБНОВЛЕНЫ!";
+                    const QString& ld = settings->getStringValue(SettingCode_InfoLastDownload);
+                    if(!ld.isEmpty()) toast += "\nПоследняя успешная загрузка\n" + ld;
                     DataBase::renameDBFile(DB_PRODUCT_COPY_NAME, DB_PRODUCT_NAME);
                 }
-                else s = "ОШИБКИ ПРИ ЗАГРУЗКЕ! ВОЗМОЖНА ПОТЕРЯ ДАННЫХ! ДАННЫЕ ОБНОВЛЕНЫ!";
+                else toast = "ОШИБКИ ПРИ ЗАГРУЗКЕ! ВОЗМОЖНА ПОТЕРЯ ДАННЫХ! ДАННЫЕ ОБНОВЛЕНЫ!";
             }
-            showToast(s, SHOW_LONG_TOAST_SEC);
+            showToast(toast, SHOW_LONG_TOAST_SEC);
             QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
         }
         DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
@@ -1539,26 +1544,6 @@ void AppManager::onNetResult(NetActionResult& result)
     }
     if(result.errorCount > 0) toast += QString(". ОШИБКИ: %1").arg(Tools::toString(result.errorCount));
     showToast(toast);
-}
-
-void AppManager::onInfoClicked()
-{
-    debugLog("@@@@@ AppManager::onInfoClicked ");
-    onUserAction();
-
-    QString t = "Модель: ?";
-    QString mn = settings->getConfigValue(ScaleConfigField_ModelName);
-    if(!mn.isEmpty()) t = QString("%1  № %2").arg(mn, settings->getConfigValue(ScaleConfigField_SerialNumber));
-
-    QString s;
-    s += QString("Версия приложения: %1\n").arg(APP_VERSION);
-    s += QString("Версия БД: %1\n").arg(dbVersion());
-    s += QString("Версия Весового Модуля: %1\n").arg(WMVersion());
-    s += QString("Версия Принтера: %1\n").arg(PMVersion());
-    s += QString("Версия Сервера: %1\n").arg(serverVersion());
-    s += QString("IP: %1\n").arg(Tools::getNetParams().localHostIP);
-    s += QString("Последняя загрузка: %1").arg(settings->getStringValue(SettingCode_InfoLastDownload));
-    showMessage(t, s);
 }
 
 void AppManager::onInputProductCodeEdited(const QString &value)
@@ -1608,6 +1593,13 @@ void AppManager::updateSearch()
                searchPanelModel->descriptor.param, "",
                searchPanelModel->descriptor.firstLoadRow,
                searchPanelModel->loadLimit());
+}
+
+void AppManager::onInfoClicked()
+{
+    debugLog("@@@@@ AppManager::onInfoClicked ");
+    onUserAction();
+    showMessage(settings->modelInfo(), settings->aboutInfo());
 }
 
 

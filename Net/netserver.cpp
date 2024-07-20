@@ -430,6 +430,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                 QString::number(result.successCount),
                 QString::number(result.successCount + result.errorCount));
     appManager->showToast(result.description);
+    appManager->status.downloadedRecords = result.successCount;
     return result.makeJson();
 }
 

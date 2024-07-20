@@ -287,7 +287,7 @@ QString EquipmentManager::daemonVersion() const
     {
         QString s1, s2;
         wm->getDaemonVersion(s1, s2);
-        return QString("%1.$2").arg(s1, s2);
+        if(!s1.isEmpty() || !s2.isEmpty()) return QString("%1 от %2").arg(s1, s2);
     }
     return "Не определено";
 }
@@ -297,7 +297,8 @@ QString EquipmentManager::WMVersion() const
     if (wm != nullptr)
     {
         Wm100Protocol::device_metrics dm;
-        if(wm->getDeviceMetrics(&dm) >= 0) return Tools::toString(dm.protocol_version);
+        wm->getDeviceMetrics(&dm);
+        return dm.name;
     }
     return "Не определено";
 }
@@ -393,7 +394,13 @@ void EquipmentManager::onWMErrorStatusChanged(int e)
 
 QString EquipmentManager::PMVersion() const
 {
-    return (slpa == nullptr) ? "Не определено" : QString::number(slpa->getPrinterVersion());
+    if(slpa != nullptr)
+    {
+        int v = slpa->getPrinterVersion();
+        QByteArray ba = Tools::toBytes((quint32)v);
+        return QString("%1.%2").arg(Tools::toString((int)ba[2]), Tools::toString((int)ba[3]));
+    }
+    return "Не определено";
 }
 
 void EquipmentManager::feed()

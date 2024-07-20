@@ -17,6 +17,7 @@ enum ScaleConfigField
     ScaleConfigField_VerificationDate,
     ScaleConfigField_FactorySettingsPassword,
     ScaleConfigField_SystemSettingsPassword,
+    ScaleConfigField_License,
 };
 
 class ScaleConfig : public JsonFile
