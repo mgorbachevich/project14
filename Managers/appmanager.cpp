@@ -128,6 +128,7 @@ void AppManager::onDBStarted()
 {
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
+    equipmentManager->start();
     settings->setInfoValues();
     if(db->isStarted())
     {
@@ -1344,6 +1345,7 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
         onUserAction();
         if(DB_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
         users->clear();
+        settings->write();
         debugLog("@@@@@ AppManager::stopAuthorization Done");
     });
 }

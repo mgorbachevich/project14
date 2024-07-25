@@ -57,7 +57,6 @@ void EquipmentManager::create()
         return;
     }
 
-    QString wmv = "НЕ ПОДКЛЮЧЕНО";
     createWM();
     if(wm == nullptr)
     {
@@ -75,20 +74,17 @@ void EquipmentManager::create()
             case Wm100Protocol::diDemo:
                 WMMode = EquipmentMode_Demo;
                 showAttention(WM_MESSAGE_DEMO);
-                wmv = "ДЕМО";
                 break;
             case Wm100Protocol::diNone:
                 showAttention(WMPM_MESSAGE_NONE);
                 break;
             default:
                 WMMode = EquipmentMode_Ok;
-                wmv = WMVersion();
                 break;
             }
         }
     }
 
-    QString pmv = "НЕ ПОДКЛЮЧЕНО";
     createPM();
     int e2 = wm->readConnectParam(path, "PrinterUri", PMUri);
     if(e2 != 0) showAttention(wm->errorDescription(e2));
@@ -99,20 +95,15 @@ void EquipmentManager::create()
         case Slpa100uProtocol::diDemo:
             PMMode = EquipmentMode_Demo;
             showAttention(PM_MESSAGE_DEMO);
-            pmv = "ДЕМО";
             break;
         case Slpa100uProtocol::diNone:
             showAttention(PM_MESSAGE_NONE);
             break;
         default:
             PMMode = EquipmentMode_Ok;
-            pmv = PMVersion();
             break;
         }
     }
-
-    appManager->settings->setValue(SettingCode_InfoWMVersion, wmv);
-    appManager->settings->setValue(SettingCode_InfoPMVersion, pmv);
     appManager->settings->setValue(SettingCode_InfoMODVersion, MODVersion());
     appManager->settings->setValue(SettingCode_InfoDaemonVersion, daemonVersion());
 
@@ -156,6 +147,7 @@ int EquipmentManager::startWM() // return error
     {
         e = wm->connectDevice(WMUri);
         isWMStarted = (e == 0);
+        appManager->settings->setValue(SettingCode_InfoWMVersion, WMVersion());
     }
     if(e) showAttention(QString("\nОшибка весового модуля %1: %2").arg(
                 Tools::toString(e), getWMErrorDescription(e)));
@@ -222,6 +214,7 @@ int EquipmentManager::startPM()
     {
         e = slpa->connectDevice(PMUri);
         isPMStarted = (e == 0);
+        appManager->settings->setValue(SettingCode_InfoPMVersion, PMVersion());
         //slpa->blockSignals(!isPMStarted);
         if(isPMStarted)
         {
