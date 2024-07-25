@@ -7,6 +7,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.os.Environment;
 import java.lang.reflect.Method;
 
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.wifi.WifiInfo;
+
+import android.net.wifi.SupplicantState;
+import android.net.wifi.WifiManager;
+
 public class AndroidNative
 {
     public static int startNativeActivity(Context context, int param)
@@ -117,7 +125,7 @@ public class AndroidNative
             return android.os.Build.DISPLAY;
         }
         catch (Exception e) {}
-        return "";
+        return "?";
     }
 
     public static String getHostName()
@@ -130,7 +138,37 @@ public class AndroidNative
             return getString.invoke(null, "net.hostname").toString();
         }
         catch (Exception e) {}
-        return "";
+        return "?";
     }
+
+    public static String getSSID1(Context context)
+    {
+        // https://stackoverflow.com/questions/21391395/get-ssid-when-wifi-is-connected
+        try
+        {
+            WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = wm.getConnectionInfo();
+            if(info.getSupplicantState() == SupplicantState.COMPLETED)
+                return info.getSSID();
+            return "?";
+
+        }
+        catch (Exception e) { return e.getMessage(); }
+    }
+
+    public static String getSSID2(Context context)
+    {
+        // https://stackoverflow.com/questions/71281724/getting-wifi-ssid-from-connectivitymanager-networkcapabilities-synchronously
+        try
+        {
+            ConnectivityManager cm = context.getSystemService(ConnectivityManager.class);
+            Network n = cm.getActiveNetwork();
+            NetworkCapabilities netCaps = cm.getNetworkCapabilities(n);
+            WifiInfo info = (WifiInfo) netCaps.getTransportInfo();
+            return info.getSSID();
+        }
+        catch (Exception e) { return e.getMessage(); }
+    }
+
 }
 

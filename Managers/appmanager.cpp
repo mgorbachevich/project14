@@ -117,7 +117,6 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     settings->read();
     updateSettings(0);
     equipmentManager->create();
-    settings->setInfoValues();
 
     onUserAction();
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { emit start(); });
@@ -128,6 +127,7 @@ void AppManager::onDBStarted()
 {
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
+    settings->setInfoValues();
     if(db->isStarted())
     {
         startAuthorization();

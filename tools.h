@@ -67,6 +67,8 @@ public:
     //static void memoryCheck();
     static QString getAndroidBuild();
     static QString getWiFiName();
+    static QString getSSID1();
+    static QString getSSID2();
 
 private:
     static QString makeFullPath(const QString&, const QString&);

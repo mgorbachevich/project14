@@ -30,6 +30,7 @@ class InputProductCodePanelModel3;
 class EditUsersPanelModel3;
 class MoneyCalculator;
 class ScreenManager;
+class QNetworkSettingsManager;
 
 class AppManager : public QObject
 {
@@ -154,6 +155,7 @@ private:
     NetServer* netServer = nullptr;
     QQmlContext* context = nullptr;
     ScreenManager* screenManager = nullptr;
+    QNetworkSettingsManager* networkSettingsManager = nullptr;
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;

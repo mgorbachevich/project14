@@ -89,7 +89,22 @@ NetParams Tools::getNetParams()
             }
         }
     }
-    debugLog(QString("@@@@@ Tools::getNetParams %1 %2 %3 %4").arg(np.localHostName, np.localMacAddress, np.localHostIP, np.localNetMask));
+
+    np.ethernet = "?";
+    QNetworkInterface eth1Ip = QNetworkInterface::interfaceFromName("eth1");
+    QList<QNetworkAddressEntry> entries = eth1Ip.addressEntries();
+    if (!entries.isEmpty())
+    {
+        QNetworkAddressEntry entry = entries.first();
+        np.ethernet = entry.ip().toString();
+    }
+
+    debugLog(QString("@@@@@ Tools::getNetParams %1 %2 %3 %4 %5").arg(
+                 np.localHostName,
+                 np.localMacAddress,
+                 np.localHostIP,
+                 np.localNetMask,
+                 np.ethernet));
     return np;
 }
 
@@ -460,16 +475,40 @@ QByteArray Tools::toBytes(const quint32 v)
 QString Tools::getAndroidBuild()
 {
 #ifdef Q_OS_ANDROID
+    debugLog("@@@@@ Tools::getAndroidBuild");
     return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getAndroidBuild")).toString();
 #endif
-    return "";
+    return "?";
 }
 
 QString Tools::getWiFiName()
 {
 #ifdef Q_OS_ANDROID
+    debugLog("@@@@@ Tools::getWiFiName");
     return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getHostName")).toString();
 #endif
-    return "";
+    return "?";
+}
+
+QString Tools::getSSID1()
+{
+#ifdef Q_OS_ANDROID
+    debugLog("@@@@@ Tools::getSSID1");
+    auto context = QNativeInterface::QAndroidApplication::context();
+    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID1",
+            "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
+#endif
+    return "?";
+}
+
+QString Tools::getSSID2()
+{
+#ifdef Q_OS_ANDROID
+    debugLog("@@@@@ Tools::getSSID2");
+    auto context = QNativeInterface::QAndroidApplication::context();
+    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID2",
+            "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
+#endif
+    return "?";
 }
 

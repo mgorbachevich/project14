@@ -192,6 +192,12 @@ void Settings::appendItemToJson(DBRecord& r, QJsonArray& ja)
     ja.append(ji);
 }
 
+void Settings::setConfigValue(const ScaleConfigField f, const QString &v)
+{
+    Tools::debugLog(QString("@@@@@ Settings::setConfigValue %1 %2").arg(Tools::toString((int)f), v));
+    scaleConfig->set(f, v);
+}
+
 bool Settings::setValue(const int itemCode, const QString& value)
 {
     Tools::debugLog(QString("@@@@@ Settings::setValue %1 %2").arg(Tools::toString(itemCode), value));
@@ -268,24 +274,9 @@ bool Settings::read()
     return ok;
 }
 
-void Settings::setInfoValues()
-{
-    setValue(SettingCode_InfoVersion,       APP_VERSION);
-    setValue(SettingCode_InfoDaemonVersion, appManager->daemonVersion());
-    setValue(SettingCode_InfoDBVersion,     appManager->dbVersion());
-    setValue(SettingCode_InfoMODVersion,    appManager->MODVersion());
-    setValue(SettingCode_InfoServerVersion, appManager->serverVersion());
-    setValue(SettingCode_InfoWMVersion,     appManager->WMVersion());
-    setValue(SettingCode_InfoPMVersion,     appManager->PMVersion());
-    setValue(SettingCode_InfoIP,            Tools::getNetParams().localHostIP);
-    setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
-    setValue(SettingCode_InfoWiFi,          Tools::getWiFiName());
-    //setValue(SettingCode_InfoWiFi,          "Не поддерживается");
-    setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
-}
-
 void Settings::fromConfig()
 {
+    Tools::debugLog("@@@@@ Settings::fromConfig");
     setValue(SettingCode_Model,            scaleConfig->get(ScaleConfigField_Model).toString());
     setValue(SettingCode_SerialNumber,     scaleConfig->get(ScaleConfigField_SerialNumber).toString());
     setValue(SettingCode_VerificationDate, scaleConfig->get(ScaleConfigField_VerificationDate).toString());
@@ -295,6 +286,7 @@ void Settings::fromConfig()
 
 void Settings::toConfig()
 {
+    Tools::debugLog("@@@@@ Settings::toConfig");
     const int m = model();
     setConfigValue(ScaleConfigField_Model,            Tools::toString(m));
     setConfigValue(ScaleConfigField_ModelName,        modelNames[m].first);
@@ -307,6 +299,7 @@ void Settings::toConfig()
 
 void Settings::setModelValues()
 {
+    Tools::debugLog("@@@@@ Settings::setModelValues");
     setValue(SettingCode_InfoModelName,    scaleConfig->get(ScaleConfigField_ModelName).toString());
     setValue(SettingCode_InfoSerialNumber, scaleConfig->get(ScaleConfigField_SerialNumber).toString());
     setValue(SettingCode_NetName,          scaleConfig->get(ScaleConfigField_NetName).toString());
@@ -349,5 +342,69 @@ QString Settings::aboutInfo()
     s += QString("IP: %1\n").arg(Tools::getNetParams().localHostIP);
     s += QString("Последняя загрузка: %1").arg(getStringValue(SettingCode_InfoLastDownload));
     return s;
+}
+
+void Settings::setInfoValues()
+{
+    Tools::debugLog("@@@@@ Settings::setInfoValues");
+    setValue(SettingCode_InfoVersion,       APP_VERSION);
+    setValue(SettingCode_InfoDaemonVersion, appManager->daemonVersion());
+    setValue(SettingCode_InfoDBVersion,     appManager->dbVersion());
+    setValue(SettingCode_InfoMODVersion,    appManager->MODVersion());
+    setValue(SettingCode_InfoServerVersion, appManager->serverVersion());
+    setValue(SettingCode_InfoWMVersion,     appManager->WMVersion());
+    setValue(SettingCode_InfoPMVersion,     appManager->PMVersion());
+    setValue(SettingCode_InfoIP,            Tools::getNetParams().localHostIP);
+    setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
+    setValue(SettingCode_InfoWiFi,          Tools::getSSID1());
+    setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
+
+    QString ssid1 = Tools::getSSID1();
+    QString ssid2 = Tools::getSSID2();
+
+    QString p;
+    p = "android.permission.ACCESS_WIFI_STATE";
+    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
+    p = "android.permission.CHANGE_WIFI_STATE";
+    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
+    p = "android.permission.ACCESS_FINE_LOCATION";
+    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
+    p = "android.permission.ACCESS_COARSE_LOCATION";
+    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
+    p = "android.permission.ACCESS_BACKGROUND_LOCATION";
+    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
+
+    NetParams np = Tools::getNetParams();
+    QString s1 = QString("localHostName = %1\n"
+                         "localMacAddress = %2\n"
+                         "localHostIP = %3\n"
+                         "localNetMask = %4\n"
+                         "ethernet = %5").arg(
+                np.localHostName,
+                np.localMacAddress,
+                np.localHostIP,
+                np.localNetMask,
+                np.ethernet);
+    appManager->showMessage("NetParams", s1);
+
+    QString s2 = QString("daemon = %1. MOD = %2\n"
+                         "WM = %3. PM = %4\n"
+                         "androidBuild = %5\n"
+                         "wifiName = %6\n"
+                         "SSID1 = %7\n"
+                         "ssid1 = %8\n"
+                         "SSID2 = %8\n"
+                         "ssid2 = %9").arg(
+                appManager->daemonVersion(),
+                appManager->MODVersion(),
+                appManager->WMVersion(),
+                appManager->PMVersion(),
+                Tools::getAndroidBuild(),
+                Tools::getWiFiName(),
+                Tools::getSSID1(),
+                ssid1,
+                Tools::getSSID2(),
+                ssid2);
+    appManager->showMessage("Versions", s2);
 }
 

@@ -174,7 +174,7 @@ public:
     bool read();
     bool write();
     QString getConfigValue(const ScaleConfigField f) { return scaleConfig->get(f).toString(); }
-    void setConfigValue(const ScaleConfigField f, const QString& v) { scaleConfig->set(f, v); }
+    void setConfigValue(const ScaleConfigField, const QString&);
     QString aboutInfo();
     QString modelInfo();
     void setInfoValues();
