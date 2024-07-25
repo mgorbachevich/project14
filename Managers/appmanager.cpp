@@ -116,7 +116,6 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     if(REMOVE_SETTINGS_FILE_ON_START) Tools::removeFile(SETTINGS_FILE);
     settings->read();
     updateSettings(0);
-
     equipmentManager->create();
 
     onUserAction();
@@ -128,8 +127,7 @@ void AppManager::onDBStarted()
 {
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
-    equipmentManager->start();
-    settings->setInfoValues();
+    setSettingsInfo();
     if(db->isStarted())
     {
         startAuthorization();
@@ -1345,7 +1343,6 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
         onUserAction();
         if(DB_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
         users->clear();
-        settings->write();
         debugLog("@@@@@ AppManager::stopAuthorization Done");
     });
 }
@@ -1605,6 +1602,35 @@ void AppManager::onInfoClicked()
     showMessage(settings->modelInfo(), settings->aboutInfo());
 }
 
+void AppManager::setSettingsInfo()
+{
+    debugLog("@@@@@ AppManager::setSettingsInfo ");
+#ifdef Q_OS_ANDROID
+    QString s;
+    QStringList ps = { "android.permission.ACCESS_WIFI_STATE",
+                       "android.permission.CHANGE_WIFI_STATE",
+                       "android.permission.ACCESS_FINE_LOCATION",
+                       "android.permission.ACCESS_COARSE_LOCATION",
+                       "android.permission.ACCESS_BACKGROUND_LOCATION",
+                       "android.permission.ACCESS_NETWORK_STATE" };
+    foreach(const QString& p, ps) if(!Tools::checkPermission(p)) s += "\n" + p;
+    if(!s.isEmpty()) showMessage("Нет разрешения", s);
+#endif
+    equipmentManager->start();
+    settings->setValue(SettingCode_InfoVersion,       APP_VERSION);
+    settings->setValue(SettingCode_InfoServerVersion, netServer->version());
+    settings->setValue(SettingCode_InfoDBVersion,     db->version());
+    settings->setValue(SettingCode_InfoMODVersion,    equipmentManager->MODVersion());
+    settings->setValue(SettingCode_InfoDaemonVersion, equipmentManager->daemonVersion());
+    settings->setValue(SettingCode_InfoWMVersion,     equipmentManager->WMVersion());
+    settings->setValue(SettingCode_InfoPMVersion,     equipmentManager->PMVersion());
+    settings->setValue(SettingCode_InfoIP,            Tools::getIP());
+    settings->setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
+    settings->setValue(SettingCode_InfoWiFiSSID,      Tools::getSSID());
+    settings->setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
+    equipmentManager->stop();
+    settings->write();
+}
 
 
 

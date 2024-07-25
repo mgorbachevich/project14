@@ -177,7 +177,6 @@ public:
     void setConfigValue(const ScaleConfigField, const QString&);
     QString aboutInfo();
     QString modelInfo();
-    void setInfoValues();
 
 protected:
     void sort() {}

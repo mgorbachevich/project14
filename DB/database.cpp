@@ -32,8 +32,6 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
     getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Source);
     getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Name);
     getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Source);
-
-    appManager->settings->setValue(SettingCode_InfoDBVersion, version());
 }
 
 DataBase::~DataBase()
@@ -50,7 +48,7 @@ void DataBase::onAppStart()
     QString path = Tools::dbPath(DB_PRODUCT_NAME);
     if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
     bool exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::productSortIncrement(exists)));
+    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::sortIncrement(exists)));
     started = addAndOpen(productDB, path);
     if(!exists && started)
     {
@@ -68,7 +66,7 @@ void DataBase::onAppStart()
         path = Tools::dbPath(DB_LOG_NAME);
         if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
         exists = QFile(path).exists();
-        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::productSortIncrement(exists)));
+        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::sortIncrement(exists)));
         started = addAndOpen(logDB, path);
         if(!exists && started)
         {
@@ -99,7 +97,7 @@ void DataBase::onAppStart()
     if(!message.isEmpty())
         QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this, message]() { showAttention(message); });
     emit dbStarted();
-    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::productSortIncrement(started)));
+    Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::sortIncrement(started)));
 }
 /*
 bool DataBase::open(QSqlDatabase& db, const QString& name)
@@ -488,7 +486,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
 {
     // Выгрузка из таблицы
 
-    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::productSortIncrement(codesOnly)));
+    Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::sortIncrement(codesOnly)));
     if(codesOnly) saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1 %2").arg(
                 tableName, Tools::toString((int)(codesToUpload.split(',').count()))));
     else saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов. Таблица: %1").arg(tableName));

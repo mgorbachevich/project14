@@ -20,7 +20,7 @@ public:
     static int toInt(const QString &s) { bool ok; int v = s.toInt(&ok); return ok ? v : 0; }
     static int toInt(const QVariant& v) { return toInt(v.toString()); }
     static QString toIntString(const bool v) { return v ? "1" : "0"; }
-    static QString productSortIncrement(const bool v) { return v ? "true" : "false"; }
+    static QString sortIncrement(const bool v) { return v ? "true" : "false"; }
     static QString toString(const double, const int);
     static QString toString(const int v) { return QString::number(v); }
     static QString toString(const quint64 v) { return QString::number(v); }

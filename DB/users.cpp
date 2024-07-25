@@ -58,7 +58,7 @@ void Users::onDeleteUser(const QString& code)
 void Users::onInputUser(const QString& code, const QString& name, const QString& password, const bool admin)
 {
     Tools::debugLog(QString("@@@@@ Users::onInputUser %1 %2 %3 %4").arg(
-                        code, name, password, Tools::productSortIncrement(admin)));
+                        code, name, password, Tools::sortIncrement(admin)));
     if(code.isEmpty() && name.isEmpty() && password.isEmpty())
         return;
     if(Tools::toInt(code) <= 0)

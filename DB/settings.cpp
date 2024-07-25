@@ -233,7 +233,7 @@ bool Settings::write()
     Tools::debugLog("@@@@@ Settings::write");
     toConfig();
     bool ok = scaleConfig->write() && Tools::writeTextFile(fileName, toString());
-    Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::productSortIncrement(ok)));
+    Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::sortIncrement(ok)));
     appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
     return ok;
@@ -330,7 +330,7 @@ QString Settings::netName()
 QString Settings::aboutInfo()
 {
     QString s;
-    s += QString("Идентификатор весов: %1\n").    arg(netName());
+    s += QString("Идентификатор весов: %1\n").    arg(getStringValue(SettingCode_InfoNetName));
     s += QString("Версия приложения: %1\n").      arg(getStringValue(SettingCode_InfoVersion));
     s += QString("Лицензия: %1\n").               arg(getStringValue(SettingCode_InfoLicense));
     s += QString("Версия модуля драйверов: %1\n").arg(getStringValue(SettingCode_InfoMODVersion));
@@ -344,44 +344,4 @@ QString Settings::aboutInfo()
     return s;
 }
 
-void Settings::setInfoValues()
-{
-    QString p;
-    p = "android.permission.ACCESS_WIFI_STATE";
-    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
-    p = "android.permission.CHANGE_WIFI_STATE";
-    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
-    p = "android.permission.ACCESS_FINE_LOCATION";
-    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
-    p = "android.permission.ACCESS_COARSE_LOCATION";
-    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
-    p = "android.permission.ACCESS_BACKGROUND_LOCATION";
-    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
-    p = "android.permission.ACCESS_NETWORK_STATE";
-    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
-
-    Tools::debugLog("@@@@@ Settings::setInfoValues");
-    setValue(SettingCode_InfoVersion,       APP_VERSION);
-    setValue(SettingCode_InfoServerVersion, appManager->serverVersion());
-    setValue(SettingCode_InfoIP,            Tools::getIP());
-    setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
-    setValue(SettingCode_InfoWiFiSSID,      Tools::getSSID());
-    setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
-
-    QString s2 = QString("daemon = %1\n"
-                         "MOD = %2\n"
-                         "WM = %3\n"
-                         "PM = %4\n"
-                         "androidBuild = %5\n"
-                         "IP = %6\n"
-                         "SSID = %7").arg(
-                getStringValue(SettingCode_InfoDaemonVersion),
-                getStringValue(SettingCode_InfoMODVersion),
-                getStringValue(SettingCode_InfoWMVersion),
-                getStringValue(SettingCode_InfoPMVersion),
-                getStringValue(SettingCode_InfoAndroidBuild),
-                getStringValue(SettingCode_InfoIP),
-                getStringValue(SettingCode_InfoWiFiSSID));
-    appManager->showMessage("Versions", s2);
-}
 

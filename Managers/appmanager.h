@@ -51,7 +51,6 @@ public:
     void onNetResult(NetActionResult&);
     void updateInputCodeList();
     void updateSearch();
-    QString serverVersion() { return netServer->version(); }
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
@@ -128,6 +127,7 @@ private:
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
+    void setSettingsInfo();
     void showFoundProductsToast(const int);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);

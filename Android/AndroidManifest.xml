@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="ru.shtrih_m.shtrihprint6" android:installLocation="auto" android:versionCode="2063" android:versionName="2.63">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="ru.shtrih_m.shtrihprint6" android:installLocation="auto" android:versionCode="2066" android:versionName="2.66">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>

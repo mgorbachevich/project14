@@ -104,9 +104,6 @@ void EquipmentManager::create()
             break;
         }
     }
-    appManager->settings->setValue(SettingCode_InfoMODVersion, MODVersion());
-    appManager->settings->setValue(SettingCode_InfoDaemonVersion, daemonVersion());
-
     if(WMMode == EquipmentMode_None) removeWM();
     if(PMMode == EquipmentMode_None) removePM();
 }
@@ -147,7 +144,6 @@ int EquipmentManager::startWM() // return error
     {
         e = wm->connectDevice(WMUri);
         isWMStarted = (e == 0);
-        appManager->settings->setValue(SettingCode_InfoWMVersion, WMVersion());
     }
     if(e) showAttention(QString("\nОшибка весового модуля %1: %2").arg(
                 Tools::toString(e), getWMErrorDescription(e)));
@@ -214,7 +210,6 @@ int EquipmentManager::startPM()
     {
         e = slpa->connectDevice(PMUri);
         isPMStarted = (e == 0);
-        appManager->settings->setValue(SettingCode_InfoPMVersion, PMVersion());
         //slpa->blockSignals(!isPMStarted);
         if(isPMStarted)
         {

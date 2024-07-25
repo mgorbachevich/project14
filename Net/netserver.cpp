@@ -158,7 +158,7 @@ bool NetServer::parseCommand(const QByteArray& request)
     if(method == "stopLoad")
     {
         nc = NetCommand_StopLoad;
-        param = Tools::productSortIncrement(true);
+        param = Tools::sortIncrement(true);
     }
     else if(ja.size() > 0)
     {

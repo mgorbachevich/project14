@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.65"
+#define APP_VERSION "2.66"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>

@@ -87,7 +87,7 @@ QString Tools::makeDirs(const bool internalStorage, const QString& localPath)
         if(!dir.exists(path))
         {
             bool ok = dir.mkdir(path);
-            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::productSortIncrement(ok), path));
+            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::sortIncrement(ok), path));
         }
     }
     path += "/" + dirs.last(); // file name
@@ -176,7 +176,7 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
         if(!dir.exists(path))
         {
             bool ok = dir.mkdir(path);
-            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::productSortIncrement(ok), path));
+            debugLog(QString("@@@@@ Tools::makeFullPath mkdir %1 %2").arg(Tools::sortIncrement(ok), path));
         }
     }
     path += "/" + dirs.last(); // file name
@@ -198,7 +198,7 @@ bool Tools::isFileExistsInDownloadPath(const QString &localPath)
             ok = true;
         }
     }
-    debugLog(QString("@@@@@ Tools::isFileExistsInDownloadPath %1 %2").arg(Tools::productSortIncrement(ok), localPath));
+    debugLog(QString("@@@@@ Tools::isFileExistsInDownloadPath %1 %2").arg(Tools::sortIncrement(ok), localPath));
     return ok;
 }
 
@@ -384,7 +384,7 @@ bool Tools::isEnvironment(const EnvironmentType type)
     default: break;
     }
 
-    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(toString(type), productSortIncrement(result)));
+    debugLog(QString("@@@@@ Tools::isEnvironment %1 %2").arg(toString(type), sortIncrement(result)));
     return result;
 }
 
