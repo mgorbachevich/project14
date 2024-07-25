@@ -57,32 +57,38 @@ void EquipmentManager::create()
         return;
     }
 
+    QString wmv = "НЕ ПОДКЛЮЧЕНО";
     createWM();
     if(wm == nullptr)
     {
         removeWM();
         showAttention(WMPM_MESSAGE_NONE);
-        return;
     }
-    int e1 = wm->readConnectParam(path, "WmUri", WMUri);
-    if(e1 != 0) showAttention(wm->errorDescription(e1));
     else
     {
-        switch (wm->checkUri(WMUri))
+        int e1 = wm->readConnectParam(path, "WmUri", WMUri);
+        if(e1 != 0) showAttention(wm->errorDescription(e1));
+        else
         {
-        case Wm100Protocol::diDemo:
-            WMMode = EquipmentMode_Demo;
-            showAttention(WM_MESSAGE_DEMO);
-            break;
-        case Wm100Protocol::diNone:
-            showAttention(WMPM_MESSAGE_NONE);
-            break;
-        default:
-            WMMode = EquipmentMode_Ok;
-            break;
+            switch (wm->checkUri(WMUri))
+            {
+            case Wm100Protocol::diDemo:
+                WMMode = EquipmentMode_Demo;
+                showAttention(WM_MESSAGE_DEMO);
+                wmv = "ДЕМО";
+                break;
+            case Wm100Protocol::diNone:
+                showAttention(WMPM_MESSAGE_NONE);
+                break;
+            default:
+                WMMode = EquipmentMode_Ok;
+                wmv = WMVersion();
+                break;
+            }
         }
     }
 
+    QString pmv = "НЕ ПОДКЛЮЧЕНО";
     createPM();
     int e2 = wm->readConnectParam(path, "PrinterUri", PMUri);
     if(e2 != 0) showAttention(wm->errorDescription(e2));
@@ -93,15 +99,23 @@ void EquipmentManager::create()
         case Slpa100uProtocol::diDemo:
             PMMode = EquipmentMode_Demo;
             showAttention(PM_MESSAGE_DEMO);
+            pmv = "ДЕМО";
             break;
         case Slpa100uProtocol::diNone:
             showAttention(PM_MESSAGE_NONE);
             break;
         default:
             PMMode = EquipmentMode_Ok;
+            pmv = PMVersion();
             break;
         }
     }
+
+    appManager->settings->setValue(SettingCode_InfoWMVersion, wmv);
+    appManager->settings->setValue(SettingCode_InfoPMVersion, pmv);
+    appManager->settings->setValue(SettingCode_InfoMODVersion, MODVersion());
+    appManager->settings->setValue(SettingCode_InfoDaemonVersion, daemonVersion());
+
     if(WMMode == EquipmentMode_None) removeWM();
     if(PMMode == EquipmentMode_None) removePM();
 }

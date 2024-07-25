@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.63"
+#define APP_VERSION "2.64"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -284,3 +284,4 @@ enum ShowcaseProductText
 };
 
 #endif // CONSTANTS_H
+

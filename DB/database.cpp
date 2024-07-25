@@ -32,6 +32,8 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
     getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Source);
     getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Name);
     getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Source);
+
+    appManager->settings->setValue(SettingCode_InfoDBVersion, version());
 }
 
 DataBase::~DataBase()

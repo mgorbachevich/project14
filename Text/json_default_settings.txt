@@ -576,7 +576,7 @@
             },
             {
                 "code":"22",
-                "name":"WiFi",
+                "name":"WiFi SSID",
                 "value":"",
                 "group_code":"8900",
                 "type":"1"

@@ -330,38 +330,22 @@ QString Settings::netName()
 QString Settings::aboutInfo()
 {
     QString s;
-    s += QString("Идентификатор весов: %1\n").arg(netName());
-    s += QString("Версия приложения: %1\n").arg(APP_VERSION);
-    s += QString("Лицензия: %1\n").arg(getStringValue(SettingCode_InfoLicense));
-    s += QString("Версия модуля драйверов: %1\n").arg(appManager->MODVersion());
-    s += QString("Версия демона: %1\n").arg(appManager->daemonVersion());
-    s += QString("Версия БД: %1\n").arg(appManager->dbVersion());
-    s += QString("Версия весового модуля: %1\n").arg(appManager->WMVersion());
-    s += QString("Версия принтера: %1\n").arg(appManager->PMVersion());
-    s += QString("Версия сервера: %1\n").arg(appManager->serverVersion());
-    s += QString("IP: %1\n").arg(Tools::getNetParams().localHostIP);
-    s += QString("Последняя загрузка: %1").arg(getStringValue(SettingCode_InfoLastDownload));
+    s += QString("Идентификатор весов: %1\n").    arg(netName());
+    s += QString("Версия приложения: %1\n").      arg(getStringValue(SettingCode_InfoVersion));
+    s += QString("Лицензия: %1\n").               arg(getStringValue(SettingCode_InfoLicense));
+    s += QString("Версия модуля драйверов: %1\n").arg(getStringValue(SettingCode_InfoMODVersion));
+    s += QString("Версия демона: %1\n").          arg(getStringValue(SettingCode_InfoDaemonVersion));
+    s += QString("Версия БД: %1\n").              arg(getStringValue(SettingCode_InfoDBVersion));
+    s += QString("Версия весового модуля: %1\n"). arg(getStringValue(SettingCode_InfoWMVersion));
+    s += QString("Версия принтера: %1\n").        arg(getStringValue(SettingCode_InfoPMVersion));
+    s += QString("Версия сервера: %1\n").         arg(getStringValue(SettingCode_InfoServerVersion));
+    s += QString("IP: %1\n").                     arg(getStringValue(SettingCode_InfoIP));
+    s += QString("Последняя загрузка: %1").       arg(getStringValue(SettingCode_InfoLastDownload));
     return s;
 }
 
 void Settings::setInfoValues()
 {
-    Tools::debugLog("@@@@@ Settings::setInfoValues");
-    setValue(SettingCode_InfoVersion,       APP_VERSION);
-    setValue(SettingCode_InfoDaemonVersion, appManager->daemonVersion());
-    setValue(SettingCode_InfoDBVersion,     appManager->dbVersion());
-    setValue(SettingCode_InfoMODVersion,    appManager->MODVersion());
-    setValue(SettingCode_InfoServerVersion, appManager->serverVersion());
-    setValue(SettingCode_InfoWMVersion,     appManager->WMVersion());
-    setValue(SettingCode_InfoPMVersion,     appManager->PMVersion());
-    setValue(SettingCode_InfoIP,            Tools::getNetParams().localHostIP);
-    setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
-    setValue(SettingCode_InfoWiFi,          Tools::getSSID1());
-    setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
-
-    QString ssid1 = Tools::getSSID1();
-    QString ssid2 = Tools::getSSID2();
-
     QString p;
     p = "android.permission.ACCESS_WIFI_STATE";
     if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
@@ -373,38 +357,31 @@ void Settings::setInfoValues()
     if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
     p = "android.permission.ACCESS_BACKGROUND_LOCATION";
     if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
+    p = "android.permission.ACCESS_NETWORK_STATE";
+    if(!Tools::checkPermission(p)) appManager->showMessage("Нет разрешения", p);
 
-    NetParams np = Tools::getNetParams();
-    QString s1 = QString("localHostName = %1\n"
-                         "localMacAddress = %2\n"
-                         "localHostIP = %3\n"
-                         "localNetMask = %4\n"
-                         "ethernet = %5").arg(
-                np.localHostName,
-                np.localMacAddress,
-                np.localHostIP,
-                np.localNetMask,
-                np.ethernet);
-    appManager->showMessage("NetParams", s1);
+    Tools::debugLog("@@@@@ Settings::setInfoValues");
+    setValue(SettingCode_InfoVersion,       APP_VERSION);
+    setValue(SettingCode_InfoServerVersion, appManager->serverVersion());
+    setValue(SettingCode_InfoIP,            Tools::getIP());
+    setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
+    setValue(SettingCode_InfoWiFiSSID,      Tools::getSSID());
+    setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
 
-    QString s2 = QString("daemon = %1. MOD = %2\n"
-                         "WM = %3. PM = %4\n"
+    QString s2 = QString("daemon = %1\n"
+                         "MOD = %2\n"
+                         "WM = %3\n"
+                         "PM = %4\n"
                          "androidBuild = %5\n"
-                         "wifiName = %6\n"
-                         "SSID1 = %7\n"
-                         "ssid1 = %8\n"
-                         "SSID2 = %8\n"
-                         "ssid2 = %9").arg(
-                appManager->daemonVersion(),
-                appManager->MODVersion(),
-                appManager->WMVersion(),
-                appManager->PMVersion(),
-                Tools::getAndroidBuild(),
-                Tools::getWiFiName(),
-                Tools::getSSID1(),
-                ssid1,
-                Tools::getSSID2(),
-                ssid2);
+                         "IP = %6\n"
+                         "SSID = %7").arg(
+                getStringValue(SettingCode_InfoDaemonVersion),
+                getStringValue(SettingCode_InfoMODVersion),
+                getStringValue(SettingCode_InfoWMVersion),
+                getStringValue(SettingCode_InfoPMVersion),
+                getStringValue(SettingCode_InfoAndroidBuild),
+                getStringValue(SettingCode_InfoIP),
+                getStringValue(SettingCode_InfoWiFiSSID));
     appManager->showMessage("Versions", s2);
 }
 

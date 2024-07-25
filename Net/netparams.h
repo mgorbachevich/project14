@@ -12,7 +12,7 @@ public:
     QString localHostIP;
     QString localMacAddress;
     QString localNetMask;
-    QString ethernet;
+    //QString ethernet;
 };
 
 #endif // NETPARAMS_H

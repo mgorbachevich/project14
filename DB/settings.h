@@ -47,7 +47,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_InfoDBVersion = 19,
     SettingCode_InfoServerVersion = 20,
     SettingCode_InfoLastDownload = 21,
-    SettingCode_InfoWiFi = 22,
+    SettingCode_InfoWiFiSSID = 22,
     SettingCode_InfoIP = 23,
     SettingCode_InfoBluetooth = 24,
     SettingCode_InfoAndroidBuild = 25,
@@ -183,11 +183,11 @@ protected:
     void sort() {}
     bool checkValue(const DBRecord&, const QString&);
     void appendItemToJson(DBRecord&, QJsonArray&);
-    void fromConfig();
-    void toConfig();
     void setModelValues();
     QString netName();
     int model();
+    void fromConfig();
+    void toConfig();
 
     int currentGroupCode = 0;
     ScaleConfig* scaleConfig;

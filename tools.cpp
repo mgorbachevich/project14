@@ -66,48 +66,6 @@ void Tools::memoryCheck()
 }
 */
 
-NetParams Tools::getNetParams()
-{
-    // https://stackoverflow.com/questions/13835989/get-local-ip-address-in-qt
-    NetParams np;
-    np.localHostName = QHostInfo::localHostName();
-    QList<QHostAddress> hosts = QHostInfo::fromName(np.localHostName).addresses();
-    foreach (const QHostAddress& address, hosts)
-    {
-        if (address.protocol() == QAbstractSocket::IPv4Protocol && address.isLoopback() == false)
-            np.localHostIP = address.toString();
-    }
-    foreach (const QNetworkInterface& ni, QNetworkInterface::allInterfaces())
-    {
-        foreach (const QNetworkAddressEntry& entry, ni.addressEntries())
-        {
-            if (entry.ip().toString() == np.localHostIP)
-            {
-                np.localMacAddress = ni.hardwareAddress();
-                np.localNetMask = entry.netmask().toString();
-                break;
-            }
-        }
-    }
-
-    np.ethernet = "?";
-    QNetworkInterface eth1Ip = QNetworkInterface::interfaceFromName("eth1");
-    QList<QNetworkAddressEntry> entries = eth1Ip.addressEntries();
-    if (!entries.isEmpty())
-    {
-        QNetworkAddressEntry entry = entries.first();
-        np.ethernet = entry.ip().toString();
-    }
-
-    debugLog(QString("@@@@@ Tools::getNetParams %1 %2 %3 %4 %5").arg(
-                 np.localHostName,
-                 np.localMacAddress,
-                 np.localHostIP,
-                 np.localNetMask,
-                 np.ethernet));
-    return np;
-}
-
 QString Tools::makeDirs(const bool internalStorage, const QString& localPath)
 {
     if(localPath.isEmpty()) return "";
@@ -481,19 +439,10 @@ QString Tools::getAndroidBuild()
     return "?";
 }
 
-QString Tools::getWiFiName()
+QString Tools::getSSID()
 {
 #ifdef Q_OS_ANDROID
-    debugLog("@@@@@ Tools::getWiFiName");
-    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getHostName")).toString();
-#endif
-    return "?";
-}
-
-QString Tools::getSSID1()
-{
-#ifdef Q_OS_ANDROID
-    debugLog("@@@@@ Tools::getSSID1");
+    debugLog("@@@@@ Tools::getSSID");
     auto context = QNativeInterface::QAndroidApplication::context();
     return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID1",
             "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
@@ -501,14 +450,58 @@ QString Tools::getSSID1()
     return "?";
 }
 
-QString Tools::getSSID2()
+NetParams Tools::getNetParams()
+{
+    // https://stackoverflow.com/questions/13835989/get-local-ip-address-in-qt
+    NetParams np;
+    np.localHostName = QHostInfo::localHostName();
+    QList<QHostAddress> hosts = QHostInfo::fromName(np.localHostName).addresses();
+    foreach (const QHostAddress& address, hosts)
+    {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol && address.isLoopback() == false)
+            np.localHostIP = address.toString();
+    }
+    foreach (const QNetworkInterface& ni, QNetworkInterface::allInterfaces())
+    {
+        foreach (const QNetworkAddressEntry& entry, ni.addressEntries())
+        {
+            if (entry.ip().toString() == np.localHostIP)
+            {
+                np.localMacAddress = ni.hardwareAddress();
+                np.localNetMask = entry.netmask().toString();
+                break;
+            }
+        }
+    }
+    /*
+    np.ethernet = "?";
+    QNetworkInterface eth1Ip = QNetworkInterface::interfaceFromName("eth1");
+    QList<QNetworkAddressEntry> entries = eth1Ip.addressEntries();
+    if (!entries.isEmpty())
+    {
+        QNetworkAddressEntry entry = entries.first();
+        np.ethernet = entry.ip().toString();
+    }
+
+    debugLog(QString("@@@@@ Tools::getNetParams %1 %2 %3 %4 %5").arg(
+                 np.localHostName,
+                 np.localMacAddress,
+                 np.localHostIP,
+                 np.localNetMask,
+                 np.ethernet));
+    */
+    return np;
+}
+
+QString Tools::getIP()
 {
 #ifdef Q_OS_ANDROID
-    debugLog("@@@@@ Tools::getSSID2");
+    debugLog("@@@@@ Tools::getIP");
     auto context = QNativeInterface::QAndroidApplication::context();
-    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID2",
+    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getIP1",
             "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
+#else
+    return getNetParams().localHostIP;
 #endif
-    return "?";
 }
 

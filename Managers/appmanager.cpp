@@ -116,6 +116,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     if(REMOVE_SETTINGS_FILE_ON_START) Tools::removeFile(SETTINGS_FILE);
     settings->read();
     updateSettings(0);
+
     equipmentManager->create();
 
     onUserAction();

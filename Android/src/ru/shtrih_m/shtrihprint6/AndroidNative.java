@@ -6,14 +6,14 @@ import android.content.pm.PackageManager;
 import android.bluetooth.BluetoothAdapter;
 import android.os.Environment;
 import java.lang.reflect.Method;
-
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.net.wifi.WifiInfo;
-
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
+//import android.net.ConnectivityManager;
+//import android.net.Network;
+//import android.net.NetworkCapabilities;
+
+import android.text.format.Formatter;
 
 public class AndroidNative
 {
@@ -128,6 +128,7 @@ public class AndroidNative
         return "?";
     }
 
+    /*
     public static String getHostName()
     {
         // https://stackoverflow.com/questions/26643989/android-how-to-get-current-device-wifi-direct-name
@@ -140,6 +141,7 @@ public class AndroidNative
         catch (Exception e) {}
         return "?";
     }
+    */
 
     public static String getSSID1(Context context)
     {
@@ -150,12 +152,14 @@ public class AndroidNative
             WifiInfo info = wm.getConnectionInfo();
             if(info.getSupplicantState() == SupplicantState.COMPLETED)
                 return info.getSSID();
-            return "?";
+            return "???";
 
         }
-        catch (Exception e) { return e.getMessage(); }
+        catch (Exception e) {}
+        return "?";
     }
 
+    /*
     public static String getSSID2(Context context)
     {
         // https://stackoverflow.com/questions/71281724/getting-wifi-ssid-from-connectivitymanager-networkcapabilities-synchronously
@@ -169,6 +173,19 @@ public class AndroidNative
         }
         catch (Exception e) { return e.getMessage(); }
     }
+    */
 
+    public static String getIP1(Context context)
+    {
+        // https://stackoverflow.com/questions/71281724/getting-wifi-ssid-from-connectivitymanager-networkcapabilities-synchronously
+        try
+        {
+            WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = wm.getConnectionInfo();
+            return Formatter.formatIpAddress(info.getIpAddress());
+        }
+        catch (Exception e) {}
+        return "?";
+    }
 }
 

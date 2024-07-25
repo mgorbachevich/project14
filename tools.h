@@ -57,7 +57,7 @@ public:
     static void debugMemory();
     static bool isEnvironment(const EnvironmentType);
     static int getMemory(const MemoryType);
-    static NetParams getNetParams();
+    static QString getIP();
     static void pause(const int, const QString& comment = "");
     static void removeDebugLog();
     static double round(const double, const int);
@@ -66,12 +66,11 @@ public:
     static void sortByString(DBRecordList&, const int, const bool increase = true);
     //static void memoryCheck();
     static QString getAndroidBuild();
-    static QString getWiFiName();
-    static QString getSSID1();
-    static QString getSSID2();
+    static QString getSSID();
 
 private:
     static QString makeFullPath(const QString&, const QString&);
+    static NetParams getNetParams();
 
     static QApplication* app;
 };
