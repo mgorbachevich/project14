@@ -28,9 +28,9 @@ public:
     void clear() { data.clear(); }
     QVariant get(ScaleConfigField field) { return data[field]; }
     void set(ScaleConfigField field, const QString& v) { data[field] = v; }
+    QJsonObject toJsonObject();
 
 protected:
-    QJsonObject toJson();
     DBRecord parse(const QString&);
 
     DBRecord data;

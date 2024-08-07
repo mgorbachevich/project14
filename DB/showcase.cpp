@@ -5,7 +5,6 @@
 Showcase::Showcase(AppManager *parent): JsonArrayFile(SHOWCASE_FILE, parent)
 {
     Tools::debugLog("@@@@@ Showcase::Showcase");
-    mainObjectName = "data";
     itemArrayName = DBTABLENAME_SHOWCASE;
     fields.insert(ShowcaseField_Code, "code");
 }

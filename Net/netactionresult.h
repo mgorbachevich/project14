@@ -13,10 +13,9 @@ public:
     NetActionResult(AppManager* am, const RouterRule r = RouterRule_Set) { appManager = am; rule = r; }
     ~NetActionResult();
 
-    QString makeJson();
-    QString makeJson(const QString&);
-    QString makeJson(const QString&, const QString&);
-    QString makeJson(const QString&, const QStringList&);
+    QString makeEmptyJson();
+    QString makeJson(const QJsonObject&);
+    QString makeCodeListJson(const QString&, const QStringList&);
 
     int successCount = 0;
     int recordCount = 0;

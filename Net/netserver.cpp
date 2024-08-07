@@ -128,7 +128,7 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
     NetActionResult result(appManager, RouterRule_Get);
     result.errorCode = LogError_WrongRequest;
     result.description = "Некорректный сетевой запрос";
-    return result.makeJson();
+    return result.makeEmptyJson();
 }
 
 QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray& item, const QByteArray& title)
@@ -316,7 +316,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
             result.errorCode = LogError_WrongRequest;
             result.description = "Неверный сетевой запрос";
         }
-        return result.makeJson();
+        return result.makeEmptyJson();
     }
 
     // Multipart:
@@ -431,6 +431,6 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                 QString::number(result.successCount + result.errorCount));
     appManager->showToast(result.description);
     appManager->status.downloadedRecords = result.successCount;
-    return result.makeJson();
+    return result.makeEmptyJson();
 }
 

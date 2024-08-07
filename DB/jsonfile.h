@@ -15,11 +15,10 @@ public:
     virtual bool read() { wasRead = true; return false; }
     virtual bool write();
     virtual void clear() { wasRead = false; }
-    virtual QString toString();
+    virtual QString toString1();
+    virtual QJsonObject toJsonObject() { return QJsonObject(); }
 
 protected:
-    virtual QJsonObject toJson() { return QJsonObject(); }
-
     QHash<int, QString> fields;
     QString fileName;
     bool wasRead = false;

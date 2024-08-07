@@ -51,6 +51,20 @@ const DBRecordList DBTable::checkList(const DBRecordList &records)
     return result;
 }
 
+QJsonObject DBTable::toJsonObject(DBTable *table, const DBRecord &record)
+{
+    QJsonObject jo;
+    if (table != nullptr)
+    {
+        for (int i = 0; i < record.count() && i < table->columnCount(); i++)
+        {
+            if(table->notUploadColumns.contains(i)) continue;
+            jo.insert(table->columnName(i), QJsonValue(record.at(i).toString()));
+        }
+    }
+    return jo;
+}
+
 QString DBTable::toJsonString(DBTable *table, const DBRecord &record)
 {
     QString json;
@@ -78,6 +92,21 @@ QString DBTable::toJsonString(DBTable *table, const DBRecordList &records)
         }
     }
     return "[" + json + "]";
+}
+
+QJsonObject DBTable::toJsonObject(DBTable *table, const DBRecordList &records)
+{
+    QJsonArray ja;
+    QJsonObject jo;
+    if (table != nullptr)
+    {
+        for (int i = 0; i < records.count(); i++)
+        {
+            ja.append(toJsonObject(table, records.at(i)));
+        }
+        jo.insert(table->name, ja);
+    }
+    return jo;
 }
 
 QString DBTable::columnTitle(const int i) const

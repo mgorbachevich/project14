@@ -19,6 +19,8 @@ public:
     DBTable(const QString &name, QSqlDatabase& sqlDB, DataBase *parent);
     static QString toJsonString(DBTable*, const DBRecord&);
     static QString toJsonString(DBTable*, const DBRecordList&);
+    static QJsonObject toJsonObject(DBTable*, const DBRecord&);
+    static QJsonObject toJsonObject(DBTable*, const DBRecordList&);
     QString columnTitle(const int) const;
     QString columnName(const int) const;
     QString columnType(const int) const;

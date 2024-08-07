@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.66"
+#define APP_VERSION "2.67"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -21,7 +21,7 @@
 #define LOG_LOAD_RECORDS false
 
 // On Start:
-#define REMOVE_SETTINGS_FILE_ON_START false
+#define REMOVE_SETTINGS_FILE_ON_START true
 #define CREATE_DEFAULT_DATA_ON_START false
 #define CREATE_DEFAULT_IMAGES_ON_START false
 #define REMOVE_DEBUG_LOG_ON_START true
@@ -94,6 +94,7 @@
 #define DBTABLENAME_TRANSACTIONS "transactions"
 #define DBTABLENAME_SETTINGS "settings"
 #define DBTABLENAME_USERS "users"
+#define DBTABLENAME_CONFIG "config"
 
 enum MainPageIndex
 {

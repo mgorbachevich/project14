@@ -37,9 +37,9 @@ public:
     virtual DBRecord getByIndex(const int i) { return i >= 0 && i < count() ? items[i] : DBRecord(); }
     virtual DBRecord* getByCode(const int);
     QString getTableName() { return itemArrayName; }
+    virtual QJsonObject toJsonObject();
 
 protected:
-    virtual QJsonObject toJson();
     virtual void sort() {}
     virtual DBRecordList parse(const QString&);
     virtual int getIndex(const int);
@@ -47,7 +47,6 @@ protected:
 
     DBRecordList items;
     QString itemArrayName;
-    QString mainObjectName;
 };
 
 #endif // JSONARRAYFILE_H

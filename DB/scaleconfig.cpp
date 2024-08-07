@@ -28,7 +28,7 @@ bool ScaleConfig::read()
     return data.count() > 0;
 }
 
-QJsonObject ScaleConfig::toJson()
+QJsonObject ScaleConfig::toJsonObject()
 {
     QJsonObject jo;
     for(int i = 0; i < data.count() && i < fields.count(); i++)

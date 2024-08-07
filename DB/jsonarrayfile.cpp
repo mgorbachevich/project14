@@ -5,7 +5,6 @@
 JsonArrayFile::JsonArrayFile(const QString &file, AppManager* parent) : JsonFile(file, parent)
 {
     Tools::debugLog("@@@@@ JsonArrayFile::JsonArrayFile " + fileName);
-    mainObjectName = "data";
 }
 
 bool JsonArrayFile::read()
@@ -84,16 +83,10 @@ DBRecordList JsonArrayFile::parse(const QString& json)
     DBRecordList records;
     if(json.isEmpty()) return records;
     const QJsonObject jo = QJsonDocument::fromJson(json.toUtf8()).object();
-    QJsonValue data = jo[mainObjectName];
-    if (!data.isObject())
-    {
-        Tools::debugLog("@@@@@ JsonArrayFile::parse error !data.isObject()");
-        return records;
-    }
-    QJsonValue jv = data.toObject()[itemArrayName];
+    QJsonValue jv = jo[itemArrayName];
     if(!jv.isArray())
     {
-        Tools::debugLog("@@@@@ JsonArrayFile::parse error !jv.isArray()");
+        Tools::debugLog("@@@@@ JsonArrayFile::parse error");
         return records;
     }
     QJsonArray ja = jv.toArray();
@@ -130,16 +123,14 @@ DBRecord *JsonArrayFile::getByCode(const int code)
     return nullptr;
 }
 
-QJsonObject JsonArrayFile::toJson()
+QJsonObject JsonArrayFile::toJsonObject()
 {
     getAll();
     QJsonArray ja;
     for (DBRecord& r : items) appendItemToJson(r, ja);
     QJsonObject jo;
-    jo[itemArrayName] = ja;
-    QJsonObject result;
-    result[mainObjectName] = jo;
-    return result;
+    jo.insert(itemArrayName, ja);
+    return jo;
 }
 
 void JsonArrayFile::appendItemToJson(DBRecord& r, QJsonArray& ja)

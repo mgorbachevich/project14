@@ -477,7 +477,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
             arg(tableName, QString::number(result.errorCount), result.description);
     saveLog(LogType_Error, LogSource_DB, s);
     DBRecordList records;
-    QString resultJson = result.makeJson(tableName, DBTable::toJsonString(t, records));
+    QString resultJson = result.makeJson(DBTable::toJsonObject(t, records));
     Tools::debugLog(QString("@@@@@ DataBase::netDelete result = %1").arg(resultJson));
     return resultJson;
 }
@@ -492,12 +492,13 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     else saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов. Таблица: %1").arg(tableName));
     NetActionResult result(appManager, RouterRule_Get);
 
-    QString json;
-    if(tableName == DBTABLENAME_SETTINGS)   json = appManager->settings->toString();
-    else if(tableName == DBTABLENAME_USERS) json = appManager->users->toString();
-    if(!json.isEmpty())
+    QJsonObject jo;
+    if(tableName == DBTABLENAME_SETTINGS)   jo = appManager->settings->toJsonObject();
+    else if(tableName == DBTABLENAME_USERS) jo = appManager->users->toJsonObject();
+    else if(tableName == DBTABLENAME_CONFIG) jo = appManager->settings->getScaleConfig();
+    if(!jo.isEmpty())
     {
-        QString resultJson = result.makeJson(json.replace(json.lastIndexOf("}"), 1, " ").replace(json.indexOf("{"), 1, " "));
+        QString resultJson = result.makeJson(jo);
         Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
         QString s = QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
                 arg(tableName, QString::number(result.recordCount), QString::number(result.errorCount), result.description);
@@ -521,7 +522,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
         QString s =  QString("Выгрузка кодов завершена. Таблица: %1. Записи: %2").
                 arg(tableName, QString::number(allCodes.count()));
         saveLog(LogType_Error, LogSource_DB, s);
-        const QString resultJson = result.makeJson(tableName, allCodes);
+        const QString resultJson = result.makeCodeListJson(tableName, allCodes);
         Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
         return resultJson;
     }
@@ -562,7 +563,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     QString s = QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").
             arg(tableName, QString::number(result.recordCount), QString::number(result.errorCount), result.description);
     saveLog(LogType_Error, LogSource_DB, s);
-    const QString resultJson = result.makeJson(tableName, DBTable::toJsonString(t, records));
+    const QString resultJson = result.makeJson(DBTable::toJsonObject(t, records));
     Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
     return resultJson;
 }

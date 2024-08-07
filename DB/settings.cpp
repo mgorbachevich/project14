@@ -11,7 +11,6 @@
 Settings::Settings(AppManager *parent): JsonArrayFile(SETTINGS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Settings::Settings");
-    mainObjectName = "data";
     itemArrayName = DBTABLENAME_SETTINGS;
     fields.insert(SettingField_Code,      "code");
     fields.insert(SettingField_Type,      "type");
@@ -232,7 +231,7 @@ bool Settings::write()
 {
     Tools::debugLog("@@@@@ Settings::write");
     toConfig();
-    bool ok = scaleConfig->write() && Tools::writeTextFile(fileName, toString());
+    bool ok = scaleConfig->write() && Tools::writeTextFile(fileName, toString1());
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::sortIncrement(ok)));
     appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
@@ -313,6 +312,12 @@ QString Settings::modelInfo()
     QString mn = getStringValue(SettingCode_Model);
     if(!mn.isEmpty()) s = QString("%1  № %2").arg(mn, getStringValue(SettingCode_SerialNumber));
     return s;
+}
+
+QJsonObject Settings::getScaleConfig()
+{
+    if(scaleConfig != nullptr) return scaleConfig->toJsonObject();
+    return QJsonObject();
 }
 
 int Settings::model()
