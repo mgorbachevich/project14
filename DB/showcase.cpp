@@ -36,5 +36,12 @@ DBRecord Showcase::createRecord(const QString& code)
     return r;
 }
 
+bool Showcase::write()
+{
+    Tools::debugLog("@@@@@ Showcase::write");
+    QJsonObject data;
+    data.insert("data", toJsonObject());
+    return Tools::writeTextFile(fileName, Tools::toString(data));
+}
 
 

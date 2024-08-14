@@ -136,7 +136,7 @@ void DBTable::parseColumn(DBRecord& r, const QJsonObject &jo, const int i)
 DBRecordList DBTable::parse(const QString &json)
 {
     DBRecordList records;
-    const QJsonObject jo = Tools::toJson(json);
+    const QJsonObject jo = Tools::toJsonObject(json);
     QJsonValue data = jo["data"];
     if (!data.isObject())
     {

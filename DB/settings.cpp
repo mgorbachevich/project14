@@ -231,7 +231,10 @@ bool Settings::write()
 {
     Tools::debugLog("@@@@@ Settings::write");
     toConfig();
-    bool ok = scaleConfig->write() && Tools::writeTextFile(fileName, toString1());
+    bool ok = scaleConfig->write();
+    QJsonObject data;
+    data.insert("data", toJsonObject());
+    ok &= Tools::writeTextFile(fileName, Tools::toString(data));
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::sortIncrement(ok)));
     appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;

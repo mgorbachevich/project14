@@ -40,6 +40,7 @@ public:
     static bool isEqual(const DBRecord&, const DBRecord&);
     static QString normalizedName(const QString&);
     static QString getDisplayName(const DBRecord&);
+    bool write();
 
 protected:
     void sort() { Tools::sortByString(items, UserField_Name);  }

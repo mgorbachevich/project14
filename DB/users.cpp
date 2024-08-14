@@ -160,6 +160,14 @@ QString Users::getDisplayName(const DBRecord& r)
     return isAdmin(r) ? toAdminName(name) : name;
 }
 
+bool Users::write()
+{
+    Tools::debugLog("@@@@@ Users::write");
+    QJsonObject data;
+    data.insert("data", toJsonObject());
+    return Tools::writeTextFile(fileName, Tools::toString(data));
+}
+
 bool Users::isEqual(const DBRecord& u1, const DBRecord& u2)
 {
     if(u1.count() != u2.count()) return false;

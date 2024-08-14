@@ -38,7 +38,7 @@ QJsonObject ScaleConfig::toJsonObject()
 
 DBRecord ScaleConfig::parse(const QString& json)
 {
-    const QJsonObject jo = QJsonDocument::fromJson(json.toUtf8()).object();
+    const QJsonObject jo = Tools::toJsonObject(json);
     DBRecord r;
     for (int i = 0; i < fields.count(); i++) r << jo[fields.value(i)].toString("");
     return r;

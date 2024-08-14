@@ -25,7 +25,7 @@ public:
     static QString toString(const int v) { return QString::number(v); }
     static QString toString(const quint64 v) { return QString::number(v); }
     static QString toString(const QJsonObject&);
-    static QJsonObject toJson(const QString&);
+    static QJsonObject toJsonObject(const QString&);
     static QString dateFromUInt(quint64, const QString&);
     static QString dateTimeFromUInt(quint64, const QString&, const QString&, const QString&);
     static QString timeFromUInt(quint64, const QString&);

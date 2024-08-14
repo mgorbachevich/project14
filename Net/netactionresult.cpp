@@ -17,7 +17,7 @@ QString NetActionResult::makeEmptyJson()
     QJsonObject jo;
     jo.insert("result",      QJsonValue(QString::number(errorCode)));
     jo.insert("description", QJsonValue(description));
-    QString s = QJsonDocument(jo).toJson(QJsonDocument::Indented);
+    QString s = Tools::toString(jo);
     Tools::debugLog("NetActionResult::makeEmptyJson " + s);
     return s;
 }
@@ -33,8 +33,7 @@ QString NetActionResult::makeJson(const QJsonObject& data)
     jo.insert("result",      QJsonValue(QString::number(errorCode)));
     jo.insert("description", QJsonValue(description));
     jo.insert("data",        data);
-    QString s = QJsonDocument(jo).toJson(QJsonDocument::Indented);
-
+    QString s = Tools::toString(jo);
     Tools::debugLog("NetActionResult::makeJson " + s);
     return s;
 }
@@ -61,8 +60,7 @@ QString NetActionResult::makeCodeListJson(const QString& tableName, const QStrin
     jo.insert("result",      QJsonValue(QString::number(errorCode)));
     jo.insert("description", QJsonValue(description));
     jo.insert("codelist",    jo1);
-    QString s = QJsonDocument(jo).toJson(QJsonDocument::Indented);
-
+    QString s = Tools::toString(jo);
     Tools::debugLog("NetActionResult::makeCodeListJson " + s);
     return s;
 }

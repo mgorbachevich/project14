@@ -147,7 +147,7 @@ bool NetServer::parseCommand(const QByteArray& request)
 {
     QString json = toJsonString(request);
     Tools::debugLog("@@@@@ NetServer::parseCommand " + json);
-    QJsonObject jo = Tools::toJson(json);
+    QJsonObject jo = Tools::toJsonObject(json);
     QString method = jo["method"].toString("");
     if (method.isEmpty()) return false;
     QJsonValue jsonParams = jo["params"];

@@ -9,15 +9,9 @@ JsonFile::JsonFile(const QString &file, AppManager* parent) : ExternalMessager(p
 
 bool JsonFile::write()
 {
-    bool ok = Tools::writeTextFile(fileName, toString1());
+    bool ok = Tools::writeTextFile(fileName, Tools::toString(toJsonObject()));
     Tools::debugLog(QString("@@@@@ JsonFile::write %1 %2").arg(fileName, Tools::sortIncrement(ok)));
     wasRead = false;
     return ok;
 }
-
-QString JsonFile::toString1()
-{
-    return QJsonDocument(toJsonObject()).toJson(QJsonDocument::Indented);
-}
-
 

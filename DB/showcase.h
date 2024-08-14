@@ -19,6 +19,7 @@ public:
     static QString getProductCode(const DBRecord& r) { return r.isEmpty() ? "" : r[ShowcaseField_Code].toString(); }
     QString getProductCode(const int);
     DBRecord createRecord(const QString&);
+    bool write();
 
 protected:
     void sort() { Tools::sortByString(items, ShowcaseField_Code); }

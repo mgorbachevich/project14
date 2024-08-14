@@ -31,11 +31,10 @@ void Tools::sound(const QString& fileName, const int volume)
 
 QString Tools::toString(const QJsonObject &jo)
 {
-    QJsonDocument jd(jo);
-    return QString(jd.toJson());
+    return QJsonDocument(jo).toJson(QJsonDocument::Indented);
 }
 
-QJsonObject Tools::toJson(const QString &s)
+QJsonObject Tools::toJsonObject(const QString &s)
 {
     return QJsonDocument::fromJson(s.toUtf8()).object();
 }

@@ -81,9 +81,14 @@ bool JsonArrayFile::write()
 DBRecordList JsonArrayFile::parse(const QString& json)
 {
     DBRecordList records;
-    if(json.isEmpty()) return records;
-    const QJsonObject jo = QJsonDocument::fromJson(json.toUtf8()).object();
-    QJsonValue jv = jo[itemArrayName];
+    const QJsonObject jo = Tools::toJsonObject(json);
+    QJsonValue data = jo["data"];
+    if (!data.isObject())
+    {
+        Tools::debugLog("@@@@@ JsonArrayFile::parse ERROR !data.isObject()");
+        return records;
+    }
+    QJsonValue jv = data.toObject()[itemArrayName];
     if(!jv.isArray())
     {
         Tools::debugLog("@@@@@ JsonArrayFile::parse error");
