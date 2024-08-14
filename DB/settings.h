@@ -25,9 +25,9 @@ enum SettingType
     SettingType_InputText = 4,
     SettingType_IntervalNumber = 5,
     SettingType_List = 6,
-    SettingType_Unsed = 7,
+    SettingType_Unused = 7,
     SettingType_GroupWithPassword = 8,
-    SettingType_UnsedGroup = 9,
+    SettingType_UnusedGroup = 9,
 };
 
 enum SettingCode // Должны совпадать со значениями в файлах json_default_settings.txt!

@@ -122,12 +122,12 @@ private:
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
     void refreshAll();
-    void onCustomSettingsItemClicked(const DBRecord&);
     void onEditUsersClicked();
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setSettingsInfo();
+    void setSettingsIPInfo();
     void showFoundProductsToast(const int);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);

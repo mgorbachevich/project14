@@ -607,20 +607,59 @@ void AppManager::onSettingsItemClicked(const int index)
     const int type = Settings::getType(*r);
     debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::toString(code), name, QString::number(type)));
 
+    switch (code)
+    {
+    case SettingCode_ClearLog:
+        clearLog();
+        return;
+
+    case SettingCode_Equipment:
+    case SettingCode_WiFi:
+    case SettingCode_Ethernet:
+        settings->nativeSettings(code);
+        return;
+
+    case SettingCode_SystemSettings:
+        emit showPasswordInputBox(code);
+        return;
+
+    case SettingCode_Users:
+        onEditUsersClicked();
+        return;
+
+    case SettingCode_DateTime:
+    case SettingCode_VerificationDate:
+        showDateInputPanel(code);
+        return;
+
+    case SettingCode_Group_Info:
+        setSettingsIPInfo();
+        break;
+
+    default:
+        break;
+    }
+
     switch (type)
     {
+    case SettingType_Custom:
+        return;
+
     case SettingType_Group:
         updateSettings(code);
         emit showSettingsPanel(settings->getCurrentGroupName());
         break;
+
     case SettingType_InputNumber:
     case SettingType_InputText:
         emit showSettingInputBox(code, name, settings->getStringValue(*r));
         break;
+
     case SettingType_List:
         settingItemModel->update(Settings::getValueList(*r));
         emit showSettingComboBox(code, name, settings->getIntValue(*r, true), settings->getStringValue(*r), settings->getComment(*r));
         break;
+
     case SettingType_IntervalNumber:
     {
         QStringList list = Settings::getValueList(*r);
@@ -633,19 +672,19 @@ void AppManager::onSettingsItemClicked(const int index)
         }
         break;
     }
-    case SettingType_Custom:
-        onCustomSettingsItemClicked(*r);
-        break;
-        break;
-    case SettingType_Unsed:
-    case SettingType_UnsedGroup:
+
+    case SettingType_Unused:
+    case SettingType_UnusedGroup:
         showMessage(name, "Не поддерживается");
         break;
+
     case SettingType_ReadOnly:
         showMessage(name, "Редактирование запрещено");
         break;
+
     case SettingType_GroupWithPassword:
         emit showPasswordInputBox(code);
+
     default:
         break;
     }
@@ -655,37 +694,6 @@ void AppManager::clearLog()
 {
     debugLog("@@@@@ AppManager::clearLog");
     showConfirmation(ConfirmSelector_ClearLog, "Вы хотите очистить лог?", "");
-}
-
-void AppManager::onCustomSettingsItemClicked(const DBRecord& r)
-{
-    const int code = Settings::getCode(r);
-    const QString& name = Settings::getName(r);
-    debugLog(QString("@@@@@ AppManager::onCustomSettingsItemClicked %1 %2").arg(Tools::toString(code), name));
-    switch (code)
-    {
-     case SettingCode_ClearLog:
-        clearLog();
-        break;
-    case SettingCode_Equipment:
-    case SettingCode_WiFi:
-    case SettingCode_Ethernet:
-        settings->nativeSettings(code);
-        break;
-    case SettingCode_SystemSettings:
-        emit showPasswordInputBox(code);
-        break;
-    case SettingCode_Users:
-        onEditUsersClicked();
-        break;
-    case SettingCode_DateTime:
-    case SettingCode_VerificationDate:
-        showDateInputPanel(code);
-        break;
-    default:
-        showMessage(name, "Не поддерживается");
-        return;
-    }
 }
 
 void AppManager::showDateInputPanel(const int settingCode)
@@ -1599,6 +1607,7 @@ void AppManager::onInfoClicked()
 {
     debugLog("@@@@@ AppManager::onInfoClicked ");
     onUserAction();
+    setSettingsIPInfo();
     showMessage(settings->modelInfo(), settings->aboutInfo());
 }
 
@@ -1624,11 +1633,17 @@ void AppManager::setSettingsInfo()
     settings->setValue(SettingCode_InfoDaemonVersion, equipmentManager->daemonVersion());
     settings->setValue(SettingCode_InfoWMVersion,     equipmentManager->WMVersion());
     settings->setValue(SettingCode_InfoPMVersion,     equipmentManager->PMVersion());
-    settings->setValue(SettingCode_InfoIP,            Tools::getIP());
     settings->setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
-    settings->setValue(SettingCode_InfoWiFiSSID,      Tools::getSSID());
     settings->setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
     equipmentManager->stop();
+    settings->write();
+}
+
+void AppManager::setSettingsIPInfo()
+{
+    debugLog("@@@@@ AppManager::setSettingsIPInfo ");
+    settings->setValue(SettingCode_InfoIP,       Tools::getIP());
+    settings->setValue(SettingCode_InfoWiFiSSID, Tools::getSSID());
     settings->write();
 }
 

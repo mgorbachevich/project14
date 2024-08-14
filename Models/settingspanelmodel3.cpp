@@ -26,8 +26,8 @@ void SettingsPanelModel3::update(Settings& settings)
             switch (Settings::getType(*ri))
             {
             case SettingType_ReadOnly:
-            case SettingType_Unsed:
-            case SettingType_UnsedGroup:
+            case SettingType_Unused:
+            case SettingType_UnusedGroup:
                 color = "<font color='#78909c'>";
                 break;
             }
