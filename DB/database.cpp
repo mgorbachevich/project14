@@ -46,7 +46,11 @@ void DataBase::onAppStart()
     Tools::debugLog("@@@@@ DataBase::onAppStart");
     QString message;
     QString path = Tools::dbPath(DB_PRODUCT_NAME);
-    if(REMOVE_PRODUCT_DB_ON_START) Tools::removeFile(path);
+
+#ifdef REMOVE_PRODUCT_DB_ON_START
+    Tools::removeFile(path);
+#endif
+
     bool exists = QFile(path).exists();
     Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::sortIncrement(exists)));
     started = addAndOpen(productDB, path);
@@ -64,7 +68,10 @@ void DataBase::onAppStart()
     if (started)
     {
         path = Tools::dbPath(DB_LOG_NAME);
-        if(REMOVE_LOG_DB_ON_START) Tools::removeFile(path);
+
+#ifdef REMOVE_LOG_DB_ON_START
+        Tools::removeFile(path);
+#endif
         exists = QFile(path).exists();
         Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::sortIncrement(exists)));
         started = addAndOpen(logDB, path);
@@ -99,16 +106,7 @@ void DataBase::onAppStart()
     emit dbStarted();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::sortIncrement(started)));
 }
-/*
-bool DataBase::open(QSqlDatabase& db, const QString& name)
-{
-    if (!started) return false;
-    const QString path = Tools::dbPath(name);
-    Tools::debugLog("@@@@@ DataBase::open " + path);
-    if(!QFile(path).exists()) return false;
-    return db.isOpen() ? true : db.open();
-}
-*/
+
 bool DataBase::addAndOpen(QSqlDatabase& db, const QString& filePath, const bool open)
 {
     Tools::debugLog(QString("@@@@@ DataBase::addAndOpen %1").arg(filePath));
@@ -205,19 +203,7 @@ bool DataBase::executeSQL(const QSqlDatabase& db, const QString& sql)
 
 bool DataBase::executeSelectSQL(DBTable* table, const QString& sql, DBRecordList& resultRecords)
 {
-    if(DEBUG_DB_SELECT_REPETITIONS <= 0)
-        return query(table->sqlDB, sql, table, &resultRecords) && resultRecords.count() > 0;
-    else
-    {
-        bool ok = false;
-        quint64 t1 = Tools::nowMsec();
-        for(int i = 0; i < DEBUG_DB_SELECT_REPETITIONS; i++)
-            ok = query(table->sqlDB, sql, table, &resultRecords) && resultRecords.count() > 0;
-        QString ts = Tools::toString(Tools::nowMsec() - t1);
-        Tools::debugLog(QString("@@@@@ DataBase::executeSelectSQL %1 ms").arg(ts));
-        //appManager->showToast(QString("%1 ms").arg(ts));
-        return ok;
-    }
+    return query(table->sqlDB, sql, table, &resultRecords) && resultRecords.count() > 0;
 }
 
 bool DataBase::selectById(const QString& tableName, const QString& id, DBRecord& resultRecord)
@@ -312,7 +298,9 @@ bool DataBase::insertRecord(DBTable *table, const DBRecord& record)
         sql += (i < r.count()) ? "'" + r[i].toString() + "'" : "''";
         sql += (i == n - 1) ? ");" : ", ";
     }
+#ifdef DEBUG_INSERT_DB_DELAY_MSEC
     Tools::pause(DEBUG_INSERT_DB_DELAY_MSEC); // замедляю загрузку для отладки
+#endif
     return executeSQL(table->sqlDB, sql);
 }
 
@@ -451,11 +439,13 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
             {
                 if(removeRecord(t, codes[i]))
                 {
-                    if (detailedLog && LOG_LOAD_RECORDS)
+#ifdef LOG_LOAD_RECORDS
+                    if (detailedLog)
                     {
                         QString s = QString("Запись удалена. Таблица: %1. Код: %2").arg(tableName, codes[i]);
                         saveLog(LogType_Warning, LogSource_DB, s);
                     }
+#endif
                 }
                 else
                 {
@@ -530,11 +520,13 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     {
         selectAll(t, records);
         result.recordCount = records.count();
-        if (!codesOnly && detailedLog && LOG_LOAD_RECORDS)
+#ifdef LOG_LOAD_RECORDS
+        if (!codesOnly && detailedLog)
         {
             for (int i = 0; i < result.recordCount; i++)
                 saveLog(LogType_Warning, LogSource_DB, QString("Выгружена запись. Таблица: %1. Код: %2"). arg(tableName, records[i].at(0).toString()));
         }
+#endif
     }
     else // По списку кодов
     {
@@ -545,9 +537,11 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
             {
                 result.recordCount++;
                 records.append(r);
-                if (detailedLog && LOG_LOAD_RECORDS)
+#ifdef LOG_LOAD_RECORDS
+                if (detailedLog)
                     saveLog(LogType_Warning, LogSource_DB, QString("Запись выгружена. Таблица: %1. Код: %2").
                         arg(tableName, r.at(0).toString()));
+#endif
             }
             else
             {
@@ -592,7 +586,9 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
             {
                 successCount++;
                 s = QString("Запись загружена. Таблица: %1. Код: %2").arg(t->name, code);
-                if (detailedLog && LOG_LOAD_RECORDS) saveLog(LogType_Warning, LogSource_DB, s);
+#ifdef LOG_LOAD_RECORDS
+                if (detailedLog) saveLog(LogType_Warning, LogSource_DB, s);
+#endif
             }
             Tools::debugLog("@@@@@ DataBase::netDownload "+ s);
         }

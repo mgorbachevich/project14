@@ -1,10 +1,5 @@
 QT += quick sql widgets core gui httpserver serialport core5compat network multimedia
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
-
 DEFINES += ZINT_NO_PNG
 
 INCLUDEPATH += \
@@ -13,7 +8,7 @@ INCLUDEPATH += \
     Managers \
     Models \
     Settings \
-    Equipment/Wm100_Slpa100u \
+    Equipment/Wm100_Slpa100u
 
 HEADERS += \
     DB/dbindexdescriptor.h \
@@ -27,6 +22,7 @@ HEADERS += \
     Models/settingspanelmodel3.h \
     Models/showcasepanelmodel3.h \
     Net/netactionresult.h \
+    Net/netentry.h \
     constants.h \
     tools.h \
     DB/jsonarrayfile.h \
@@ -120,8 +116,7 @@ HEADERS += \
     Models/searchfiltermodel.h \
     Models/usernamemodel.h \
     Models/viewlogpanelmodel.h \
-    Net/netparams.h \
-    Net/netserver.h \
+    Net/netserver.h
 
 SOURCES += \
     DB/showcase.cpp \
@@ -221,7 +216,7 @@ SOURCES += \
     Models/viewlogpanelmodel.cpp \
     Models/baselistmodel.cpp \
     Models/productpanelmodel.cpp \
-    Net/netserver.cpp \
+    Net/netserver.cpp
 
 RESOURCES += \
     main.qml \
@@ -370,7 +365,7 @@ RESOURCES += \
     Sound/KeypressStandard.mp3 \
     Sound/KeypressInvalid.mp3 \
     Text/json_demo_equipment_config.txt \
-    Text/json_default_settings.txt \
+    Text/json_default_settings.txt
 
 android {
     QT += core-private
@@ -385,6 +380,10 @@ android {
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
 }
 
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
 
 
 

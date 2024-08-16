@@ -115,8 +115,6 @@ public:
 private:
     void alarm();
     void clickSound();
-    void createDefaultData();
-    void createDefaultImages();
     bool isProduct() { return !product.isEmpty(); }
     DBRecord& getCurrentUser() { return users->getCurrentUser(); }
     QString getImageFileWithQmlPath(const DBRecord&);
@@ -126,8 +124,8 @@ private:
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
-    void setSettingsInfo();
-    void setSettingsIPInfo();
+    void setSettingsInfo(const bool write = true);
+    void setSettingsNetInfo(const bool write = true);
     void showFoundProductsToast(const int);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);

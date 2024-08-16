@@ -26,7 +26,10 @@
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
     QObject(application), context(qmlContext)
 {
-    Tools::removeDebugLog();
+#ifdef REMOVE_DEBUG_LOG_ON_START
+    Tools::removeFile(Tools::dbPath(DEBUG_LOG_NAME));
+#endif
+
     debugLog(QString("@@@@@ AppManager::AppManager %1").arg(APP_VERSION));
 
     screenManager = new ScreenManager(screenSize, this);
@@ -35,11 +38,23 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     KeyEmitter* keyEmitter = new KeyEmitter(this);
     context->setContextProperty("keyEmitter", keyEmitter);
 
-    if(CREATE_DEFAULT_DATA_ON_START && !Tools::isFileExists(DB_PRODUCT_NAME))
-            createDefaultData();
-    if(CREATE_DEFAULT_IMAGES_ON_START &&
-        !Tools::isFileExists(Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, "1.png"))))
-            createDefaultImages();
+#ifdef CREATE_DEFAULT_DATA_ON_START
+    if(!Tools::isFileExists(DB_PRODUCT_NAME))
+    {
+        DataBase::removeDBFile(DB_PRODUCT_NAME);
+        DataBase::removeDBFile(DB_LOG_NAME);
+        DataBase::removeDBFile(DEBUG_LOG_NAME);
+        Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME), Tools::dbPath(DB_PRODUCT_NAME));
+    }
+    if(!Tools::isFileExists(Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, "1.png"))))
+    {
+        QStringList images = { "1.png", "2.png", "3.jpg", "4.png", "5.png", "6.png", "8.png",
+                               "9.png", "10.png", "11.png", "12.png", "15.png" };
+        for (int i = 0; i < images.count(); i++)
+            Tools::copyFile(QString(":/Default/%1").arg(images[i]),
+                            Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
+    }
+#endif
 
     settings = new Settings(this);
     users = new Users(this);
@@ -113,7 +128,10 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
             Tools::makeDirs(false, USERS_FILE).isEmpty())
         showAttention("Не созданы папки конфиг.файлов");
 
-    if(REMOVE_SETTINGS_FILE_ON_START) Tools::removeFile(SETTINGS_FILE);
+#ifdef REMOVE_SETTINGS_FILE_ON_START
+    Tools::removeFile(SETTINGS_FILE);
+#endif
+
     settings->read();
     updateSettings(0);
     equipmentManager->create();
@@ -127,7 +145,9 @@ void AppManager::onDBStarted()
 {
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
-    setSettingsInfo();
+    setSettingsInfo(false);
+    setSettingsNetInfo();
+
     if(db->isStarted())
     {
         startAuthorization();
@@ -138,9 +158,12 @@ void AppManager::onDBStarted()
 
 void AppManager::onTimer()
 {
-    if(DEBUG_ONTIMER_MESSAGE)
+#ifdef DEBUG_ONTIMER_MESSAGE
         debugLog("@@@@@ AppManager::onTimer " + Tools::toString((int)(status.userActionTime / 1000)));
-    if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
+#endif
+#ifdef DEBUG_MEMORY_MESSAGE
+        Tools::debugMemory();
+#endif
     const quint64 now = Tools::nowMsec();
 
     if(isAuthorizationOpened()) // Авторизация
@@ -183,25 +206,6 @@ void AppManager::onTimer()
         debugLog("@@@@@ AppManager::onTimer netActionTime");
         onNetCommand(NetCommand_StopLoad, Tools::toString(false));
     }
-}
-
-void AppManager::createDefaultData()
-{
-    debugLog("@@@@@ AppManager::createDefaultData");
-    DataBase::removeDBFile(DB_PRODUCT_NAME);
-    DataBase::removeDBFile(DB_LOG_NAME);
-    DataBase::removeDBFile(DEBUG_LOG_NAME);
-    Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME), Tools::dbPath(DB_PRODUCT_NAME));
-}
-
-void AppManager::createDefaultImages()
-{
-    debugLog("@@@@@ AppManager::createDefaultImages");
-    QStringList images = { "1.png", "2.png", "3.jpg", "4.png", "5.png", "6.png", "8.png",
-                           "9.png", "10.png", "11.png", "12.png", "15.png" };
-    for (int i = 0; i < images.count(); i++)
-        Tools::copyFile(QString(":/Default/%1").arg(images[i]),
-                        Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
 }
 
 void AppManager::onProductDescriptionClicked()
@@ -633,7 +637,7 @@ void AppManager::onSettingsItemClicked(const int index)
         return;
 
     case SettingCode_Group_Info:
-        setSettingsIPInfo();
+        setSettingsNetInfo();
         break;
 
     default:
@@ -970,7 +974,9 @@ void AppManager::resetProduct() // Сбросить выбранный прод�
 void AppManager::onUserAction()
 {
     debugLog("@@@@@ AppManager::onUserAction");
-    if(DEBUG_MEMORY_MESSAGE) Tools::debugMemory();
+#ifdef DEBUG_MEMORY_MESSAGE
+        Tools::debugMemory();
+#endif
     status.onUserAction();
 }
 
@@ -1011,8 +1017,10 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
 void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 {
     // Изменился параметр оборудования
-    if(DEBUG_WEIGHT_STATUS) debugLog(QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(
+#ifdef DEBUG_WEIGHT_STATUS
+    debugLog(QString("@@@@@ AppManager::onEquipmentParamChanged %1 %2").arg(
                  Tools::toString(param), Tools::toString(errorCode)));
+#endif
 
     switch (param)
     {
@@ -1058,8 +1066,9 @@ void AppManager::alarm()
 
 void AppManager::updateWeightStatus()
 {
-    if(DEBUG_WEIGHT_STATUS) debugLog("@@@@@ AppManager::updateWeightStatus");
-
+#ifdef DEBUG_WEIGHT_STATUS
+    debugLog("@@@@@ AppManager::updateWeightStatus");
+#endif
     const bool isPieceProduct = isProduct() && ProductDBTable::isPiece(product);
     const int oldPieces = status.pieces;
     if(isPieceProduct && status.pieces < 1) status.pieces = 1;
@@ -1180,7 +1189,7 @@ void AppManager::updateWeightStatus()
         return;
     }
 
-    if(DEBUG_WEIGHT_STATUS)
+#ifdef DEBUG_WEIGHT_STATUS
         debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9%10 %11 %12 %13").arg(
                  Tools::toIntString(isWMError),
                  Tools::toIntString(isAutoPrint),
@@ -1193,6 +1202,7 @@ void AppManager::updateWeightStatus()
                  Tools::toIntString(status.isManualPrintEnabled),
                  Tools::toIntString(isAutoPrintEnabled),
                  quantity, price, amount));
+#endif
 }
 
 void AppManager::beepSound()
@@ -1323,21 +1333,21 @@ void AppManager::showAuthorizationUsers()
 void AppManager::stopAuthorization(const QString& login, const QString& password)
 {
     const QString title = "Авторизация";
-    if(CHECK_AUTHORIZATION)
+
+#ifdef CHECK_AUTHORIZATION
+    debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
+    DBRecord u = users->getByName(login);
+    if (u.isEmpty() || password != Users::getPassword(u))
     {
-        debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
-        DBRecord u = users->getByName(login);
-        if (u.isEmpty() || password != Users::getPassword(u))
-        {
-            debugLog("@@@@@ AppManager::stopAuthorization ERROR");
-            const QString error = "Неверные имя пользователя или пароль";
-            showMessage(title, error);
-            db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
-            onUserAction();
-            return;
-        }
-        users->setCurrentUser(u);
+        debugLog("@@@@@ AppManager::stopAuthorization ERROR");
+        const QString error = "Неверные имя пользователя или пароль";
+        showMessage(title, error);
+        db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
+        onUserAction();
+        return;
     }
+    users->setCurrentUser(u);
+#endif
 
     debugLog("@@@@@ AppManager::stopAuthorization OK");
     db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
@@ -1349,7 +1359,9 @@ void AppManager::stopAuthorization(const QString& login, const QString& password
         startAll();
         refreshAll();
         onUserAction();
-        if(DB_PATH_MESSAGE) showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
+#ifdef DB_PATH_MESSAGE
+        showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
+#endif
         users->clear();
         debugLog("@@@@@ AppManager::stopAuthorization Done");
     });
@@ -1607,11 +1619,11 @@ void AppManager::onInfoClicked()
 {
     debugLog("@@@@@ AppManager::onInfoClicked ");
     onUserAction();
-    setSettingsIPInfo();
+    setSettingsNetInfo();
     showMessage(settings->modelInfo(), settings->aboutInfo());
 }
 
-void AppManager::setSettingsInfo()
+void AppManager::setSettingsInfo(const bool write)
 {
     debugLog("@@@@@ AppManager::setSettingsInfo ");
 #ifdef Q_OS_ANDROID
@@ -1636,15 +1648,15 @@ void AppManager::setSettingsInfo()
     settings->setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
     settings->setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
     equipmentManager->stop();
-    settings->write();
+    if(write) settings->write();
 }
 
-void AppManager::setSettingsIPInfo()
+void AppManager::setSettingsNetInfo(const bool write)
 {
-    debugLog("@@@@@ AppManager::setSettingsIPInfo ");
+    debugLog("@@@@@ AppManager::setSettingsNetInfo ");
     settings->setValue(SettingCode_InfoIP,       Tools::getIP());
     settings->setValue(SettingCode_InfoWiFiSSID, Tools::getSSID());
-    settings->write();
+    if(write) settings->write();
 }
 
 

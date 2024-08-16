@@ -4,30 +4,29 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.70"
+#define APP_VERSION "2.71"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
 
 // Debug and Log:
 //#define DEBUG_LOG_FILE
-#define DEBUG_DB_SELECT_REPETITIONS 0
-#define DEBUG_ONTIMER_MESSAGE false
-#define DEBUG_MEMORY_MESSAGE false
-#define DEBUG_ONTIMER_EQUIPMENT_MESSAGE false
-#define DEBUG_WEIGHT_STATUS false
-#define DB_PATH_MESSAGE false
-#define DEBUG_INSERT_DB_DELAY_MSEC 0
-#define LOG_LOAD_RECORDS false
+//#define DEBUG_ONTIMER_MESSAGE
+//#define DEBUG_MEMORY_MESSAGE
+//#define DEBUG_ONTIMER_EQUIPMENT_MESSAGE
+//#define DEBUG_WEIGHT_STATUS
+//#define DB_PATH_MESSAGE
+//#define LOG_LOAD_RECORDS
+//#define DEBUG_INSERT_DB_DELAY_MSEC 100
+//#define DEBUG_NET_ENTRIES
 
 // On Start:
-#define REMOVE_SETTINGS_FILE_ON_START true
-#define CREATE_DEFAULT_DATA_ON_START false
-#define CREATE_DEFAULT_IMAGES_ON_START false
-#define REMOVE_DEBUG_LOG_ON_START true
-#define REMOVE_PRODUCT_DB_ON_START false
-#define REMOVE_LOG_DB_ON_START true
-#define CHECK_AUTHORIZATION true
+#define CHECK_AUTHORIZATION
+//#define REMOVE_SETTINGS_FILE_ON_START
+//#define REMOVE_DEBUG_LOG_ON_START
+//#define REMOVE_PRODUCT_DB_ON_START
+//#define REMOVE_LOG_DB_ON_START
+//#define CREATE_DEFAULT_DATA_ON_START
 
 // Files and Pathes:
 #ifdef Q_OS_ANDROID
@@ -75,12 +74,12 @@
 #define SHOW_LONG_TOAST_SEC 10
 #define EOL "\r\n"
 #define MAX_REMOVE_OLD_LOG_RECORDS_COUNTER 5
-//#define DB_EMULATION
 #define DEFAULT_ADMIN_NAME "АДМИНИСТРАТОР"
 #define DEFAULT_ADMIN_CODE 0
-#define DEFAULT_FACTORY_SETTINGS_PASSWORDS true
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
+#define DEFAULT_FACTORY_SETTINGS_PASSWORDS
+//#define DB_EMULATION
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"

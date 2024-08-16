@@ -4,8 +4,9 @@
 #include <QDir>
 #include <QJsonObject>
 #include <QApplication>
+#include <QNetworkInterface>
+#include "netentry.h"
 #include "constants.h"
-#include "netparams.h"
 
 class Tools
 {
@@ -59,7 +60,6 @@ public:
     static int getMemory(const MemoryType);
     static QString getIP();
     static void pause(const int, const QString& comment = "");
-    static void removeDebugLog();
     static double round(const double, const int);
     static void sound(const QString&, const int);
     static void sortByInt(DBRecordList&, const int, const bool increase = true);
@@ -67,10 +67,10 @@ public:
     //static void memoryCheck();
     static QString getAndroidBuild();
     static QString getSSID();
+    static NetEntry getNetEntry();
 
 private:
     static QString makeFullPath(const QString&, const QString&);
-    static NetParams getNetParams();
 
     static QApplication* app;
 };

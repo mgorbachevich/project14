@@ -350,10 +350,10 @@ QString EquipmentManager::getWMErrorDescription(const int e) const
 
 void EquipmentManager::onWMStatusChanged(Wm100Protocol::channel_status &s)
 {
-    if(DEBUG_WEIGHT_STATUS)
+#ifdef DEBUG_WEIGHT_STATUS
         Tools::debugLog(QString("@@@@@EquipmentManager::onWMStatusChanged state=%1b weight=%2 tare=%3").arg(
             QString::number(s.state, 2), QString::number(s.weight), QString::number(s.tare)));
-
+#endif
     //bool b0 = isFlag(s, 0); // признак фиксации веса
     //bool b1 = isFlag(s, 1); // признак работы автонуляmain()
     //bool b2 = isFlag(s, 2); // "0"- канал выключен, "1"- канал включен

@@ -174,7 +174,7 @@ public class AndroidNative
         catch (Exception e) { return e.getMessage(); }
     }
     */
-
+    /*
     public static String getIP1(Context context)
     {
         // https://stackoverflow.com/questions/71281724/getting-wifi-ssid-from-connectivitymanager-networkcapabilities-synchronously
@@ -187,5 +187,6 @@ public class AndroidNative
         catch (Exception e) {}
         return "?";
     }
+    */
 }
 

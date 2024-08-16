@@ -20,11 +20,12 @@ bool ScaleConfig::read()
     data = parse(Tools::readTextFile(fileName));
     Tools::debugLog("@@@@@ ScaleConfig::read " + Tools::toString((int)(data.count())));
     if(data.count() <= 0) for(int i = 0; i < fields.count(); i++) data << "";
-    if(DEFAULT_FACTORY_SETTINGS_PASSWORDS)
-    {
-        set(ScaleConfigField_FactorySettingsPassword, "0000");
-        set(ScaleConfigField_SystemSettingsPassword, "1234");
-    }
+
+#ifdef DEFAULT_FACTORY_SETTINGS_PASSWORDS
+    set(ScaleConfigField_FactorySettingsPassword, "0000");
+    set(ScaleConfigField_SystemSettingsPassword, "1234");
+#endif
+
     return data.count() > 0;
 }
 

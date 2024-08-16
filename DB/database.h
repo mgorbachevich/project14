@@ -66,7 +66,6 @@ private:
     bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
     bool insertRecord(DBTable*, const DBRecord&);
     bool isLogging(const int);
-    //bool open(QSqlDatabase&, const QString&);
     bool query(const QSqlDatabase&, const QString&, DBTable*, DBRecordList*);
     bool removeAll(DBTable*);
     bool removeRecord(DBTable*, const QString&);
