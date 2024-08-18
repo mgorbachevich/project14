@@ -26,8 +26,9 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
     tables.append(new LogDBTable(DBTABLENAME_LOG, logDB, this));
     tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, logDB, this));
 
+    // Не выгружаем поля:
     getTable(DBTABLENAME_PRODUCTS)->setColumnNotUploadable(ProductDBTable::UpperName);
-    getTable(DBTABLENAME_LABELS)->setColumnNotUploadable(ResourceDBTable::Source);
+    getTable(DBTABLENAME_LABELS)  ->setColumnNotUploadable(ResourceDBTable::Source);
     getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Name);
     getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Source);
     getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Name);

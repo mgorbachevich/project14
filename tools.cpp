@@ -430,6 +430,7 @@ QString Tools::getAndroidBuild()
 
 NetEntry Tools::getNetEntry()
 {
+    // https://amin-ahmadi.com/2016/03/22/how-to-find-local-ip-addresses-in-qt/
     debugLog("@@@@@ Tools::getNetEntry");
     NetEntry result;
     QList<QNetworkInterface> nis = QNetworkInterface::allInterfaces();

@@ -323,6 +323,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
     Tools::debugLog("@@@@@ NetServer::parseSetRequest Multipart");
     QByteArray boundary = request.mid(0, request.indexOf(EOL));
     Tools::debugLog("@@@@@ NetServer::parseSetRequest Boundary " + QString(boundary));
+
     QList<int> boundaryIndeces;
     int bi = 0;
     while(bi >= 0)
@@ -330,20 +331,21 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
         boundaryIndeces.append(bi);
         bi = request.indexOf(QByteArrayView(boundary), bi + boundary.size() + 2);
     }
-    Tools::debugLog("@@@@@ NetServer::parseSetRequest Boundary indices ");
+    // Tools::debugLog("@@@@@ NetServer::parseSetRequest Boundary indices ");
     const int partCount = boundaryIndeces.count() - 1;
     Tools::debugLog("@@@@@ NetServer::parseSetRequest Part count " + QString::number(partCount));
+
     QHash<DBTable*, DBRecordList> downloadedRecords;
     for(int partIndex = 0; partIndex < partCount; partIndex++)
     {
         // Считаю что хедеров не больше 2:
         QByteArrayList headers;
-        const int d = QByteArray(EOL).length();
-        const int i1 = boundaryIndeces[partIndex] + boundary.size() + d;
-        const int i2 = request.indexOf(EOL, i1) + d;
-        const int i3 = request.indexOf(EOL, i2) + d;
-        headers.append(request.mid(i1, i2 - i1 - d));
-        headers.append(request.mid(i2, i3 - i2 - d));
+        const int eoll = QByteArray(EOL).length();
+        const int i1 = boundaryIndeces[partIndex] + boundary.size() + eoll;
+        const int i2 = request.indexOf(EOL, i1) + eoll;
+        const int i3 = request.indexOf(EOL, i2) + eoll;
+        headers.append(request.mid(i1, i2 - i1 - eoll));
+        headers.append(request.mid(i2, i3 - i2 - eoll));
         if(partIndex == 0) // Value
         {
             for(int hi = 0; hi < headers.count(); hi++)
@@ -355,7 +357,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
 
                 Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Part %1, header %2 = %3").
                         arg(QString::number(partIndex), QString::number(hi), header));
-                QString text = toJsonString(request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d));
+                QString text = toJsonString(request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll));
                 Tools::debugLog("@@@@@ NetServer::parseSetRequest. Text " + text);
                 if(!text.isEmpty()) appManager->onParseSetRequest(text, downloadedRecords);
                 Tools::debugLog("@@@@@ NetServer::parseSetRequest. Record count " + QString::number( downloadedRecords.count()));
@@ -369,30 +371,29 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                 QList tables = downloadedRecords.keys();
                 for (DBTable* table : tables)
                 {
-                    //const int fieldIndex = table->columnIndex("field");
-                    //if(fieldIndex < 0) continue;
                     Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Part %1, header %2 = %3").
                             arg(QString::number(partIndex), QString::number(hi), header));
                     Tools::debugLog("@@@@@ NetServer::parseSetRequest. Table " + table->name);
                     DBRecordList tableRecords = downloadedRecords.value(table);
                     for(int ri = 0; ri < tableRecords.count(); ri++)
                     {
+                        DBRecord& record = tableRecords[ri];
+
                         // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
                         QString source = QString(parseHeaderItem(header, "filename"));
                         if(source.isEmpty()) continue;
+                        QString name = QString(parseHeaderItem(header, "name"));
 
-                        // New resource file name (tableName/recordCode.extension):
-                        DBRecord& record = tableRecords[ri];
-                        const int dotIndex = source.lastIndexOf(".");
-                        QString extension =  dotIndex < 0 ? "" : source.mid(dotIndex + 1, source.length());
-                        QString localFilePath = QString("%1/%2.%3").arg(table->name, record[0].toString(), extension);
+                        // New resource file name = tableName/recordCode/source:
+                        QString resourcePath = QString("%1/%2/%3").arg(table->name, record[0].toString(), source).replace(":", "").replace("//", "/");
+                        QString fullPath = Tools::downloadPath(resourcePath);
+                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. Resource path " + resourcePath);
+                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full path " + fullPath);
+
                         // Write data file:
-                        QByteArray fileData = request.mid(i3 + d, boundaryIndeces[partIndex + 1] - i3 - d * 2);
-                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number( fileData.length()));
-                        QString fullFilePath = Tools::downloadPath(localFilePath);
-                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full file path " + fullFilePath);
-
-                        if(!Tools::writeBinaryFile(fullFilePath, fileData))
+                        QByteArray fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
+                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number(fileData.length()));
+                        if(!Tools::writeBinaryFile(fullPath, fileData))
                         {
                             result.errorCount++;
                             result.errorCode = LogError_WrongRecord;
@@ -407,8 +408,11 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                                 table->name == DBTABLENAME_SOUNDS)
                         {
                             result.successCount++;
-                            record[ResourceDBTable::Source] = source;
-                            record[ResourceDBTable::Value] = localFilePath;
+                            if(name == "file1")
+                            {
+                                record[ResourceDBTable::Source] = source;
+                                record[ResourceDBTable::Value] = resourcePath;
+                            }
                         }
                         else
                         {

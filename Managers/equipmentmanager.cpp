@@ -533,8 +533,15 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
 
     quint64 dateTime = Tools::nowMsec();
     int labelNumber = 0; // todo
-    int e = labelCreator->loadLabel(":/Labels/60x40.lpr"); // todo
-    //int e = slpa->printTest(100);
+
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    QString localPath = "labels/1/Labels/60x30.lpr";
+    QString fullPath;
+    if(Tools::isFileExistsInDownloadPath(localPath))
+        fullPath = Tools::downloadPath(localPath);
+    int e = labelCreator->loadLabel(fullPath);
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     if (e == 0)
     {
         PrintData pd;
