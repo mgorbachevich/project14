@@ -169,6 +169,18 @@ void DBTable::removeIndexes()
         db->executeSQL(sqlDB, QString("DROP INDEX IF EXISTS %1").arg(indexDescriptors[i].name));
 }
 
+QString DBTable::toString(DBRecord& r)
+{
+    QString s;
+    for(int i = 0; i < columns.count(); i++)
+    {
+        if(i > 0) s += ", ";
+        if(i >= r.count()) s += "";
+        else s += r[i].toString();
+    }
+    return s;
+}
+
 void DBTable::createIndexes()
 {
     if (!db->isStarted() || indexDescriptors.count() < 1) return;

@@ -34,6 +34,7 @@ public:
     virtual void createIndexes();
     virtual void removeIndexes();
     virtual void setColumnNotUploadable(const int c) { notUploadColumns.append(c); }
+    QString toString(DBRecord&);
 
     QString name;
     QSqlDatabase& sqlDB;

@@ -377,41 +377,80 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                     DBRecordList tableRecords = downloadedRecords.value(table);
                     for(int ri = 0; ri < tableRecords.count(); ri++)
                     {
-                        DBRecord& record = tableRecords[ri];
-
                         // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
                         QString source = QString(parseHeaderItem(header, "filename"));
                         if(source.isEmpty()) continue;
-                        QString name = QString(parseHeaderItem(header, "name"));
+                        DBRecord& record = tableRecords[ri];
+                        const QString recordCode = record[0].toString();
 
-                        // New resource file name = tableName/recordCode/source:
-                        QString resourcePath = QString("%1/%2/%3").arg(table->name, record[0].toString(), source).replace(":", "").replace("//", "/");
-                        QString fullPath = Tools::downloadPath(resourcePath);
-                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. Resource path " + resourcePath);
-                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full path " + fullPath);
+                        if(table->name == DBTABLENAME_MESSAGES ||
+                           table->name == DBTABLENAME_MESSAGEFILES ||
+                           table->name == DBTABLENAME_PICTURES ||
+                           table->name == DBTABLENAME_MOVIES ||
+                           table->name == DBTABLENAME_SOUNDS)
+                        {
+                            // New resource file name (tableName/recordCode.extension):
+                            const int dotIndex = source.lastIndexOf(".");
+                            const QString extension = dotIndex < 0 ? "" : source.mid(dotIndex + 1, source.length());
+                            const QString localFilePath = QString("%1/%2.%3").arg(table->name, recordCode, extension);
+                            // Write data file:
+                            QByteArray fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number( fileData.length()));
+                            const QString fullPath = Tools::downloadPath(localFilePath);
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full file path " + fullPath);
 
-                        // Write data file:
-                        QByteArray fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
-                        Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number(fileData.length()));
-                        if(!Tools::writeBinaryFile(fullPath, fileData))
-                        {
-                            result.errorCount++;
-                            result.errorCode = LogError_WrongRecord;
-                            record = table->createRecord(record[0].toString());
-                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
-                        }
-                        else if(table->name == DBTABLENAME_LABELS ||
-                                table->name == DBTABLENAME_MESSAGES ||
-                                table->name == DBTABLENAME_MESSAGEFILES ||
-                                table->name == DBTABLENAME_PICTURES ||
-                                table->name == DBTABLENAME_MOVIES ||
-                                table->name == DBTABLENAME_SOUNDS)
-                        {
-                            result.successCount++;
-                            if(name == "file1")
+                            if(!Tools::writeBinaryFile(fullPath, fileData))
                             {
+                                result.errorCount++;
+                                result.errorCode = LogError_WrongRecord;
+                                record = table->createRecord(recordCode);
+                            }
+                            else
+                            {
+                                result.successCount++;
                                 record[ResourceDBTable::Source] = source;
-                                record[ResourceDBTable::Value] = resourcePath;
+                                record[ResourceDBTable::Value] = localFilePath;
+                                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full file path " + fullPath);
+
+                                QString s = "@@@@@ NetServer::parseSetRequest: ";
+                                s += " Table = " + table->name;
+                                s += " Record = " + table->toString(record);
+                                Tools::debugLog(s);
+                            }
+                        }
+                        else if(table->name == DBTABLENAME_LABELS)
+                        {
+                            // New resource file name = tableName/recordCode/source:
+                            const QString resourcePath = QString("%1/%2/%3").arg(table->name, recordCode, source).replace(":", "").replace("//", "/");
+                            const QString fullPath = Tools::downloadPath(resourcePath);
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Resource path " + resourcePath);
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full path " + fullPath);
+
+                            // Write data file:
+                            QByteArray fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number(fileData.length()));
+
+                            if(!Tools::writeBinaryFile(fullPath, fileData))
+                            {
+                                result.errorCount++;
+                                result.errorCode = LogError_WrongRecord;
+                                record = table->createRecord(recordCode);
+                                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
+                            }
+                            else
+                            {
+                                result.successCount++;
+                                const QString name = QString(parseHeaderItem(header, "name"));
+                                if(name == "file1")
+                                {
+                                    record[ResourceDBTable::Source] = source;
+                                    record[ResourceDBTable::Value] = resourcePath;
+                                }
+
+                                QString s = "@@@@@ NetServer::parseSetRequest: ";
+                                s += " Table = " + table->name;
+                                s += " Record = " + table->toString(record);
+                                Tools::debugLog(s);
                             }
                         }
                         else
