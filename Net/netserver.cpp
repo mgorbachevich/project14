@@ -67,70 +67,6 @@ QString NetServer::toJsonString(const QByteArray& request)
     return QString(text);
 }
 
-QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &request)
-{
-    // Parse list of codes to upload:
-    Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest %1").arg(QString(request)));
-    QByteArray tableName;
-    QByteArray codes;
-    const QByteArray s1 = "source=";
-    int p1 = request.indexOf(s1);
-    bool codesOnly = false;
-    if(p1 >= 0)
-    {
-        int p2 = request.indexOf("&");
-        if(p2 < 0)
-        {
-            int p2 = request.length();
-            Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest: p1=%1, p2=%2").arg(QString::number(p1), QString::number(p2)));
-            if(p2 > p1)
-            {
-                p1 += s1.length();
-                tableName = request.mid(p1, p2 - p1);
-                Tools::debugLog("@@@@@ NetServer::parseGetRequest table " + tableName);
-            }
-        }
-        else
-        {
-            const QByteArray s2 = "codes=";
-            const QByteArray s3 = "code=";
-            const QByteArray s4 = "codelist=";
-            if(p2 > p1)
-            {
-                p1 += s1.length();
-                tableName = request.mid(p1, p2 - p1);
-                Tools::debugLog("@@@@@ NetServer::parseGetRequest table " + tableName);
-                if (request.contains(s2))
-                {
-                    int p3 = request.indexOf("[") + 1;
-                    int p4 = request.indexOf("]");
-                    codes = request.mid(p3, p4 - p3);
-                }
-                else if (request.contains(s3))
-                {
-                    int p3 = request.indexOf(s3);
-                    int p4 = request.length();
-                    p3 += s3.length();
-                    codes = request.mid(p3, p4 - p3);
-                }
-                else if (request.contains(s4))
-                {
-                    int p3 = request.indexOf(s4);
-                    int p4 = request.length();
-                    p3 += s4.length();
-                    codesOnly = (1 == Tools::toInt(QString(request.mid(p3, p4 - p3))));
-                }
-            }
-        }
-    }
-    if(rule == RouterRule_Get) return appManager->netUpload(tableName, codes, codesOnly);
-    if(!codesOnly) return appManager->netDelete(tableName, codes);
-    NetActionResult result(appManager, RouterRule_Get);
-    result.errorCode = LogError_WrongRequest;
-    result.description = "Некорректный сетевой запрос";
-    return result.makeEmptyJson();
-}
-
 QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray& item, const QByteArray& title)
 {
     if(!header.contains(title) || !header.contains(item)) return "";
@@ -375,6 +311,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                             arg(QString::number(partIndex), QString::number(hi), header));
                     Tools::debugLog("@@@@@ NetServer::parseSetRequest. Table " + table->name);
                     DBRecordList tableRecords = downloadedRecords.value(table);
+                    bool isNewRecord = false;
                     for(int ri = 0; ri < tableRecords.count(); ri++)
                     {
                         // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
@@ -382,6 +319,9 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                         if(source.isEmpty()) continue;
                         DBRecord& record = tableRecords[ri];
                         const QString recordCode = record[0].toString();
+                        QString fullPath;
+                        QString localFilePath;
+                        QByteArray fileData;
 
                         if(table->name == DBTABLENAME_MESSAGES ||
                            table->name == DBTABLENAME_MESSAGEFILES ||
@@ -392,65 +332,48 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                             // New resource file name (tableName/recordCode.extension):
                             const int dotIndex = source.lastIndexOf(".");
                             const QString extension = dotIndex < 0 ? "" : source.mid(dotIndex + 1, source.length());
-                            const QString localFilePath = QString("%1/%2.%3").arg(table->name, recordCode, extension);
+                            localFilePath = QString("%1/%2.%3").arg(table->name, recordCode, extension);
                             // Write data file:
-                            QByteArray fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
+                            fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number( fileData.length()));
-                            const QString fullPath = Tools::downloadPath(localFilePath);
+                            fullPath = Tools::downloadPath(localFilePath);
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full file path " + fullPath);
-
-                            if(!Tools::writeBinaryFile(fullPath, fileData))
-                            {
-                                result.errorCount++;
-                                result.errorCode = LogError_WrongRecord;
-                                record = table->createRecord(recordCode);
-                            }
-                            else
-                            {
-                                result.successCount++;
-                                record[ResourceDBTable::Source] = source;
-                                record[ResourceDBTable::Value] = localFilePath;
-                                Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full file path " + fullPath);
-
-                                QString s = "@@@@@ NetServer::parseSetRequest: ";
-                                s += " Table = " + table->name;
-                                s += " Record = " + table->toString(record);
-                                Tools::debugLog(s);
-                            }
                         }
                         else if(table->name == DBTABLENAME_LABELS)
                         {
                             // New resource file name = tableName/recordCode/source:
-                            const QString resourcePath = QString("%1/%2/%3").arg(table->name, recordCode, source).replace(":", "").replace("//", "/");
-                            const QString fullPath = Tools::downloadPath(resourcePath);
-                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Resource path " + resourcePath);
+                            localFilePath = QString("%1/%2/%3").arg(table->name, recordCode, source).replace(":", "").replace("//", "/");
+                            fullPath = Tools::downloadPath(localFilePath);
+                            Tools::debugLog("@@@@@ NetServer::parseSetRequest. Resource path " + localFilePath);
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. Full path " + fullPath);
 
                             // Write data file:
-                            QByteArray fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
+                            fileData = request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll * 2);
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. File data length " + QString::number(fileData.length()));
+                        }
+                        if(!fullPath.isEmpty())
+                        {
+                            if(Tools::writeBinaryFile(fullPath, fileData))
+                            {
+                                result.successCount++;
+                                if(record[ResourceDBTable::Value].toString().isEmpty())
+                                {
+                                    record[ResourceDBTable::Source] = source;
+                                    record[ResourceDBTable::Value] = localFilePath;
+                                    isNewRecord = true;
 
-                            if(!Tools::writeBinaryFile(fullPath, fileData))
+                                    QString s = "@@@@@ NetServer::parseSetRequest: ";
+                                    s += " Table = " + table->name;
+                                    s += " Record = " + table->toString(record);
+                                    Tools::debugLog(s);
+                                }
+                            }
+                            else
                             {
                                 result.errorCount++;
                                 result.errorCode = LogError_WrongRecord;
                                 record = table->createRecord(recordCode);
                                 Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
-                            }
-                            else
-                            {
-                                result.successCount++;
-                                const QString name = QString(parseHeaderItem(header, "name"));
-                                if(name == "file1")
-                                {
-                                    record[ResourceDBTable::Source] = source;
-                                    record[ResourceDBTable::Value] = resourcePath;
-                                }
-
-                                QString s = "@@@@@ NetServer::parseSetRequest: ";
-                                s += " Table = " + table->name;
-                                s += " Record = " + table->toString(record);
-                                Tools::debugLog(s);
                             }
                         }
                         else
@@ -462,8 +385,11 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                             continue;
                         }
                     }
-                    downloadedRecords.remove(table);
-                    downloadedRecords.insert(table, tableRecords);
+                    if(isNewRecord)
+                    {
+                        downloadedRecords.remove(table);
+                        downloadedRecords.insert(table, tableRecords);
+                    }
                 }
             }
         }
@@ -474,6 +400,70 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                 QString::number(result.successCount + result.errorCount));
     appManager->showToast(result.description);
     appManager->status.downloadedRecords = result.successCount;
+    return result.makeEmptyJson();
+}
+
+QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &request)
+{
+    // Parse list of codes to upload:
+    Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest %1").arg(QString(request)));
+    QByteArray tableName;
+    QByteArray codes;
+    const QByteArray s1 = "source=";
+    int p1 = request.indexOf(s1);
+    bool codesOnly = false;
+    if(p1 >= 0)
+    {
+        int p2 = request.indexOf("&");
+        if(p2 < 0)
+        {
+            int p2 = request.length();
+            Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest: p1=%1, p2=%2").arg(QString::number(p1), QString::number(p2)));
+            if(p2 > p1)
+            {
+                p1 += s1.length();
+                tableName = request.mid(p1, p2 - p1);
+                Tools::debugLog("@@@@@ NetServer::parseGetRequest table " + tableName);
+            }
+        }
+        else
+        {
+            const QByteArray s2 = "codes=";
+            const QByteArray s3 = "code=";
+            const QByteArray s4 = "codelist=";
+            if(p2 > p1)
+            {
+                p1 += s1.length();
+                tableName = request.mid(p1, p2 - p1);
+                Tools::debugLog("@@@@@ NetServer::parseGetRequest table " + tableName);
+                if (request.contains(s2))
+                {
+                    int p3 = request.indexOf("[") + 1;
+                    int p4 = request.indexOf("]");
+                    codes = request.mid(p3, p4 - p3);
+                }
+                else if (request.contains(s3))
+                {
+                    int p3 = request.indexOf(s3);
+                    int p4 = request.length();
+                    p3 += s3.length();
+                    codes = request.mid(p3, p4 - p3);
+                }
+                else if (request.contains(s4))
+                {
+                    int p3 = request.indexOf(s4);
+                    int p4 = request.length();
+                    p3 += s4.length();
+                    codesOnly = (1 == Tools::toInt(QString(request.mid(p3, p4 - p3))));
+                }
+            }
+        }
+    }
+    if(rule == RouterRule_Get) return appManager->netUpload(tableName, codes, codesOnly);
+    if(!codesOnly) return appManager->netDelete(tableName, codes);
+    NetActionResult result(appManager, RouterRule_Get);
+    result.errorCode = LogError_WrongRequest;
+    result.description = "Некорректный сетевой запрос";
     return result.makeEmptyJson();
 }
 

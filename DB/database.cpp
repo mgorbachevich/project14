@@ -29,6 +29,7 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
     // Не выгружаем поля:
     getTable(DBTABLENAME_PRODUCTS)->setColumnNotUploadable(ProductDBTable::UpperName);
     getTable(DBTABLENAME_LABELS)  ->setColumnNotUploadable(ResourceDBTable::Source);
+    getTable(DBTABLENAME_LABELS)  ->setColumnNotUploadable(ResourceDBTable::Hash);
     getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Name);
     getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Source);
     getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Name);
