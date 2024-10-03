@@ -165,7 +165,7 @@ public:
     QString getStringValue(const DBRecord&);
     QString getStringValue(const SettingCode);
     static int getType(const DBRecord& r) { return r[SettingField_Type].toInt(); }
-    static QStringList getValueList(const DBRecord& r) { return r[SettingField_ValueList].toString().split(','); }
+    static QStringList getValueList(const DBRecord& r);
     static bool isGroup(const DBRecord& r);
     void nativeSettings(const int);
     bool setValue(const int, const QString&);

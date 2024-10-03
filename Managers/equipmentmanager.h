@@ -43,7 +43,7 @@ public:
 
     // Print Manager:
     QString PMVersion() const;
-    int print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&);
+    int print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&, const QString&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
     bool isPMDemoMode() const { return PMMode == EquipmentMode_Demo; }
     QString getPMErrorDescription(const int) const;
@@ -89,6 +89,7 @@ private:
     uint16_t PMStatus = 0;
     QString PMUri;
     EquipmentMode PMMode = EquipmentMode_None;
+    QString labelPath;
 
 signals:
     void printed(const DBRecord&);

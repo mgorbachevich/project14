@@ -145,8 +145,10 @@ void AppManager::onDBStarted()
 {
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
-    setSettingsInfo(false);
+    setSettingsInfo();
     setSettingsNetInfo();
+    setSettingsLabels();
+    settings->write();
 
     if(db->isStarted())
     {
@@ -258,7 +260,6 @@ void AppManager::onRewind() // Перемотка
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
 {
     // Настройка изменилась
-
     debugLog(QString("@@@@@ AppManager::onSettingInputClosed %1 %2").arg(QString::number(settingItemCode), value));
     DBRecord* r = settings->getByCode(settingItemCode);
     if (r == nullptr)
@@ -435,9 +436,9 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
     {
         debugLog("@@@@@ AppManager::onSelectResult GetShowcaseResources"  + QString::number(records.count()));
         QStringList fileNames;
-        for (int i = 0; i < records.count(); i++)
+        foreach (auto r, records)
         {
-            QString s = getImageFileWithQmlPath(records[i]);
+            QString s = getImageFileWithQmlPath(r);
             // debugLog("@@@@@ AppManager::onSelectResult GetShowcaseResources" << s;
             fileNames.append(s);
         }
@@ -450,6 +451,26 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
         emit showControlParam(ControlParam_ProductImage, imagePath);
         debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
+        break;
+    }
+
+    case DBSelector_GetLabels:
+    {
+        const SettingCode settingCode = SettingCode_PrintLabelFormat;
+        DBRecord& r = *settings->getByCode(settingCode);
+        QStringList names = settings->getValueList(r);
+        if(records.count() > 0)
+        {
+            names.removeAll("");
+            foreach (auto ri, records)
+            {
+                const QString s = ri[ResourceDBTable::Name].toString();
+                if(!names.contains(s)) names.append(s);
+            }
+            r[SettingField_ValueList] = Tools::toString(names);
+        }
+        int n = settings->getIntValue(settingCode, true);
+        if(n < 0 || n >= names.count()) r[SettingField_Value] = "0";
         break;
     }
 
@@ -611,7 +632,7 @@ void AppManager::onSettingsItemClicked(const int index)
     const int type = Settings::getType(*r);
     debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::toString(code), name, QString::number(type)));
 
-    switch (code)
+    switch (code) // SettingType_Custom
     {
     case SettingCode_ClearLog:
         clearLog();
@@ -638,6 +659,7 @@ void AppManager::onSettingsItemClicked(const int index)
 
     case SettingCode_Group_Info:
         setSettingsNetInfo();
+        settings->write();
         break;
 
     default:
@@ -661,7 +683,7 @@ void AppManager::onSettingsItemClicked(const int index)
 
     case SettingType_List:
         settingItemModel->update(Settings::getValueList(*r));
-        emit showSettingComboBox(code, name, settings->getIntValue(*r, true), settings->getStringValue(*r), settings->getComment(*r));
+        showSettingComboBox(*r);
         break;
 
     case SettingType_IntervalNumber:
@@ -988,7 +1010,8 @@ void AppManager::print() // Печатаем этикетку
                             product,
                             moneyCalculator->quantityAsString(product),
                             priceAsString(product),
-                            moneyCalculator->amountAsString(product));
+                            moneyCalculator->amountAsString(product),
+                            labelPath());
 }
 
 void AppManager::onPrintClicked()
@@ -1253,10 +1276,11 @@ void AppManager::startAll()
     debugLog("@@@@@ AppManager::startAll");
 
     const int serverPort = settings->getIntValue(SettingCode_TCPPort);
-    debugLog("@@@@@ AppManager::startEquipment serverPort = " + QString::number(serverPort));
+    debugLog("@@@@@ AppManager::startAll serverPort = " + QString::number(serverPort));
     netServer->start(serverPort);
     equipmentManager->start();
     status.autoPrintMode = settings->getBoolValue(SettingCode_PrintAuto) ? AutoPrintMode_Disabled : AutoPrintMode_Off;
+    debugLog("@@@@@ AppManager::startAll label = " + labelPath());
 
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
@@ -1511,6 +1535,7 @@ void AppManager::onNetCommand(const int command, const QString& param)
                 if(status.downloadedRecords > 0)
                     s += QString(" (Записи %1)").arg(Tools::toString(status.downloadedRecords));
                 settings->setValue(SettingCode_InfoLastDownload, s);
+                setSettingsLabels();
                 settings->write();
                 //s = "Загрузка успешно завершена. Данные обновлены!";
             }
@@ -1615,15 +1640,21 @@ void AppManager::updateSearch()
                searchPanelModel->loadLimit());
 }
 
+QString AppManager::labelPath()
+{
+    return db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
+}
+
 void AppManager::onInfoClicked()
 {
     debugLog("@@@@@ AppManager::onInfoClicked ");
     onUserAction();
     setSettingsNetInfo();
+    settings->write();
     showMessage(settings->modelInfo(), settings->aboutInfo());
 }
 
-void AppManager::setSettingsInfo(const bool write)
+void AppManager::setSettingsInfo()
 {
     debugLog("@@@@@ AppManager::setSettingsInfo ");
 #ifdef Q_OS_ANDROID
@@ -1648,17 +1679,26 @@ void AppManager::setSettingsInfo(const bool write)
     settings->setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
     settings->setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
     equipmentManager->stop();
-    if(write) settings->write();
 }
 
-void AppManager::setSettingsNetInfo(const bool write)
+void AppManager::setSettingsNetInfo()
 {
     debugLog("@@@@@ AppManager::setSettingsNetInfo ");
     settings->setValue(SettingCode_InfoIP,       Tools::getIP());
     settings->setValue(SettingCode_InfoWiFiSSID, Tools::getSSID());
-    if(write) settings->write();
 }
 
+void AppManager::showSettingComboBox(const DBRecord& r)
+{
+    emit showSettingComboBox(Settings::getCode(r),
+                             Settings::getName(r),
+                             settings->getIntValue(r, true),
+                             settings->getStringValue(r),
+                             settings->getComment(r));
+}
 
-
-
+void AppManager::setSettingsLabels()
+{
+    debugLog("@@@@@ AppManager::setSettingsLabels ");
+    db->select(DBSelector_GetLabels);
+}

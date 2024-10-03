@@ -25,15 +25,6 @@ DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
     tables.append(new ResourceDBTable(DBTABLENAME_SOUNDS, productDB, this));
     tables.append(new LogDBTable(DBTABLENAME_LOG, logDB, this));
     tables.append(new TransactionDBTable(DBTABLENAME_TRANSACTIONS, logDB, this));
-
-    // Не выгружаем поля:
-    getTable(DBTABLENAME_PRODUCTS)->setColumnNotUploadable(ProductDBTable::UpperName);
-    getTable(DBTABLENAME_LABELS)  ->setColumnNotUploadable(ResourceDBTable::Source);
-    getTable(DBTABLENAME_LABELS)  ->setColumnNotUploadable(ResourceDBTable::Hash);
-    getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Name);
-    getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Source);
-    getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Name);
-    getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Source);
 }
 
 DataBase::~DataBase()
@@ -86,19 +77,20 @@ void DataBase::onAppStart()
     }
     if (started)
     {
-#ifdef DB_EMULATION
-        Tools::debugLog("@@@@@ DataBase::onAppStart emulation");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('6', 'pictures/6.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('8', 'pictures/8.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('9', 'pictures/9.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('10', 'pictures/10.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('11', 'pictures/11.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('12', 'pictures/12.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('13', 'pictures/13.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('14', 'pictures/14.png', '', '', '');");
-        executeSQL(productDB, "INSERT INTO pictures (code, value, hash, field, source) VALUES ('15', 'pictures/15.png', '', '', '');");
-#endif
         for (DBTable* t : tables) t->createIndexes();
+
+        // Не выгружаем поля:
+        getTable(DBTABLENAME_PRODUCTS)->setColumnNotUploadable(ProductDBTable::UpperName);
+        getTable(DBTABLENAME_LABELS)  ->setColumnNotUploadable(ResourceDBTable::Source);
+        getTable(DBTABLENAME_LABELS)  ->setColumnNotUploadable(ResourceDBTable::Hash);
+        getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Name);
+        getTable(DBTABLENAME_MESSAGES)->setColumnNotUploadable(ResourceDBTable::Source);
+        getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Name);
+        getTable(DBTABLENAME_PICTURES)->setColumnNotUploadable(ResourceDBTable::Source);
+
+        // Этикетки по умолчанию:
+        DBRecordList labels = getTable(DBTABLENAME_LABELS)->parse(Tools::readTextFile(DEFAULT_LABELS_FILE));
+        insertRecords(getTable(DBTABLENAME_LABELS), labels);
     }
     else
         message += "\nОШИБКА! Не открыта база данных";
@@ -306,6 +298,13 @@ bool DataBase::insertRecord(DBTable *table, const DBRecord& record)
     return executeSQL(table->sqlDB, sql);
 }
 
+bool DataBase::insertRecords(DBTable *table, const DBRecordList& records)
+{
+    bool ok = true;
+    foreach (auto r, records) ok &= insertRecord(table, r);
+    return ok;
+}
+
 bool DataBase::isLogging(const int type)
 {
     int logging = appManager->settings->getIntValue(SettingCode_Logging);
@@ -348,6 +347,18 @@ void DataBase::clearLog()
     if(t == nullptr) return;
     QString sql = QString("DELETE FROM %1;").arg(t->name);
     if(!executeSQL(t->sqlDB, sql)) Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
+}
+
+QString DataBase::getLabelPathByName(const QString& v)
+{
+    DBRecordList rs;
+    DBTable* t = getTable(DBTABLENAME_LABELS);
+    QString sql = QString("SELECT * FROM %1").arg(t->name);
+    sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ResourceDBTable::Name), v);
+    sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ResourceDBTable::Code));
+    executeSelectSQL(t, sql, rs);
+    if(rs.count() < 1) return "";
+    return rs[0][ResourceDBTable::Value].toString();
 }
 
 void DataBase::select(const DBSelector selector, const DBRecordList& param)
@@ -416,7 +427,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     NetActionResult result(appManager, RouterRule_Delete);
     bool detailedLog = isLogging(LogType_Info);
     DBTable* t = getTable(tableName);
-    QStringList codes = codeList.split(','); // Коды товаров через запятую
+    QStringList codes = Tools::toStringList(codeList); // Коды товаров через запятую
 
     if(t == nullptr)
     {
@@ -480,7 +491,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
 
     Tools::debugLog(QString("@@@@@ DataBase::netUpload %1 %2").arg(tableName, Tools::sortIncrement(codesOnly)));
     if(codesOnly) saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1 %2").arg(
-                tableName, Tools::toString((int)(codesToUpload.split(',').count()))));
+                tableName, Tools::toString((int)(Tools::toStringList(codesToUpload).count()))));
     else saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов. Таблица: %1").arg(tableName));
     NetActionResult result(appManager, RouterRule_Get);
 
@@ -501,7 +512,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     bool detailedLog = isLogging(LogType_Info);
     DBRecordList records;
     DBTable* t = getTable(tableName);
-    QStringList codes = codesToUpload.split(','); // Коды через запятую
+    QStringList codes = Tools::toStringList(codesToUpload); // Коды через запятую
     if(t == nullptr)
     {
         result.errorCount = 1;
@@ -644,6 +655,10 @@ void DataBase::select(const DBSelector selector,
             selectAll(getTable(DBTABLENAME_LOG), resultRecords);
             break;
 
+        case DBSelector_GetLabels: // Запрос этикеток:
+            selectAll(getTable(DBTABLENAME_LABELS), resultRecords);
+            break;
+
         case DBSelector_GetProductByCode:
         case DBSelector_SetProductByCode:
         case DBSelector_RefreshCurrentProduct: // Запрос товара по коду
@@ -773,4 +788,12 @@ void DataBase::select(const DBSelector selector,
     });
 }
 
+QStringList DataBase::getAllLabelNames()
+{
+    DBRecordList rl;
+    selectAll(getTable(DBTABLENAME_LABELS), rl);
+    QStringList sl;
+    foreach (auto r, rl) sl.append(r[ResourceDBTable::Name].toString());
+    return sl;
+}
 

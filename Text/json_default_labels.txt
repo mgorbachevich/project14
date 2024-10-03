@@ -1,0 +1,28 @@
+{
+    "data":
+    {
+        "labels":
+        [
+            {
+                "code":"999999991",
+                "name":"60x30",
+                "value":"../Labels/60x30.lpr"
+            },
+            {
+                "code":"999999992",
+                "name":"60x40",
+                "value":"../Labels/60x40.lpr"
+            },
+            {
+                "code":"999999993",
+                "name":"60x50",
+                "value":"../Labels/60x50.lpr"
+            },
+            {
+                "code":"999999994",
+                "name":"60x60",
+                "value":"../Labels/60x60.lpr"
+            }
+        ]
+    }
+}

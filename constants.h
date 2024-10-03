@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.75"
+#define APP_VERSION "2.76"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -39,8 +39,9 @@
 #define DB_PRODUCT_COPY_NAME "ShtrihScale_copy.db"
 #define DOWNLOAD_SUBDIR "Downloads"
 #define DUMMY_IMAGE_FILE "../Images/dummy.png"
-#define SPLASH_IMAGE_FILE "../Images/splash.jpg"
+//#define SPLASH_IMAGE_FILE "../Images/splash.jpg"
 #define DEFAULT_SETTINGS_FILE ":/Text/json_default_settings.txt"
+#define DEFAULT_LABELS_FILE ":/Text/json_default_labels.txt"
 #define DEFAULT_EQUIPMENT_DEMO_CONFIG_FILE ":/Text/json_demo_equipment_config.txt"
 #define BEEP_SOUND_FILE "qrc:/Sound/KeypressInvalid.mp3"
 #define CLICK_SOUND_FILE "qrc:/Sound/KeypressStandard.mp3"
@@ -49,6 +50,10 @@
 #define USERS_FILE Tools::sharedPath("users.txt")
 #define SHOWCASE_FILE Tools::sharedPath("showcase.txt")
 #define SCALE_CONFIG_FILE Tools::sharedPath("scale_config.txt")
+#define LABEL_PATH_1 "../Labels/60x30.lpr"
+#define LABEL_PATH_2 "../Labels/60x40.lpr"
+#define LABEL_PATH_3 "../Labels/60x50.lpr"
+#define LABEL_PATH_4 "../Labels/60x60.lpr"
 
 // DateTime
 #define DATE_FORMAT "dd.MM.yyyy"
@@ -79,7 +84,6 @@
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS
-//#define DB_EMULATION
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"

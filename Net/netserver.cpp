@@ -72,9 +72,9 @@ QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray
     if(!header.contains(title) || !header.contains(item)) return "";
     const int i1 = header.indexOf(item);
     if(i1 < 0) return "";
-    const int i2 = header.indexOf("\"", i1);
+    const int i2 = header.indexOf('\"', i1);
     if(i2 < 0) return "";
-    const int i3 = header.indexOf("\"", i2 + 1);
+    const int i3 = header.indexOf('\"', i2 + 1);
     if(i3 <= i2) return "";
     return header.mid(i2 + 1, i3 - i2 - 1);
 }
@@ -241,7 +241,7 @@ QString NetServer::parseSetRequest(const QByteArray &request)
 QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &request)
 {
     Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
-    NetActionResult result(appManager, RouterRule_Set);
+    NetActionResult result(appManager, rule);
 
     // Singlepart:
     if(request.indexOf("{") == 0)
@@ -315,10 +315,11 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                     for(int ri = 0; ri < tableRecords.count(); ri++)
                     {
                         // Например, Content-Disposition: form-data; name="file1"; filename=":/Images/image.png"
-                        QString source = QString(parseHeaderItem(header, "filename"));
+                        QByteArray byteSource = parseHeaderItem(header, "filename");
+                        QString source = QString(byteSource.replace('\\', '/'));
                         if(source.isEmpty()) continue;
                         DBRecord& record = tableRecords[ri];
-                        const QString recordCode = record[0].toString();
+                        const QString& recordCode = record[0].toString();
                         QString fullPath;
                         QString localFilePath;
                         QByteArray fileData;

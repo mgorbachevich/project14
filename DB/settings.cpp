@@ -138,6 +138,11 @@ QString Settings::getStringValue(const SettingCode code)
     return r == nullptr ? "" : getStringValue(*r);
 }
 
+QStringList Settings::getValueList(const DBRecord &r)
+{
+    return Tools::toStringList(r[SettingField_ValueList].toString());
+}
+
 void Settings::nativeSettings(const int code)
 {
     Tools::debugLog("@@@@@ Settings::nativeSettings " + QString::number(code));
@@ -351,5 +356,6 @@ QString Settings::aboutInfo()
     s += QString("Последняя загрузка: %1").       arg(getStringValue(SettingCode_InfoLastDownload));
     return s;
 }
+
 
 

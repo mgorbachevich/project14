@@ -118,17 +118,20 @@ private:
     bool isProduct() { return !product.isEmpty(); }
     DBRecord& getCurrentUser() { return users->getCurrentUser(); }
     QString getImageFileWithQmlPath(const DBRecord&);
+    QString labelPath();
     void print();
     void refreshAll();
     void onEditUsersClicked();
     void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
-    void setSettingsInfo(const bool write = true);
-    void setSettingsNetInfo(const bool write = true);
+    void setSettingsInfo();
+    void setSettingsNetInfo();
+    void setSettingsLabels();
     void showFoundProductsToast(const int);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
+    void showSettingComboBox(const DBRecord&);
     void startAuthorization();
     void startAll();
     void startSettings();

@@ -196,6 +196,7 @@ void EquipmentManager::createPM()
         Tools::debugLog("@@@@@ EquipmentManager::createPM ");
         slpa = new Slpa100u(this);
         labelCreator = new LabelCreator(this);
+        labelPath = "";
         connect(slpa, &Slpa100u::printerErrorChanged, this, &EquipmentManager::onPMErrorStatusChanged);
         connect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
     }
@@ -251,6 +252,7 @@ void EquipmentManager::removePM()
         disconnect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
         delete labelCreator;
         labelCreator = nullptr;
+        labelPath = "";
         delete slpa;
         slpa = nullptr;
     }
@@ -502,7 +504,11 @@ QString EquipmentManager::parseBarcode(const QString& barcodeTemplate, const QCh
     return result;
 }
 
-QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& quantity, const QString& price, const QString& amount)
+QString EquipmentManager::makeBarcode(
+        const DBRecord& product,
+        const QString& quantity,
+        const QString& price,
+        const QString& amount)
 {
     QString result;
     QString barcodeTemplate = ProductDBTable::isPiece(product) ?
@@ -522,8 +528,14 @@ QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& qu
     return result.length() != barcodeTemplate.length() ? "" : result;
 }
 
-int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product,
-                         const QString& quantity, const QString& price, const QString& amount)
+int EquipmentManager::print(
+        DataBase* db,
+        const DBRecord& user,
+        const DBRecord& product,
+        const QString& quantity,
+        const QString& price,
+        const QString& amount,
+        const QString& labelLocalPath)
 {
     Tools::debugLog("@@@@@ EquipmentManager::print");
     if(!isPMStarted || slpa == nullptr) return 1007;
@@ -533,14 +545,16 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
 
     quint64 dateTime = Tools::nowMsec();
     int labelNumber = 0; // todo
+    int e = 0;
 
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    QString localPath = "labels/1/Labels/60x30.lpr";
-    QString fullPath;
-    if(Tools::isFileExistsInDownloadPath(localPath))
-        fullPath = Tools::downloadPath(localPath);
-    int e = labelCreator->loadLabel(fullPath);
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    QString labelFullPath;
+    if(Tools::isFileExistsInDownloadPath(labelLocalPath))
+        labelFullPath = Tools::downloadPath(labelLocalPath);
+    if(labelPath != labelFullPath)
+    {
+        e = labelCreator->loadLabel(labelFullPath);
+        if(e == 0) labelPath = labelFullPath;
+    }
 
     if (e == 0)
     {

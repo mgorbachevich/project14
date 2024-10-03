@@ -20,13 +20,14 @@ enum DBSelector
     DBSelector_GetProductsByFilteredBarcode,
     DBSelector_GetProductsByFilteredName,
     DBSelector_GetItemsByCodes,
-    DBSelector_GetAuthorizationUsers,
+    //DBSelector_GetAuthorizationUsers,
     DBSelector_GetLog,
     DBSelector_RefreshCurrentProduct,
     DBSelector_SetProductByCode,
     DBSelector_GetProductsByInputCode,
     DBSelector_GetProductByCode,
     DBSelector_SetProductByCode2,
+    DBSelector_GetLabels,
 };
 
 class DataBase : public ExternalMessager
@@ -39,6 +40,7 @@ public:
 
     bool addProductToShowcase(const DBRecord&);
     void clearLog();
+    QString getLabelPathByName(const QString&);
     QString getProductMessageById(const QString&);
     DBTable* getTable(const QString&) const;
     QList<DBTable*> getTables() { return tables; };
@@ -58,6 +60,7 @@ public:
     static bool removeDBFile(const QString&);
     static bool isDBFileExists(const QString&);
     bool executeSQL(const QSqlDatabase&, const QString&);
+    QStringList getAllLabelNames();
 
 private:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
@@ -65,6 +68,7 @@ private:
     bool createTable(DBTable*);
     bool executeSelectSQL(DBTable*, const QString&, DBRecordList&);
     bool insertRecord(DBTable*, const DBRecord&);
+    bool insertRecords(DBTable*, const DBRecordList&);
     bool isLogging(const int);
     bool query(const QSqlDatabase&, const QString&, DBTable*, DBRecordList*);
     bool removeAll(DBTable*);
