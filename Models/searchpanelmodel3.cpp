@@ -89,11 +89,11 @@ void SearchPanelModel3::update(const DBRecordList &newProducts, const int filter
         {
         case SearchFilterIndex_Code2:
             code = QString("№%1").arg(ri[ProductDBTable::Code2].toString());
-            price = appManager->priceAsString(ri);
+            price = appManager->moneyCalculator->priceAsString(ri);
             break;
         case SearchFilterIndex_Barcode:
             code = QString("%1").arg(ri[ProductDBTable::Barcode].toString());
-            price = appManager->priceAsString(ri);
+            price = appManager->moneyCalculator->priceAsString(ri);
             break;
         case SearchFilterIndex_Code:
         case SearchFilterIndex_Name:
@@ -101,7 +101,7 @@ void SearchPanelModel3::update(const DBRecordList &newProducts, const int filter
             if(!ProductDBTable::isGroup(ri))
             {
                 code = QString("#%1").arg(ri[ProductDBTable::Code].toString());
-                price = appManager->priceAsString(ri);
+                price = appManager->moneyCalculator->priceAsString(ri);
             }
             break;
         }

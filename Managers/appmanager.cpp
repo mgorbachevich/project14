@@ -454,7 +454,7 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         break;
     }
 
-    case DBSelector_GetLabels:
+    case DBSelector_GetAllLabels:
     {
         const SettingCode settingCode = SettingCode_PrintLabelFormat;
         DBRecord& r = *settings->getByCode(settingCode);
@@ -965,7 +965,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
-        productPanelModel->update(product, priceAsString(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+        productPanelModel->update(product, moneyCalculator->priceAsString(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
@@ -997,7 +997,7 @@ void AppManager::onUserAction()
 {
     debugLog("@@@@@ AppManager::onUserAction");
 #ifdef DEBUG_MEMORY_MESSAGE
-        Tools::debugMemory();
+    Tools::debugMemory();
 #endif
     status.onUserAction();
 }
@@ -1005,13 +1005,21 @@ void AppManager::onUserAction()
 void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
+    QString labelPath;
+
+    // Товар с заданной этикеткой:
+    if(Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
+        labelPath = db->getLabelPathById(product[ProductDBTable::Code].toString());
+
+    if(labelPath.isEmpty())
+        labelPath = db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
     equipmentManager->print(db,
                             getCurrentUser(),
                             product,
                             moneyCalculator->quantityAsString(product),
-                            priceAsString(product),
+                            moneyCalculator->priceAsString(product),
                             moneyCalculator->amountAsString(product),
-                            labelPath());
+                            labelPath);
 }
 
 void AppManager::onPrintClicked()
@@ -1156,7 +1164,7 @@ void AppManager::updateWeightStatus()
     // Рисуем цену:
     QString ps = moneyCalculator->priceAsString(product);
     bool isPrice = isProduct() && PRICE_MAX_CHARS >= ps.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    QString price = isPrice ? priceAsString(product) : NO_DATA;
+    QString price = isPrice ? moneyCalculator->priceAsString(product) : NO_DATA;
     emit showControlParam(ControlParam_PriceValue, price);
     emit showControlParam(ControlParam_PriceColor, isPrice ? activeColor : passiveColor);
 
@@ -1280,7 +1288,6 @@ void AppManager::startAll()
     netServer->start(serverPort);
     equipmentManager->start();
     status.autoPrintMode = settings->getBoolValue(SettingCode_PrintAuto) ? AutoPrintMode_Disabled : AutoPrintMode_Off;
-    debugLog("@@@@@ AppManager::startAll label = " + labelPath());
 
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
@@ -1640,11 +1647,6 @@ void AppManager::updateSearch()
                searchPanelModel->loadLimit());
 }
 
-QString AppManager::labelPath()
-{
-    return db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
-}
-
 void AppManager::onInfoClicked()
 {
     debugLog("@@@@@ AppManager::onInfoClicked ");
@@ -1700,5 +1702,5 @@ void AppManager::showSettingComboBox(const DBRecord& r)
 void AppManager::setSettingsLabels()
 {
     debugLog("@@@@@ AppManager::setSettingsLabels ");
-    db->select(DBSelector_GetLabels);
+    db->select(DBSelector_GetAllLabels);
 }

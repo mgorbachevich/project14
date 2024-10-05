@@ -38,15 +38,15 @@ void DataBase::onAppStart()
 {
     Tools::debugLog("@@@@@ DataBase::onAppStart");
     QString message;
-    QString path = Tools::dbPath(DB_PRODUCT_NAME);
+    QString dbFilePath = Tools::dbPath(DB_PRODUCT_NAME);
 
 #ifdef REMOVE_PRODUCT_DB_ON_START
     Tools::removeFile(path);
 #endif
 
-    bool exists = QFile(path).exists();
-    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::sortIncrement(exists)));
-    started = addAndOpen(productDB, path);
+    bool exists = QFile(dbFilePath).exists();
+    Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(dbFilePath, Tools::sortIncrement(exists)));
+    started = addAndOpen(productDB, dbFilePath);
     if(!exists && started)
     {
         started &= createTable(getTable(DBTABLENAME_PRODUCTS));
@@ -60,14 +60,14 @@ void DataBase::onAppStart()
     }
     if (started)
     {
-        path = Tools::dbPath(DB_LOG_NAME);
+        dbFilePath = Tools::dbPath(DB_LOG_NAME);
 
 #ifdef REMOVE_LOG_DB_ON_START
         Tools::removeFile(path);
 #endif
-        exists = QFile(path).exists();
-        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(path, Tools::sortIncrement(exists)));
-        started = addAndOpen(logDB, path);
+        exists = QFile(dbFilePath).exists();
+        Tools::debugLog(QString("@@@@@ DataBase::onAppStart %1 %2").arg(dbFilePath, Tools::sortIncrement(exists)));
+        started = addAndOpen(logDB, dbFilePath);
         if(!exists && started)
         {
             started &= createTable(getTable(DBTABLENAME_LOG));
@@ -77,7 +77,7 @@ void DataBase::onAppStart()
     }
     if (started)
     {
-        for (DBTable* t : tables) t->createIndexes();
+        for (DBTable* t : tables) t->createIndexes(); // ?
 
         // Не выгружаем поля:
         getTable(DBTABLENAME_PRODUCTS)->setColumnNotUploadable(ProductDBTable::UpperName);
@@ -113,10 +113,10 @@ bool DataBase::addAndOpen(QSqlDatabase& db, const QString& filePath, const bool 
     return false;
 }
 
-DBTable* DataBase::getTable(const QString &name) const
+DBTable* DataBase::getTable(const QString &tableName) const
 {
-    for (DBTable* t : tables) if (t->name == name) return t;
-    Tools::debugLog(QString("@@@@@ DataBase::getTable ERROR %1").arg(name));
+    for (DBTable* t : tables) if (t->name == tableName) return t;
+    Tools::debugLog(QString("@@@@@ DataBase::getTable ERROR %1").arg(tableName));
     return nullptr;
 }
 
@@ -349,16 +349,23 @@ void DataBase::clearLog()
     if(!executeSQL(t->sqlDB, sql)) Tools::debugLog("@@@@@ DataBase::clearLog ERROR");
 }
 
-QString DataBase::getLabelPathByName(const QString& v)
+QString DataBase::getLabelPathByName(const QString& labelName)
 {
     DBRecordList rs;
     DBTable* t = getTable(DBTABLENAME_LABELS);
     QString sql = QString("SELECT * FROM %1").arg(t->name);
-    sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ResourceDBTable::Name), v);
+    sql += QString(" WHERE %1 = '%2'").arg(t->columnName(ResourceDBTable::Name), labelName);
     sql += QString(" ORDER BY %1 ASC").arg(t->columnName(ResourceDBTable::Code));
     executeSelectSQL(t, sql, rs);
     if(rs.count() < 1) return "";
     return rs[0][ResourceDBTable::Value].toString();
+}
+
+QString DataBase::getLabelPathById(const QString& code)
+{
+    DBRecord r;
+    if (!selectById(DBTABLENAME_LABELS, code, r)) return "";
+    return r[ResourceDBTable::Value].toString();
 }
 
 void DataBase::select(const DBSelector selector, const DBRecordList& param)
@@ -639,8 +646,10 @@ bool DataBase::isDBFileExists(const QString& dbName)
 }
 
 void DataBase::select(const DBSelector selector,
-                      const QString& param1, const QString& param2,
-                      const int offset, const int limit)
+                      const QString& param1,
+                      const QString& param2,
+                      const int offset,
+                      const int limit)
 {
     // Получен запрос на поиск в БД. Ищем и отвечаем на запрос
 
@@ -655,7 +664,7 @@ void DataBase::select(const DBSelector selector,
             selectAll(getTable(DBTABLENAME_LOG), resultRecords);
             break;
 
-        case DBSelector_GetLabels: // Запрос этикеток:
+        case DBSelector_GetAllLabels: // Запрос этикеток:
             selectAll(getTable(DBTABLENAME_LABELS), resultRecords);
             break;
 
@@ -677,7 +686,7 @@ void DataBase::select(const DBSelector selector,
             break;
         }
 
-        case DBSelector_SetProductByCode2:
+        case DBSelector_SetProductByCode2: // Запрос товара по коду 2
         {
             DBTable* t = getTable(DBTABLENAME_PRODUCTS);
             QString sql = QString("SELECT * FROM %1").arg(t->name);
@@ -786,14 +795,5 @@ void DataBase::select(const DBSelector selector,
         Tools::debugLog(QString("@@@@@ DataBase::select records = %1").arg(resultRecords.count()));
         emit selectResult(selector, resultRecords, true);
     });
-}
-
-QStringList DataBase::getAllLabelNames()
-{
-    DBRecordList rl;
-    selectAll(getTable(DBTABLENAME_LABELS), rl);
-    QStringList sl;
-    foreach (auto r, rl) sl.append(r[ResourceDBTable::Name].toString());
-    return sl;
 }
 

@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.76"
+#define APP_VERSION "2.77"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -50,10 +50,6 @@
 #define USERS_FILE Tools::sharedPath("users.txt")
 #define SHOWCASE_FILE Tools::sharedPath("showcase.txt")
 #define SCALE_CONFIG_FILE Tools::sharedPath("scale_config.txt")
-#define LABEL_PATH_1 "../Labels/60x30.lpr"
-#define LABEL_PATH_2 "../Labels/60x40.lpr"
-#define LABEL_PATH_3 "../Labels/60x50.lpr"
-#define LABEL_PATH_4 "../Labels/60x60.lpr"
 
 // DateTime
 #define DATE_FORMAT "dd.MM.yyyy"

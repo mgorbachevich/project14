@@ -27,7 +27,7 @@ enum DBSelector
     DBSelector_GetProductsByInputCode,
     DBSelector_GetProductByCode,
     DBSelector_SetProductByCode2,
-    DBSelector_GetLabels,
+    DBSelector_GetAllLabels,
 };
 
 class DataBase : public ExternalMessager
@@ -41,6 +41,7 @@ public:
     bool addProductToShowcase(const DBRecord&);
     void clearLog();
     QString getLabelPathByName(const QString&);
+    QString getLabelPathById(const QString&);
     QString getProductMessageById(const QString&);
     DBTable* getTable(const QString&) const;
     QList<DBTable*> getTables() { return tables; };
@@ -60,7 +61,6 @@ public:
     static bool removeDBFile(const QString&);
     static bool isDBFileExists(const QString&);
     bool executeSQL(const QSqlDatabase&, const QString&);
-    QStringList getAllLabelNames();
 
 private:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);

@@ -43,7 +43,6 @@ public:
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
     void showWait(const bool);
-    QString priceAsString(const DBRecord& r) { return moneyCalculator->priceAsString(r); }
     void netDownload(QHash<DBTable*, DBRecordList>, int&, int&);
     QString netDelete(const QString&, const QString&);
     QString netUpload(const QString&, const QString&, const bool);
@@ -110,6 +109,7 @@ public:
     Users* users = nullptr;
     Showcase* showcase = nullptr;
     EquipmentManager* equipmentManager = nullptr;
+    MoneyCalculator* moneyCalculator = nullptr;
     Status status;
 
 private:
@@ -118,7 +118,6 @@ private:
     bool isProduct() { return !product.isEmpty(); }
     DBRecord& getCurrentUser() { return users->getCurrentUser(); }
     QString getImageFileWithQmlPath(const DBRecord&);
-    QString labelPath();
     void print();
     void refreshAll();
     void onEditUsersClicked();
@@ -146,7 +145,6 @@ private:
     DataBase* db = nullptr;
     DBRecord product;
     bool isResetProductNeeded = false;
-    MoneyCalculator* moneyCalculator = nullptr;
     QTimer *timer = nullptr;
     NetServer* netServer = nullptr;
     QQmlContext* context = nullptr;
