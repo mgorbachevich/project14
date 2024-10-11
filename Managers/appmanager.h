@@ -131,6 +131,7 @@ private:
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
     void showSettingComboBox(const DBRecord&);
+    void showWeightErrorAndAutoPrint();
     void startAuthorization();
     void startAll();
     void startSettings();

@@ -782,11 +782,11 @@ void AppManager::onShowcaseAutoClicked()
 {
     switch (status.autoPrintMode)
     {
-    case AutoPrintMode_Off:      return;
+    case AutoPrintMode_Off:      break;
     case AutoPrintMode_On:       status.autoPrintMode = AutoPrintMode_Disabled; break;
     case AutoPrintMode_Disabled: status.autoPrintMode = AutoPrintMode_On; break;
     }
-    emit showControlParam(ControlParam_AutoPrint, Tools::toString((int)status.autoPrintMode));
+    showWeightErrorAndAutoPrint();
 }
 
 void AppManager::onShowcaseClicked(const int index)
@@ -879,7 +879,7 @@ void AppManager::updateShowcase()
 {
     showWait(true);
     showcase->getAll();
-    emit showControlParam(ControlParam_AutoPrint, Tools::toString((int)status.autoPrintMode));
+    showWeightErrorAndAutoPrint();
     db->select(DBSelector_GetShowcaseProducts,
                Tools::toString(status.productSort),
                Tools::toString(status.isProductSortIncrement));
@@ -1104,12 +1104,12 @@ void AppManager::updateWeightStatus()
     const int oldPieces = status.pieces;
     if(isPieceProduct && status.pieces < 1) status.pieces = 1;
 
-    const bool isWM = equipmentManager->isWM();
+    const bool isWM = equipmentManager->isWM() && equipmentManager->getWMMode() != EquipmentMode_None;
     const bool isPM = equipmentManager->isPM();
     const bool isZero = equipmentManager->isZeroFlag();
     const bool isTare = equipmentManager->isTareFlag();
-    const bool isWMError = equipmentManager->isWMError() || !isWM;
     const bool isFixed = equipmentManager->isWeightFixed();
+    const bool isWMError = equipmentManager->isWMError() || !isWM;
 
     const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
             (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
@@ -1118,20 +1118,20 @@ void AppManager::updateWeightStatus()
     const QString amountColor = "#ffe0b2";
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
-    if(isZero) status.isPrintCalculateMode = true;
+    if (isZero) status.isPrintCalculateMode = true;
 
     // Рисуем флажки:
-    emit showControlParam(ControlParam_Zero, Tools::toString(isZero));
-    emit showControlParam(ControlParam_Tare, Tools::toString(isTare));
-    emit showControlParam(ControlParam_WeightFixed, Tools::toString(isFixed));
-    if(isWMError)
-        emit showControlParam(ControlParam_WeightError, Tools::toString(isWMError));
-    else
-        emit showControlParam(ControlParam_AutoPrint, Tools::toString((int)status.autoPrintMode));
+    if (isZero)  emit showControlParam(ControlParam_ZeroFlag,  "../Icons/zero_white");
+    else         emit showControlParam(ControlParam_ZeroFlag,  "../Icons/zero_gray");
+    if (isTare)  emit showControlParam(ControlParam_TareFlag,  "../Icons/tare_white");
+    else         emit showControlParam(ControlParam_TareFlag,  "../Icons/tare_gray");
+    if (isFixed) emit showControlParam(ControlParam_FixedFlag, "../Icons/fix_white");
+    else         emit showControlParam(ControlParam_FixedFlag, "../Icons/fix_gray");
+    showWeightErrorAndAutoPrint();
 
     // Рисуем загаловки:
     QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
-    if(equipmentManager->isWMDemoMode()) wt += " ДЕМО";
+    if(equipmentManager->getWMMode() == EquipmentMode_Demo) wt += " ДЕМО";
     QString pt = "ЦЕНА, руб";
     if(isProduct())
     {
@@ -1180,7 +1180,7 @@ void AppManager::updateWeightStatus()
     status.isManualPrintEnabled = isAmount && isPM && !equipmentManager->isPMError();
     emit enableManualPrint(status.isManualPrintEnabled);
     const bool isAutoPrintEnabled = isAutoPrint && status.isManualPrintEnabled;
-    emit showControlParam(ControlParam_PrinterStatus, isWM && equipmentManager->isPMDemoMode() ? "<b>ДЕМО</b>" : "");
+    emit showControlParam(ControlParam_PrinterStatus, isWM && equipmentManager->getPMMode() == EquipmentMode_Demo ? "<b>ДЕМО</b>" : "");
 
     // Автопечать
     if(status.isPrintCalculateMode && isPrice)
@@ -1703,4 +1703,20 @@ void AppManager::setSettingsLabels()
 {
     debugLog("@@@@@ AppManager::setSettingsLabels ");
     db->select(DBSelector_GetAllLabels);
+}
+
+void AppManager::showWeightErrorAndAutoPrint()
+{
+    QString icon = "../Icons/dot_green";
+    if(!equipmentManager->isWM())
+        icon = "../Icons/error_orange";
+    else if(equipmentManager->getWMMode() == EquipmentMode_None)
+        icon = "../Icons/error_yellow";
+    else if(equipmentManager->isWMError())
+        icon = "../Icons/error_red";
+    else if (status.autoPrintMode == AutoPrintMode_On)
+        icon = "../Icons/a_orange";
+    else if (status.autoPrintMode == AutoPrintMode_Disabled)
+        icon = "../Icons/a_gray";
+    emit showControlParam(ControlParam_WeightErrorOrAutoPrintIcon, icon);
 }

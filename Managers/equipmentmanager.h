@@ -36,7 +36,7 @@ public:
     bool isWeightFixed() const { return isWMFlag(WMStatus, 0); }
     bool isZeroFlag() const { return isWMFlag(WMStatus, 1); }
     bool isTareFlag() const { return isWMFlag(WMStatus, 3); }
-    bool isWMDemoMode() const { return WMMode == EquipmentMode_Demo; }
+    EquipmentMode getWMMode() const { return WMMode; }
     QString getWMErrorDescription(const int) const;
     bool isWM();
     QString getWMDescription();
@@ -45,8 +45,8 @@ public:
     QString PMVersion() const;
     int print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&, const QString&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
-    bool isPMDemoMode() const { return PMMode == EquipmentMode_Demo; }
     QString getPMErrorDescription(const int) const;
+    EquipmentMode getPMMode() const { return PMMode; }
     bool isPM();
     void feed();
 

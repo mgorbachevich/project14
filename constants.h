@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.77"
+#define APP_VERSION "2.78"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -189,7 +189,7 @@ enum ControlParam
     ControlParam_PriceTitle = 11,
     ControlParam_AmountTitle = 12,
     ControlParam_WeightError = 13,
-    ControlParam_WeightFixed = 14,
+    ControlParam_FixedFlag = 14,
     ControlParam_PrintError = 15,
     ControlParam_AutoPrint = 16,
     ControlParam_PrinterStatus = 17,
@@ -204,6 +204,9 @@ enum ControlParam
     ControlParam_LastDeleteDateTime = 26,
     ControlParam_LastDownloadErrors = 27,
     ControlParam_LastDownloadRecords = 28,
+    ControlParam_WeightErrorOrAutoPrintIcon = 29,
+    ControlParam_TareFlag = 30,
+    ControlParam_ZeroFlag = 31,
 };
 
 enum NetCommand

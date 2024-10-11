@@ -18,7 +18,7 @@ EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent
 
 bool EquipmentManager::isWM()
 {
-    return wm != nullptr && isWMStarted && WMMode != EquipmentMode_None;
+    return wm != nullptr && isWMStarted;
 }
 
 bool EquipmentManager::isPM()
@@ -601,7 +601,7 @@ int EquipmentManager::print(
         else Tools::debugLog("@@@@@ EquipmentManager::print ERROR (get Transactions Table)");
     }
     if(e != 0) showAttention("Ошибка печати " + getPMErrorDescription(e));
-    else if(isPMDemoMode()) showAttention("Демо-печать");
+    else if(getPMMode() == EquipmentMode_Demo) showAttention("Демо-печать");
     return e;
 }
 

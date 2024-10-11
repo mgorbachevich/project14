@@ -265,9 +265,12 @@ RESOURCES += \
     Icons/close.png \
     Icons/code.png \
     Icons/delete.png \
+    Icons/dot_green.png \
     Icons/empty.png \
-    Icons/error.png \
+    Icons/error_orange.png \
     Icons/error_red.png \
+    Icons/error_yellow.png \
+    Icons/fix_gray.png \
     Icons/fix_white.png \
     Icons/folder.png \
     Icons/home.png \
@@ -290,6 +293,7 @@ RESOURCES += \
     Icons/sdcard_light.png \
     Icons/settings.png \
     Icons/star.png \
+    Icons/tare_gray.png \
     Icons/tare_white.png \
     Icons/usb.png \
     Icons/usb_orange.png \
@@ -298,6 +302,7 @@ RESOURCES += \
     Icons/wifi.png \
     Icons/wifi_orange.png \
     Icons/wifi_light.png \
+    Icons/zero_gray.png \
     Icons/zero_white.png \
     Images/dummy.png \
     Images/logo.png \

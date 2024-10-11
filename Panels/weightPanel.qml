@@ -26,6 +26,7 @@ Rectangle
         target: app
         function onShowControlParam(param, value)
         {
+            app.debugLog("@@@@@ weightPanel.onShowControlParam %1 %2".arg(param).arg(value));
             switch (param)
             {
             case 3: // TareValue todo
@@ -59,26 +60,17 @@ Rectangle
                 break
             case 15: // PrintError
                 break
-            case 1: // TareFlag >T<
-                if (value === 'true') weightPanelIcon3.source = "../Icons/tare_white"
-                else                  weightPanelIcon3.source = "../Icons/empty"
+            case 29: // WeightError or AutoPrint
+                weightPanelIcon1.source = value
                 break
-            case 2: // ZeroFlag >0<
-                if (value === 'true') weightPanelIcon4.source = "../Icons/zero_white"
-                else                  weightPanelIcon4.source = "../Icons/empty"
+            case 30: // TareFlag >T<
+                weightPanelIcon3.source = value
                 break
-            case 14: // WeightFixed
-                if (value === 'true') weightPanelIcon2.source = "../Icons/fix_white"
-                else                  weightPanelIcon2.source = "../Icons/empty"
+            case 31: // ZeroFlag >0<
+                weightPanelIcon4.source = value
                 break
-            case 13: // WeightError
-                if (value === 'true') weightPanelIcon1.source = "../Icons/error_red"
-                else                  weightPanelIcon1.source = "../Icons/empty"
-                break
-            case 16: // AutoPrint
-                if (value === '0') weightPanelIcon1.source = "../Icons/empty"
-                if (value === '1') weightPanelIcon1.source = "../Icons/a_orange"
-                if (value === '2') weightPanelIcon1.source = "../Icons/a_gray"
+            case 14: // WeightFixedFlag
+                weightPanelIcon2.source = value
                 break
             }
         }
