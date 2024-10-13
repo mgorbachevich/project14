@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.78"
+#define APP_VERSION "2.79"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -50,6 +50,20 @@
 #define USERS_FILE Tools::sharedPath("users.txt")
 #define SHOWCASE_FILE Tools::sharedPath("showcase.txt")
 #define SCALE_CONFIG_FILE Tools::sharedPath("scale_config.txt")
+
+// Icons:
+#define ICON_TARE_ON  "../Icons/tare_white"
+#define ICON_TARE_OFF "../Icons/tare_gray"
+#define ICON_ZERO_ON  "../Icons/zero_white"
+#define ICON_ZERO_OFF "../Icons/zero_gray"
+#define ICON_FIX_ON   "../Icons/fix_white"
+#define ICON_FIX_OFF  "../Icons/fix_gray"
+#define ICON_AUTO_ON  "../Icons/a_orange"
+#define ICON_AUTO_OFF "../Icons/a_gray"
+#define ICON_WM_ERROR "../Icons/error_red"
+#define ICON_WM_ON    "../Icons/dot_green"
+#define ICON_WM_OFF   "../Icons/error_orange"
+#define ICON_WM_NONE  "../Icons/error_yellow"
 
 // DateTime
 #define DATE_FORMAT "dd.MM.yyyy"

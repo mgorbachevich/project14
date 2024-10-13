@@ -26,7 +26,7 @@ Rectangle
         target: app
         function onShowControlParam(param, value)
         {
-            app.debugLog("@@@@@ weightPanel.onShowControlParam %1 %2".arg(param).arg(value));
+            //app.debugLog("@@@@@ weightPanel.onShowControlParam %1 %2".arg(param).arg(value));
             switch (param)
             {
             case 3: // TareValue todo

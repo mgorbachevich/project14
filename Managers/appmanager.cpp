@@ -260,7 +260,8 @@ void AppManager::onRewind() // Перемотка
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
 {
     // Настройка изменилась
-    debugLog(QString("@@@@@ AppManager::onSettingInputClosed %1 %2").arg(QString::number(settingItemCode), value));
+    debugLog(QString("@@@@@ AppManager::onSettingInputClosed %1 %2").arg(
+                 QString::number(settingItemCode), value));
     DBRecord* r = settings->getByCode(settingItemCode);
     if (r == nullptr)
     {
@@ -270,7 +271,8 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     if(!settings->setValue(settingItemCode, value)) return;
     updateSettings(settings->getCurrentGroupCode());
     settings->write();
-    QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(QString::number(settingItemCode), value);
+    QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(
+                QString::number(settingItemCode), value);
     db->saveLog(LogType_Warning, LogSource_Admin, s);
 }
 
@@ -630,7 +632,8 @@ void AppManager::onSettingsItemClicked(const int index)
     const int code = Settings::getCode(*r);
     const QString& name = Settings::getName(*r);
     const int type = Settings::getType(*r);
-    debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(Tools::toString(code), name, QString::number(type)));
+    debugLog(QString("@@@@@ AppManager::onSettingsItemClicked %1 %2 %3").arg(
+                 Tools::toString(code), name, QString::number(type)));
 
     switch (code) // SettingType_Custom
     {
@@ -965,7 +968,9 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
-        productPanelModel->update(product, moneyCalculator->priceAsString(product), (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+        productPanelModel->update(product,
+                                  moneyCalculator->priceAsString(product),
+                                  (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
@@ -1042,7 +1047,8 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
                 newTransaction[TransactionDBTable::ItemCode].toString(),
                 newTransaction[TransactionDBTable::Weight].toString()));
     db->saveTransaction(newTransaction);
-    if (settings->getIntValue(SettingCode_ProductReset, true) == ProductReset_Print) isResetProductNeeded = true;
+    if (settings->getIntValue(SettingCode_ProductReset, true) == ProductReset_Print)
+        isResetProductNeeded = true;
 }
 
 void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
@@ -1121,12 +1127,12 @@ void AppManager::updateWeightStatus()
     if (isZero) status.isPrintCalculateMode = true;
 
     // Рисуем флажки:
-    if (isZero)  emit showControlParam(ControlParam_ZeroFlag,  "../Icons/zero_white");
-    else         emit showControlParam(ControlParam_ZeroFlag,  "../Icons/zero_gray");
-    if (isTare)  emit showControlParam(ControlParam_TareFlag,  "../Icons/tare_white");
-    else         emit showControlParam(ControlParam_TareFlag,  "../Icons/tare_gray");
-    if (isFixed) emit showControlParam(ControlParam_FixedFlag, "../Icons/fix_white");
-    else         emit showControlParam(ControlParam_FixedFlag, "../Icons/fix_gray");
+    if (isZero)  emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_ON);
+    else         emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_OFF);
+    if (isTare)  emit showControlParam(ControlParam_TareFlag,  ICON_TARE_ON);
+    else         emit showControlParam(ControlParam_TareFlag,  ICON_TARE_OFF);
+    if (isFixed) emit showControlParam(ControlParam_FixedFlag, ICON_ZERO_ON);
+    else         emit showControlParam(ControlParam_FixedFlag, ICON_FIX_OFF);
     showWeightErrorAndAutoPrint();
 
     // Рисуем загаловки:
@@ -1707,16 +1713,16 @@ void AppManager::setSettingsLabels()
 
 void AppManager::showWeightErrorAndAutoPrint()
 {
-    QString icon = "../Icons/dot_green";
+    QString icon = ICON_WM_ON;
     if(!equipmentManager->isWM())
-        icon = "../Icons/error_orange";
+        icon = ICON_WM_OFF;
     else if(equipmentManager->getWMMode() == EquipmentMode_None)
-        icon = "../Icons/error_yellow";
+        icon = ICON_WM_NONE;
     else if(equipmentManager->isWMError())
-        icon = "../Icons/error_red";
+        icon = ICON_WM_ERROR;
     else if (status.autoPrintMode == AutoPrintMode_On)
-        icon = "../Icons/a_orange";
+        icon = ICON_AUTO_ON;
     else if (status.autoPrintMode == AutoPrintMode_Disabled)
-        icon = "../Icons/a_gray";
+        icon = ICON_AUTO_OFF;
     emit showControlParam(ControlParam_WeightErrorOrAutoPrintIcon, icon);
 }
