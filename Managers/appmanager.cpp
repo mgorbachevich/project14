@@ -38,24 +38,6 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     KeyEmitter* keyEmitter = new KeyEmitter(this);
     context->setContextProperty("keyEmitter", keyEmitter);
 
-#ifdef CREATE_DEFAULT_DATA_ON_START
-    if(!Tools::isFileExists(DB_PRODUCT_NAME))
-    {
-        DataBase::removeDBFile(DB_PRODUCT_NAME);
-        DataBase::removeDBFile(DB_LOG_NAME);
-        DataBase::removeDBFile(DEBUG_LOG_NAME);
-        Tools::copyFile(QString(":/Default/%1").arg(DB_PRODUCT_NAME), Tools::dbPath(DB_PRODUCT_NAME));
-    }
-    if(!Tools::isFileExists(Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, "1.png"))))
-    {
-        QStringList images = { "1.png", "2.png", "3.jpg", "4.png", "5.png", "6.png", "8.png",
-                               "9.png", "10.png", "11.png", "12.png", "15.png" };
-        for (int i = 0; i < images.count(); i++)
-            Tools::copyFile(QString(":/Default/%1").arg(images[i]),
-                            Tools::dbPath(QString("%1/pictures/%2").arg(DOWNLOAD_SUBDIR, images[i])));
-    }
-#endif
-
     settings = new Settings(this);
     users = new Users(this);
     showcase = new Showcase(this);
@@ -172,10 +154,12 @@ void AppManager::onTimer()
     {
         status.isAlarm = false;
         updateSystemStatus();
+        setExternalDisplay();
     }
     else if(isSettingsOpened()) // Настройки
     {
         status.isAlarm = false;
+        setExternalDisplay();
     }
     else
     {
@@ -189,7 +173,6 @@ void AppManager::onTimer()
                 resetProduct();
             }
         }
-
         // Блокировка:
         quint64 waitBlocking = settings->getIntValue(SettingCode_Blocking); // минуты
         if(waitBlocking > 0 && waitBlocking * 1000 * 60 < now - status.userActionTime)
@@ -841,6 +824,7 @@ void AppManager::startSettings()
     status.isSettings = true;
     stopAll();
     db->saveLog(LogType_Info, LogSource_Admin, "Просмотр настроек");
+    setExternalDisplay();
     emit showSettingsPanel(settings->getCurrentGroupName());
 }
 
@@ -854,6 +838,7 @@ void AppManager::stopSettings()
         status.isSettings = false;
         if(users->getByName(users->getName(getCurrentUser())).isEmpty()) // Пользователь сменился
             startAuthorization();
+        else setExternalDisplay();
     });
 }
 
@@ -874,7 +859,46 @@ void AppManager::startAuthorization()
         emit showControlParam(ControlParam_AuthorizationTitle2, "(III)  " + equipmentManager->getWMDescription());
         emit showControlParam(ControlParam_AuthorizationTitle3, QString("Поверка %1").arg(
                                   settings->getStringValue(SettingCode_VerificationDate)));
+        setExternalDisplay();
         debugLog("@@@@@ AppManager::startAuthorization Done");
+    });
+}
+
+void AppManager::stopAuthorization(const QString& login, const QString& password)
+{
+    const QString title = "Авторизация";
+
+#ifdef CHECK_AUTHORIZATION
+    debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
+    DBRecord u = users->getByName(login);
+    if (u.isEmpty() || password != Users::getPassword(u))
+    {
+        debugLog("@@@@@ AppManager::stopAuthorization ERROR");
+        const QString error = "Неверные имя пользователя или пароль";
+        showMessage(title, error);
+        db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
+        onUserAction();
+        return;
+    }
+    users->setCurrentUser(u);
+#endif
+
+    debugLog("@@@@@ AppManager::stopAuthorization OK");
+    db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
+                    title, login, Tools::toString(Users::getCode(getCurrentUser()))));
+    setMainPage(MainPageIndex_Showcase);
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    {
+        debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::toString(WAIT_DRAWING_MSEC));
+        startAll();
+        refreshAll();
+        onUserAction();
+#ifdef DB_PATH_MESSAGE
+        showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
+#endif
+        users->clear();
+        setExternalDisplay();
+        debugLog("@@@@@ AppManager::stopAuthorization Done");
     });
 }
 
@@ -1007,26 +1031,6 @@ void AppManager::onUserAction()
     status.onUserAction();
 }
 
-void AppManager::print() // Печатаем этикетку
-{
-    debugLog("@@@@@ AppManager::print ");
-    QString labelPath;
-
-    // Товар с заданной этикеткой:
-    if(Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
-        labelPath = db->getLabelPathById(product[ProductDBTable::Code].toString());
-
-    if(labelPath.isEmpty())
-        labelPath = db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
-    equipmentManager->print(db,
-                            getCurrentUser(),
-                            product,
-                            moneyCalculator->quantityAsString(product),
-                            moneyCalculator->priceAsString(product),
-                            moneyCalculator->amountAsString(product),
-                            labelPath);
-}
-
 void AppManager::onPrintClicked()
 {
     debugLog("@@@@@ AppManager::onPrintClicked ");
@@ -1101,144 +1105,6 @@ void AppManager::alarm()
     });
 }
 
-void AppManager::updateWeightStatus()
-{
-#ifdef DEBUG_WEIGHT_STATUS
-    debugLog("@@@@@ AppManager::updateWeightStatus");
-#endif
-    const bool isPieceProduct = isProduct() && ProductDBTable::isPiece(product);
-    const int oldPieces = status.pieces;
-    if(isPieceProduct && status.pieces < 1) status.pieces = 1;
-
-    const bool isWM = equipmentManager->isWM() && equipmentManager->getWMMode() != EquipmentMode_None;
-    const bool isPM = equipmentManager->isPM();
-    const bool isZero = equipmentManager->isZeroFlag();
-    const bool isTare = equipmentManager->isTareFlag();
-    const bool isFixed = equipmentManager->isWeightFixed();
-    const bool isWMError = equipmentManager->isWMError() || !isWM;
-
-    const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
-            (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
-
-    // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
-    if (isZero) status.isPrintCalculateMode = true;
-
-    // Рисуем флажки:
-    if (isZero)  emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_ON);
-    else         emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_OFF);
-    if (isTare)  emit showControlParam(ControlParam_TareFlag,  ICON_TARE_ON);
-    else         emit showControlParam(ControlParam_TareFlag,  ICON_TARE_OFF);
-    if (isFixed) emit showControlParam(ControlParam_FixedFlag, ICON_FIX_ON);
-    else         emit showControlParam(ControlParam_FixedFlag, ICON_FIX_OFF);
-    showWeightErrorAndAutoPrint();
-
-    // Рисуем загаловки:
-    QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
-    if(equipmentManager->getWMMode() == EquipmentMode_Demo) wt += " ДЕМО";
-    QString pt = "ЦЕНА, руб";
-    if(isProduct())
-    {
-        if (isPieceProduct) pt += "/шт";
-        else pt += ProductDBTable::is100gBase(product) ? "/100г" : "/кг";
-    }
-    emit showControlParam(ControlParam_WeightTitle, wt);
-    emit showControlParam(ControlParam_PriceTitle, pt);
-    emit showControlParam(ControlParam_AmountTitle, "СТОИМОСТЬ, руб");
-
-    // Рисуем количество (вес/штуки):
-    QString quantity = NO_DATA;
-    if(isWM)
-    {
-        if(equipmentManager->isWMOverloaded())
-        {
-            showToast("ПЕРЕГРУЗКА!");
-            alarm();
-        }
-        else
-        {
-            status.isAlarm = false;
-            if(isPieceProduct|| !isWMError)
-                quantity = moneyCalculator->quantityAsString(product);
-        }
-    }
-    emit showControlParam(ControlParam_WeightValue, quantity);
-    emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? COLOR_ACTIVE : COLOR_PASSIVE);
-
-    // Рисуем цену:
-    QString ps = moneyCalculator->priceAsString(product);
-    bool isPrice = isProduct() && PRICE_MAX_CHARS >= ps.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    QString price = isPrice ? moneyCalculator->priceAsString(product) : NO_DATA;
-    emit showControlParam(ControlParam_PriceValue, price);
-    emit showControlParam(ControlParam_PriceColor, isPrice ? COLOR_ACTIVE : COLOR_PASSIVE);
-
-    // Рисуем стоимость:
-    QString as = moneyCalculator->amountAsString(product);
-    bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWMError)) &&
-        AMOUNT_MAX_CHARS >= as.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    QString amount = isAmount ? moneyCalculator->amountAsString(product) : NO_DATA;
-    emit showControlParam(ControlParam_AmountValue, amount);
-    emit showControlParam(ControlParam_AmountColor, isAmount ? COLOR_AMOUNT : COLOR_PASSIVE);
-
-    // Печатать?
-    status.isManualPrintEnabled = isAmount && isPM && !equipmentManager->isPMError();
-    emit enableManualPrint(status.isManualPrintEnabled);
-    const bool isAutoPrintEnabled = isAutoPrint && status.isManualPrintEnabled;
-    emit showControlParam(ControlParam_PrinterStatus, isWM && equipmentManager->getPMMode() == EquipmentMode_Demo ? "<b>ДЕМО</b>" : "");
-
-    // Автопечать
-    if(status.isPrintCalculateMode && isPrice)
-    {
-        if(isWMError || isFixed) status.isPrintCalculateMode = false;
-        if(!isPieceProduct) // Весовой товар
-        {
-            const int wg = (int)(equipmentManager->getWeight() * 1000); // Вес в граммах
-            if(!isWMError && isFixed && isAutoPrintEnabled && wg > 0)
-            {
-                if(wg >= settings->getIntValue(SettingCode_PrintAutoWeight)) print(); // Автопечать
-                else showToast("Вес слишком мал для автопечати");
-            }
-        }
-        else // Штучный товар
-        {
-            const double unitWeight = product[ProductDBTable::UnitWeight].toDouble() / 1000; // Вес единицы, кг
-            if(unitWeight > 0) // Задан вес единицы
-            {
-                if(isFixed && !isWMError)
-                {
-                    int newPieces = (int)(equipmentManager->getWeight() / unitWeight + 0.5); // Округление до ближайшего целого
-                    status.pieces = newPieces < 1 ? 1 : newPieces;
-                    if(isAutoPrintEnabled) print(); // Автопечать
-                }
-            }
-            else
-            {
-                status.isPrintCalculateMode = false;
-                if(isAutoPrintEnabled) print(); // Автопечать
-            }
-        }
-    }
-    if(isPieceProduct && oldPieces != status.pieces)
-    {
-        updateWeightStatus();
-        return;
-    }
-
-#ifdef DEBUG_WEIGHT_STATUS
-        debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9%10 %11 %12 %13").arg(
-                 Tools::toIntString(isWMError),
-                 Tools::toIntString(isAutoPrint),
-                 Tools::toIntString(isFixed),
-                 Tools::toIntString(isTare),
-                 Tools::toIntString(isZero),
-                 Tools::toIntString(isWM),
-                 Tools::toIntString(isPM),
-                 Tools::toIntString(isPieceProduct),
-                 Tools::toIntString(status.isManualPrintEnabled),
-                 Tools::toIntString(isAutoPrintEnabled),
-                 quantity, price, amount));
-#endif
-}
-
 void AppManager::beepSound()
 {
     Tools::sound("qrc:/Sound/KeypressInvalid.mp3", settings->getIntValue(SettingCode_KeyboardSoundVolume));
@@ -1274,11 +1140,11 @@ void AppManager::onPopupOpened(const bool open)
 void AppManager::stopAll()
 {
     debugLog("@@@@@ AppManager::stopAll");
-    status.onStopAll();
     resetProduct();
     timer->blockSignals(true);
     netServer->stop();
     equipmentManager->stop();
+    status.onStopAll();
     debugLog("@@@@@ AppManager::stopAll Done");
 }
 
@@ -1295,6 +1161,7 @@ void AppManager::startAll()
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         timer->blockSignals(false);
+        status.onStartAll();
         debugLog("@@@@@ AppManager::startAll Done");
     });
 }
@@ -1362,43 +1229,6 @@ void AppManager::showAuthorizationUsers()
             break;
         }
     }
-}
-
-void AppManager::stopAuthorization(const QString& login, const QString& password)
-{
-    const QString title = "Авторизация";
-
-#ifdef CHECK_AUTHORIZATION
-    debugLog(QString("@@@@@ AppManager::stopAuthorization %1 %2").arg(login, password));
-    DBRecord u = users->getByName(login);
-    if (u.isEmpty() || password != Users::getPassword(u))
-    {
-        debugLog("@@@@@ AppManager::stopAuthorization ERROR");
-        const QString error = "Неверные имя пользователя или пароль";
-        showMessage(title, error);
-        db->saveLog(LogType_Warning, LogSource_User, QString("%1. %2").arg(title, error));
-        onUserAction();
-        return;
-    }
-    users->setCurrentUser(u);
-#endif
-
-    debugLog("@@@@@ AppManager::stopAuthorization OK");
-    db->saveLog(LogType_Warning, LogSource_User, QString("%1. Пользователь: %2. Код: %3").arg(
-                    title, login, Tools::toString(Users::getCode(getCurrentUser()))));
-    setMainPage(MainPageIndex_Showcase);
-    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
-    {
-        debugLog("@@@@@ AppManager::stopAuthorization pause " + Tools::toString(WAIT_DRAWING_MSEC));
-        startAll();
-        refreshAll();
-        onUserAction();
-#ifdef DB_PATH_MESSAGE
-        showMessage("БД", Tools::dbPath(DB_PRODUCT_NAME));
-#endif
-        users->clear();
-        debugLog("@@@@@ AppManager::stopAuthorization Done");
-    });
 }
 
 void AppManager::onParseSetRequest(const QString& json, QHash<DBTable*, DBRecordList>& downloadedRecords)
@@ -1723,3 +1553,164 @@ void AppManager::showWeightErrorAndAutoPrint()
         icon = ICON_AUTO_OFF;
     emit showControlParam(ControlParam_WeightErrorOrAutoPrintIcon, icon);
 }
+
+void AppManager::updateWeightStatus()
+{
+#ifdef DEBUG_WEIGHT_STATUS
+    debugLog("@@@@@ AppManager::updateWeightStatus");
+#endif
+    const bool isPieceProduct = isProduct() && ProductDBTable::isPiece(product);
+    const int oldPieces = status.pieces;
+    if(isPieceProduct && status.pieces < 1) status.pieces = 1;
+
+    const bool isWM = equipmentManager->isWM() && equipmentManager->getWMMode() != EquipmentMode_None;
+    const bool isPM = equipmentManager->isPM();
+    const bool isZero = equipmentManager->isZeroFlag();
+    const bool isTare = equipmentManager->isTareFlag();
+    const bool isFixed = equipmentManager->isWeightFixed();
+    const bool isWMError = equipmentManager->isWMError() || !isWM;
+    const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
+            (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
+
+    status.quantity = status.price = status.amount = NO_DATA;
+
+    // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
+    if (isZero) status.isPrintCalculateMode = true;
+
+    // Рисуем флажки:
+    if (isZero)  emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_ON);
+    else         emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_OFF);
+    if (isTare)  emit showControlParam(ControlParam_TareFlag,  ICON_TARE_ON);
+    else         emit showControlParam(ControlParam_TareFlag,  ICON_TARE_OFF);
+    if (isFixed) emit showControlParam(ControlParam_FixedFlag, ICON_FIX_ON);
+    else         emit showControlParam(ControlParam_FixedFlag, ICON_FIX_OFF);
+    showWeightErrorAndAutoPrint();
+
+    // Рисуем загаловки:
+    QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
+    if(equipmentManager->getWMMode() == EquipmentMode_Demo) wt += " ДЕМО";
+    QString pt = "ЦЕНА, руб";
+    if(isProduct())
+    {
+        if (isPieceProduct) pt += "/шт";
+        else pt += ProductDBTable::is100gBase(product) ? "/100г" : "/кг";
+    }
+    emit showControlParam(ControlParam_WeightTitle, wt);
+    emit showControlParam(ControlParam_PriceTitle, pt);
+    emit showControlParam(ControlParam_AmountTitle, "СТОИМОСТЬ, руб");
+
+    // Рисуем количество (вес/штуки):
+    if(isWM)
+    {
+        if(equipmentManager->isWMOverloaded())
+        {
+            showToast("ПЕРЕГРУЗКА!");
+            alarm();
+        }
+        else
+        {
+            status.isAlarm = false;
+            if(isPieceProduct || !isWMError)
+                status.quantity = moneyCalculator->quantityAsString(product);
+        }
+    }
+    emit showControlParam(ControlParam_WeightValue, status.quantity);
+    emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? COLOR_ACTIVE : COLOR_PASSIVE);
+
+    // Рисуем цену:
+    QString price = moneyCalculator->priceAsString(product);
+    bool isPrice = isProduct() && PRICE_MAX_CHARS >= price.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
+    status.price = isPrice ? moneyCalculator->priceAsString(product) : NO_DATA;
+    emit showControlParam(ControlParam_PriceValue, status.price);
+    emit showControlParam(ControlParam_PriceColor, isPrice ? COLOR_ACTIVE : COLOR_PASSIVE);
+
+    // Рисуем стоимость:
+    QString amount = moneyCalculator->amountAsString(product);
+    bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWMError)) &&
+        AMOUNT_MAX_CHARS >= amount.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
+    status.amount = isAmount ? moneyCalculator->amountAsString(product) : NO_DATA;
+    emit showControlParam(ControlParam_AmountValue, status.amount);
+    emit showControlParam(ControlParam_AmountColor, isAmount ? COLOR_AMOUNT : COLOR_PASSIVE);
+
+    // Печатать?
+    status.isManualPrintEnabled = isAmount && isPM && !equipmentManager->isPMError();
+    emit enableManualPrint(status.isManualPrintEnabled);
+    const bool isAutoPrintEnabled = isAutoPrint && status.isManualPrintEnabled;
+    emit showControlParam(ControlParam_PrinterStatus, isWM && equipmentManager->getPMMode() == EquipmentMode_Demo ? "<b>ДЕМО</b>" : "");
+
+    // Внешний дисплей:
+    setExternalDisplay();
+
+    // Автопечать
+    if(status.isPrintCalculateMode && isPrice)
+    {
+        if(isWMError || isFixed) status.isPrintCalculateMode = false;
+        if(!isPieceProduct) // Весовой товар
+        {
+            const int wg = (int)(equipmentManager->getWeight() * 1000); // Вес в граммах
+            if(!isWMError && isFixed && isAutoPrintEnabled && wg > 0)
+            {
+                if(wg >= settings->getIntValue(SettingCode_PrintAutoWeight)) print(); // Автопечать
+                else showToast("Вес слишком мал для автопечати");
+            }
+        }
+        else // Штучный товар
+        {
+            const double unitWeight = product[ProductDBTable::UnitWeight].toDouble() / 1000; // Вес единицы, кг
+            if(unitWeight > 0) // Задан вес единицы
+            {
+                if(isFixed && !isWMError)
+                {
+                    int newPieces = (int)(equipmentManager->getWeight() / unitWeight + 0.5); // Округление до ближайшего целого
+                    status.pieces = newPieces < 1 ? 1 : newPieces;
+                    if(isAutoPrintEnabled) print(); // Автопечать
+                }
+            }
+            else
+            {
+                status.isPrintCalculateMode = false;
+                if(isAutoPrintEnabled) print(); // Автопечать
+            }
+        }
+    }
+    if(isPieceProduct && oldPieces != status.pieces)
+    {
+        updateWeightStatus();
+        return;
+    }
+
+#ifdef DEBUG_WEIGHT_STATUS
+        debugLog(QString("@@@@@ AppManager::updateWeightStatus %1%2%3%4%5 %6%7%8%9%10 %11 %12 %13").arg(
+                 Tools::toIntString(isWMError),
+                 Tools::toIntString(isAutoPrint),
+                 Tools::toIntString(isFixed),
+                 Tools::toIntString(isTare),
+                 Tools::toIntString(isZero),
+                 Tools::toIntString(isWM),
+                 Tools::toIntString(isPM),
+                 Tools::toIntString(isPieceProduct),
+                 Tools::toIntString(status.isManualPrintEnabled),
+                 Tools::toIntString(isAutoPrintEnabled),
+                 quantity, price, amount));
+#endif
+}
+
+void AppManager::print() // Печатаем этикетку
+{
+    debugLog("@@@@@ AppManager::print ");
+    QString labelPath;
+
+    // Товар с заданной этикеткой:
+    if(isProduct() && Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
+        labelPath = db->getLabelPathById(product[ProductDBTable::Code].toString());
+
+    if(labelPath.isEmpty())
+        labelPath = db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
+    equipmentManager->print(db, getCurrentUser(), product, labelPath);
+}
+
+void AppManager::setExternalDisplay()
+{
+    equipmentManager->setExternalDisplay(product);
+}
+

@@ -1,12 +1,11 @@
 #include "moneycalculator.h"
 #include "appmanager.h"
 #include "productdbtable.h"
-#include "settings.h"
 #include "equipmentmanager.h"
+#include "settings.h"
 #include "tools.h"
 
 #define MONEY_POINT_POSITION (appManager->settings->getIntValue(SettingCode_PointPosition))
-#define WEIGHT_POINT_POSITION 3
 
 MoneyCalculator::MoneyCalculator(AppManager* parent) : QObject{parent}, appManager(parent) {}
 
@@ -39,22 +38,19 @@ QString MoneyCalculator::quantityAsString(const DBRecord& product)
         return Tools::toString(v, 0);
     }
     if(appManager->equipmentManager->isWMError()) return "";
-    double v = Tools::round(q, WEIGHT_POINT_POSITION);
-    return Tools::toString(v, WEIGHT_POINT_POSITION);
+    return Tools::roundToString(q, WEIGHT_POINT_POSITION);
 }
 
 QString MoneyCalculator::priceAsString(const DBRecord& product)
 {
     double p = price(product).toDouble() / moneyMultiplier();
-    double v = Tools::round(p, MONEY_POINT_POSITION);
-    return Tools::toString(v, MONEY_POINT_POSITION);
+    return Tools::roundToString(p, MONEY_POINT_POSITION);
 }
 
 QString MoneyCalculator::amountAsString(const DBRecord& product)
 {
     double a = quantityAsDouble(product) * (double)(price(product).toLongLong()) / moneyMultiplier();
-    double v = Tools::round(a, MONEY_POINT_POSITION);
-    return Tools::toString(v, MONEY_POINT_POSITION);
+    return Tools::roundToString(a, MONEY_POINT_POSITION);
 }
 
 

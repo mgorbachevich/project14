@@ -338,6 +338,12 @@ QString Tools::timeFromUInt(quint64 v, const QString& format)
     return QDateTime::fromMSecsSinceEpoch(v).toString(format);
 }
 
+QString Tools::roundToString(const double w, const int position)
+{
+    double v = Tools::round(w, position);
+    return Tools::toString(v, position);
+}
+
 bool Tools::isEnvironment(const EnvironmentType type)
 {
     bool result = false;

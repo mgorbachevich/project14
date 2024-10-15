@@ -50,6 +50,7 @@ public:
     void onNetResult(NetActionResult&);
     void updateInputCodeList();
     void updateSearch();
+    bool isProduct() { return !product.isEmpty(); }
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
@@ -115,7 +116,6 @@ public:
 private:
     void alarm();
     void clickSound();
-    bool isProduct() { return !product.isEmpty(); }
     DBRecord& getCurrentUser() { return users->getCurrentUser(); }
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
@@ -142,6 +142,7 @@ private:
     void updateSystemStatus();
     void updateSettings(const int);
     void updateWeightStatus();
+    void setExternalDisplay();
 
     DataBase* db = nullptr;
     DBRecord product;

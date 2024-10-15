@@ -241,6 +241,7 @@ QString NetServer::parseSetRequest(const QByteArray &request)
 QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &request)
 {
     Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
+    appManager->status.isNet = true;
     NetActionResult result(appManager, rule);
 
     // Singlepart:
@@ -252,6 +253,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
             result.errorCode = LogError_WrongRequest;
             result.description = "Неверный сетевой запрос";
         }
+        appManager->status.isNet = false;
         return result.makeEmptyJson();
     }
 
@@ -401,6 +403,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                 QString::number(result.successCount + result.errorCount));
     appManager->showToast(result.description);
     appManager->status.downloadedRecords = result.successCount;
+    appManager->status.isNet = false;
     return result.makeEmptyJson();
 }
 
@@ -408,6 +411,8 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
 {
     // Parse list of codes to upload:
     Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest %1").arg(QString(request)));
+    appManager->status.isNet = true;
+
     QByteArray tableName;
     QByteArray codes;
     const QByteArray s1 = "source=";
@@ -465,6 +470,7 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
     NetActionResult result(appManager, RouterRule_Get);
     result.errorCode = LogError_WrongRequest;
     result.description = "Некорректный сетевой запрос";
+    appManager->status.isNet = false;
     return result.makeEmptyJson();
 }
 

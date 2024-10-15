@@ -431,13 +431,13 @@ QString EquipmentManager::getPMErrorDescription(const int e) const
     switch(e)
     {
     case 0: return "Ошибок нет";
-    case 1003: return "Нет бумаги! Установите новый рулон!";
-    case 1004: return "Закройте головку принтера!";
-    case 1005: return "Снимите этикетку!";
-    case 1006: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
-    case 1007: return "Ошибка принтера!";
-    case 1008: return "Ошибка памяти принтера!";
-    case 1009: return "Неверный штрихкод";
+    case PMError_NoPaper: return "Нет бумаги! Установите новый рулон!";
+    case PMError_Opened: return "Закройте головку принтера!";
+    case PMError_GetLabel: return "Снимите этикетку!";
+    case PMError_BadPosition: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
+    case PMError_Fail: return "Ошибка принтера!";
+    case PMError_Memory: return "Ошибка памяти принтера!";
+    case PMError_Barcode: return "Неверный штрихкод";
     }
     return slpa == nullptr ? "" : slpa->errorDescription(e);
 }
@@ -463,11 +463,11 @@ void EquipmentManager::onPMStatusChanged(uint16_t s)
     if(!b0 || b1 || !b2 || b3 || b6 || b8)
     {
         param = ControlParam_PrintError;
-        if(!b0 && isPMFlag(PMStatus, 0) != b0) e = 1003;
-        if(!b2 && isPMFlag(PMStatus, 2) != b2) e = 1006;
-        if(b3 && isPMFlag(PMStatus, 3) != b3) e = 1004;
-        if(b8 && isPMFlag(PMStatus, 8) != b8) e = 1008;
-        if(b1 && b6 && isPMFlag(PMStatus, 1) != b1) e = 1005;
+        if(!b0 && isPMFlag(PMStatus, 0) != b0) e = PMError_NoPaper;
+        if(!b2 && isPMFlag(PMStatus, 2) != b2) e = PMError_BadPosition;
+        if(b3 && isPMFlag(PMStatus, 3) != b3) e = PMError_Opened;
+        if(b8 && isPMFlag(PMStatus, 8) != b8) e = PMError_Memory;
+        if(b1 && b6 && isPMFlag(PMStatus, 1) != b1) e = PMError_GetLabel;
     }
     else if(isPMStateError(PMStatus) && PMErrorCode == 0) param = ControlParam_PrintError; // Ошибка исчезла
 
@@ -504,11 +504,7 @@ QString EquipmentManager::parseBarcode(const QString& barcodeTemplate, const QCh
     return result;
 }
 
-QString EquipmentManager::makeBarcode(
-        const DBRecord& product,
-        const QString& quantity,
-        const QString& price,
-        const QString& amount)
+QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& quantity, const QString& amount)
 {
     QString result;
     QString barcodeTemplate = ProductDBTable::isPiece(product) ?
@@ -526,83 +522,6 @@ QString EquipmentManager::makeBarcode(
               parseBarcode(barcodeTemplate, 'W', quantity);
     Tools::debugLog(QString("@@@@@ EquipmentManager::makeBarcode %1 %2").arg(barcodeTemplate, result));
     return result.length() != barcodeTemplate.length() ? "" : result;
-}
-
-int EquipmentManager::print(
-        DataBase* db,
-        const DBRecord& user,
-        const DBRecord& product,
-        const QString& quantity,
-        const QString& price,
-        const QString& amount,
-        const QString& labelLocalPath)
-{
-    Tools::debugLog("@@@@@ EquipmentManager::print");
-    if(!isPMStarted || slpa == nullptr) return 1007;
-
-    QString barcode = makeBarcode(product, quantity, price, amount);
-    if (barcode.isEmpty()) return 1009;
-
-    quint64 dateTime = Tools::nowMsec();
-    int labelNumber = 0; // todo
-    int e = 0;
-
-    QString labelFullPath;
-    if(Tools::isFileExistsInDownloadPath(labelLocalPath))
-        labelFullPath = Tools::downloadPath(labelLocalPath);
-    if(labelPath != labelFullPath)
-    {
-        e = labelCreator->loadLabel(labelFullPath);
-        if(e == 0) labelPath = labelFullPath;
-    }
-
-    if (e == 0)
-    {
-        PrintData pd;
-        pd.weight = quantity;
-        pd.price = price;
-        pd.cost = amount;
-        pd.tare = product[ProductDBTable::Tare].toString();
-        pd.barcode = barcode;
-        pd.itemcode = product[ProductDBTable::Code].toString();
-        pd.name = product[ProductDBTable::Name].toString();
-        pd.shelflife = product[ProductDBTable::Shelflife].toString();
-        pd.validity = ""; // todo
-        pd.price2 = product[ProductDBTable::Price2].toString();
-        pd.certificate = product[ProductDBTable::Certificate].toString();
-        pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
-        pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
-        pd.operatorcode =  Tools::toString(Users::getCode(user));
-        pd.operatorname = Users::getName(user);
-        pd.date = Tools::dateFromUInt(dateTime, DATE_FORMAT);
-        pd.time = Tools::timeFromUInt(dateTime, TIME_FORMAT);
-        pd.labelnumber = QString::number(labelNumber);
-        pd.scalesnumber = appManager->settings->getStringValue(SettingCode_ScalesNumber),
-        pd.picturefile = ""; // todo
-        pd.textfile = ""; // todo
-        QImage p = labelCreator->createImage(pd);
-        e = slpa->print(p);
-    }
-    if(e == 0)
-    {
-        TransactionDBTable* t = (TransactionDBTable*)(db->getTable(DBTABLENAME_TRANSACTIONS));
-        if(t != nullptr)
-        {
-            DBRecord r = t->createRecord(
-                        dateTime,
-                        Users::getCode(user),
-                        Tools::toInt(product[ProductDBTable::Code]),
-                        labelNumber,
-                        Tools::toDouble(quantity),
-                        Tools::toInt(price),
-                        Tools::toInt(amount));
-            emit printed(r);
-        }
-        else Tools::debugLog("@@@@@ EquipmentManager::print ERROR (get Transactions Table)");
-    }
-    if(e != 0) showAttention("Ошибка печати " + getPMErrorDescription(e));
-    else if(getPMMode() == EquipmentMode_Demo) showAttention("Демо-печать");
-    return e;
 }
 
 QString EquipmentManager::getWMDescription()
@@ -646,3 +565,124 @@ QString EquipmentManager::getWMDescriptionNow()
     res = QString("%1   %2   %3   %4").arg(max, min, dis, tar);
     return res;
 }
+
+int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product, const QString& labelLocalPath)
+{
+    Tools::debugLog("@@@@@ EquipmentManager::print");
+    if(!isPMStarted || slpa == nullptr) return PMError_Fail;
+
+    const QString& quantity = appManager->status.quantity;
+    const QString& price = appManager->status.price;
+    const QString& amount = appManager->status.amount;
+    const QString barcode = makeBarcode(product, quantity, amount);
+
+    if (barcode.isEmpty()) return PMError_Barcode;
+
+    quint64 dateTime = Tools::nowMsec();
+    int labelNumber = 0; // todo
+    int e = 0;
+
+    QString labelFullPath;
+    if(Tools::isFileExistsInDownloadPath(labelLocalPath))
+        labelFullPath = Tools::downloadPath(labelLocalPath);
+    if(labelPath != labelFullPath)
+    {
+        e = labelCreator->loadLabel(labelFullPath);
+        if(e == 0) labelPath = labelFullPath;
+    }
+
+    if (e == 0)
+    {
+        PrintData pd;
+        pd.weight = quantity;
+        pd.price = price;
+        pd.cost = amount;
+        pd.tare = Tools::roundToString(getTare(), WEIGHT_POINT_POSITION);
+        if(appManager->isProduct())
+        {
+            pd.barcode = barcode;
+            pd.itemcode = product[ProductDBTable::Code].toString();
+            pd.name = product[ProductDBTable::Name].toString();
+            pd.shelflife = product[ProductDBTable::Shelflife].toString();
+            pd.price2 = product[ProductDBTable::Price2].toString();
+            pd.certificate = product[ProductDBTable::Certificate].toString();
+            pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
+            pd.validity = ""; // todo
+        }
+        else
+        {
+            pd.barcode = "";
+            pd.itemcode = "";
+            pd.name = "";
+            pd.shelflife = "";
+            pd.price2 = "";
+            pd.certificate = "";
+            pd.message = "";
+            pd.validity = "";
+        }
+        pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
+        pd.operatorcode =  Tools::toString(Users::getCode(user));
+        pd.operatorname = Users::getName(user);
+        pd.date = Tools::dateFromUInt(dateTime, DATE_FORMAT);
+        pd.time = Tools::timeFromUInt(dateTime, TIME_FORMAT);
+        pd.labelnumber = QString::number(labelNumber);
+        pd.scalesnumber = appManager->settings->getStringValue(SettingCode_ScalesNumber),
+        pd.picturefile = ""; // todo
+        pd.textfile = ""; // todo
+        QImage p = labelCreator->createImage(pd);
+        e = slpa->print(p);
+    }
+    if(e == 0)
+    {
+        TransactionDBTable* t = (TransactionDBTable*)(db->getTable(DBTABLENAME_TRANSACTIONS));
+        if(t != nullptr)
+        {
+            DBRecord r = t->createRecord(
+                        dateTime,
+                        Users::getCode(user),
+                        appManager->isProduct() ? Tools::toInt(product[ProductDBTable::Code]) : 0,
+                        labelNumber,
+                        Tools::toDouble(quantity),
+                        Tools::toInt(price),
+                        Tools::toInt(amount));
+            emit printed(r);
+        }
+        else Tools::debugLog("@@@@@ EquipmentManager::print ERROR (get Transactions Table)");
+    }
+    if(e != 0) showAttention("Ошибка печати " + getPMErrorDescription(e));
+    else if(getPMMode() == EquipmentMode_Demo) showAttention("Демо-печать");
+    return e;
+}
+
+int EquipmentManager::setExternalDisplay(const DBRecord& product)
+{
+    const Status& s = appManager->status;
+    Tools::debugLog(QString("@@@@@ EquipmentManager::setExternalDisplay %1 %2 %3").arg(
+                        s.quantity, s.price, s.amount));
+    Wm100Protocol::display_data dd;
+    dd.weight = s.quantity;
+    dd.price = s.price;
+    dd.cost = s.amount;
+    dd.tare = Tools::roundToString(getTare(), WEIGHT_POINT_POSITION);
+    dd.flZero = isZeroFlag();
+    dd.flTare = isTareFlag();
+    dd.flCalm = isWeightFixed();
+    dd.flAuto = s.autoPrintMode == AutoPrintMode_On;
+    dd.flLock = appManager->isAuthorizationOpened();
+    dd.flTools = appManager->isSettingsOpened();
+    dd.flDataExchange = s.isNet;
+    if(appManager->isProduct())
+    {
+        dd.text = product[ProductDBTable::Name].toString();
+        dd.flPieces = ProductDBTable::isPiece(product);
+        dd.flPer100g = !dd.flPieces && ProductDBTable::is100gBase(product);
+        dd.flPerKg = !dd.flPieces && !dd.flPer100g;
+    }
+    else
+    {
+        dd.text = "";
+        dd.flPieces = dd.flPer100g = dd.flPerKg = false;
+    }
+    return wm->setDisplayData(dd);
+}
+

@@ -4,27 +4,16 @@ DEFINES += ZINT_NO_PNG
 
 INCLUDEPATH += \
     DB \
-    Net \
+    Equipment/Wm100_Slpa100u \
     Managers \
     Models \
-    Settings \
-    Equipment/Wm100_Slpa100u
+    Net
 
 HEADERS += \
-    DB/dbindexdescriptor.h \
-    DB/showcase.h \
-    Managers/status.h \
-    Models/edituserspanelmodel3.h \
-    Models/inputproductcodepanelmodel3.h \
-    Models/largelistmodel.h \
-    Models/listviewdescriptor.h \
-    Models/searchpanelmodel3.h \
-    Models/settingspanelmodel3.h \
-    Models/showcasepanelmodel3.h \
-    Net/netactionresult.h \
-    Net/netentry.h \
     constants.h \
     tools.h \
+    DB/dbindexdescriptor.h \
+    DB/showcase.h \
     DB/jsonarrayfile.h \
     DB/jsonfile.h \
     DB/scaleconfig.h \
@@ -109,26 +98,29 @@ HEADERS += \
     Managers/moneycalculator.h \
     Managers/keyemitter.h \
     Managers/appmanager.h \
+    Managers/status.h \
     Managers/screenmanager.h \
     Models/baselistmodel3.h \
     Models/baselistmodel.h \
     Models/productpanelmodel.h \
+    Models/edituserspanelmodel3.h \
+    Models/inputproductcodepanelmodel3.h \
+    Models/largelistmodel.h \
+    Models/listviewdescriptor.h \
+    Models/searchpanelmodel3.h \
+    Models/settingspanelmodel3.h \
+    Models/showcasepanelmodel3.h \
     Models/searchfiltermodel.h \
     Models/usernamemodel.h \
     Models/viewlogpanelmodel.h \
+    Net/netactionresult.h \
+    Net/netentry.h \
     Net/netserver.h
 
 SOURCES += \
-    DB/showcase.cpp \
-    Models/edituserspanelmodel3.cpp \
-    Models/inputproductcodepanelmodel3.cpp \
-    Models/largelistmodel.cpp \
-    Models/searchpanelmodel3.cpp \
-    Models/settingspanelmodel3.cpp \
-    Models/showcasepanelmodel3.cpp \
-    Net/netactionresult.cpp \
     main.cpp \
     tools.cpp \
+    DB/showcase.cpp \
     DB/database.cpp \
     DB/dbtable.cpp \
     DB/jsonarrayfile.cpp \
@@ -216,23 +208,17 @@ SOURCES += \
     Models/viewlogpanelmodel.cpp \
     Models/baselistmodel.cpp \
     Models/productpanelmodel.cpp \
+    Models/edituserspanelmodel3.cpp \
+    Models/inputproductcodepanelmodel3.cpp \
+    Models/largelistmodel.cpp \
+    Models/searchpanelmodel3.cpp \
+    Models/settingspanelmodel3.cpp \
+    Models/showcasepanelmodel3.cpp \
+    Net/netactionresult.cpp \
     Net/netserver.cpp
 
 RESOURCES += \
     main.qml \
-    Default/1.png \
-    Default/2.png \
-    Default/3.jpg \
-    Default/4.png \
-    Default/5.png \
-    Default/6.png \
-    Default/8.png \
-    Default/9.png \
-    Default/10.png \
-    Default/11.png \
-    Default/12.png \
-    Default/15.png \
-    Default/ShtrihScale.db \
     Fonts/LeagueGothic-CondensedRegular.otf \
     Fonts/LeagueGothic-Regular.otf \
     Fonts/Roboto-Bold.ttf \

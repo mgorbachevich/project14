@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.80"
+#define APP_VERSION "2.81"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -26,7 +26,6 @@
 //#define REMOVE_DEBUG_LOG_ON_START
 //#define REMOVE_PRODUCT_DB_ON_START
 //#define REMOVE_LOG_DB_ON_START
-//#define CREATE_DEFAULT_DATA_ON_START
 
 // Files and Pathes:
 #ifdef Q_OS_ANDROID
@@ -97,6 +96,7 @@
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS
+#define WEIGHT_POINT_POSITION 3
 
 #define DBTABLENAME_SHOWCASE "showcase"
 #define DBTABLENAME_PRODUCTS "products"
@@ -161,12 +161,22 @@ enum LogError
 
 enum WMError
 {
-    WMError_None = 0,
     WMError_AutoZero = 5003, // ошибка автонуля при включении
     WMError_Overload = 5004, // перегрузка по весу
     WMError_Mesure = 5005, // ошибка при получении измерения (нет градуировки весов или она не правильная)
     WMError_Underload = 5006, // весы недогружены
     WMError_NoReply = 5007, // ошибка: нет ответа от АЦП
+};
+
+enum PMError
+{
+    PMError_NoPaper = 1003, // "Нет бумаги! Установите новый рулон!";
+    PMError_Opened = 1004, // "Закройте головку принтера!";
+    PMError_GetLabel = 1005, // "Снимите этикетку!";
+    PMError_BadPosition = 1006, // "Этикетка не спозиционирована! Нажмите клавишу промотки!";
+    PMError_Fail = 1007, // "Ошибка принтера!";
+    PMError_Memory = 1008, // "Ошибка памяти принтера!";
+    PMError_Barcode = 1009 // "Неверный штрихкод";
 };
 
 enum ProductType

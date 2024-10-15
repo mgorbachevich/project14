@@ -40,10 +40,11 @@ public:
     QString getWMErrorDescription(const int) const;
     bool isWM();
     QString getWMDescription();
+    int setExternalDisplay(const DBRecord&);
 
     // Print Manager:
     QString PMVersion() const;
-    int print(DataBase*, const DBRecord&, const DBRecord&, const QString&, const QString&, const QString&, const QString&);
+    int print(DataBase*, const DBRecord&, const DBRecord&, const QString&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
     QString getPMErrorDescription(const int) const;
     EquipmentMode getPMMode() const { return PMMode; }
@@ -51,7 +52,7 @@ public:
     void feed();
 
 private:
-    QString makeBarcode(const DBRecord&, const QString&, const QString&, const QString&);
+    QString makeBarcode(const DBRecord&, const QString&, const QString&);
     QString parseBarcode(const QString&, const QChar, const QString&);
     QString getWMDescriptionNow();
 
