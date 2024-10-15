@@ -80,6 +80,44 @@ int Wm100ProtocolHttp2::cKillDaemon(const QString &uri)
     return res;
 }
 
+int Wm100ProtocolHttp2::cDisplayData(const display_data &dd, const QString &uri)
+{
+    int res = open(uri);
+    if (!res)
+    {
+        io->setOption(0, 1);
+        io->setOption(1, 0, "/api/v0/extlcd/fields");
+        io->setOption(2, 0);
+        io->setOption(2, 1, "massa", dd.weight);
+        io->setOption(2, 1, "price", dd.price);
+        io->setOption(2, 1, "total", dd.cost);
+        io->setOption(2, 1, "tare", dd.tare);
+        io->setOption(2, 1, "text", QString(QUrl::toPercentEncoding(dd.text)));
+        QString flags;
+        if (dd.flZero) flags += "zero+";
+        if (dd.flTare) flags += "tare+";
+        if (dd.flCalm) flags += "calm+";
+        if (dd.flAuto) flags += "auto+";
+        if (dd.flMemory) flags += "memory+";
+        if (dd.flUprow) flags += "uprow+";
+        if (dd.flPieces) flags += "pieces+";
+        if (dd.flTools) flags += "tools+";
+        if (dd.flDataExchange) flags += "dataexchange+";
+        if (dd.flPencil) flags += "pencil+";
+        if (dd.flLock) flags += "lock+";
+        if (dd.flPerKg) flags += "perkilo+";
+        if (dd.flPer100g) flags += "perhundredg+";
+        if (flags.endsWith('+')) flags.remove(flags.length()-1,1);
+        io->setOption(2, 1, "flags", flags);
+        QByteArray out, in;
+        if (!io->writeRead(out, in, 0, 3000)) res = -1;
+        //qDebug() << in;
+        if (!res && in != "ok") res = -51;
+        close();
+    }
+    return res;
+}
+
 int Wm100ProtocolHttp2::cGetStatus(channel_status *status)
 {
     if (status == nullptr) return -9;
@@ -331,9 +369,8 @@ int Wm100ProtocolHttp2::parseCommandError(const QByteArray &reply)
     int res = 0;
     QJsonDocument jsonResponse = QJsonDocument::fromJson(reply);
     QJsonObject jsonObject = jsonResponse.object();
-    res = jsonObject["i2c_err"].toInt(0);
-    int i2c_err = parseParamInt(reply, "i2c_err");
-    int cmd_err = parseParamInt(reply, "cmd_err");
+    int i2c_err = jsonObject["i2c_err"].toInt(0);
+    int cmd_err = jsonObject["cmd_err"].toInt(0);
     if (i2c_err) res = i2c_err - 30;
     else res = cmd_err;
     return res;

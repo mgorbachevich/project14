@@ -196,10 +196,23 @@ int Slpa100u::getOffset(int *value)
     return res;
 }
 
+int Slpa100u::labelIllumination(const int value)
+{
+    if (!isConnected()) return -20;
+    return protocol->cLabelIllumination(value);
+}
+
 int Slpa100u::getPrinterVersion()
 {
     if (isConnected()) return protocol->getPrinterVersion();
     else return 0;
+}
+
+QString Slpa100u::getPrinterDescription()
+{
+    QString descr;
+    if (isConnected()) protocol->cGetPrinterDescription(descr);
+    return descr;
 }
 
 Slpa100uProtocol::deviceinterface Slpa100u::getInterface()

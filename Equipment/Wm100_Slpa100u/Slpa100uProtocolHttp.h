@@ -12,6 +12,8 @@ public:
 
 public:
     static bool checkUri(const QString &uri);
+    virtual int cLabelIllumination(const uint8_t value);
+    virtual int cGetPrinterDescription(QString &description);
 
 private:
     uint16_t linesToPrint = 0;

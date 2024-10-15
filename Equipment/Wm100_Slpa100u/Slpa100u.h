@@ -30,6 +30,8 @@ public:
     int setSensor(bool value);
     int getOffset(int *value);
     int getPrinterVersion();
+    int labelIllumination(const int value);
+    QString getPrinterDescription();
 
     Slpa100uProtocol::deviceinterface getInterface();
     Slpa100uProtocol::deviceinterface checkUri(const QString &uri);

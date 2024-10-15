@@ -16,10 +16,34 @@ bool Slpa100uProtocolHttp::checkUri(const QString &uri)
     return uri.contains(QRegularExpression(RegexStr,QRegularExpression::CaseInsensitiveOption));
 }
 
+int Slpa100uProtocolHttp::cLabelIllumination(const uint8_t value)
+{
+    QByteArray out, in;
+    out.append(value);
+    return executeCommand(cmLabelIllumination, out, in);
+}
+
+int Slpa100uProtocolHttp::cGetPrinterDescription(QString &description)
+{
+    QByteArray out, in;
+    int res = executeCommand(cmGetVersion, out, in);
+    if (res == 0) {
+        QDataStream ds(in);
+        ds.setByteOrder(QDataStream::LittleEndian);
+        uchar len;
+        ds >> len;
+        in.remove(0,1);
+        in = in.first(len);
+        in.remove(0,6);
+        description = in;
+    }
+    return res;
+}
+
 int Slpa100uProtocolHttp::executeCommand(prncommand cmd, const QByteArray &out, QByteArray &in)
 {
     static const QList<prncommand> withAnswer    = {cmFeed, cmPrint, cmGetStatus, cmGetOffset2, cmGetVersion, cmGetPE, cmGetLAB, cmMemoryTest, cmPrintTest, cmErrorCnt, cmResetCnt, cmProtectionCnt};
-    static const QList<prncommand> withoutAnswer = {cmBufferSize, cmBufferData, cmClearBuffer, cmSetBrightness, cmSetOffset, cmSetPaperType, cmSensorControl, cmSetOffset2, cmReset, cmProtectionMode};
+    static const QList<prncommand> withoutAnswer = {cmBufferSize, cmBufferData, cmClearBuffer, cmSetBrightness, cmSetOffset, cmSetPaperType, cmSensorControl, cmSetOffset2, cmReset, cmProtectionMode, cmLabelIllumination};
     bool isWithAnswer = withAnswer.contains(cmd);
     bool isWithoutAnswer = withoutAnswer.contains(cmd);
     if (!isWithAnswer && !isWithoutAnswer) return -15;
@@ -41,20 +65,23 @@ int Slpa100uProtocolHttp::executeCommand(prncommand cmd, const QByteArray &out, 
     else if (cmd == Slpa100uProtocol::cmClearBuffer) buffer.clear();
     else
     {
-        res = sendCommand(cmd, out, answer, (isWithAnswer)?16:0);
+        int ansLen = isWithAnswer?16:0;
+        if (cmd == cmGetVersion) ansLen = 255;
+        res = sendCommand(cmd, out, answer, ansLen);
         if (isWithAnswer && !res && answer.toStdString()=="ok")
         {
             res = readAnswer(cmd, out, in);
-            if (!res && in.size() == 16)
+            if (!res && in.size() == ansLen)
             {
                 if (static_cast<prncommand>(in[2]) == 0) res = -17;
                 else if (cmd != static_cast<prncommand>(in[2])) res = -16;
-                else res = static_cast<uchar>(in[3]);
-                in = in.mid(4,9);
+                else if (cmd != cmGetVersion) res = static_cast<uchar>(in[3]);
+                if (cmd != cmGetVersion) in = in.mid(4,9);
+                else in = in.remove(0,3);
                 if (res == -16) qDebug() << "executeCommand() получили ответ от команды =" << static_cast<uchar>(in[2]) << " ожидали = " << static_cast<uchar>(cmd);
             }
             else if (in.size() == 0)  res = -7;
-            else if (in.size() != 16) res = -8;
+            else if (in.size() != ansLen) res = -8;
         }
         else if (answer.toStdString() != "ok") res = -4;
     }

@@ -1119,9 +1119,6 @@ void AppManager::updateWeightStatus()
 
     const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
             (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
-    const QString passiveColor = "#424242";
-    const QString activeColor = "#fafafa";
-    const QString amountColor = "#ffe0b2";
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
     if (isZero) status.isPrintCalculateMode = true;
@@ -1131,7 +1128,7 @@ void AppManager::updateWeightStatus()
     else         emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_OFF);
     if (isTare)  emit showControlParam(ControlParam_TareFlag,  ICON_TARE_ON);
     else         emit showControlParam(ControlParam_TareFlag,  ICON_TARE_OFF);
-    if (isFixed) emit showControlParam(ControlParam_FixedFlag, ICON_ZERO_ON);
+    if (isFixed) emit showControlParam(ControlParam_FixedFlag, ICON_FIX_ON);
     else         emit showControlParam(ControlParam_FixedFlag, ICON_FIX_OFF);
     showWeightErrorAndAutoPrint();
 
@@ -1165,14 +1162,14 @@ void AppManager::updateWeightStatus()
         }
     }
     emit showControlParam(ControlParam_WeightValue, quantity);
-    emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? activeColor : passiveColor);
+    emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? COLOR_ACTIVE : COLOR_PASSIVE);
 
     // Рисуем цену:
     QString ps = moneyCalculator->priceAsString(product);
     bool isPrice = isProduct() && PRICE_MAX_CHARS >= ps.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
     QString price = isPrice ? moneyCalculator->priceAsString(product) : NO_DATA;
     emit showControlParam(ControlParam_PriceValue, price);
-    emit showControlParam(ControlParam_PriceColor, isPrice ? activeColor : passiveColor);
+    emit showControlParam(ControlParam_PriceColor, isPrice ? COLOR_ACTIVE : COLOR_PASSIVE);
 
     // Рисуем стоимость:
     QString as = moneyCalculator->amountAsString(product);
@@ -1180,7 +1177,7 @@ void AppManager::updateWeightStatus()
         AMOUNT_MAX_CHARS >= as.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
     QString amount = isAmount ? moneyCalculator->amountAsString(product) : NO_DATA;
     emit showControlParam(ControlParam_AmountValue, amount);
-    emit showControlParam(ControlParam_AmountColor, isAmount ? amountColor : passiveColor);
+    emit showControlParam(ControlParam_AmountColor, isAmount ? COLOR_AMOUNT : COLOR_PASSIVE);
 
     // Печатать?
     status.isManualPrintEnabled = isAmount && isPM && !equipmentManager->isPMError();

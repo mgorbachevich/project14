@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.79"
+#define APP_VERSION "2.80"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -75,6 +75,9 @@
 #define PRICE_MAX_CHARS 6
 #define AMOUNT_MAX_CHARS 8
 #define NO_DATA "-----"
+#define COLOR_PASSIVE "#424242"
+#define COLOR_ACTIVE "#fafafa"
+#define COLOR_AMOUNT "#ffe0b2"
 
 // Other:
 #define APP_TIMER_MSEC 10000

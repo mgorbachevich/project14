@@ -18,6 +18,7 @@ public:
     virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
     virtual int cDaemonVersion(QString &version, QString &build, const QString &uri);
     virtual int cKillDaemon(const QString &uri);
+    virtual int cDisplayData(const display_data &dd, const QString &uri);
 
     virtual int cGetStatus(channel_status *status);
     virtual int cGetStatusEx(channel_status_ex *status);

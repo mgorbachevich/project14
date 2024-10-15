@@ -6,7 +6,8 @@
 #include "Wm100Protocol.h"
 
 
-#define MOD_VERSION "1.15"
+#define MOD_VERSION "1.17"
+
 
 class Wm100 : public QObject
 {
@@ -40,6 +41,7 @@ public:
     int setDateTime(const QDateTime &datetime);
     int getDaemonVersion(QString &version, QString &build);
     int killDaemon();
+    int setDisplayData(const Wm100Protocol::display_data &dd);
 
     void startPolling(int time);
     void stopPolling();

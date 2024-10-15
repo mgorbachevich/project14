@@ -40,7 +40,8 @@ public:
         cmProtectionCnt   = 0x72,
         cmProtectionMode  = 0x80,
         cmSendDataBlock   = 0x90,
-        cmLastSendDataRes = 0x91
+        cmLastSendDataRes = 0x91,
+        cmLabelIllumination = 0x95
     };
     enum deviceinterface {
         diNone,
@@ -101,6 +102,8 @@ public:
     virtual int cResetCnt(counters *cnt);
     virtual int cProtectionCnt(counters *cnt);
     virtual int cProtectionMode(const bool value);
+    virtual int cLabelIllumination(const uint8_t value);
+    virtual int cGetPrinterDescription(QString &description);
 
     virtual int getPrinterVersion();
     deviceinterface getInterface();
@@ -115,6 +118,7 @@ private:
     uint16_t testLength = 0;
     qint64 delayTill = 0;
     prnanswer lastStatus = {0, 0, 0, 0, 0, 0, 0, 0};
+    QString printerDescriprion;
     virtual int executeCommand(prncommand cmd, const QByteArray &out, QByteArray &in) = 0;
     int command(prncommand cmd, const QByteArray &out, QByteArray &in);
     int command(prncommand cmd, const QByteArray &out, prnanswer *ans);

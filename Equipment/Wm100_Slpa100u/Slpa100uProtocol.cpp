@@ -181,9 +181,20 @@ int Slpa100uProtocol::cProtectionMode(const bool value)
     return command(cmProtectionMode, out);
 }
 
+int Slpa100uProtocol::cLabelIllumination(const uint8_t value)
+{
+    return -15;
+}
+
 int Slpa100uProtocol::getPrinterVersion()
 {
     return lastStatus.versionH * 256 + lastStatus.versionL;
+}
+
+int Slpa100uProtocol::cGetPrinterDescription(QString &description)
+{
+    description = QString("Firmware %1.%2").arg(lastStatus.versionH, lastStatus.versionL);
+    return 0;
 }
 
 Slpa100uProtocol::deviceinterface Slpa100uProtocol::getInterface()

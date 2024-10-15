@@ -64,6 +64,29 @@ public:
         QString  name;
     };
 
+    struct display_data
+    {
+        QString weight;
+        QString price;
+        QString cost;
+        QString tare;
+        QString text;
+        bool flZero;
+        bool flTare;
+        bool flCalm;
+        bool flAuto;
+        bool flMemory;
+        bool flUprow;
+        bool flPieces;
+        bool flTools;
+        bool flDataExchange;
+        bool flPencil;
+        bool flLock;
+        bool flPerKg;
+        bool flPer100g;
+    };
+
+
     enum demo_state {
         dmNone = 0,
         dmZero = 1,
@@ -131,6 +154,7 @@ public:
     virtual int cSetDateTime(const QDateTime &datetime, const QString &uri);
     virtual int cDaemonVersion(QString &version, QString &build, const QString &uri);
     virtual int cKillDaemon(const QString &uri);
+    virtual int cDisplayData(const display_data &dd, const QString &uri);
     virtual void getDeviceMetrics(device_metrics *metrics);
     virtual void getChannelParam(channel_specs *params);
     deviceinterface getInterface();

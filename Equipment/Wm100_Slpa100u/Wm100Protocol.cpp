@@ -10,7 +10,7 @@ Wm100Protocol::Wm100Protocol(QObject *parent)
 
 Wm100Protocol::~Wm100Protocol()
 {
-    close();
+    Wm100Protocol::close();
 }
 
 void Wm100Protocol::close()
@@ -56,7 +56,7 @@ int Wm100Protocol::cGetStatusEx(channel_status_ex *status)
         uint16_t tare;
         QDataStream ds(in);
         ds.setByteOrder(QDataStream::LittleEndian);
-        ds >> status->state >> weight >> tare >> status->flags >> weight2 >> status->levelx >> status->levely;
+        ds >> status->state >> weight >>  tare >> status->flags >> weight2 >> status->levelx >> status->levely;
         status->weight = weight * qPow(10, channelParams.measure);
         status->tare   = tare   * qPow(10, channelParams.measure);
         status->weightprecise = weight2 * qPow(10, -4);
@@ -270,6 +270,11 @@ int Wm100Protocol::cDaemonVersion(QString &version, QString &build, const QStrin
 }
 
 int Wm100Protocol::cKillDaemon(const QString &uri)
+{
+    return -15;
+}
+
+int Wm100Protocol::cDisplayData(const display_data &dd, const QString &uri)
 {
     return -15;
 }

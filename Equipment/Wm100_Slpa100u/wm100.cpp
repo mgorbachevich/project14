@@ -200,6 +200,14 @@ int Wm100::killDaemon()
     return res;
 }
 
+int Wm100::setDisplayData(const Wm100Protocol::display_data &dd)
+{
+    Wm100ProtocolHttp2* pr = new Wm100ProtocolHttp2(this);
+    int res = pr->cDisplayData(dd, "http://127.0.0.1:51233");
+    delete pr;
+    return res;
+}
+
 int Wm100::getDaemonVersion(QString &version, QString &build)
 {
     Wm100ProtocolHttp2* pr = new Wm100ProtocolHttp2(this);
@@ -266,6 +274,7 @@ QString Wm100::
     QString desc;
     switch (err)
     {
+    case -51: desc = "LCD не инициализован"; break;
     case -47:
     case -46:
     case -45:
