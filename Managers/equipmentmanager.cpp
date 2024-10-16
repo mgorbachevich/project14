@@ -573,7 +573,7 @@ QString EquipmentManager::getWMDescriptionNow()
 
 int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product, const QString& labelLocalPath)
 {
-    Tools::debugLog("@@@@@ EquipmentManager::print");
+    Tools::debugLog("@@@@@ EquipmentManager::print " + labelLocalPath);
     if(!isPMStarted || slpa == nullptr) return Error_PM_Fail;
 
     const QString& quantity = appManager->status.quantity;
@@ -588,8 +588,11 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
     int e = 0;
 
     QString labelFullPath;
-    if(Tools::isFileExistsInDownloadPath(labelLocalPath))
+    if( Tools::isFileExistsInDownloadPath(labelLocalPath))
         labelFullPath = Tools::downloadPath(labelLocalPath);
+    else if(Tools::isFileExists(labelLocalPath))
+        labelFullPath = labelLocalPath;
+
     if(labelPath != labelFullPath)
     {
         e = labelCreator->loadLabel(labelFullPath);
