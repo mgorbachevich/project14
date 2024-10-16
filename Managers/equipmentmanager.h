@@ -17,7 +17,7 @@ class EquipmentManager : public ExternalMessager
 
 public:
     EquipmentManager(AppManager*);
-    ~EquipmentManager() { removeWM(); removePM(); }
+    ~EquipmentManager();
     void create();
     void start();
     void stop();
@@ -28,7 +28,8 @@ public:
 
     // Weight Manager:
     QString WMVersion() const;
-    void setWMParam(const int);
+    void setTare();
+    void setZero();
     double getWeight() const { return WMStatus.weight; }
     double getTare() const { return WMStatus.tare; }
     bool isWMError() const { return WMErrorCode != 0 || isWMStateError(WMStatus); }
@@ -37,7 +38,6 @@ public:
     bool isZeroFlag() const { return isWMFlag(WMStatus, 1); }
     bool isTareFlag() const { return isWMFlag(WMStatus, 3); }
     EquipmentMode getWMMode() const { return WMMode; }
-    QString getWMErrorDescription(const int) const;
     bool isWM();
     QString getWMDescription();
     int setExternalDisplay(const DBRecord&);
@@ -46,7 +46,6 @@ public:
     QString PMVersion() const;
     int print(DataBase*, const DBRecord&, const DBRecord&, const QString&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
-    QString getPMErrorDescription(const int) const;
     EquipmentMode getPMMode() const { return PMMode; }
     bool isPM();
     void feed();
@@ -64,6 +63,7 @@ private:
     void pauseWM(const bool);
     bool isWMFlag(Wm100Protocol::channel_status, int) const;
     bool isWMStateError(Wm100Protocol::channel_status) const;
+    QString getWMErrorDescription(const int) const;
 
     // Print Manager:
     void createPM();
@@ -73,6 +73,7 @@ private:
     void pausePM(const bool);
     bool isPMFlag(uint16_t v, int shift) const { return (v & (0x00000001 << shift)) != 0; }
     bool isPMStateError(uint16_t) const;
+    QString getPMErrorDescription(const int) const;
 
     // Weight Manager:
     Wm100* wm = nullptr;
@@ -94,7 +95,7 @@ private:
 
 signals:
     void printed(const DBRecord&);
-    void paramChanged(const int, const int);
+    void paramChanged(const EquipmentParam, const int, const QString&);
 
 public slots:
     void onWMStatusChanged(Wm100Protocol::channel_status&);

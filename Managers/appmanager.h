@@ -38,7 +38,7 @@ class AppManager : public QObject
 
 public:
     explicit AppManager(QQmlContext*, const QSize&, QApplication*);
-    ~AppManager() { stopAll(); }
+    ~AppManager();
 
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
@@ -58,21 +58,13 @@ public:
     Q_INVOKABLE bool isAdmin() { return Users::isAdmin(users->getCurrentUser()); }
     Q_INVOKABLE bool isAuthorizationOpened();
     Q_INVOKABLE bool isSettingsOpened() { return status.isSettings; }
-    Q_INVOKABLE void onAddUserClicked();
-    Q_INVOKABLE void onAdminSettingsClicked();
-    Q_INVOKABLE bool onBackgroundDownloadClicked();
     Q_INVOKABLE void onCalendarClosed(const int, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&);
     Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
     Q_INVOKABLE void onClick() { clickSound(); onUserAction(); }
     Q_INVOKABLE void onConfirmationClicked(const int, const QString&);
     Q_INVOKABLE void onDeleteUserClicked(const QString&);
-    Q_INVOKABLE void onEditUsersPanelClicked(const int);
     Q_INVOKABLE void onEditUsersPanelClose();
-    Q_INVOKABLE void onHelpClicked();
-    Q_INVOKABLE void onHierarchyUpClicked();
-    Q_INVOKABLE void onInfoClicked();
     Q_INVOKABLE void onInputUserClosed(const QString&, const QString&, const QString&, const bool);
-    Q_INVOKABLE void onLockClicked();
     Q_INVOKABLE void onMainPageSwiped(const int i) { setMainPage(i); }
     Q_INVOKABLE void onNumberToSearchClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
@@ -80,31 +72,16 @@ public:
     Q_INVOKABLE void onPasswordInputClosed(const int, const QString&);
     Q_INVOKABLE void onPopupOpened(const bool);
     Q_INVOKABLE void onInputProductCodeEdited(const QString&);
-    Q_INVOKABLE void onPrintClicked();
-    Q_INVOKABLE void onProductDescriptionClicked();
-    Q_INVOKABLE void onProductFavoriteClicked();
-    Q_INVOKABLE void onProductPanelCloseClicked();
-    Q_INVOKABLE void onProductPanelPiecesClicked();
-    Q_INVOKABLE void onRewind();
-    Q_INVOKABLE void onSearchClicked();
     Q_INVOKABLE void onSearchFilterClicked(const int, const QString&);
     Q_INVOKABLE void onSearchFilterEdited(const QString&);
-    Q_INVOKABLE void onSearchResultClicked(const int);
     Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
-    Q_INVOKABLE void onSettingsItemClicked(const int);
-    Q_INVOKABLE void onSettingsPanelCloseClicked();
-    Q_INVOKABLE void onShowcaseAutoClicked();
-    Q_INVOKABLE void onShowcaseClicked(const int);
-    Q_INVOKABLE void onShowcaseDirectionClicked();
-    Q_INVOKABLE void onShowcaseSortClicked(const int);
-    Q_INVOKABLE void onTareClicked();
     Q_INVOKABLE void onUserAction();
-    Q_INVOKABLE void onViewLogClicked();
     Q_INVOKABLE void onVirtualKeyboardSet(const int);
-    Q_INVOKABLE void onWeightPanelClicked(const int);
-    Q_INVOKABLE void onZeroClicked();
     Q_INVOKABLE void showAttention(const QString& s) { showMessage("ВНИМАНИЕ!", s); }
     Q_INVOKABLE void showMessage(const QString&, const QString&);
+    Q_INVOKABLE bool onClicked(const int);
+    Q_INVOKABLE bool onClicked2(const int, const int);
+    Q_INVOKABLE void onSettingsItemClicked(const int);
 
     Settings* settings = nullptr;
     Users* users = nullptr;
@@ -120,8 +97,7 @@ private:
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
     void refreshAll();
-    void onEditUsersClicked();
-    void resetProduct();
+    void resetProduct(const bool show = true);
     void setMainPage(const int);
     void setProduct(const DBRecord&);
     void setSettingsInfo();
@@ -130,13 +106,13 @@ private:
     void showFoundProductsToast(const int);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
-    void showSettingComboBox(const DBRecord&);
+    void showSettingComboBox2(const DBRecord&);
     void showWeightErrorAndAutoPrint();
     void startAuthorization();
     void startAll();
     void startSettings();
     void stopAuthorization(const QString&, const QString&);
-    void stopAll();
+    void stopAll(const bool show = true);
     void stopSettings();
     void updateShowcase();
     void updateSystemStatus();
@@ -211,7 +187,7 @@ signals:
 public slots:
     void onSelectResult(const DBSelector, const DBRecordList&, const bool);
     void onDBStarted();
-    void onEquipmentParamChanged(const int, const int);
+    void onEquipmentParamChanged(const EquipmentParam, const int, const QString&);
     void onPrinted(const DBRecord&);
     void onTimer();
     void onNetCommand(const int, const QString&);

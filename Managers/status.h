@@ -10,7 +10,6 @@ public:
     Status() {}
     void onResetProduct() { pieces = 1; }
     void onUserAction() { userActionTime = Tools::nowMsec(); secret = 0; }
-    void onStartAll() {}
     void onStopAll() { isAlarm = false; quantity = price = amount = NO_DATA; }
 
     bool isNet = false;

@@ -55,7 +55,7 @@ Popup
                 switch (event.key)
                 {
                     case Qt.Key_F10: // Промотка
-                        app.onRewind()
+                        app.onClicked(26)
                         break
                     default:
                         break
@@ -129,7 +129,7 @@ Popup
                 Layout.row: 6
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 text: qsTr("ПРОДОЛЖИТЬ В ФОНОВОМ РЕЖИМЕ")
-                onClicked: if(app.onBackgroundDownloadClicked()) downloadPanel.close()
+                onClicked: if(app.onClicked(3)) downloadPanel.close()
             }
         }
     }

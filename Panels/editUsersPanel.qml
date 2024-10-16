@@ -51,7 +51,7 @@ Popup
                     editUsersPanel.close()
                     break
                 case Qt.Key_F10: // Промотка
-                    app.onRewind()
+                    app.onClicked(26)
                     break
                 default:
                     app.beepSound();
@@ -72,7 +72,7 @@ Popup
                 icon.source: "../Icons/plus"
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
-                onClicked: app.onAddUserClicked()
+                onClicked: app.onClicked(1)
             }
         }
 
@@ -146,7 +146,7 @@ Popup
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onEditUsersPanelClicked(index)
+                            onClicked: app.onClicked2(24, index)
                         }
                     }
 
@@ -160,7 +160,7 @@ Popup
                         MouseArea
                         {
                             anchors.fill: parent
-                            onClicked: app.onEditUsersPanelClicked(index)
+                            onClicked: app.onClicked2(24, index)
                         }
                     }
                 }

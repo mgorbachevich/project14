@@ -32,19 +32,19 @@ Rectangle
             {
                 icon.source: "../Icons/settings";
                 marked: true
-                onClicked: app.onAdminSettingsClicked()
+                onClicked: app.onClicked(2)
             }
             KeyboardIconButton
             {
                 icon.source: "../Icons/lock"
                 marked: true
-                onClicked: app.onLockClicked()
+                onClicked: app.onClicked(7)
             }
             KeyboardIconButton
             {
                 icon.source: "../Icons/log"
                 marked: true
-                onClicked: app.onViewLogClicked()
+                onClicked: app.onClicked(11)
             }
         }
 

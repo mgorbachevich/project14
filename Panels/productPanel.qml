@@ -84,23 +84,23 @@ Popup
                 case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
                     break;
                 case Qt.Key_Escape: // Круглая стрелка
-                    app.onProductPanelCloseClicked()
+                    app.onClicked(18)
                     break
                 case Qt.Key_Q: // Поиск
                     app.onMainPageSwiped(1)
-                    app.onProductPanelCloseClicked()
+                    app.onClicked(18)
                     break;
                 case Qt.Key_T: // >T<
-                    app.onTareClicked()
+                    app.onClicked(10)
                     break
                 case Qt.Key_Z: // >0<
-                    app.onZeroClicked()
+                    app.onClicked(9)
                     break
                 case Qt.Key_F8: // Печать
-                    app.onPrintClicked()
+                    app.onClicked(15)
                     break
                 case Qt.Key_F10: // Промотка
-                    app.onRewind()
+                    app.onClicked(26)
                     break
                 case Qt.Key_Up:
                     if (!productPanelList.atYBeginning) productPanelList.flick(0, screenManager.flickVelocity())
@@ -139,7 +139,7 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
             icon.source: "../Icons/star"
-            onClicked: app.onProductFavoriteClicked()
+            onClicked: app.onClicked(17)
         }
 
         Rectangle
@@ -212,7 +212,7 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignRight
             icon.source: "../Icons/info_outline"
-            onClicked: app.onProductDescriptionClicked()
+            onClicked: app.onClicked(16)
         }
 
         Spacer
@@ -228,7 +228,7 @@ Popup
             Layout.row: 0
             Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             icon.source: "../Icons/close"
-            onClicked: app.onProductPanelCloseClicked()
+            onClicked: app.onClicked(18)
         }
 
         Spacer
@@ -255,7 +255,7 @@ Popup
             Material.background: Material.color(Material.BlueGrey, isPiece ? Material.Shade100 : Material.Shade700)
             text: isPiece ? qsTr("+ / -") : qsTr(" ")
             font { pointSize: screenManager.largeFontSize() }
-            onClicked: app.onProductPanelPiecesClicked()
+            onClicked: app.onClicked(19)
         }
 
         Spacer
@@ -275,7 +275,7 @@ Popup
             Layout.preferredHeight: printButtonSize
             icon { width: screenManager.buttonSize(); height: screenManager.buttonSize(); source: "../Icons/print" }
             Material.background: Material.color(Material.BlueGrey, Material.Shade200)
-            onClicked: app.onPrintClicked()
+            onClicked: app.onClicked(15)
         }
 
         Rectangle

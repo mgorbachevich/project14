@@ -439,7 +439,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     if(t == nullptr)
     {
         result.errorCount = 1;
-        result.errorCode = LogError_UnknownTable;
+        result.errorCode = Error_Log_UnknownTable;
         result.description = "Неизвестная таблица";
     }
     else
@@ -470,7 +470,7 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
                 else
                 {
                     result.errorCount++;
-                    result.errorCode = LogError_RecordNotFound;
+                    result.errorCode = Error_Log_RecordNotFound;
                     result.description = "Запись не найдена";
                     if (detailedLog)
                     {
@@ -523,7 +523,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     if(t == nullptr)
     {
         result.errorCount = 1;
-        result.errorCode = LogError_UnknownTable;
+        result.errorCode = Error_Log_UnknownTable;
         result.description = "Неизвестная таблица";
     }
     else if (codesOnly) // Только коды
@@ -566,7 +566,7 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
             else
             {
                 result.errorCount++;
-                result.errorCode = LogError_RecordNotFound;
+                result.errorCode = Error_Log_RecordNotFound;
                 result.description = "Запись не найдена";
                 if (detailedLog)
                     saveLog(LogType_Error, LogSource_DB, QString("Ошибка выгрузки записи. Таблица: %1. Код ошибки: %2. Описание: %3").
@@ -599,7 +599,7 @@ void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCo
             {
                 errorCount++;
                 s = QString("Ошибка загрузки записи. Таблица: %1. Код: %2. Код ошибки: %3. Описание: Некорректная запись").
-                        arg(t->name, code, QString::number(LogError_WrongRecord));
+                        arg(t->name, code, QString::number(Error_Log_WrongRecord));
                 if (detailedLog) saveLog(LogType_Error, LogSource_DB, s);
             }
             else

@@ -10,6 +10,12 @@ NetServer::NetServer(AppManager* parent) : ExternalMessager(parent)
     Tools::debugLog("@@@@@ NetServer::NetServer");
 }
 
+NetServer::~NetServer()
+{
+    Tools::debugLog("@@@@@ NetServer::~NetServer");
+    stop();
+}
+
 void NetServer::stop()
 {
     if (server != nullptr)
@@ -250,7 +256,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
         Tools::debugLog("@@@@@ NetServer::parseSetRequest Singlepart");
         if(!parseCommand(request))
         {
-            result.errorCode = LogError_WrongRequest;
+            result.errorCode = Error_Log_WrongRequest;
             result.description = "Неверный сетевой запрос";
         }
         appManager->status.isNet = false;
@@ -374,7 +380,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                             else
                             {
                                 result.errorCount++;
-                                result.errorCode = LogError_WrongRecord;
+                                result.errorCode = Error_Log_WrongRecord;
                                 record = table->createRecord(recordCode);
                                 Tools::debugLog("@@@@@ NetServer::parseSetRequest. Write file ERROR");
                             }
@@ -382,7 +388,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                         else
                         {
                             result.errorCount++;
-                            result.errorCode = LogError_UnknownTable;
+                            result.errorCode = Error_Log_UnknownTable;
                             record = table->createRecord();
                             Tools::debugLog("@@@@@ NetServer::parseSetRequest. Unknown table ERROR");
                             continue;
@@ -468,7 +474,7 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
     if(rule == RouterRule_Get) return appManager->netUpload(tableName, codes, codesOnly);
     if(!codesOnly) return appManager->netDelete(tableName, codes);
     NetActionResult result(appManager, RouterRule_Get);
-    result.errorCode = LogError_WrongRequest;
+    result.errorCode = Error_Log_WrongRequest;
     result.description = "Некорректный сетевой запрос";
     appManager->status.isNet = false;
     return result.makeEmptyJson();

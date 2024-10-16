@@ -130,7 +130,7 @@ Popup
                             inputSettingPanel.close()
                             break
                         case Qt.Key_F10: // Промотка
-                            app.onRewind()
+                            app.onClicked(26)
                             break
                         default:
                             app.beepSound();

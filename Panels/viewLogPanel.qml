@@ -42,10 +42,7 @@ Popup
             app.onClick();
             switch (event.key)
             {
-                case Qt.Key_Escape: // Круглая стрелка
-                    viewLogPanel.close()
-                    break
-                case Qt.Key_Enter: case Qt.Key_Return:
+                case Qt.Key_Escape: case Qt.Key_Enter: case Qt.Key_Return:
                     viewLogPanel.close()
                     break
                 case Qt.Key_Up:
@@ -57,7 +54,7 @@ Popup
                     else app.beepSound()
                     break;
                 case Qt.Key_F10: // Промотка
-                    app.onRewind()
+                    app.onClicked(26)
                     break
                 default:
                     app.beepSound();

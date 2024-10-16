@@ -54,7 +54,7 @@ Popup
                     settingPanel.close()
                     break
                 case Qt.Key_F10: // Промотка
-                    app.onRewind()
+                    app.onClicked(26)
                     break
                 default:
                     app.beepSound();
@@ -93,7 +93,7 @@ Popup
                 icon.source: "../Icons/close"
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
-                onClicked: app.onSettingsPanelCloseClicked()
+                onClicked: app.onClicked(13)
             }
         }
 

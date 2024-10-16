@@ -77,7 +77,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     if(p != nullptr)
     {
         if(!isEqual(*p, inputUser))
-            appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
+            appManager->showConfirmation(ConfirmSelector_ReplaceUser,
                 QString("Уже есть пользователь с кодом %1, заменить?").arg(code), "");
         return;
     }
@@ -85,7 +85,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     if(!u.isEmpty())
     {
         if(!isEqual(u, inputUser))
-            appManager->showConfirmation(ConfirmSelector::ConfirmSelector_ReplaceUser,
+            appManager->showConfirmation(ConfirmSelector_ReplaceUser,
                 QString("Уже есть пользователь с именем %1, заменить?").arg(name), "");
         return;
     }

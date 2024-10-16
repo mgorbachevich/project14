@@ -20,7 +20,6 @@ enum DBSelector
     DBSelector_GetProductsByFilteredBarcode,
     DBSelector_GetProductsByFilteredName,
     DBSelector_GetItemsByCodes,
-    //DBSelector_GetAuthorizationUsers,
     DBSelector_GetLog,
     DBSelector_RefreshCurrentProduct,
     DBSelector_SetProductByCode,
@@ -28,6 +27,7 @@ enum DBSelector
     DBSelector_GetProductByCode,
     DBSelector_SetProductByCode2,
     DBSelector_GetAllLabels,
+    //DBSelector_GetAuthorizationUsers,
 };
 
 class DataBase : public ExternalMessager

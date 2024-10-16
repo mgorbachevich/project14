@@ -24,7 +24,7 @@ class NetServer : public ExternalMessager
 
 public:
     explicit NetServer(AppManager*);
-    ~NetServer() { stop(); }
+    ~NetServer();
     void start(const int);
     void stop();
     QString version() { return SERVER_VERSION; }

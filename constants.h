@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.81"
+#define APP_VERSION "2.82"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -151,32 +151,25 @@ enum LogSource
     LogSource_Weight = 4,
 };
 
-enum LogError
+enum Error
 {
-    LogError_WrongRequest = 1101,
-    LogError_WrongRecord = 1102,
-    LogError_UnknownTable = 1103,
-    LogError_RecordNotFound = 1104,
-};
-
-enum WMError
-{
-    WMError_AutoZero = 5003, // ошибка автонуля при включении
-    WMError_Overload = 5004, // перегрузка по весу
-    WMError_Mesure = 5005, // ошибка при получении измерения (нет градуировки весов или она не правильная)
-    WMError_Underload = 5006, // весы недогружены
-    WMError_NoReply = 5007, // ошибка: нет ответа от АЦП
-};
-
-enum PMError
-{
-    PMError_NoPaper = 1003, // "Нет бумаги! Установите новый рулон!";
-    PMError_Opened = 1004, // "Закройте головку принтера!";
-    PMError_GetLabel = 1005, // "Снимите этикетку!";
-    PMError_BadPosition = 1006, // "Этикетка не спозиционирована! Нажмите клавишу промотки!";
-    PMError_Fail = 1007, // "Ошибка принтера!";
-    PMError_Memory = 1008, // "Ошибка памяти принтера!";
-    PMError_Barcode = 1009 // "Неверный штрихкод";
+    Error_None = 0,
+    Error_Log_WrongRequest = 1101,
+    Error_Log_WrongRecord = 1102,
+    Error_Log_UnknownTable = 1103,
+    Error_Log_RecordNotFound = 1104,
+    Error_WM_AutoZero = 5003, // ошибка автонуля при включении
+    Error_WM_Overload = 5004, // перегрузка по весу
+    Error_WM_Mesure = 5005, // ошибка при получении измерения (нет градуировки весов или она не правильная)
+    Error_WM_Underload = 5006, // весы недогружены
+    Error_WM_NoReply = 5007, // ошибка: нет ответа от АЦП
+    Error_PM_NoPaper = 1003, // "Нет бумаги! Установите новый рулон!";
+    Error_PM_Opened = 1004, // "Закройте головку принтера!";
+    Error_PM_GetLabel = 1005, // "Снимите этикетку!";
+    Error_PM_BadPosition = 1006, // "Этикетка не спозиционирована! Нажмите клавишу промотки!";
+    Error_PM_Fail = 1007, // "Ошибка принтера!";
+    Error_PM_Memory = 1008, // "Ошибка памяти принтера!";
+    Error_PM_Barcode = 1009 // "Неверный штрихкод";
 };
 
 enum ProductType
@@ -200,11 +193,40 @@ enum ProductPriceBase
     ProductPriceBase_100g = 2
 };
 
+enum Clicked
+{
+    Clicked_None = 0,
+    Clicked_AddUser = 1,
+    Clicked_AdminSettings = 2,
+    Clicked_BackgroundDownload = 3,
+    Clicked_Help = 4,
+    Clicked_HierarchyUp = 5,
+    Clicked_Info = 6,
+    Clicked_Lock = 7,
+    Clicked_Search = 8,
+    Clicked_Zero = 9,
+    Clicked_Tare = 10,
+    Clicked_ViewLog = 11,
+    Clicked_ShowcaseDirection = 12,
+    Clicked_SettingsPanelClose = 13,
+    Clicked_ShowcaseAuto = 14,
+    Clicked_Print = 15,
+    Clicked_ProductDescription = 16,
+    Clicked_ProductFavorite = 17,
+    Clicked_ProductPanelClose = 18,
+    Clicked_ProductPanelPieces = 19,
+    Clicked_WeightPanel = 20,
+    Clicked_ShowcaseSort = 21,
+    Clicked_Showcase = 22,
+    Clicked_SearchResult = 23,
+    Clicked_EditUsersPanel = 24,
+    Clicked_EditUsers = 25,
+    Clicked_Rewind = 26,
+};
+
 enum ControlParam
 {
     ControlParam_None = 0,
-    ControlParam_Tare = 1,
-    ControlParam_Zero = 2,
     ControlParam_TareValue = 3,
     ControlParam_WeightValue = 4,
     ControlParam_PriceValue = 5,
@@ -226,14 +248,26 @@ enum ControlParam
     ControlParam_AuthorizationTitle1 = 21,
     ControlParam_AuthorizationTitle2 = 22,
     ControlParam_AuthorizationTitle3 = 23,
+    ControlParam_WeightErrorOrAutoPrintIcon = 29,
+    ControlParam_TareFlag = 30,
+    ControlParam_ZeroFlag = 31,
+    /*
+    ControlParam_Tare = 1,
+    ControlParam_Zero = 2,
     ControlParam_LastDownloadDateTime = 24,
     ControlParam_LastUploadDateTime = 25,
     ControlParam_LastDeleteDateTime = 26,
     ControlParam_LastDownloadErrors = 27,
     ControlParam_LastDownloadRecords = 28,
-    ControlParam_WeightErrorOrAutoPrintIcon = 29,
-    ControlParam_TareFlag = 30,
-    ControlParam_ZeroFlag = 31,
+    */
+};
+
+enum EquipmentParam
+{
+    EquipmentParam_None = 0,
+    EquipmentParam_WeightValue = ControlParam_WeightValue,
+    EquipmentParam_WeightError = ControlParam_WeightError,
+    EquipmentParam_PrintError = ControlParam_PrintError,
 };
 
 enum NetCommand

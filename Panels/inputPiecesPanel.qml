@@ -118,7 +118,7 @@ Popup
                                 inputPiecesPanel.clicked = true
                                 break;
                             case Qt.Key_F10: // Промотка
-                                app.onRewind()
+                                app.onClicked(26)
                                 break
                             case Qt.Key_Escape:
                                 text = ""

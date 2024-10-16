@@ -123,6 +123,12 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     debugLog("@@@@@ AppManager::AppManager Done");
 }
 
+AppManager::~AppManager()
+{
+    Tools::debugLog("@@@@@ AppManager::~AppManager");
+    stopAll(false);
+}
+
 void AppManager::onDBStarted()
 {
     debugLog("@@@@@ AppManager::onDBStarted");
@@ -193,53 +199,6 @@ void AppManager::onTimer()
     }
 }
 
-void AppManager::onProductDescriptionClicked()
-{
-    debugLog("@@@@@ AppManager::onProductDescriptionClicked");
-    onUserAction();
-    db->select(DBSelector_GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
-}
-
-void AppManager::onProductFavoriteClicked()
-{
-    debugLog("@@@@@ AppManager::onProductFavoriteClicked");
-    onUserAction();
-    if(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase))
-    {
-        if(db->isProductInShowcase(product))
-            showConfirmation(ConfirmSelector_RemoveFromShowcase,  "Удалить товар из витрины?", "");
-        else
-            showConfirmation(ConfirmSelector_AddToShowcase, "Добавить товар в витрину?", "");
-    }
-}
-
-void AppManager::onProductPanelCloseClicked()
-{
-    onUserAction();
-    resetProduct();
-    setMainPage(screenManager->mainPageIndex);
-}
-
-void AppManager::onProductPanelPiecesClicked()
-{
-    onUserAction();
-    if(ProductDBTable::isPiece(product))
-    {
-        debugLog(QString("@@@@@ AppManager::onProductPanelPiecesClicked %1 %2").arg(
-                     Tools::toString(status.pieces),
-                     Tools::toString(settings->getIntValue(SettingCode_CharNumberPieces))));
-        emit showPiecesInputBox(status.pieces, settings->getIntValue(SettingCode_CharNumberPieces));
-    }
-    else beepSound();
-}
-
-void AppManager::onRewind() // Перемотка
-{
-    debugLog("@@@@@ AppManager::onRewind ");
-    if(isAuthorizationOpened() || isSettingsOpened()) beepSound();
-    else equipmentManager->feed();
-}
-
 void AppManager::onSettingInputClosed(const int settingItemCode, const QString &value)
 {
     // Настройка изменилась
@@ -257,20 +216,6 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     QString s = QString("Изменена настройка. Код: %1. Значение: %2").arg(
                 QString::number(settingItemCode), value);
     db->saveLog(LogType_Warning, LogSource_Admin, s);
-}
-
-void AppManager::onAdminSettingsClicked()
-{
-    debugLog("@@@@@ AppManager::onAdminSettingsClicked");
-    onUserAction();
-    startSettings();
-}
-
-void AppManager::onLockClicked()
-{
-    debugLog("@@@@@ AppManager::onLockClicked");
-    onUserAction();
-    showConfirmation(ConfirmSelector::ConfirmSelector_Authorization, "Вы хотите сменить пользователя?", "");
 }
 
 void AppManager::onNumberToSearchClicked(const QString &s)
@@ -476,43 +421,11 @@ QString AppManager::getImageFileWithQmlPath(const DBRecord& r)
     return path;
 }
 
-void AppManager::onViewLogClicked()
-{
-    debugLog("@@@@@ AppManager::onViewLogClicked ");
-    db->saveLog(LogType_Info, LogSource_Admin, "Просмотр лога");
-    onUserAction();
-    db->select(DBSelector_GetLog);
-    emit showViewLogPanel();
-}
-
 void AppManager::onVirtualKeyboardSet(const int v)
 {
     debugLog("@@@@@ AppManager::onVirtualKeyboardSet " + Tools::toString(v));
     onUserAction();
     emit showVirtualKeyboard(v);
-}
-
-void AppManager::onWeightPanelClicked(const int param)
-{
-    debugLog("@@@@@ AppManager::onWeightPanelClicked " + Tools::toString(param));
-    if(param == 1) QTimer::singleShot(WAIT_SECRET_MSEC, this, [this]() { onUserAction(); } );
-    if(param == status.secret + 1 && (++status.secret) == 3) onLockClicked();
-}
-
-void AppManager::onTareClicked()
-{
-    debugLog("@@@@@ AppManager::onTareClicked ");
-    onUserAction();
-    equipmentManager->setWMParam(ControlParam_Tare);
-    updateWeightStatus();
-}
-
-void AppManager::onZeroClicked()
-{
-    debugLog("@@@@@ AppManager::onZeroClicked ");
-    onUserAction();
-    equipmentManager->setWMParam(ControlParam_Zero);
-    updateWeightStatus();
 }
 
 void AppManager::onCalendarClosed(const int settingItemCode,
@@ -635,7 +548,7 @@ void AppManager::onSettingsItemClicked(const int index)
         return;
 
     case SettingCode_Users:
-        onEditUsersClicked();
+        onClicked(Clicked_EditUsers);
         return;
 
     case SettingCode_DateTime:
@@ -669,7 +582,7 @@ void AppManager::onSettingsItemClicked(const int index)
 
     case SettingType_List:
         settingItemModel->update(Settings::getValueList(*r));
-        showSettingComboBox(*r);
+        showSettingComboBox2(*r);
         break;
 
     case SettingType_IntervalNumber:
@@ -742,65 +655,6 @@ void AppManager::updateSettings(const int groupCode)
     debugLog("@@@@@ AppManager::updateSettings ");
     settings->update(groupCode);
     settingsPanelModel->update(*settings);
-}
-
-void AppManager::onSettingsPanelCloseClicked()
-{
-    debugLog("@@@@@ AppManager::onSettingsPanelCloseClicked " + Tools::toString(settings->getCurrentGroupCode()));
-    onUserAction();
-    emit previousSettings();
-    const int groupCode = settings->getCurrentGroupCode();
-    if(groupCode != 0)
-    {
-        DBRecord* r = settings->getByCode(groupCode);
-        if(r != nullptr && !r->empty() && Settings::isGroup(*r))
-        {
-            // Переход вверх:
-            updateSettings(r->at(SettingField_GroupCode).toInt());
-            emit showSettingsPanel(settings->getCurrentGroupName());
-            return;
-        }
-    }
-    stopSettings();
-}
-
-void AppManager::onShowcaseAutoClicked()
-{
-    switch (status.autoPrintMode)
-    {
-    case AutoPrintMode_Off:      break;
-    case AutoPrintMode_On:       status.autoPrintMode = AutoPrintMode_Disabled; break;
-    case AutoPrintMode_Disabled: status.autoPrintMode = AutoPrintMode_On; break;
-    }
-    showWeightErrorAndAutoPrint();
-}
-
-void AppManager::onShowcaseClicked(const int index)
-{
-    debugLog("@@@@@ AppManager::onShowcaseClicked " + Tools::toString(index));
-    onUserAction();
-    setProduct(showcasePanelModel->productByIndex(index));
-}
-
-void AppManager::onShowcaseDirectionClicked()
-{
-    onUserAction();
-    status.isProductSortIncrement = !status.isProductSortIncrement;
-    updateShowcase();
-}
-
-void AppManager::onShowcaseSortClicked(const int sort)
-{
-    debugLog("@@@@@ AppManager::onShowcaseSortClicked " + Tools::toString(status.productSort));
-    onUserAction();
-    status.productSort = sort;
-    switch (status.productSort)
-    {
-    case ShowcaseSort_Code:
-    case ShowcaseSort_Code2: status.lastProductSort = status.productSort; break;
-    default: break;
-    }
-    updateShowcase();
 }
 
 void AppManager::setMainPage(const int i)
@@ -1009,7 +863,7 @@ void AppManager::showFoundProductsToast(const int v)
     // if(v > 1) showToast(QString("Найдено товаров: %1").arg(Tools::toString(v)));
 }
 
-void AppManager::resetProduct() // Сбросить выбранный продукт
+void AppManager::resetProduct(const bool show) // Сбросить выбранный продукт
 {
     isResetProductNeeded = false;
     if(isProduct())
@@ -1019,7 +873,7 @@ void AppManager::resetProduct() // Сбросить выбранный прод�
         status.onResetProduct();
         emit resetCurrentProduct();
     }
-    updateWeightStatus();
+    if(show) updateWeightStatus();
 }
 
 void AppManager::onUserAction()
@@ -1029,17 +883,6 @@ void AppManager::onUserAction()
     Tools::debugMemory();
 #endif
     status.onUserAction();
-}
-
-void AppManager::onPrintClicked()
-{
-    debugLog("@@@@@ AppManager::onPrintClicked ");
-    onUserAction();
-    if(status.isManualPrintEnabled)
-    {
-        status.isPrintCalculateMode = false;
-        print();
-    }
 }
 
 void AppManager::onPrinted(const DBRecord& newTransaction)
@@ -1055,7 +898,9 @@ void AppManager::onPrinted(const DBRecord& newTransaction)
         isResetProductNeeded = true;
 }
 
-void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
+void AppManager::onEquipmentParamChanged(const EquipmentParam param,
+                                         const int errorCode,
+                                         const QString& errorDescription)
 {
     // Изменился параметр оборудования
 #ifdef DEBUG_WEIGHT_STATUS
@@ -1065,26 +910,23 @@ void AppManager::onEquipmentParamChanged(const int param, const int errorCode)
 
     switch (param)
     {
-    case ControlParam_None: return;
+    case EquipmentParam_None: return;
 
-    case ControlParam_WeightValue:
+    case EquipmentParam_WeightValue:
         if(isResetProductNeeded) resetProduct();
         break;
 
-    case ControlParam_WeightError:
+    case EquipmentParam_WeightError:
         if(isResetProductNeeded) resetProduct();
         db->saveLog(LogType_Error, LogSource_Weight, QString("Ошибка весового модуля. Код: %1. Описание: %2").arg(
-                    QString::number(errorCode),
-                    equipmentManager->getWMErrorDescription(errorCode)));
+                    QString::number(errorCode), errorDescription));
         break;
 
-    case ControlParam_PrintError:
+    case EquipmentParam_PrintError:
     {
         db->saveLog(LogType_Error, LogSource_Print, QString("Ошибка принтера. Код: %1. Описание: %2").arg(
-                    QString::number(errorCode),
-                    equipmentManager->getPMErrorDescription(errorCode)));
-        emit showControlParam(ControlParam_PrinterStatus, errorCode == 0 ? "" :
-                    equipmentManager->getPMErrorDescription(errorCode));
+                    QString::number(errorCode), errorDescription));
+        emit showControlParam(ControlParam_PrinterStatus, errorCode == 0 ? "" : errorDescription);
         break;
     }
     }
@@ -1137,11 +979,11 @@ void AppManager::onPopupOpened(const bool open)
     }
 }
 
-void AppManager::stopAll()
+void AppManager::stopAll(const bool show)
 {
     debugLog("@@@@@ AppManager::stopAll");
-    resetProduct();
     timer->blockSignals(true);
+    resetProduct(show);
     netServer->stop();
     equipmentManager->stop();
     status.onStopAll();
@@ -1161,51 +1003,14 @@ void AppManager::startAll()
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
         timer->blockSignals(false);
-        status.onStartAll();
         debugLog("@@@@@ AppManager::startAll Done");
     });
-}
-
-void AppManager::onEditUsersClicked()
-{
-    users->getAll();
-    debugLog("@@@@@ AppManager::onEditUsersClicked " + Tools::toString(users->count()));
-    editUsersPanelModel->update(users);
-    emit showEditUsersPanel();
-}
-
-void AppManager::onEditUsersPanelClicked(const int index)
-{
-    DBRecord u = users->getByIndex(index);
-    const int code =  Users::getCode(u);
-    if(code <= 0)
-    {
-        showAttention("Редактирование запрещено");
-        return;
-    }
-    const QString name = Users::getName(u);
-    const QString password =  Users::getPassword(u);
-    const bool isAdmin = Users::isAdmin(u);
-    debugLog(QString("@@@@@ AppManager::onEditUsersPanelClicked %1 %2 %3 %4 %5").arg(
-        Tools::toString(index), Tools::toString(code), name, password, Tools::toString(isAdmin)));
-    emit showInputUserPanel(Tools::toString(code), name, password, isAdmin);
 }
 
 void AppManager::onEditUsersPanelClose()
 {
     debugLog("@@@@@ AppManager::onEditUsersPanelClose ");
     users->clear();
-}
-
-void AppManager::onHelpClicked()
-{
-    showAttention("Не поддерживается");
-}
-
-void AppManager::onAddUserClicked()
-{
-    debugLog("@@@@@ AppManager::onAddUserClicked ");
-    emit showInputUserPanel("", "", "", false);
 }
 
 void AppManager::onInputUserClosed(const QString& code, const QString& name, const QString& password, const bool admin)
@@ -1272,22 +1077,6 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
     }
 }
 
-bool AppManager::onBackgroundDownloadClicked()
-{
-    if(!BACKGROUND_DOWNLOADING) showAttention("Фоновая загрузка запрещена");
-    return BACKGROUND_DOWNLOADING;
-}
-
-void AppManager::onSearchClicked()
-{
-    debugLog("@@@@@ AppManager::onSearchClicked ");
-    onUserAction();
-    searchPanelModel->isHierarchy = !searchPanelModel->isHierarchy;
-    searchPanelModel->isRoot = searchPanelModel->isHierarchy;
-    searchPanelModel->descriptor.reset("");
-    updateSearch();
-}
-
 void AppManager::onSearchFilterEdited(const QString& value)
 {
     // Изменился шаблон поиска
@@ -1297,23 +1086,6 @@ void AppManager::onSearchFilterEdited(const QString& value)
     searchPanelModel->isRoot = false;
     searchPanelModel->descriptor.reset(value);
     updateSearch();
-}
-
-void AppManager::onSearchResultClicked(const int index)
-{
-    debugLog("@@@@@ AppManager::onSearchResultClicked " + Tools::toString(index));
-    onUserAction();
-    if (index >= 0 && index < searchPanelModel->productCount())
-    {
-        DBRecord& clicked = searchPanelModel->productByIndex(index);
-        if (!ProductDBTable::isGroup(clicked)) setProduct(clicked);
-        else if(searchPanelModel->hierarchyDown(clicked))
-        {
-            searchPanelModel->descriptor.reset("");
-            searchPanelModel->isRoot = false;
-            updateSearch();
-        }
-    }
 }
 
 void AppManager::onSearchFilterClicked(const int index, const QString& value)
@@ -1327,20 +1099,6 @@ void AppManager::onSearchFilterClicked(const int index, const QString& value)
     searchPanelModel->filterIndex = index;
     searchPanelModel->descriptor.reset(value);
     updateSearch();
-}
-
-void AppManager::onHierarchyUpClicked()
-{
-    // Переход вверх по иерархическому дереву групп товаров
-
-    debugLog("@@@@@ AppManager::onHierarchyUpClicked");
-    onUserAction();
-    if (searchPanelModel->hierarchyUp())
-    {
-        searchPanelModel->descriptor.reset("");
-        searchPanelModel->isRoot = false;
-        updateSearch();
-    }
 }
 
 void AppManager::onNetCommand(const int command, const QString& param)
@@ -1480,15 +1238,6 @@ void AppManager::updateSearch()
                searchPanelModel->loadLimit());
 }
 
-void AppManager::onInfoClicked()
-{
-    debugLog("@@@@@ AppManager::onInfoClicked ");
-    onUserAction();
-    setSettingsNetInfo();
-    settings->write();
-    showMessage(settings->modelInfo(), settings->aboutInfo());
-}
-
 void AppManager::setSettingsInfo()
 {
     debugLog("@@@@@ AppManager::setSettingsInfo ");
@@ -1523,7 +1272,7 @@ void AppManager::setSettingsNetInfo()
     settings->setValue(SettingCode_InfoWiFiSSID, Tools::getSSID());
 }
 
-void AppManager::showSettingComboBox(const DBRecord& r)
+void AppManager::showSettingComboBox2(const DBRecord& r)
 {
     emit showSettingComboBox(Settings::getCode(r),
                              Settings::getName(r),
@@ -1712,5 +1461,237 @@ void AppManager::print() // Печатаем этикетку
 void AppManager::setExternalDisplay()
 {
     equipmentManager->setExternalDisplay(product);
+}
+
+bool AppManager::onClicked(const int clicked)
+{
+    debugLog(QString("@@@@@ AppManager::onClicked %1").arg(Tools::toString(clicked)));
+    bool ok = true;
+    onUserAction();
+
+    switch (clicked)
+    {
+    case Clicked_None:
+        break;
+
+    case Clicked_AddUser:
+        emit showInputUserPanel("", "", "", false);
+        break;
+
+    case Clicked_AdminSettings:
+        startSettings();
+        break;
+
+    case Clicked_BackgroundDownload:
+        if(!BACKGROUND_DOWNLOADING) showAttention("Фоновая загрузка запрещена");
+        ok = BACKGROUND_DOWNLOADING;
+        break;
+
+    case Clicked_Help:
+        showAttention("Не поддерживается");
+        break;
+
+    case Clicked_HierarchyUp: // Переход вверх по иерархическому дереву групп товаров
+        if (searchPanelModel->hierarchyUp())
+        {
+            searchPanelModel->descriptor.reset("");
+            searchPanelModel->isRoot = false;
+            updateSearch();
+        }
+        break;
+
+    case Clicked_Info:
+        setSettingsNetInfo();
+        settings->write();
+        showMessage(settings->modelInfo(), settings->aboutInfo());
+        break;
+
+    case Clicked_Lock:
+        showConfirmation(ConfirmSelector_Authorization, "Вы хотите сменить пользователя?", "");
+        break;
+
+    case Clicked_Search:
+        searchPanelModel->isHierarchy = !searchPanelModel->isHierarchy;
+        searchPanelModel->isRoot = searchPanelModel->isHierarchy;
+        searchPanelModel->descriptor.reset("");
+        updateSearch();
+        break;
+
+    case Clicked_Zero:
+        equipmentManager->setZero();
+        updateWeightStatus();
+        break;
+
+    case Clicked_Tare:
+        equipmentManager->setTare();
+        updateWeightStatus();
+        break;
+
+    case Clicked_ViewLog:
+        db->saveLog(LogType_Info, LogSource_Admin, "Просмотр лога");
+        db->select(DBSelector_GetLog);
+        emit showViewLogPanel();
+        break;
+
+    case Clicked_ShowcaseDirection:
+        status.isProductSortIncrement = !status.isProductSortIncrement;
+        updateShowcase();
+        break;
+
+    case Clicked_SettingsPanelClose:
+    {
+        emit previousSettings();
+        const int groupCode = settings->getCurrentGroupCode();
+        if(groupCode != 0)
+        {
+            DBRecord* r = settings->getByCode(groupCode);
+            if(r != nullptr && !r->empty() && Settings::isGroup(*r))
+            {
+                // Переход вверх:
+                updateSettings(r->at(SettingField_GroupCode).toInt());
+                emit showSettingsPanel(settings->getCurrentGroupName());
+                break;
+            }
+        }
+        stopSettings();
+        break;
+    }
+
+    case Clicked_ShowcaseAuto:
+    {
+        switch (status.autoPrintMode)
+        {
+        case AutoPrintMode_Off:      break;
+        case AutoPrintMode_On:       status.autoPrintMode = AutoPrintMode_Disabled; break;
+        case AutoPrintMode_Disabled: status.autoPrintMode = AutoPrintMode_On; break;
+        }
+        showWeightErrorAndAutoPrint();
+        break;
+    }
+
+    case Clicked_Print:
+        if(status.isManualPrintEnabled)
+        {
+            status.isPrintCalculateMode = false;
+            print();
+        }
+        break;
+
+    case Clicked_ProductDescription:
+        db->select(DBSelector_GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
+        break;
+
+    case Clicked_ProductFavorite:
+        if(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase))
+        {
+            if(db->isProductInShowcase(product))
+                showConfirmation(ConfirmSelector_RemoveFromShowcase,  "Удалить товар из витрины?", "");
+            else
+                showConfirmation(ConfirmSelector_AddToShowcase, "Добавить товар в витрину?", "");
+        }
+        break;
+
+    case Clicked_ProductPanelClose:
+        resetProduct();
+        setMainPage(screenManager->mainPageIndex);
+        break;
+
+    case Clicked_ProductPanelPieces:
+        if(ProductDBTable::isPiece(product))
+        {
+            debugLog(QString("@@@@@ AppManager::onProductPanelPiecesClicked %1 %2").arg(
+                         Tools::toString(status.pieces),
+                         Tools::toString(settings->getIntValue(SettingCode_CharNumberPieces))));
+            emit showPiecesInputBox(status.pieces, settings->getIntValue(SettingCode_CharNumberPieces));
+        }
+        else beepSound();
+        break;
+
+    case Clicked_EditUsers:
+        users->getAll();
+        editUsersPanelModel->update(users);
+        emit showEditUsersPanel();
+        break;
+
+    case Clicked_Rewind:
+        if(isAuthorizationOpened() || isSettingsOpened()) beepSound();
+        else equipmentManager->feed();
+        break;
+
+    default:
+        ok = false;
+        break;
+    }
+    return ok;
+}
+
+bool AppManager::onClicked2(const int clicked, const int param)
+{
+    debugLog(QString("@@@@@ AppManager::onClicked2 %1 %2").arg(Tools::toString(clicked), Tools::toString(param)));
+    bool ok = true;
+    if(clicked != Clicked_WeightPanel) onUserAction();
+
+    switch (clicked)
+    {
+    case Clicked_None:
+        break;
+
+    case Clicked_WeightPanel:
+        if(param == 1) QTimer::singleShot(WAIT_SECRET_MSEC, this, [this]() { onUserAction(); } );
+        if(param == status.secret + 1 && (++status.secret) == 3) onClicked(Clicked_Lock);
+        break;
+
+    case Clicked_ShowcaseSort:
+        status.productSort = param;
+        switch (status.productSort)
+        {
+        case ShowcaseSort_Code:
+        case ShowcaseSort_Code2: status.lastProductSort = status.productSort; break;
+        default: break;
+        }
+        updateShowcase();
+        break;
+
+    case Clicked_Showcase:
+        setProduct(showcasePanelModel->productByIndex(param));
+        break;
+
+    case Clicked_SearchResult:
+        if (param >= 0 && param < searchPanelModel->productCount())
+        {
+            DBRecord& product = searchPanelModel->productByIndex(param);
+            if (!ProductDBTable::isGroup(product)) setProduct(product);
+            else if(searchPanelModel->hierarchyDown(product))
+            {
+                searchPanelModel->descriptor.reset("");
+                searchPanelModel->isRoot = false;
+                updateSearch();
+            }
+        }
+        break;
+
+    case Clicked_EditUsersPanel:
+    {
+        DBRecord u = users->getByIndex(param);
+        const int code =  Users::getCode(u);
+        if(code <= 0)
+        {
+            showAttention("Редактирование запрещено");
+            break;
+        }
+        const QString name = Users::getName(u);
+        const QString password =  Users::getPassword(u);
+        const bool isAdmin = Users::isAdmin(u);
+        debugLog(QString("@@@@@ AppManager::onClicked2 Clicked_EditUsersPanel %1 %2 %3 %4 %5").arg(
+            Tools::toString(param), Tools::toString(code), name, password, Tools::toString(isAdmin)));
+        emit showInputUserPanel(Tools::toString(code), name, password, isAdmin);
+        break;
+    }
+
+    default:
+        ok = false;
+        break;
+    }
+    return ok;
 }
 

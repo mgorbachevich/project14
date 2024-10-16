@@ -96,11 +96,7 @@ Rectangle
             MouseArea
             {
                 anchors.fill: parent
-                onClicked:
-                {
-                    //app.debugLog("@@@@@ searchPanelTextField on clicked image")
-                    app.onInfoClicked()
-                }
+                onClicked: app.onClicked(6)
             }
         }
 
@@ -117,11 +113,7 @@ Rectangle
             MouseArea
             {
                 anchors.fill: parent
-                onClicked:
-                {
-                    //app.debugLog("@@@@@ searchPanelTextField on clicked image")
-                    app.onHelpClicked()
-                }
+                onClicked: app.onClicked(4)
             }
         }
 
@@ -287,7 +279,7 @@ Rectangle
                                 app.onCheckAuthorizationClicked(loginComboBox.displayText, passwordTextField.text)
                                 break
                             case Qt.Key_F10: // Промотка
-                                app.onRewind()
+                                app.onClicked(26)
                                 break
                             default:
                                 app.beepSound();

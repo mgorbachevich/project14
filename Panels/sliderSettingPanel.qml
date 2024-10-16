@@ -51,7 +51,7 @@ Popup
                 switch (event.key)
                 {
                     case Qt.Key_F10: // Промотка
-                        app.onRewind()
+                        app.onClicked(26)
                         break
                     default:
                         sliderSettingPanel.close()

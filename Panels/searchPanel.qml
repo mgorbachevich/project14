@@ -112,7 +112,7 @@ Rectangle
             marked: true
             onClicked:
             {
-                app.onSearchClicked()
+                app.onClicked(8)
                 searchPanelTextField.focus = true
             }
         }
@@ -147,7 +147,7 @@ Rectangle
             icon.source: "../Icons/arrow_up"
             onClicked:
             {
-                app.onHierarchyUpClicked()
+                app.onClicked(5)
                 searchPanelTextField.focus = true
             }
         }
@@ -211,14 +211,14 @@ Rectangle
                         app.onMainPageSwiped(1)
                         break;
                     case Qt.Key_F9: // Ключ
-                        app.onLockClicked()
+                        app.onClicked(7)
                         break;
                     /*
                     case Qt.Key_T: // >T<
-                        app.onTareClicked()
+                        app.app.onClicked(10)
                         break
                     case Qt.Key_Z: // >0<
-                        app.onZeroClicked()
+                        app.onClicked(9)
                         break
                     */
                     case Qt.Key_Up:
@@ -230,7 +230,7 @@ Rectangle
                         else app.beepSound()
                         break;
                     case Qt.Key_F10: // Промотка
-                        app.onRewind()
+                        app.onClicked(26)
                         break
                     default:
                         app.beepSound();
@@ -300,7 +300,7 @@ Rectangle
                             anchors.fill: parent
                             onClicked:
                             {
-                                app.onSearchResultClicked(index)
+                                app.onClicked2(23, index)
                                 searchPanelTextField.focus = true
                             }
                         }
@@ -325,7 +325,7 @@ Rectangle
                             anchors.fill: parent
                             onClicked:
                             {
-                                app.onSearchResultClicked(index)
+                                app.onClicked2(23, index)
                                 searchPanelTextField.focus = true
                             }
                         }
@@ -348,7 +348,7 @@ Rectangle
                             anchors.fill: parent
                             onClicked:
                             {
-                                app.onSearchResultClicked(index)
+                                app.onClicked2(23, index)
                                 searchPanelTextField.focus = true
                             }
                         }

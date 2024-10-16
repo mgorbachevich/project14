@@ -16,6 +16,13 @@ EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent
     Tools::debugLog("@@@@@ EquipmentManager::EquipmentManager ");
 }
 
+EquipmentManager::~EquipmentManager()
+{
+    Tools::debugLog("@@@@@ EquipmentManager::~EquipmentManager ");
+    removeWM();
+    removePM();
+}
+
 bool EquipmentManager::isWM()
 {
     return wm != nullptr && isWMStarted;
@@ -307,21 +314,19 @@ QString EquipmentManager::WMVersion() const
     return "Не определено";
 }
 
-void EquipmentManager::setWMParam(const int param)
+void EquipmentManager::setTare()
 {
-    Tools::debugLog("@@@@@ EquipmentManager::setWMParam " + Tools::toString(param));
-    if (wm == nullptr || !isWMStarted) return;
-    switch (param)
+    Tools::debugLog("@@@@@ EquipmentManager::setTare ");
+    if (wm != nullptr && isWMStarted) wm->setTare();
+}
+
+void EquipmentManager::setZero()
+{
+    Tools::debugLog("@@@@@ EquipmentManager::setZero ");
+    if (wm != nullptr && isWMStarted)
     {
-    case ControlParam_Tare:
-        wm->setTare();
-        break;
-    case ControlParam_Zero:
         wm->setZero();
         wm->setTare();
-        break;
-    default:
-        break;
     }
 }
 
@@ -367,23 +372,23 @@ void EquipmentManager::onWMStatusChanged(Wm100Protocol::channel_status &s)
     bool b8 = isWMFlag(s, 8); // весы недогружены
     bool b9 = isWMFlag(s, 9); // ошибка: нет ответа от АЦП
 
-    ControlParam param = ControlParam_WeightValue;
+    EquipmentParam param = EquipmentParam_WeightValue;
     int e = 0;
     if(b5 || b6 || b7 || b8 || b9) // Ошибка состояния
     {
-        param = ControlParam_WeightError;
-        if(b5 && isWMFlag(WMStatus, 5) != b5) e = WMError_AutoZero;
-        if(b6 && isWMFlag(WMStatus, 6) != b6) e = WMError_Overload;
-        if(b7 && isWMFlag(WMStatus, 7) != b7) e = WMError_Mesure;
-        if(b8 && isWMFlag(WMStatus, 8) != b8) e = WMError_Underload;
-        if(b9 && isWMFlag(WMStatus, 9) != b9) e = WMError_NoReply;
+        param = EquipmentParam_WeightError;
+        if(b5 && isWMFlag(WMStatus, 5) != b5) e = Error_WM_AutoZero;
+        if(b6 && isWMFlag(WMStatus, 6) != b6) e = Error_WM_Overload;
+        if(b7 && isWMFlag(WMStatus, 7) != b7) e = Error_WM_Mesure;
+        if(b8 && isWMFlag(WMStatus, 8) != b8) e = Error_WM_Underload;
+        if(b9 && isWMFlag(WMStatus, 9) != b9) e = Error_WM_NoReply;
     }
-    else if(isWMStateError(WMStatus) && WMErrorCode == 0) param = ControlParam_WeightError; // Ошибка исчезла
+    else if(isWMStateError(WMStatus) && WMErrorCode == 0) param = EquipmentParam_WeightError; // Ошибка исчезла
 
     WMStatus.weight = s.weight;
     WMStatus.tare = s.tare;
     WMStatus.state = s.state;
-    emit paramChanged(param, e);
+    emit paramChanged(param, e, getWMErrorDescription(e));
 }
 
 void EquipmentManager::onWMErrorStatusChanged(int e)
@@ -392,7 +397,7 @@ void EquipmentManager::onWMErrorStatusChanged(int e)
     if(WMErrorCode != e)
     {
         WMErrorCode = e;
-        emit paramChanged(ControlParam_WeightError, e);
+        emit paramChanged(EquipmentParam_WeightError, e, getWMErrorDescription(e));
     }
 }
 
@@ -431,13 +436,13 @@ QString EquipmentManager::getPMErrorDescription(const int e) const
     switch(e)
     {
     case 0: return "Ошибок нет";
-    case PMError_NoPaper: return "Нет бумаги! Установите новый рулон!";
-    case PMError_Opened: return "Закройте головку принтера!";
-    case PMError_GetLabel: return "Снимите этикетку!";
-    case PMError_BadPosition: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
-    case PMError_Fail: return "Ошибка принтера!";
-    case PMError_Memory: return "Ошибка памяти принтера!";
-    case PMError_Barcode: return "Неверный штрихкод";
+    case Error_PM_NoPaper: return "Нет бумаги! Установите новый рулон!";
+    case Error_PM_Opened: return "Закройте головку принтера!";
+    case Error_PM_GetLabel: return "Снимите этикетку!";
+    case Error_PM_BadPosition: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
+    case Error_PM_Fail: return "Ошибка принтера!";
+    case Error_PM_Memory: return "Ошибка памяти принтера!";
+    case Error_PM_Barcode: return "Неверный штрихкод";
     }
     return slpa == nullptr ? "" : slpa->errorDescription(e);
 }
@@ -458,21 +463,21 @@ void EquipmentManager::onPMStatusChanged(uint16_t s)
     bool b6 = isPMFlag(s, 6);
     bool b8 = isPMFlag(s, 8);
 
-    ControlParam param = ControlParam_None;
+    EquipmentParam param = EquipmentParam_None;
     int e = 0;
     if(!b0 || b1 || !b2 || b3 || b6 || b8)
     {
-        param = ControlParam_PrintError;
-        if(!b0 && isPMFlag(PMStatus, 0) != b0) e = PMError_NoPaper;
-        if(!b2 && isPMFlag(PMStatus, 2) != b2) e = PMError_BadPosition;
-        if(b3 && isPMFlag(PMStatus, 3) != b3) e = PMError_Opened;
-        if(b8 && isPMFlag(PMStatus, 8) != b8) e = PMError_Memory;
-        if(b1 && b6 && isPMFlag(PMStatus, 1) != b1) e = PMError_GetLabel;
+        param = EquipmentParam_PrintError;
+        if(!b0 && isPMFlag(PMStatus, 0) != b0)      e = Error_PM_NoPaper;
+        if(!b2 && isPMFlag(PMStatus, 2) != b2)      e = Error_PM_BadPosition;
+        if(b3 && isPMFlag(PMStatus, 3) != b3)       e = Error_PM_Opened;
+        if(b8 && isPMFlag(PMStatus, 8) != b8)       e = Error_PM_Memory;
+        if(b1 && b6 && isPMFlag(PMStatus, 1) != b1) e = Error_PM_GetLabel;
     }
-    else if(isPMStateError(PMStatus) && PMErrorCode == 0) param = ControlParam_PrintError; // Ошибка исчезла
+    else if(isPMStateError(PMStatus) && PMErrorCode == 0) param = EquipmentParam_PrintError; // Ошибка исчезла
 
     PMStatus = s;
-    if(param != ControlParam_None) emit paramChanged(param, e);
+    if(param != EquipmentParam_None) emit paramChanged(param, e, getPMErrorDescription(e));
 }
 
 void EquipmentManager::onPMErrorStatusChanged(int e)
@@ -481,7 +486,7 @@ void EquipmentManager::onPMErrorStatusChanged(int e)
     if(slpa != nullptr && PMErrorCode != e)
     {
         PMErrorCode = e;
-        emit paramChanged(ControlParam_PrintError, e);
+        emit paramChanged(EquipmentParam_PrintError, e, getPMErrorDescription(e));
     }
 }
 
@@ -569,14 +574,14 @@ QString EquipmentManager::getWMDescriptionNow()
 int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product, const QString& labelLocalPath)
 {
     Tools::debugLog("@@@@@ EquipmentManager::print");
-    if(!isPMStarted || slpa == nullptr) return PMError_Fail;
+    if(!isPMStarted || slpa == nullptr) return Error_PM_Fail;
 
     const QString& quantity = appManager->status.quantity;
     const QString& price = appManager->status.price;
     const QString& amount = appManager->status.amount;
     const QString barcode = makeBarcode(product, quantity, amount);
 
-    if (barcode.isEmpty()) return PMError_Barcode;
+    if (barcode.isEmpty()) return Error_PM_Barcode;
 
     quint64 dateTime = Tools::nowMsec();
     int labelNumber = 0; // todo

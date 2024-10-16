@@ -164,7 +164,7 @@ Rectangle
                 MouseArea
                 {
                     anchors.fill: parent
-                    onClicked: app.onWeightPanelClicked(1);
+                    onClicked: app.onClicked2(20, 1);
                 }
             }
         }
@@ -201,7 +201,7 @@ Rectangle
                 MouseArea
                 {
                     anchors.fill: parent
-                    onClicked: app.onWeightPanelClicked(2);
+                    onClicked: app.onClicked2(20, 2);
                 }
             }
         }
@@ -239,7 +239,7 @@ Rectangle
                 MouseArea
                 {
                     anchors.fill: parent
-                    onClicked: app.onWeightPanelClicked(3);
+                    onClicked: app.onClicked2(20, 3);
                 }
             }
         }

@@ -62,13 +62,13 @@ Rectangle
                 app.onNumberToSearchClicked(event.text);
                 break;
             case Qt.Key_F9: // Ключ
-                app.onLockClicked()
+                app.onClicked(7)
                 break;
             case Qt.Key_T: // >T<
-                app.onTareClicked()
+                app.app.onClicked(10)
                 break
             case Qt.Key_Z: // >0<
-                app.onZeroClicked()
+                app.onClicked(9)
                 break
             case Qt.Key_Right: case Qt.Key_Q:
                 app.onMainPageSwiped(1)
@@ -82,7 +82,7 @@ Rectangle
                 else app.beepSound()
                 break;
             case Qt.Key_F10: // Промотка
-                app.onRewind()
+                app.onClicked(26)
                 break
             default:
                 app.beepSound();
@@ -108,7 +108,7 @@ Rectangle
                 id: showcasePanelCodeButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: "../Icons/code"
-                onClicked: app.onShowcaseSortClicked(0)
+                onClicked: app.onClicked2(21, 0)
             }
 
             Spacer { height: screenManager.spacer() / 4 }
@@ -118,7 +118,7 @@ Rectangle
                 id: showcasePanelNumberButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: "../Icons/number"
-                onClicked: app.onShowcaseSortClicked(1)
+                onClicked: app.onClicked2(21, 1)
             }
 
             Spacer { height: screenManager.spacer() / 4 }
@@ -128,7 +128,7 @@ Rectangle
                 id: showcasePanelNameButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: "../Icons/name"
-                onClicked: app.onShowcaseSortClicked(2)
+                onClicked: app.onClicked2(21, 2)
             }
 
             Spacer { height: screenManager.spacer() / 4 }
@@ -138,7 +138,7 @@ Rectangle
                 id: showcasePanelDirectionButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: "../Icons/arrow_up"
-                onClicked: app.onShowcaseDirectionClicked()
+                onClicked: app.onClicked(12)
             }
 
             Spacer { height: screenManager.spacer() / 4 }
@@ -148,7 +148,7 @@ Rectangle
                 id: showcasePanelAutoButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: "../Icons/auto"
-                onClicked: app.onShowcaseAutoClicked()
+                onClicked: app.onClicked(14)
             }
         }
 
@@ -194,7 +194,7 @@ Rectangle
                     MouseArea
                     {
                         anchors.fill: parent
-                        onClicked: app.onShowcaseClicked(index)
+                        onClicked: app.onClicked2(22, index)
                     }
                 }
 
