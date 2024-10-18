@@ -10,7 +10,7 @@ Popup
     padding : 0
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     focus: true
-    modal: true
+    modal: false
     dim: false
     Material.background: Material.color(Material.Grey, Material.Shade900)
     property int imageSize: height - screenManager.buttonSize() - screenManager.spacer()

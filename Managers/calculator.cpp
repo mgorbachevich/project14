@@ -63,42 +63,31 @@ QString Calculator::weightAsString(const DBRecord& product, const int field)
 QStringList Calculator::validity(const DBRecord& product, const bool titles)
 {
     QStringList ss;
-
-    if(product.count() < ProductDBTable::ShelfLife ||
-            product.count() < ProductDBTable::SellDate ||
-            product.count() < ProductDBTable::ProduceDate||
-            product.count() < ProductDBTable::PackingDate)
-        return ss;
-
-    const int life    = product[ProductDBTable::ShelfLife].toInt();
-    QDateTime sell    = Tools::dateTimeFromString(product[ProductDBTable::SellDate]);
-    QDateTime produce = Tools::dateTimeFromString(product[ProductDBTable::ProduceDate]);
-    QDateTime packing = Tools::dateTimeFromString(product[ProductDBTable::PackingDate]);
-
+    QDateTime sell = Tools::dateTimeFromString(normalize(product, ProductDBTable::SellDate));
     if(!sell.isValid()) sell = Tools::now();
+    ss << QString("%1%2").arg(titles ? "Дата: " : "", sell.toString(DATE_TIME_SHORT_FORMAT));
+
+    QDateTime produce = Tools::dateTimeFromString(normalize(product, ProductDBTable::ProduceDate));
     if(!produce.isValid()) produce = sell;
-    if(!packing.isValid()) packing = produce;
 
 #ifdef CHECK_SELL_DATE
+    QDateTime packing = Tools::dateTimeFromString(normalize(product, ProductDBTable::PackingDate));
+    if(!packing.isValid()) packing = produce;
     if(produce > sell || packing < produce || packing > sell) return ss;
 #endif
 
-    QString s1 = titles ? "Дата: " : "";
-    QString s2 = titles ? "Годен до: " : "";
-    QString s3 = titles ? "Годность: " : "";
-    s1 += sell.toString(DATE_TIME_SHORT_FORMAT);
-    ss << s1;
+    const int life = normalize(product, ProductDBTable::ShelfLife).toInt();
     if(life > 0)
     {
-        s2 += Tools::addDateTime(produce, life, 0).toString(DATE_TIME_SHORT_FORMAT);
-        s3 += "дней " + Tools::toString(life);
-        ss << s2 << s3;
+        ss << QString("%1%2").arg(titles ? "Годен до: " : "",
+                  Tools::addDateTime(produce, life, 0).toString(DATE_TIME_SHORT_FORMAT));
+        ss << QString("%1%2").arg(titles ? "Годность, дни: " : "", Tools::toString(life));
     }
     else if(life < 0)
     {
-        s2 += Tools::addDateTime(produce, 0, -life).toString(DATE_TIME_SHORT_FORMAT);
-        s3 += "часов " + Tools::toString(-life);
-        ss << s2 << s3;
+        ss << QString("%1%2").arg(titles ? "Годен до: " : "",
+                  Tools::addDateTime(produce, 0, -life).toString(DATE_TIME_SHORT_FORMAT));
+        ss << QString("%1%2").arg(titles ? "Годность, часы: " : "", Tools::toString(-life));
     }
     return ss;
 }

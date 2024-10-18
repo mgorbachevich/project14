@@ -7,7 +7,7 @@ import RegisteredTypes
 
 Rectangle
 {
-    id:  weightPanel
+    id: weightPanel
     property int valueFontSize: screenManager.weightValueFontSize()
     property int titleFontSize: screenManager.weightTitleFontSize()
     property int flagIconSize: (valueFontSize + titleFontSize + screenManager.spacer()) / 4
@@ -93,6 +93,11 @@ Rectangle
                 anchors.fill: parent
                 spacing: 0
                 padding: 0
+                MouseArea
+                {
+                    anchors.fill: parent
+                    onClicked: app.onClicked(27);
+                }
 
                 Image
                 {

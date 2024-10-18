@@ -41,7 +41,8 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
             break;
 
         case ProductDBTable::Tare:
-            if(v.toInt() > 0) text = appManager->calculator->weightAsString(product, i) + " кг";
+            if(v.toDouble() > 0)
+                text = Tools::toString(v.toDouble(), appManager->calculator->weightPointPosition()) + " кг";
             break;
 
         case ProductDBTable::Name: // Рисуется отдельно

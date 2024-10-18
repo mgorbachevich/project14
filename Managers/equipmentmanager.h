@@ -29,6 +29,7 @@ public:
     // Weight Manager:
     QString WMVersion() const;
     void setTare();
+    void setTare(const double);
     void setZero();
     double getWeight() const { return WMStatus.weight; }
     double getTare() const { return WMStatus.tare; }

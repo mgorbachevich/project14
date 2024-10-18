@@ -100,6 +100,7 @@ private:
     void resetProduct(const bool show = true);
     void setMainPage(const int);
     void setProduct(const DBRecord&);
+    bool setProductTare();
     void setSettingsInfo();
     void setSettingsNetInfo();
     void updateSettings();
@@ -107,6 +108,7 @@ private:
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
     void showSettingComboBox2(const DBRecord&);
+    void showTareToast();
     void showWeightFlags();
     void startAuthorization();
     void startAll();

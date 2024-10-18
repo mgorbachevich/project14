@@ -68,19 +68,25 @@ bool ProductDBTable::isForShowcase(const DBRecord& record)
 
 bool ProductDBTable::isGroup(const DBRecord& record)
 {
-    return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
+    return (record.count() >= ProductDBTable::Type) &&
             record[ProductDBTable::Type].toInt() == ProductType_Group;
+}
+
+bool ProductDBTable::hasTare(const DBRecord& record)
+{
+    return (record.count() >= ProductDBTable::Tare) &&
+            record[ProductDBTable::Tare].toDouble() > 0;
 }
 
 bool ProductDBTable::isPiece(const DBRecord& record)
 {
-    return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
+    return (record.count() >= ProductDBTable::Type) &&
             record[ProductDBTable::Type].toInt() == ProductType_Piece;
 }
 
 bool ProductDBTable::is100gBase(const DBRecord& record)
 {
-    return (record.count() >= ProductDBTable::COLUMN_COUNT) &&
+    return (record.count() >= ProductDBTable::PriceBase) &&
             record[ProductDBTable::PriceBase].toInt() == ProductPriceBase_100g;
 }
 

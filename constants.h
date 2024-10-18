@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.85"
+#define APP_VERSION "2.86"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -224,6 +224,7 @@ enum Clicked
     Clicked_EditUsersPanel = 24,
     Clicked_EditUsers = 25,
     Clicked_Rewind = 26,
+    Clicked_WeightFlags = 27,
 };
 
 enum ControlParam

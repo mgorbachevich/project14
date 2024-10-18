@@ -845,6 +845,7 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
+        if(setProductTare() || equipmentManager->isTareFlag()) showTareToast();
         productPanelModel->update(product, (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
@@ -1281,6 +1282,15 @@ void AppManager::showSettingComboBox2(const DBRecord& r)
                              settings->getComment(r));
 }
 
+void AppManager::showTareToast()
+{
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    {
+        showToast(QString("Тара %1 кг").arg(
+                  Tools::roundToString(equipmentManager->getTare(), calculator->weightPointPosition())));
+    });
+}
+
 void AppManager::updateSettings() // При старте и после загрузки
 {
     debugLog("@@@@@ AppManager::updateSettings ");
@@ -1515,11 +1525,13 @@ bool AppManager::onClicked(const int clicked)
 
     case Clicked_Zero:
         equipmentManager->setZero();
+        if(setProductTare()) showTareToast();
         update();
         break;
 
     case Clicked_Tare:
         equipmentManager->setTare();
+        showTareToast();
         update();
         break;
 
@@ -1614,6 +1626,10 @@ bool AppManager::onClicked(const int clicked)
         else equipmentManager->feed();
         break;
 
+    case Clicked_WeightFlags:
+        showTareToast();
+        break;
+
     default:
         ok = false;
         break;
@@ -1689,5 +1705,15 @@ bool AppManager::onClicked2(const int clicked, const int param)
         break;
     }
     return ok;
+}
+
+bool AppManager::setProductTare()
+{
+    if(isProduct() && ProductDBTable::hasTare(product))
+    {
+        equipmentManager->setTare(product[ProductDBTable::Tare].toDouble());
+        return true;
+    }
+    return false;
 }
 

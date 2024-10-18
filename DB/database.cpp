@@ -41,7 +41,7 @@ void DataBase::onAppStart()
     QString dbFilePath = Tools::dbPath(DB_PRODUCT_NAME);
 
 #ifdef REMOVE_PRODUCT_DB_ON_START
-    Tools::removeFile(path);
+    Tools::removeFile(dbFilePath);
 #endif
 
     bool exists = QFile(dbFilePath).exists();

@@ -160,7 +160,7 @@ int EquipmentManager::startWM() // return error
 
 void EquipmentManager::stopWM()
 {
-    if (wm != nullptr && isWMStarted)
+    if (isWM())
     {
         Tools::debugLog("@@@@@ EquipmentManager::stopWM");
         isWMStarted = false;
@@ -187,7 +187,7 @@ void EquipmentManager::removeWM()
 void EquipmentManager::pauseWM(const bool v)
 {
     Tools::debugLog("@@@@@ EquipmentManager::pauseWM " + Tools::toIntString(v));
-    if(wm != nullptr && isWMStarted)
+    if(isWM())
     {
         if(v) wm->stopPolling();
         else wm->startPolling(EQUIPMENT_POLLING_INTERVAL);
@@ -316,17 +316,29 @@ QString EquipmentManager::WMVersion() const
 
 void EquipmentManager::setTare()
 {
-    Tools::debugLog("@@@@@ EquipmentManager::setTare ");
-    if (wm != nullptr && isWMStarted) wm->setTare();
+    if (isWM())
+    {
+        Tools::debugLog("@@@@@ EquipmentManager::setTare ");
+        wm->setTare();
+    }
+}
+
+void EquipmentManager::setTare(const double v)
+{
+    if (isWM())
+    {
+        Tools::debugLog("@@@@@ EquipmentManager::setTare " +
+                        Tools::toString(v, appManager->calculator->weightPointPosition()));
+        wm->setTareValue(v);
+    }
 }
 
 void EquipmentManager::setZero()
 {
-    Tools::debugLog("@@@@@ EquipmentManager::setZero ");
-    if (wm != nullptr && isWMStarted)
+   if (isWM())
     {
+       Tools::debugLog("@@@@@ EquipmentManager::setZero ");
         wm->setZero();
-        wm->setTare();
     }
 }
 
