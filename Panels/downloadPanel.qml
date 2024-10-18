@@ -57,8 +57,7 @@ Popup
                     case Qt.Key_F10: // Промотка
                         app.onClicked(26)
                         break
-                    default:
-                        break
+                    default: break
                 }
             }
 

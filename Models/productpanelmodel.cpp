@@ -1,51 +1,74 @@
 #include "productpanelmodel.h"
 #include "productdbtable.h"
 #include "tools.h"
+#include "appmanager.h"
 
-void ProductPanelModel::update(const DBRecord& product, const QString& price, ProductDBTable* productTable)
+void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
 {
     Tools::debugLog("@@@@@ ProductPanelModel::update " + product.at(ProductDBTable::Code).toString());
     QStringList ss;
-    for (int i = 0; i < product.count() && i < productTable->columnCount(); i++)
+    for (int i = 0; i < product.count() && i < table->columnCount(); i++)
     {
-        QString value;
+        QString text;
+        const QVariant& v = product.at(i);
         switch(i)
         {
         case ProductDBTable::Code:
         case ProductDBTable::Code2:
         case ProductDBTable::Barcode:
-        case ProductDBTable::Shelflife:
-        case ProductDBTable::SellDate:
+        case ProductDBTable::Name2:
+        case ProductDBTable::Certificate:
         case ProductDBTable::ProduceDate:
         case ProductDBTable::PackingDate:
-        case ProductDBTable::Tare:
-        case ProductDBTable::Certificate:
-            value = product.at(i).toString();
+            text = v.toString();
             break;
-        case ProductDBTable::Price:
-            value = price;
-            break;
+
         case ProductDBTable::Type:
-            switch (product.at(ProductDBTable::Type).toInt())
+            switch (v.toInt())
             {
-            case ProductType_Weight: value =  "Весовой"; break;
-            case ProductType_Piece: value =  "Штучный"; break;
+            case ProductType_Weight: text =  "Весовой"; break;
+            case ProductType_Piece: text =  "Штучный"; break;
             }
             break;
-        case ProductDBTable::PriceBase:
-            if(ProductDBTable::isPiece(product)) continue;
-            switch (product.at(ProductDBTable::PriceBase).toInt())
-            {
-            case ProductPriceBase_Kg: value = "1 кг"; break;
-            case ProductPriceBase_100g: value = "100 г"; break;
-            }
-            break;
+
         case ProductDBTable::UnitWeight:
-            if(ProductDBTable::isPiece(product))
-                value = QString("%1 кг").arg(product.at(i).toDouble() / 1000);
+            if(v.toInt() > 0 && ProductDBTable::isPiece(product))
+                text = appManager->calculator->weightAsString(product, i) + " кг";
             break;
+
+        case ProductDBTable::Price2:
+            if(v.toInt() > 0) text = appManager->calculator->priceAsString(product, i) + " руб/кг";
+            break;
+
+        case ProductDBTable::Tare:
+            if(v.toInt() > 0) text = appManager->calculator->weightAsString(product, i) + " кг";
+            break;
+
+        case ProductDBTable::Name: // Рисуется отдельно
+        case ProductDBTable::Price: // Рисуется отдельно
+        case ProductDBTable::DiscountCode:
+        case ProductDBTable::PictureCode:
+        case ProductDBTable::MessageCode:
+        case ProductDBTable::MessageFileCode:
+        case ProductDBTable::MovieCode:
+        case ProductDBTable::SoundCode:
+        case ProductDBTable::Favorite:
+        case ProductDBTable::PriceBase:
+        case ProductDBTable::UpperName:
+        case ProductDBTable::GroupCode:
+        case ProductDBTable::LabelFormat:
+        case ProductDBTable::LabelFormat2:
+        case ProductDBTable::LabelFormat3:
+        case ProductDBTable::BarcodeFormat: // todo
+        case ProductDBTable::ShelfLife: // ниже
+        case ProductDBTable::SellDate: // ниже
+            break;
+
+        default: break;
         }
-        if(!value.isEmpty()) ss << QString("%1: %2").arg(productTable->columnTitle(i), value);
+        if(!text.isEmpty()) ss << QString("%1: %2").arg(table->columnTitle(i), text);
     }
+    ss << appManager->calculator->validity(product);
     setStringList(ss);
 }
+

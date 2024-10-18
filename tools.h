@@ -30,9 +30,6 @@ public:
     static QString toString(const QStringList& sl) { return sl.join(','); }
     static QStringList toStringList(const QString& s) { return s.split(','); }
     static QJsonObject toJsonObject(const QString&);
-    static QString dateFromUInt(quint64, const QString&);
-    static QString dateTimeFromUInt(quint64, const QString&, const QString&, const QString&);
-    static QString timeFromUInt(quint64, const QString&);
 
     // Files:
     static bool copyFile(const QString&, const QString&);
@@ -53,10 +50,18 @@ public:
     static QString makeDirs(const bool, const QString&);
     //static QString exchangePath(const QString&);
 
-    // Other:
-    static bool checkPermission(const QString&);
+    // DateTime:
     static quint64 nowMsec() { return QDateTime::currentMSecsSinceEpoch(); }
     static QDateTime now() { return QDateTime::currentDateTime(); }
+    static QDateTime addDateTime(const QDateTime&, const int, const qint64);
+    static QDateTime dateTimeFromString(const QString&);
+    static QDateTime dateTimeFromString(const QVariant& v) { return dateTimeFromString(v.toString()); }
+    static QString dateFromUInt(quint64, const QString&);
+    static QString dateTimeFromUInt(quint64, const QString&, const QString&, const QString&);
+    static QString timeFromUInt(quint64, const QString&);
+
+    // Other:
+    static bool checkPermission(const QString&);
     static void debugLog(const QString&);
     static void debugMemory();
     static bool isEnvironment(const EnvironmentType);

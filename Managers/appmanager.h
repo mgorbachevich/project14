@@ -6,7 +6,7 @@
 #include <QKeyEvent>
 #include "constants.h"
 #include "database.h"
-#include "moneycalculator.h"
+#include "calculator.h"
 #include "users.h"
 #include "showcase.h"
 #include "settings.h"
@@ -28,7 +28,7 @@ class AppInfo;
 class EquipmentManager;
 class InputProductCodePanelModel3;
 class EditUsersPanelModel3;
-class MoneyCalculator;
+class Calculator;
 class ScreenManager;
 class QNetworkSettingsManager;
 
@@ -50,7 +50,7 @@ public:
     void onNetResult(NetActionResult&);
     void updateInputCodeList();
     void updateSearch();
-    bool isProduct() { return !product.isEmpty(); }
+    bool isProduct();
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
@@ -87,7 +87,7 @@ public:
     Users* users = nullptr;
     Showcase* showcase = nullptr;
     EquipmentManager* equipmentManager = nullptr;
-    MoneyCalculator* moneyCalculator = nullptr;
+    Calculator* calculator = nullptr;
     Status status;
 
 private:
@@ -102,12 +102,12 @@ private:
     void setProduct(const DBRecord&);
     void setSettingsInfo();
     void setSettingsNetInfo();
-    void setSettingsLabels();
+    void updateSettings();
     void showFoundProductsToast(const int);
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
     void showSettingComboBox2(const DBRecord&);
-    void showWeightErrorAndAutoPrint();
+    void showWeightFlags();
     void startAuthorization();
     void startAll();
     void startSettings();
@@ -117,7 +117,7 @@ private:
     void updateShowcase();
     void updateSystemStatus();
     void updateSettings(const int);
-    void updateWeightStatus();
+    void update();
     void setExternalDisplay();
 
     DataBase* db = nullptr;

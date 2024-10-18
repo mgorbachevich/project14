@@ -16,7 +16,7 @@ ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBas
     addColumn("Тип",                    "type",              "INT");
     addColumn("Цена",                   "price",             "INT");
     addColumn("Ценовая база",           "price_base",        "INT");
-    addColumn("Цена 2",                 "price2",            "INT");
+    addColumn("Цена2",                  "price2",            "INT");
     addColumn("Код схемы скидки",       "discount_code",     "INT");
     addColumn("Код группы",             "group_code",        "UNSIGNED BIG INT");
     addColumn("Масса штуки",            "unit_weight",       "INT");
@@ -25,11 +25,11 @@ ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBas
     addColumn("Код формата этикетки 3", "label_format3",     "INT");
     addColumn("Формат ШК",              "barcode_format",    "TEXT");
     addColumn("Масса тары",             "tare",              "REAL");
-    addColumn("Сертификат товара",      "certificate",       "TEXT");
+    addColumn("Сертификат",             "certificate",       "TEXT");
     addColumn("Срок годности",          "shelflife",         "INT");
     addColumn("Дата реализации",        "sell_date",         "DATE");
-    addColumn("Дата производства",      "produce_date",      "DATE");
-    addColumn("Дата упаковки",          "packing_date",      "DATE");
+    addColumn("Произведено",            "produce_date",      "DATE");
+    addColumn("Упаковано",              "packing_date",      "DATE");
     addColumn("Код файла картинки",     "picture_code",      "INT");
     addColumn("Код сообщения",          "message_code",      "INT");
     addColumn("Код файла сообщения",    "message_file_code", "INT");

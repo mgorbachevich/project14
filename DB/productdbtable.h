@@ -27,7 +27,7 @@ public:
         BarcodeFormat,
         Tare,
         Certificate,
-        Shelflife,
+        ShelfLife,
         SellDate,
         ProduceDate,
         PackingDate,

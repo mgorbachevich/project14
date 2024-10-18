@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.84"
+#define APP_VERSION "2.85"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -49,6 +49,7 @@
 #define USERS_FILE Tools::sharedPath("users.txt")
 #define SHOWCASE_FILE Tools::sharedPath("showcase.txt")
 #define SCALE_CONFIG_FILE Tools::sharedPath("scale_config.txt")
+//#define CHECK_SELL_DATE
 
 // Icons:
 #define ICON_TARE_ON  "../Icons/tare_white"
@@ -68,7 +69,8 @@
 #define DATE_FORMAT "dd.MM.yyyy"
 #define TIME_FORMAT "HH:mm:ss"
 #define TIME_MSEC_FORMAT "hh:mm:ss.zzz"
-#define DATE_TIME_FORMAT "dd.MM.yyyy HH:mm:ss"
+#define DATE_TIME_LONG_FORMAT "dd.MM.yyyy HH:mm:ss"
+#define DATE_TIME_SHORT_FORMAT "dd.MM.yy HH:mm"
 
 // UI
 #define PRICE_MAX_CHARS 6
@@ -77,6 +79,21 @@
 #define COLOR_PASSIVE "#424242"
 #define COLOR_ACTIVE "#fafafa"
 #define COLOR_AMOUNT "#ffe0b2"
+
+// DB Tables:
+#define DBTABLENAME_SHOWCASE "showcase"
+#define DBTABLENAME_PRODUCTS "products"
+#define DBTABLENAME_LABELS "labels"
+#define DBTABLENAME_MESSAGES "messages"
+#define DBTABLENAME_MESSAGEFILES "messagefiles"
+#define DBTABLENAME_PICTURES "pictures"
+#define DBTABLENAME_MOVIES "movies"
+#define DBTABLENAME_SOUNDS "sounds"
+#define DBTABLENAME_LOG "log"
+#define DBTABLENAME_TRANSACTIONS "transactions"
+#define DBTABLENAME_SETTINGS "settings"
+#define DBTABLENAME_USERS "users"
+#define DBTABLENAME_CONFIG "config"
 
 // Other:
 #define APP_TIMER_MSEC 10000
@@ -96,21 +113,6 @@
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS
-#define WEIGHT_POINT_POSITION 3
-
-#define DBTABLENAME_SHOWCASE "showcase"
-#define DBTABLENAME_PRODUCTS "products"
-#define DBTABLENAME_LABELS "labels"
-#define DBTABLENAME_MESSAGES "messages"
-#define DBTABLENAME_MESSAGEFILES "messagefiles"
-#define DBTABLENAME_PICTURES "pictures"
-#define DBTABLENAME_MOVIES "movies"
-#define DBTABLENAME_SOUNDS "sounds"
-#define DBTABLENAME_LOG "log"
-#define DBTABLENAME_TRANSACTIONS "transactions"
-#define DBTABLENAME_SETTINGS "settings"
-#define DBTABLENAME_USERS "users"
-#define DBTABLENAME_CONFIG "config"
 
 enum MainPageIndex
 {

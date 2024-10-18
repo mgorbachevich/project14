@@ -571,28 +571,27 @@ QString EquipmentManager::getWMDescriptionNow()
     return res;
 }
 
-int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product, const QString& labelLocalPath)
+int EquipmentManager::print(DataBase* db,
+                            const DBRecord& user,
+                            const DBRecord& product,
+                            const QString& labelLocalPath)
 {
     Tools::debugLog("@@@@@ EquipmentManager::print " + labelLocalPath);
     if(!isPMStarted || slpa == nullptr) return Error_PM_Fail;
-
-    const QString& quantity = appManager->status.quantity;
-    const QString& price = appManager->status.price;
-    const QString& amount = appManager->status.amount;
-    const QString barcode = makeBarcode(product, quantity, amount);
-
-    if (barcode.isEmpty()) return Error_PM_Barcode;
 
     quint64 dateTime = Tools::nowMsec();
     int labelNumber = 0; // todo
     int e = 0;
 
-    QString labelFullPath;
-    if( Tools::isFileExistsInDownloadPath(labelLocalPath))
-        labelFullPath = Tools::downloadPath(labelLocalPath);
-    else if(Tools::isFileExists(labelLocalPath))
-        labelFullPath = labelLocalPath;
+    PrintData pd;
+    pd.weight = appManager->status.quantity;
+    pd.price = appManager->status.price;
+    pd.cost = appManager->status.amount;
+    pd.tare = appManager->status.tare;
 
+    QString labelFullPath;
+    if(Tools::isFileExistsInDownloadPath(labelLocalPath)) labelFullPath = Tools::downloadPath(labelLocalPath);
+    else if(Tools::isFileExists(labelLocalPath)) labelFullPath = labelLocalPath;
     if(labelPath != labelFullPath)
     {
         e = labelCreator->loadLabel(labelFullPath);
@@ -601,18 +600,15 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
 
     if (e == 0)
     {
-        PrintData pd;
-        pd.weight = quantity;
-        pd.price = price;
-        pd.cost = amount;
-        pd.tare = Tools::roundToString(getTare(), WEIGHT_POINT_POSITION);
         if(appManager->isProduct())
         {
-            pd.barcode = barcode;
+            pd.barcode = makeBarcode(product, pd.weight, pd.cost);
+            if (pd.barcode.isEmpty()) e = Error_PM_Barcode;
+
             pd.itemcode = product[ProductDBTable::Code].toString();
             pd.name = product[ProductDBTable::Name].toString();
-            pd.shelflife = product[ProductDBTable::Shelflife].toString();
-            pd.price2 = product[ProductDBTable::Price2].toString();
+            pd.shelflife = product[ProductDBTable::ShelfLife].toString();
+            pd.price2 = appManager->calculator->priceAsString(product, ProductDBTable::Price2);
             pd.certificate = product[ProductDBTable::Certificate].toString();
             pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
             pd.validity = ""; // todo
@@ -637,6 +633,9 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
         pd.scalesnumber = appManager->settings->getStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo
         pd.textfile = ""; // todo
+    }
+    if(e == 0)
+    {
         QImage p = labelCreator->createImage(pd);
         e = slpa->print(p);
     }
@@ -650,9 +649,9 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
                         Users::getCode(user),
                         appManager->isProduct() ? Tools::toInt(product[ProductDBTable::Code]) : 0,
                         labelNumber,
-                        Tools::toDouble(quantity),
-                        Tools::toInt(price),
-                        Tools::toInt(amount));
+                        Tools::toDouble(pd.weight),
+                        Tools::toInt(pd.price),
+                        Tools::toInt(pd.cost));
             emit printed(r);
         }
         else Tools::debugLog("@@@@@ EquipmentManager::print ERROR (get Transactions Table)");
@@ -664,21 +663,18 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
 
 int EquipmentManager::setExternalDisplay(const DBRecord& product)
 {
-    const Status& s = appManager->status;
-    Tools::debugLog(QString("@@@@@ EquipmentManager::setExternalDisplay %1 %2 %3").arg(
-                        s.quantity, s.price, s.amount));
     Wm100Protocol::display_data dd;
-    dd.weight = s.quantity;
-    dd.price = s.price;
-    dd.cost = s.amount;
-    dd.tare = Tools::roundToString(getTare(), WEIGHT_POINT_POSITION);
+    dd.weight = appManager->status.quantity;
+    dd.price = appManager->status.price;
+    dd.cost = appManager->status.amount;
+    dd.tare = appManager->status.tare;
     dd.flZero = isZeroFlag();
     dd.flTare = isTareFlag();
     dd.flCalm = isWeightFixed();
-    dd.flAuto = s.autoPrintMode == AutoPrintMode_On;
+    dd.flAuto = appManager->status.autoPrintMode == AutoPrintMode_On;
     dd.flLock = appManager->isAuthorizationOpened();
     dd.flTools = appManager->isSettingsOpened();
-    dd.flDataExchange = s.isNet;
+    dd.flDataExchange = appManager->status.isNet;
     if(appManager->isProduct())
     {
         dd.text = product[ProductDBTable::Name].toString();
@@ -691,6 +687,8 @@ int EquipmentManager::setExternalDisplay(const DBRecord& product)
         dd.text = "";
         dd.flPieces = dd.flPer100g = dd.flPerKg = false;
     }
+    Tools::debugLog(QString("@@@@@ EquipmentManager::setExternalDisplay %1 %2 %3 %4").arg(
+                        dd.weight, dd.price, dd.cost, dd.tare));
     return wm->setDisplayData(dd);
 }
 

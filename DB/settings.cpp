@@ -69,8 +69,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
             showAttention(getName(record) + ". Длина должна быть равна 2");
             return false;
         }
-    default:
-        break;
+    default: break;
     }
     return true;
 }

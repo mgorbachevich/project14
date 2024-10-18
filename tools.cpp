@@ -417,6 +417,29 @@ bool Tools::checkPermission(const QString& permission)
     return ok;
 }
 
+QDateTime Tools::addDateTime(const QDateTime& dt, const int days, const qint64 hours)
+{
+    return dt.addDays(days).addSecs(hours * 60 * 60);
+}
+
+QDateTime Tools::dateTimeFromString(const QString& s)
+{
+    QStringList f2 { "dd.MM.yy HH:mm", "dd.MM.yy", "dd.MM.yy HH:mm:ss" };
+    QDateTime dt;
+    foreach (auto f, f2)
+    {
+        dt = QDateTime::fromString(s, f).addYears(100); // Возвращает год с 1900
+        if(dt.isValid()) return dt;
+    }
+    QStringList f4 { "dd.MM.yyyy HH:mm", "dd.MM.yyyy", "dd.MM.yyyy HH:mm:ss" };
+    foreach (auto f, f4)
+    {
+        dt = QDateTime::fromString(s, f);
+        if(dt.isValid()) return dt;
+    }
+    return dt; // invalid
+}
+
 QByteArray Tools::toBytes(const quint32 v)
 {
     QByteArray ba;

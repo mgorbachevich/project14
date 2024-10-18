@@ -181,6 +181,11 @@ QString DBTable::toString(DBRecord& r)
     return s;
 }
 
+void DBTable::fill(DBRecord& r)
+{
+    for(int i = r.count(); i < columns.count(); i++) r.append("");
+}
+
 void DBTable::createIndexes()
 {
     if (!db->isStarted() || indexDescriptors.count() < 1) return;

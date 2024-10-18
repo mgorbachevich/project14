@@ -10,6 +10,7 @@ INCLUDEPATH += \
     Net
 
 HEADERS += \
+    Managers/calculator.h \
     constants.h \
     tools.h \
     DB/dbindexdescriptor.h \
@@ -95,7 +96,6 @@ HEADERS += \
     Equipment/Wm100_Slpa100u/wm100.h \
     Managers/equipmentmanager.h \
     Managers/externalmessager.h \
-    Managers/moneycalculator.h \
     Managers/keyemitter.h \
     Managers/appmanager.h \
     Managers/status.h \
@@ -118,6 +118,7 @@ HEADERS += \
     Net/netserver.h
 
 SOURCES += \
+    Managers/calculator.cpp \
     main.cpp \
     tools.cpp \
     DB/showcase.cpp \
@@ -201,7 +202,6 @@ SOURCES += \
     Managers/equipmentmanager.cpp \
     Managers/externalmessager.cpp \
     Managers/keyemitter.cpp \
-    Managers/moneycalculator.cpp \
     Managers/screenmanager.cpp \
     Models/baselistmodel3.cpp \
     Models/usernamemodel.cpp \

@@ -44,7 +44,7 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     db = new DataBase(this);
     netServer = new NetServer(this);
     equipmentManager = new EquipmentManager(this);
-    moneyCalculator = new MoneyCalculator(this);
+    calculator = new Calculator(this);
     timer = new QTimer(this);
 
     connect(this, &AppManager::start, db, &DataBase::onAppStart);
@@ -135,8 +135,7 @@ void AppManager::onDBStarted()
     onUserAction();
     setSettingsInfo();
     setSettingsNetInfo();
-    setSettingsLabels();
-    settings->write();
+    updateSettings();
 
     if(db->isStarted())
     {
@@ -187,7 +186,7 @@ void AppManager::onTimer()
             status.userActionTime = now;
             startAuthorization();
         }
-        else updateWeightStatus();
+        else update();
     }
 
     // Ожидание окончания сетевых запросов:
@@ -245,7 +244,7 @@ void AppManager::onPiecesInputClosed(const QString &value)
         showAttention("Количество не должно быть меньше 1");
     }
     status.pieces = v;
-    updateWeightStatus();
+    update();
 }
 
 void AppManager::onSetProductByCodeClicked(const QString &value)
@@ -404,7 +403,7 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         break;
     }
 
-    default:break;
+    default: break;
     }
 }
 
@@ -444,7 +443,7 @@ void AppManager::onCalendarClosed(const int settingItemCode,
         {
             if(t.isValid())
             {
-                QString s = QDateTime(d, t).toString(DATE_TIME_FORMAT);
+                QString s = QDateTime(d, t).toString(DATE_TIME_LONG_FORMAT);
                 showConfirmation(ConfirmSelector_SetDateTime, "Установить дату и время? " + s, s);
                 return;
             }
@@ -468,9 +467,11 @@ void AppManager::onConfirmationClicked(const int selector, const QString& param)
     switch (selector)
     {
     case ConfirmSelector_SetDateTime:
+    {
         onSettingInputClosed(SettingCode_DateTime, param);
-        equipmentManager->setSystemDateTime(QDateTime::fromString(param, DATE_TIME_FORMAT));
+        equipmentManager->setSystemDateTime(Tools::dateTimeFromString(param));
         break;
+    }
 
     case ConfirmSelector_SetVerificationDate:
         onSettingInputClosed(SettingCode_VerificationDate, param);
@@ -561,8 +562,7 @@ void AppManager::onSettingsItemClicked(const int index)
         settings->write();
         break;
 
-    default:
-        break;
+    default: break;
     }
 
     switch (type)
@@ -610,8 +610,7 @@ void AppManager::onSettingsItemClicked(const int index)
     case SettingType_GroupWithPassword:
         emit showPasswordInputBox(code);
 
-    default:
-        break;
+    default: break;
     }
 }
 
@@ -760,7 +759,7 @@ void AppManager::updateShowcase()
 {
     showWait(true);
     showcase->getAll();
-    showWeightErrorAndAutoPrint();
+    showWeightFlags();
     db->select(DBSelector_GetShowcaseProducts,
                Tools::toString(status.productSort),
                Tools::toString(status.isProductSortIncrement));
@@ -846,15 +845,13 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
-        productPanelModel->update(product,
-                                  moneyCalculator->priceAsString(product),
-                                  (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+        productPanelModel->update(product, (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
         db->select(DBSelector_GetImageByResourceCode, pictureCode);
         emit setCurrentProductFavorite(db->isProductInShowcase(product));
-        updateWeightStatus();
+        update();
     }
 }
 
@@ -873,7 +870,7 @@ void AppManager::resetProduct(const bool show) // Сбросить выбран�
         status.onResetProduct();
         emit resetCurrentProduct();
     }
-    if(show) updateWeightStatus();
+    if(show) update();
 }
 
 void AppManager::onUserAction()
@@ -930,7 +927,7 @@ void AppManager::onEquipmentParamChanged(const EquipmentParam param,
         break;
     }
     }
-    updateWeightStatus();
+    update();
 }
 
 void AppManager::alarm()
@@ -1072,8 +1069,7 @@ void AppManager::onPasswordInputClosed(const int code, const QString& inputPassw
         else showAttention("Неверный пароль");
         break;
 
-    default:
-        break;
+    default: break;
     }
 }
 
@@ -1128,13 +1124,12 @@ void AppManager::onNetCommand(const int command, const QString& param)
             QString toast;
             if(Tools::toBool(param)) // Ok
             {
-                status.downloadDateTime = Tools::now().toString(DATE_TIME_FORMAT);
+                status.downloadDateTime = Tools::now().toString(DATE_TIME_LONG_FORMAT);
                 QString s = status.downloadDateTime;
                 if(status.downloadedRecords > 0)
                     s += QString(" (Записи %1)").arg(Tools::toString(status.downloadedRecords));
                 settings->setValue(SettingCode_InfoLastDownload, s);
-                setSettingsLabels();
-                settings->write();
+                updateSettings();
                 //s = "Загрузка успешно завершена. Данные обновлены!";
             }
             else // Timeout
@@ -1238,6 +1233,11 @@ void AppManager::updateSearch()
                searchPanelModel->loadLimit());
 }
 
+bool AppManager::isProduct()
+{
+    return product.count() >= db->getTable(DBTABLENAME_PRODUCTS)->columnCount();
+}
+
 void AppManager::setSettingsInfo()
 {
     debugLog("@@@@@ AppManager::setSettingsInfo ");
@@ -1281,37 +1281,37 @@ void AppManager::showSettingComboBox2(const DBRecord& r)
                              settings->getComment(r));
 }
 
-void AppManager::setSettingsLabels()
+void AppManager::updateSettings() // При старте и после загрузки
 {
-    debugLog("@@@@@ AppManager::setSettingsLabels ");
+    debugLog("@@@@@ AppManager::updateSettings ");
     db->select(DBSelector_GetAllLabels);
+    calculator->update();
+    settings->write();
 }
 
-void AppManager::showWeightErrorAndAutoPrint()
+void AppManager::showWeightFlags()
 {
+    emit showControlParam(ControlParam_ZeroFlag,  equipmentManager->isZeroFlag() ?    ICON_ZERO_ON : ICON_ZERO_OFF);
+    emit showControlParam(ControlParam_TareFlag,  equipmentManager->isTareFlag() ?    ICON_TARE_ON : ICON_TARE_OFF);
+    emit showControlParam(ControlParam_FixedFlag, equipmentManager->isWeightFixed() ? ICON_FIX_ON :  ICON_FIX_OFF);
+
     QString icon = ICON_WM_ON;
-    if(!equipmentManager->isWM())
-        icon = ICON_WM_OFF;
-    else if(equipmentManager->getWMMode() == EquipmentMode_None)
-        icon = ICON_WM_NONE;
-    else if(equipmentManager->isWMError())
-        icon = ICON_WM_ERROR;
-    else if (status.autoPrintMode == AutoPrintMode_On)
-        icon = ICON_AUTO_ON;
-    else if (status.autoPrintMode == AutoPrintMode_Disabled)
-        icon = ICON_AUTO_OFF;
+    if(!equipmentManager->isWM()) icon = ICON_WM_OFF;
+    else if(equipmentManager->getWMMode() == EquipmentMode_None) icon = ICON_WM_NONE;
+    else if(equipmentManager->isWMError()) icon = ICON_WM_ERROR;
+    else if (status.autoPrintMode == AutoPrintMode_On) icon = ICON_AUTO_ON;
+    else if (status.autoPrintMode == AutoPrintMode_Disabled) icon = ICON_AUTO_OFF;
     emit showControlParam(ControlParam_WeightErrorOrAutoPrintIcon, icon);
 }
 
-void AppManager::updateWeightStatus()
+void AppManager::update()
 {
 #ifdef DEBUG_WEIGHT_STATUS
-    debugLog("@@@@@ AppManager::updateWeightStatus");
+    debugLog("@@@@@ AppManager::update");
 #endif
     const bool isPieceProduct = isProduct() && ProductDBTable::isPiece(product);
     const int oldPieces = status.pieces;
     if(isPieceProduct && status.pieces < 1) status.pieces = 1;
-
     const bool isWM = equipmentManager->isWM() && equipmentManager->getWMMode() != EquipmentMode_None;
     const bool isPM = equipmentManager->isPM();
     const bool isZero = equipmentManager->isZeroFlag();
@@ -1321,19 +1321,16 @@ void AppManager::updateWeightStatus()
     const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
             (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
 
-    status.quantity = status.price = status.amount = NO_DATA;
+    status.quantity = NO_DATA;
+    status.price = NO_DATA;
+    status.amount = NO_DATA;
+    status.tare = isTare ? Tools::roundToString(equipmentManager->getTare(), calculator->weightPointPosition()) : NO_DATA;
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
     if (isZero) status.isPrintCalculateMode = true;
 
     // Рисуем флажки:
-    if (isZero)  emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_ON);
-    else         emit showControlParam(ControlParam_ZeroFlag,  ICON_ZERO_OFF);
-    if (isTare)  emit showControlParam(ControlParam_TareFlag,  ICON_TARE_ON);
-    else         emit showControlParam(ControlParam_TareFlag,  ICON_TARE_OFF);
-    if (isFixed) emit showControlParam(ControlParam_FixedFlag, ICON_FIX_ON);
-    else         emit showControlParam(ControlParam_FixedFlag, ICON_FIX_OFF);
-    showWeightErrorAndAutoPrint();
+    showWeightFlags();
 
     // Рисуем загаловки:
     QString wt = isPieceProduct ? "КОЛИЧЕСТВО, шт" : "МАССА, кг";
@@ -1359,25 +1356,24 @@ void AppManager::updateWeightStatus()
         else
         {
             status.isAlarm = false;
-            if(isPieceProduct || !isWMError)
-                status.quantity = moneyCalculator->quantityAsString(product);
+            if(isPieceProduct || !isWMError) status.quantity = calculator->quantityAsString(product);
         }
     }
     emit showControlParam(ControlParam_WeightValue, status.quantity);
     emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? COLOR_ACTIVE : COLOR_PASSIVE);
 
     // Рисуем цену:
-    QString price = moneyCalculator->priceAsString(product);
+    QString price = calculator->priceAsString(product);
     bool isPrice = isProduct() && PRICE_MAX_CHARS >= price.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    status.price = isPrice ? moneyCalculator->priceAsString(product) : NO_DATA;
+    status.price = isPrice ? calculator->priceAsString(product) : NO_DATA;
     emit showControlParam(ControlParam_PriceValue, status.price);
     emit showControlParam(ControlParam_PriceColor, isPrice ? COLOR_ACTIVE : COLOR_PASSIVE);
 
     // Рисуем стоимость:
-    QString amount = moneyCalculator->amountAsString(product);
+    QString amount = calculator->amountAsString(product);
     bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWMError)) &&
         AMOUNT_MAX_CHARS >= amount.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    status.amount = isAmount ? moneyCalculator->amountAsString(product) : NO_DATA;
+    status.amount = isAmount ? calculator->amountAsString(product) : NO_DATA;
     emit showControlParam(ControlParam_AmountValue, status.amount);
     emit showControlParam(ControlParam_AmountColor, isAmount ? COLOR_AMOUNT : COLOR_PASSIVE);
 
@@ -1424,7 +1420,7 @@ void AppManager::updateWeightStatus()
     }
     if(isPieceProduct && oldPieces != status.pieces)
     {
-        updateWeightStatus();
+        update();
         return;
     }
 
@@ -1519,12 +1515,12 @@ bool AppManager::onClicked(const int clicked)
 
     case Clicked_Zero:
         equipmentManager->setZero();
-        updateWeightStatus();
+        update();
         break;
 
     case Clicked_Tare:
         equipmentManager->setTare();
-        updateWeightStatus();
+        update();
         break;
 
     case Clicked_ViewLog:
@@ -1565,7 +1561,7 @@ bool AppManager::onClicked(const int clicked)
         case AutoPrintMode_On:       status.autoPrintMode = AutoPrintMode_Disabled; break;
         case AutoPrintMode_Disabled: status.autoPrintMode = AutoPrintMode_On; break;
         }
-        showWeightErrorAndAutoPrint();
+        showWeightFlags();
         break;
     }
 
