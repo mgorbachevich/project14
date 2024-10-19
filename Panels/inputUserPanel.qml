@@ -67,7 +67,7 @@ Popup
             icon.source: "../Icons/delete"
             onClicked:
             {
-                app.onDeleteUserClicked(userCode)
+                app.onClicked3(28, userCode)
                 inputUserPanel.close()
             }
         }

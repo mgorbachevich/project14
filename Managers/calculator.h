@@ -3,33 +3,35 @@
 
 #include <QObject>
 #include "constants.h"
-#include "productdbtable.h"
 
-class AppManager;
+class Settings;
+class EquipmentManager;
 
 class Calculator : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit Calculator(AppManager*);
-    void update();
-    int moneyPointPosition();
-    int weightPointPosition();
-    QString amountAsString(const DBRecord&);
-    QString priceAsString(const DBRecord&, const int field = ProductDBTable::Price);
-    QString quantityAsString(const DBRecord&);
-    QString weightAsString(const DBRecord&, const int);
-    QStringList validity(const DBRecord&, const bool titles = true);
-
-    int moneyMultiplier = 100;
-    int weightMultiplier = 1000;
+    explicit Calculator(QObject*);
+    static void update(Settings* const);
+    static QString amount(const DBRecord&, EquipmentManager* const);
+    static QString price(const DBRecord&);
+    static QString price2(const DBRecord&);
+    static QString quantity(const DBRecord&, EquipmentManager* const);
+    static QString unitWeight(const DBRecord&);
+    static double tare(const DBRecord&);
+    static QStringList validity(const DBRecord&, const bool titles = true);
+    static bool is100gBase(const DBRecord&);
+    static bool isForShowcase(const DBRecord&);
+    static bool isGroup(const DBRecord&);
+    static bool isPiece(const DBRecord&);
+    static bool hasTare(const DBRecord&);
+    static int getMoneyPointPosition();
 
 private:
-    QVariant normalize(const DBRecord&, const int field);
-    double quantityAsDouble(const DBRecord&);
-
-    AppManager* appManager;
+    static QVariant normalize(const DBRecord&, const int field);
+    static double quantityAsDouble(const DBRecord&, EquipmentManager* const);
+    static double priceAsDouble(const DBRecord&, const int);
 };
 
 #endif // CALCULATOR_H

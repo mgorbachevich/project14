@@ -10,6 +10,8 @@
 #include "Slpa100u.h"
 #include "Label/labelcreator.h"
 #include "appmanager.h"
+#include "calculator.h"
+#include "settings.h"
 
 EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent)
 {
@@ -303,6 +305,11 @@ QString EquipmentManager::daemonVersion() const
     return "Не определено";
 }
 
+const Status &EquipmentManager::getStatus() const
+{
+    return appManager->status;
+}
+
 QString EquipmentManager::WMVersion() const
 {
     if (wm != nullptr)
@@ -327,8 +334,7 @@ void EquipmentManager::setTare(const double v)
 {
     if (isWM())
     {
-        Tools::debugLog("@@@@@ EquipmentManager::setTare " +
-                        Tools::toString(v, appManager->calculator->weightPointPosition()));
+        Tools::debugLog("@@@@@ EquipmentManager::setTare " + Tools::toString(v, 3));
         wm->setTareValue(v);
     }
 }
@@ -340,6 +346,11 @@ void EquipmentManager::setZero()
        Tools::debugLog("@@@@@ EquipmentManager::setZero ");
         wm->setZero();
     }
+}
+
+QString EquipmentManager::getTareAsString() const
+{
+    return Tools::roundToString(getTare(), 3);
 }
 
 bool EquipmentManager::isWMFlag(Wm100Protocol::channel_status s, int shift) const
@@ -524,12 +535,12 @@ QString EquipmentManager::parseBarcode(const QString& barcodeTemplate, const QCh
 QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& quantity, const QString& amount)
 {
     QString result;
-    QString barcodeTemplate = ProductDBTable::isPiece(product) ?
+    QString barcodeTemplate = Calculator::isPiece(product) ?
                 appManager->settings->getStringValue(SettingCode_PrintLabelBarcodePiece) :
                 appManager->settings->getStringValue(SettingCode_PrintLabelBarcodeWeight);
     if(barcodeTemplate.contains("P"))
     {
-        result = ProductDBTable::isPiece(product) ?
+        result = Calculator::isPiece(product) ?
                  appManager->settings->getStringValue(SettingCode_PrintLabelPrefixPiece) :
                  appManager->settings->getStringValue(SettingCode_PrintLabelPrefixWeight);
     }
@@ -620,7 +631,7 @@ int EquipmentManager::print(DataBase* db,
             pd.itemcode = product[ProductDBTable::Code].toString();
             pd.name = product[ProductDBTable::Name].toString();
             pd.shelflife = product[ProductDBTable::ShelfLife].toString();
-            pd.price2 = appManager->calculator->priceAsString(product, ProductDBTable::Price2);
+            pd.price2 = Calculator::price2(product);
             pd.certificate = product[ProductDBTable::Certificate].toString();
             pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
             pd.validity = ""; // todo
@@ -690,8 +701,8 @@ int EquipmentManager::setExternalDisplay(const DBRecord& product)
     if(appManager->isProduct())
     {
         dd.text = product[ProductDBTable::Name].toString();
-        dd.flPieces = ProductDBTable::isPiece(product);
-        dd.flPer100g = !dd.flPieces && ProductDBTable::is100gBase(product);
+        dd.flPieces = Calculator::isPiece(product);
+        dd.flPer100g = !dd.flPieces && Calculator::is100gBase(product);
         dd.flPerKg = !dd.flPieces && !dd.flPer100g;
     }
     else

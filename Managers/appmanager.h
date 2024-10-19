@@ -4,16 +4,8 @@
 #include <QApplication>
 #include <QObject>
 #include <QKeyEvent>
-#include "constants.h"
 #include "database.h"
-#include "calculator.h"
-#include "users.h"
-#include "showcase.h"
-#include "settings.h"
 #include "status.h"
-#include "netactionresult.h"
-#include "netserver.h"
-#include "equipmentmanager.h"
 
 class ProductPanelModel;
 class ViewLogPanelModel;
@@ -31,6 +23,10 @@ class EditUsersPanelModel3;
 class Calculator;
 class ScreenManager;
 class QNetworkSettingsManager;
+class Users;
+class Showcase;
+class NetServer;
+class NetActionResult;
 
 class AppManager : public QObject
 {
@@ -51,49 +47,45 @@ public:
     void updateInputCodeList();
     void updateSearch();
     bool isProduct();
+    int showcaseCount();
+    DBRecord getShowcaseProductByIndex(const int);
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
     Q_INVOKABLE void debugLog(const QString&);
-    Q_INVOKABLE bool isAdmin() { return Users::isAdmin(users->getCurrentUser()); }
+    Q_INVOKABLE bool isAdmin();
     Q_INVOKABLE bool isAuthorizationOpened();
     Q_INVOKABLE bool isSettingsOpened() { return status.isSettings; }
+    Q_INVOKABLE void onPopupOpened(const bool);
     Q_INVOKABLE void onCalendarClosed(const int, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&);
-    Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
-    Q_INVOKABLE void onClick() { clickSound(); onUserAction(); }
-    Q_INVOKABLE void onConfirmationClicked(const int, const QString&);
-    Q_INVOKABLE void onDeleteUserClicked(const QString&);
     Q_INVOKABLE void onEditUsersPanelClose();
     Q_INVOKABLE void onInputUserClosed(const QString&, const QString&, const QString&, const bool);
-    Q_INVOKABLE void onMainPageSwiped(const int i) { setMainPage(i); }
-    Q_INVOKABLE void onNumberToSearchClicked(const QString&);
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
-    Q_INVOKABLE void onSetProductByCodeClicked(const QString&);
     Q_INVOKABLE void onPasswordInputClosed(const int, const QString&);
-    Q_INVOKABLE void onPopupOpened(const bool);
-    Q_INVOKABLE void onInputProductCodeEdited(const QString&);
-    Q_INVOKABLE void onSearchFilterClicked(const int, const QString&);
-    Q_INVOKABLE void onSearchFilterEdited(const QString&);
     Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
+    Q_INVOKABLE void onMainPageSwiped(const int i) { setMainPage(i); }
+    Q_INVOKABLE void onInputProductCodeEdited(const QString&);
+    Q_INVOKABLE void onSearchFilterEdited(const QString&);
     Q_INVOKABLE void onUserAction();
     Q_INVOKABLE void onVirtualKeyboardSet(const int);
-    Q_INVOKABLE void showAttention(const QString& s) { showMessage("ВНИМАНИЕ!", s); }
-    Q_INVOKABLE void showMessage(const QString&, const QString&);
+    Q_INVOKABLE void onClick() { clickSound(); onUserAction(); }
     Q_INVOKABLE bool onClicked(const int);
     Q_INVOKABLE bool onClicked2(const int, const int);
+    Q_INVOKABLE bool onClicked3(const int, const QString&);
+    Q_INVOKABLE void onCheckAuthorizationClicked(const QString&, const QString&);
+    Q_INVOKABLE void onConfirmationClicked(const int, const QString&);
+    Q_INVOKABLE void onSearchFilterClicked(const int, const QString&);
     Q_INVOKABLE void onSettingsItemClicked(const int);
+    Q_INVOKABLE void showAttention(const QString& s) { showMessage("ВНИМАНИЕ!", s); }
+    Q_INVOKABLE void showMessage(const QString&, const QString&);
 
     Settings* settings = nullptr;
-    Users* users = nullptr;
-    Showcase* showcase = nullptr;
-    EquipmentManager* equipmentManager = nullptr;
-    Calculator* calculator = nullptr;
     Status status;
 
 private:
     void alarm();
     void clickSound();
-    DBRecord& getCurrentUser() { return users->getCurrentUser(); }
+    DBRecord& getCurrentUser();
     QString getImageFileWithQmlPath(const DBRecord&);
     void print();
     void refreshAll();
@@ -108,7 +100,7 @@ private:
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
     void showSettingComboBox2(const DBRecord&);
-    void showTareToast();
+    void showTareToast(const bool);
     void showWeightFlags();
     void startAuthorization();
     void startAll();
@@ -121,7 +113,9 @@ private:
     void updateSettings(const int);
     void update();
     void setExternalDisplay();
+    bool isProductInShowcase(const DBRecord&);
 
+    EquipmentManager* equipmentManager = nullptr;
     DataBase* db = nullptr;
     DBRecord product;
     bool isResetProductNeeded = false;
@@ -130,6 +124,9 @@ private:
     QQmlContext* context = nullptr;
     ScreenManager* screenManager = nullptr;
     QNetworkSettingsManager* networkSettingsManager = nullptr;
+    Calculator* calculator = nullptr;
+    Users* users = nullptr;
+    Showcase* showcase = nullptr;
 
     // UI Models:
     ProductPanelModel* productPanelModel = nullptr;

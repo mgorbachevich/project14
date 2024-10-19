@@ -59,7 +59,7 @@ Rectangle
         {
             case Qt.Key_0: case Qt.Key_1: case Qt.Key_2: case Qt.Key_3: case Qt.Key_4:
             case Qt.Key_5: case Qt.Key_6: case Qt.Key_7: case Qt.Key_8: case Qt.Key_9:
-                app.onNumberToSearchClicked(event.text);
+                app.onClicked3(29, event.text);
                 break;
             case Qt.Key_F9: // Ключ
                 app.onClicked(7)

@@ -1,4 +1,5 @@
 #include <QJsonDocument>
+#include <QJsonArray>
 #include "netactionresult.h"
 #include "tools.h"
 #include "appmanager.h"

@@ -135,7 +135,7 @@ Popup
                                 inputProductCodePanel.close();
                                 break;
                             case Qt.Key_Enter: case Qt.Key_Return:
-                                if (inputProductCodePanelContinueButton.enabled) app.onSetProductByCodeClicked(text);
+                                if (inputProductCodePanelContinueButton.enabled) app.onClicked3(30, text);
                                 break;
                             case Qt.Key_F10: // Промотка
                                 app.onClicked(26)
@@ -205,7 +205,7 @@ Popup
                             MouseArea
                             {
                                 anchors.fill: parent
-                                onClicked: app.onSetProductByCodeClicked(model.code)
+                                onClicked: app.onClicked3(30, model.code)
                             }
                         }
 
@@ -223,7 +223,7 @@ Popup
                             MouseArea
                             {
                                 anchors.fill: parent
-                                onClicked: app.onSetProductByCodeClicked(model.code)
+                                onClicked: app.onClicked3(30, model.code)
                             }
                         }
                     }
@@ -243,7 +243,7 @@ Popup
                 Layout.row: 6
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 text: qsTr("ПРОДОЛЖИТЬ")
-                onClicked: app.onSetProductByCodeClicked(inputProductCodePanelText.text)
+                onClicked: app.onClicked3(30, inputProductCodePanelText.text)
             }
         }
     }

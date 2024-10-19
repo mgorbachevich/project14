@@ -7,13 +7,14 @@
 
 #define DB_VERSION "1.10"
 
+class Users;
+class Settings;
+
 enum DBSelector
 {
     DBSelector_None = 0,
     DBSelector_GetShowcaseProducts,
     DBSelector_GetShowcaseResources,
-    DBSelector_GetImageByResourceCode,
-    DBSelector_GetMessageByResourceCode,
     DBSelector_GetProductsByGroupCodeIncludeGroups,
     DBSelector_GetProductsByFilteredCode,
     DBSelector_GetProductsByFilteredCode2,
@@ -21,13 +22,17 @@ enum DBSelector
     DBSelector_GetProductsByFilteredName,
     DBSelector_GetItemsByCodes,
     DBSelector_GetLog,
-    DBSelector_RefreshCurrentProduct,
-    DBSelector_SetProductByCode,
     DBSelector_GetProductsByInputCode,
-    DBSelector_GetProductByCode,
     DBSelector_SetProductByCode2,
     DBSelector_GetAllLabels,
     //DBSelector_GetAuthorizationUsers,
+#ifndef SELECT_RIGHT_NOW
+    DBSelector_RefreshCurrentProduct,
+    DBSelector_SetProductByCode,
+    DBSelector_GetMessageByResourceCode,
+    DBSelector_GetImageByResourceCode,
+    DBSelector_GetProductByCode,
+#endif
 };
 
 class DataBase : public ExternalMessager
@@ -38,19 +43,16 @@ public:
     explicit DataBase(AppManager*);
     ~DataBase();
 
-    bool addProductToShowcase(const DBRecord&);
     void clearLog();
     QString getLabelPathByName(const QString&);
     QString getLabelPathById(const QString&);
     QString getProductMessageById(const QString&);
     DBTable* getTable(const QString&) const;
     QList<DBTable*> getTables() { return tables; };
-    bool isProductInShowcase(const DBRecord&);
     bool isStarted() { return started; }
     QString netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
-    QString netUpload(const QString&, const QString&, const bool codesOnly = false);
-    bool removeProductFromShowcase(const DBRecord&);
+    QString netUpload(Settings*, Users*, const QString&, const QString&, const bool codesOnly = false);
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     void select(const DBSelector, const DBRecordList&);
@@ -61,6 +63,7 @@ public:
     static bool removeDBFile(const QString&);
     static bool isDBFileExists(const QString&);
     bool executeSQL(const QSqlDatabase&, const QString&);
+    DBRecord selectByCode(const QString&, const QString&);
 
 private:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);

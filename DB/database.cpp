@@ -10,6 +10,11 @@
 #include "tools.h"
 #include "constants.h"
 #include "appmanager.h"
+#include "calculator.h"
+#include "users.h"
+#include "showcase.h"
+#include "netactionresult.h"
+#include "settings.h"
 
 bool isExecuting = false;
 
@@ -208,8 +213,8 @@ bool DataBase::selectById(const QString& tableName, const QString& id, DBRecord&
     if(t == nullptr) return false;
     QString sql = QString("SELECT * FROM %1 WHERE %2 = '%3';").arg(t->name, t->columnName(0), id);
     DBRecordList records;
-    if(!executeSelectSQL(t, sql, records)) return false;
-    if(records.count() > 0) resultRecord.append(records.at(0));
+    if(!executeSelectSQL(t, sql, records) || records.count() == 0) return false;
+    resultRecord = records.at(0);
     return true;
 }
 
@@ -405,26 +410,6 @@ void DataBase::saveTransaction(const DBRecord& r)
     });
 }
 
-bool DataBase::isProductInShowcase(const DBRecord& product)
-{
-    return appManager->showcase->getByCode(product[0].toInt()) != nullptr;
-}
-
-bool DataBase::removeProductFromShowcase(const DBRecord& product)
-{
-    const QString& code = product[ProductDBTable::Code].toString();
-    Tools::debugLog("@@@@@ DataBase::removeProductFromShowcase " + code);
-    appManager->showcase->removeByCode(code);
-    return true;
-}
-
-bool DataBase::addProductToShowcase(const DBRecord& record)
-{
-    const QString& code = record[ProductDBTable::Code].toString();
-    Tools::debugLog("@@@@@ DataBase::addProductToShowcase " + code);
-    return appManager->showcase->insertOrReplaceRecord(appManager->showcase->createRecord(code));
-}
-
 QString DataBase::netDelete(const QString& tableName, const QString& codeList)
 {
     // Удаление из таблицы по списку кодов
@@ -492,7 +477,11 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
     return resultJson;
 }
 
-QString DataBase::netUpload(const QString& tableName, const QString& codesToUpload, const bool codesOnly)
+QString DataBase::netUpload(Settings* settings,
+                            Users* users,
+                            const QString& tableName,
+                            const QString& codesToUpload,
+                            const bool codesOnly)
 {
     // Выгрузка из таблицы
 
@@ -503,9 +492,9 @@ QString DataBase::netUpload(const QString& tableName, const QString& codesToUplo
     NetActionResult result(appManager, RouterRule_Get);
 
     QJsonObject jo;
-    if(tableName == DBTABLENAME_SETTINGS)   jo = appManager->settings->toJsonObject();
-    else if(tableName == DBTABLENAME_USERS) jo = appManager->users->toJsonObject();
-    else if(tableName == DBTABLENAME_CONFIG) jo = appManager->settings->getScaleConfig();
+    if(tableName == DBTABLENAME_USERS)         jo = users->toJsonObject();
+    else if(tableName == DBTABLENAME_SETTINGS) jo = settings->toJsonObject();
+    else if(tableName == DBTABLENAME_CONFIG)   jo = settings->getScaleConfig();
     if(!jo.isEmpty())
     {
         QString resultJson = result.makeJson(jo);
@@ -668,12 +657,13 @@ void DataBase::select(const DBSelector selector,
             selectAll(getTable(DBTABLENAME_LABELS), resultRecords);
             break;
 
+#ifndef SELECT_RIGHT_NOW
+        case DBSelector_RefreshCurrentProduct: // Запрос товара по коду
+        case DBSelector_GetMessageByResourceCode: // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
+        case DBSelector_GetImageByResourceCode: // Запрос картинки из ресурсов по коду ресурса:
         case DBSelector_GetProductByCode:
         case DBSelector_SetProductByCode:
-        case DBSelector_RefreshCurrentProduct: // Запрос товара по коду
-        case DBSelector_GetImageByResourceCode: // Запрос картинки из ресурсов по коду ресурса:
-        case DBSelector_GetMessageByResourceCode: // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
-        {
+         {
             QString table = DBTABLENAME_PRODUCTS;
             switch (selector)
             {
@@ -685,6 +675,7 @@ void DataBase::select(const DBSelector selector,
             if(selectById(table, param1, r)) resultRecords.append(r);
             break;
         }
+#endif
 
         case DBSelector_SetProductByCode2: // Запрос товара по коду 2
         {
@@ -699,11 +690,11 @@ void DataBase::select(const DBSelector selector,
 
         case DBSelector_GetShowcaseProducts: // Запрос списка товаров для отображения на экране Showcase:
         {
-            for (int i = 0; i < appManager->showcase->count(); i++)
+            for (int i = 0; i < appManager->showcaseCount(); i++)
             {
-                QString productCode = Showcase::getProductCode(appManager->showcase->getByIndex(i));
+                QString productCode = Showcase::getProductCode(appManager->getShowcaseProductByIndex(i));
                 DBRecord r;
-                if (selectById(DBTABLENAME_PRODUCTS, productCode, r) && ProductDBTable::isForShowcase(r))
+                if (selectById(DBTABLENAME_PRODUCTS, productCode, r) && Calculator::isForShowcase(r))
                     resultRecords.append(r);
             }
             const int sort = Tools::toInt(param1);
@@ -797,3 +788,10 @@ void DataBase::select(const DBSelector selector,
     });
 }
 
+DBRecord DataBase::selectByCode(const QString& tableName, const QString& code)
+{
+    Tools::debugLog(QString("@@@@@ DataBase::selectByCode %1 %2").arg(tableName, code));
+    DBRecord r;
+    if(!selectById(tableName, code, r)) r.clear();
+    return r;
+}

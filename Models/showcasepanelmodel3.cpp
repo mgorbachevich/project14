@@ -2,6 +2,7 @@
 #include "productdbtable.h"
 #include "tools.h"
 #include "appmanager.h"
+#include "settings.h"
 
 QHash<int, QByteArray> ShowcasePanelModel3::roleNames() const
 {

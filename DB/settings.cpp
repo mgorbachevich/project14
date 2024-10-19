@@ -240,7 +240,7 @@ bool Settings::write()
     data.insert("data", toJsonObject());
     ok &= Tools::writeTextFile(fileName, Tools::toString(data));
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::sortIncrement(ok)));
-    appManager->showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
+    showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
     return ok;
 }

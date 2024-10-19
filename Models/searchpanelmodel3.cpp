@@ -3,6 +3,7 @@
 #include "productdbtable.h"
 #include "appmanager.h"
 #include "tools.h"
+#include "calculator.h"
 
 DBRecord emptyRecord;
 
@@ -83,25 +84,25 @@ void SearchPanelModel3::update(const DBRecordList &newProducts, const int filter
         QString code;
         QString price;
         QString name = ri[ProductDBTable::Name].toString();
-       if(ProductDBTable::isGroup(ri)) name = "<b>" + name + "</b>";
+       if(Calculator::isGroup(ri)) name = "<b>" + name + "</b>";
 
         switch(filterIndex)
         {
         case SearchFilterIndex_Code2:
             code = QString("№%1").arg(ri[ProductDBTable::Code2].toString());
-            price = appManager->calculator->priceAsString(ri);
+            price = Calculator::price(ri);
             break;
         case SearchFilterIndex_Barcode:
             code = QString("%1").arg(ri[ProductDBTable::Barcode].toString());
-            price = appManager->calculator->priceAsString(ri);
+            price = Calculator::price(ri);
             break;
         case SearchFilterIndex_Code:
         case SearchFilterIndex_Name:
         default: // Hierarchy
-            if(!ProductDBTable::isGroup(ri))
+            if(!Calculator::isGroup(ri))
             {
                 code = QString("#%1").arg(ri[ProductDBTable::Code].toString());
-                price = appManager->calculator->priceAsString(ri);
+                price = Calculator::price(ri);
             }
             break;
         }

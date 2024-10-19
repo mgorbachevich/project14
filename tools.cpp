@@ -133,11 +133,11 @@ bool Tools::writeBinaryFile(const QString& filePath, const QByteArray& data)
     }
     quint64 n1 = file.write(data);
     quint64 n2 = file.size();
-    debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(toString(n1), toString(n2)));
+    debugLog(QString("@@@@@ Tools::writeBinaryFile %1 %2").arg(QString::number(n1), QString::number(n2)));
     file.close();
     return true;
 }
-
+/*
 QByteArray Tools::readBinaryFile(const QString& path)
 {
     debugLog("@@@@@ Tools::readBinaryFile " + path);
@@ -152,7 +152,7 @@ QByteArray Tools::readBinaryFile(const QString& path)
     file.close();
     return a;
 }
-
+*/
 QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
 {
     //qDebug() << "@@@@@ Tools::makeFullPath";

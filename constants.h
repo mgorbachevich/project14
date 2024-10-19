@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.86"
+#define APP_VERSION "2.87"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -113,6 +113,7 @@
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS
+#define SELECT_RIGHT_NOW
 
 enum MainPageIndex
 {
@@ -225,6 +226,9 @@ enum Clicked
     Clicked_EditUsers = 25,
     Clicked_Rewind = 26,
     Clicked_WeightFlags = 27,
+    Clicked_DeleteUser = 28,
+    Clicked_NumberToSearch = 29,
+    Clicked_SetProductByCode = 30
 };
 
 enum ControlParam

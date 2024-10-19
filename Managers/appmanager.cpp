@@ -22,6 +22,13 @@
 #include "screenmanager.h"
 #include "keyemitter.h"
 #include "edituserspanelmodel3.h"
+#include "calculator.h"
+#include "users.h"
+#include "showcase.h"
+#include "equipmentmanager.h"
+#include "netserver.h"
+#include "netactionresult.h"
+#include "settings.h"
 
 AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplication *application):
     QObject(application), context(qmlContext)
@@ -217,16 +224,6 @@ void AppManager::onSettingInputClosed(const int settingItemCode, const QString &
     db->saveLog(LogType_Warning, LogSource_Admin, s);
 }
 
-void AppManager::onNumberToSearchClicked(const QString &s)
-{
-    if(!isAuthorizationOpened() && !isSettingsOpened() && !isProduct())
-    {
-        debugLog("@@@@@ AppManager::onNumberToSearchClicked " + s);
-        QString title = status.lastProductSort == ShowcaseSort_Code2 ? "Поиск по номеру №" : "Поиск по коду #";
-        emit showProductCodeInputBox(title, s);
-    }
-}
-
 void AppManager::onPiecesInputClosed(const QString &value)
 {
     debugLog("@@@@@ AppManager::onPiecesInputClosed " + value);
@@ -247,16 +244,6 @@ void AppManager::onPiecesInputClosed(const QString &value)
     update();
 }
 
-void AppManager::onSetProductByCodeClicked(const QString &value)
-{
-    debugLog("@@@@@ AppManager::onSetProductByCodeClicked " + value);
-    QString s = value;
-    if(status.lastProductSort == ShowcaseSort_Code2)
-        db->select(DBSelector_SetProductByCode2, s.remove("№"));
-    else
-        db->select(DBSelector_SetProductByCode, s.remove("#"));
-}
-
 void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& records, const bool ok)
 {
     // Получен результ из БД
@@ -271,10 +258,6 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
 
     switch(selector)
     {
-    case DBSelector_GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
-        if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
-            showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
-        break;
 
     case DBSelector_GetLog: // Отображение лога:
         if(!records.isEmpty()) viewLogPanelModel->update(records);
@@ -285,16 +268,6 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         emit showHierarchyRoot(searchPanelModel->isHierarchyRoot());
         emit showControlParam(ControlParam_SearchTitle, searchPanelModel->hierarchyTitle());
         searchPanelModel->update(records, -1);
-        break;
-
-    case DBSelector_SetProductByCode: // Отображение товара с кодом:
-        if(records.isEmpty())
-        {
-            showAttention("Товар не найден!");
-            break;
-        }
-        emit closeInputProductPanel();
-        setProduct(records.at(0));
         break;
 
     case DBSelector_SetProductByCode2: // Отображение товара с кодом:
@@ -312,15 +285,20 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         setProduct(records.at(0));
         break;
 
-    case DBSelector_GetProductByCode: // Отображение товара с кодом:
-        emit enableSetProductByInputCode(records.count() == 1 && !records.at(0).isEmpty());
-        break;
-
     case DBSelector_GetProductsByInputCode: // Отображение товаров с фрагментом кода:
+    {
         showFoundProductsToast(records.count());
         inputProductCodePanelModel->update(records);
-        db->select(DBSelector_GetProductByCode, inputProductCodePanelModel->descriptor.param); // Enable/disable button "Continue"
+
+        // Enable/disable button "Continue":
+#ifdef SELECT_RIGHT_NOW
+        DBRecord r = db->selectByCode(DBTABLENAME_PRODUCTS, inputProductCodePanelModel->descriptor.param);
+        emit enableSetProductByInputCode(!r.isEmpty());
+#else
+        db->select(DBSelector_GetProductByCode, inputProductCodePanelModel->descriptor.param);
+#endif
         break;
+    }
 
     case DBSelector_GetProductsByFilteredCode: // Отображение товаров с фрагментом кода:
         showFoundProductsToast(records.count());
@@ -346,16 +324,7 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         searchPanelModel->update(records, SearchFilterIndex_Name);
         break;
 
-   case DBSelector_RefreshCurrentProduct: // Сброс выбранного товара после изменений в БД:
-        resetProduct();
-        if (!records.isEmpty() && !records.at(0).isEmpty())
-        {
-            //showToast("ВНИМАНИЕ! Выбранный товар изменен");
-            setProduct(records.at(0));
-        }
-        break;
-
-    case DBSelector_GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
+   case DBSelector_GetShowcaseProducts: // Обновление списка товаров экрана Showcase:
         showcasePanelModel->updateProducts(records);
         db->select(DBSelector_GetShowcaseResources, records);
         emit showShowcaseSort(status.productSort, status.isProductSortIncrement);
@@ -372,14 +341,6 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
             fileNames.append(s);
         }
         showcasePanelModel->updateImages(fileNames);
-        break;
-    }
-
-    case DBSelector_GetImageByResourceCode: // Отображение картинки выбранного товара:
-    {
-        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
-        emit showControlParam(ControlParam_ProductImage, imagePath);
-        debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
         break;
     }
 
@@ -402,6 +363,44 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         if(n < 0 || n >= names.count()) r[SettingField_Value] = "0";
         break;
     }
+
+#ifndef SELECT_RIGHT_NOW
+    case DBSelector_GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
+        if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
+            showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
+        break;
+
+    case DBSelector_GetImageByResourceCode: // Отображение картинки выбранного товара:
+    {
+        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
+        emit showControlParam(ControlParam_ProductImage, imagePath);
+        debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
+        break;
+    }
+
+    case DBSelector_GetProductByCode: // Отображение товара с кодом:
+        emit enableSetProductByInputCode(records.count() == 1 && !records.at(0).isEmpty());
+        break;
+
+    case DBSelector_SetProductByCode: // Отображение товара с кодом:
+        if(records.isEmpty())
+        {
+            showAttention("Товар не найден!");
+            break;
+        }
+        emit closeInputProductPanel();
+        setProduct(records.at(0));
+        break;
+
+    case DBSelector_RefreshCurrentProduct: // Сброс выбранного товара после изменений в БД:
+         resetProduct();
+         if (!records.isEmpty() && !records.at(0).isEmpty())
+         {
+             //showToast("ВНИМАНИЕ! Выбранный товар изменен");
+             setProduct(records.at(0));
+         }
+         break;
+#endif
 
     default: break;
     }
@@ -497,23 +496,22 @@ void AppManager::onConfirmationClicked(const int selector, const QString& param)
         break;
 
     case ConfirmSelector_RemoveFromShowcase:
-        db->removeProductFromShowcase(product);
-        emit setCurrentProductFavorite(db->isProductInShowcase(product));
+        showcase->removeByCode(product[ProductDBTable::Code].toString());
+        emit setCurrentProductFavorite(isProductInShowcase(product));
         updateShowcase();
         break;
 
     case ConfirmSelector_AddToShowcase:
-        db->addProductToShowcase(product);
-        emit setCurrentProductFavorite(db->isProductInShowcase(product));
+        showcase->insertOrReplaceRecord(showcase->createRecord(product[ProductDBTable::Code].toString()));
+        emit setCurrentProductFavorite(isProductInShowcase(product));
         updateShowcase();
         break;
     }
 }
 
-void AppManager::onDeleteUserClicked(const QString& code)
+bool AppManager::isProductInShowcase(const DBRecord& product)
 {
-    debugLog("@@@@@ AppManager::onDeleteUserClicked " + code);
-    users->onDeleteUser(code);
+    return showcase->getByCode(product[0].toInt()) != nullptr;
 }
 
 void AppManager::onSettingsItemClicked(const int index)
@@ -835,7 +833,7 @@ QString AppManager::netDelete(const QString &tableName, const QString &codes)
 QString AppManager::netUpload(const QString &t, const QString &s, const bool b)
 {
     status.netActionTime = Tools::nowMsec();
-    return db->netUpload(t, s, b);
+    return db->netUpload(settings, users, t, s, b);
 }
 
 void AppManager::setProduct(const DBRecord& newProduct)
@@ -845,13 +843,20 @@ void AppManager::setProduct(const DBRecord& newProduct)
     {
         QString productCode = product[ProductDBTable::Code].toString();
         debugLog("@@@@@ AppManager::setProduct " + productCode);
-        if(setProductTare() || equipmentManager->isTareFlag()) showTareToast();
         productPanelModel->update(product, (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
-        emit showProductPanel(product[ProductDBTable::Name].toString(), ProductDBTable::isPiece(product));
+        emit showProductPanel(product[ProductDBTable::Name].toString(), Calculator::isPiece(product));
+        showTareToast(setProductTare() || equipmentManager->isTareFlag());
         db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
+#ifdef SELECT_RIGHT_NOW
+        DBRecord r = db->selectByCode(DBTABLENAME_PICTURES, pictureCode);
+        QString imagePath = r.count() > 0 ? getImageFileWithQmlPath(r) : DUMMY_IMAGE_FILE;
+        emit showControlParam(ControlParam_ProductImage, imagePath);
+        debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
+#else
         db->select(DBSelector_GetImageByResourceCode, pictureCode);
-        emit setCurrentProductFavorite(db->isProductInShowcase(product));
+#endif
+        emit setCurrentProductFavorite(isProductInShowcase(product));
         update();
     }
 }
@@ -955,10 +960,14 @@ void AppManager::clickSound()
     Tools::sound("qrc:/Sound/KeypressStandard.mp3", settings->getIntValue(SettingCode_KeyboardSoundVolume));
 }
 
+DBRecord &AppManager::getCurrentUser() { return users->getCurrentUser(); }
+
 void AppManager::debugLog(const QString& s)
 {
     Tools::debugLog(s);
 }
+
+bool AppManager::isAdmin() { return Users::isAdmin(users->getCurrentUser()); }
 
 bool AppManager::isAuthorizationOpened()
 {
@@ -1142,7 +1151,7 @@ void AppManager::onNetCommand(const int command, const QString& param)
                     if(!ld.isEmpty()) toast += "\nПоследняя успешная загрузка\n" + ld;
                     DataBase::renameDBFile(DB_PRODUCT_COPY_NAME, DB_PRODUCT_NAME);
                 }
-                else toast = "ОШИБКИ ПРИ ЗАГРУЗКЕ! ВОЗМОЖНА ПОТЕРЯ ДАННЫХ! ДАННЫЕ ОБНОВЛЕНЫ!";
+                else toast = "Ошибки при загрузке! Возможна потеря данных! Данные обновлены!";
             }
             showToast(toast, SHOW_LONG_TOAST_SEC);
             QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { refreshAll(); });
@@ -1239,6 +1248,16 @@ bool AppManager::isProduct()
     return product.count() >= db->getTable(DBTABLENAME_PRODUCTS)->columnCount();
 }
 
+int AppManager::showcaseCount()
+{
+    return showcase->count();
+}
+
+DBRecord AppManager::getShowcaseProductByIndex(const int i)
+{
+    return showcase->getByIndex(i);
+}
+
 void AppManager::setSettingsInfo()
 {
     debugLog("@@@@@ AppManager::setSettingsInfo ");
@@ -1282,20 +1301,22 @@ void AppManager::showSettingComboBox2(const DBRecord& r)
                              settings->getComment(r));
 }
 
-void AppManager::showTareToast()
+void AppManager::showTareToast(const bool showZero)
 {
-    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+    if (showZero || equipmentManager->isTareFlag())
     {
-        showToast(QString("Тара %1 кг").arg(
-                  Tools::roundToString(equipmentManager->getTare(), calculator->weightPointPosition())));
-    });
+        QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
+        {
+            showToast(QString("Тара %1 кг").arg(equipmentManager->getTareAsString()));
+        });
+    }
 }
 
 void AppManager::updateSettings() // При старте и после загрузки
 {
     debugLog("@@@@@ AppManager::updateSettings ");
     db->select(DBSelector_GetAllLabels);
-    calculator->update();
+    Calculator::update(settings);
     settings->write();
 }
 
@@ -1319,7 +1340,7 @@ void AppManager::update()
 #ifdef DEBUG_WEIGHT_STATUS
     debugLog("@@@@@ AppManager::update");
 #endif
-    const bool isPieceProduct = isProduct() && ProductDBTable::isPiece(product);
+    const bool isPieceProduct = isProduct() && Calculator::isPiece(product);
     const int oldPieces = status.pieces;
     if(isPieceProduct && status.pieces < 1) status.pieces = 1;
     const bool isWM = equipmentManager->isWM() && equipmentManager->getWMMode() != EquipmentMode_None;
@@ -1334,7 +1355,7 @@ void AppManager::update()
     status.quantity = NO_DATA;
     status.price = NO_DATA;
     status.amount = NO_DATA;
-    status.tare = isTare ? Tools::roundToString(equipmentManager->getTare(), calculator->weightPointPosition()) : NO_DATA;
+    status.tare = isTare ? equipmentManager->getTareAsString() : NO_DATA;
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
     if (isZero) status.isPrintCalculateMode = true;
@@ -1349,7 +1370,7 @@ void AppManager::update()
     if(isProduct())
     {
         if (isPieceProduct) pt += "/шт";
-        else pt += ProductDBTable::is100gBase(product) ? "/100г" : "/кг";
+        else pt += Calculator::is100gBase(product) ? "/100г" : "/кг";
     }
     emit showControlParam(ControlParam_WeightTitle, wt);
     emit showControlParam(ControlParam_PriceTitle, pt);
@@ -1366,24 +1387,24 @@ void AppManager::update()
         else
         {
             status.isAlarm = false;
-            if(isPieceProduct || !isWMError) status.quantity = calculator->quantityAsString(product);
+            if(isPieceProduct || !isWMError) status.quantity = Calculator::quantity(product, equipmentManager);
         }
     }
     emit showControlParam(ControlParam_WeightValue, status.quantity);
     emit showControlParam(ControlParam_WeightColor, isPieceProduct || (isFixed && !isWMError) ? COLOR_ACTIVE : COLOR_PASSIVE);
 
     // Рисуем цену:
-    QString price = calculator->priceAsString(product);
+    QString price = Calculator::price(product);
     bool isPrice = isProduct() && PRICE_MAX_CHARS >= price.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    status.price = isPrice ? calculator->priceAsString(product) : NO_DATA;
+    status.price = isPrice ? Calculator::price(product) : NO_DATA;
     emit showControlParam(ControlParam_PriceValue, status.price);
     emit showControlParam(ControlParam_PriceColor, isPrice ? COLOR_ACTIVE : COLOR_PASSIVE);
 
     // Рисуем стоимость:
-    QString amount = calculator->amountAsString(product);
+    QString amount = Calculator::amount(product, equipmentManager);
     bool isAmount = isWM && isPrice && (isPieceProduct || (isFixed && !isWMError)) &&
         AMOUNT_MAX_CHARS >= amount.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    status.amount = isAmount ? calculator->amountAsString(product) : NO_DATA;
+    status.amount = isAmount ? Calculator::amount(product, equipmentManager) : NO_DATA;
     emit showControlParam(ControlParam_AmountValue, status.amount);
     emit showControlParam(ControlParam_AmountColor, isAmount ? COLOR_AMOUNT : COLOR_PASSIVE);
 
@@ -1525,13 +1546,13 @@ bool AppManager::onClicked(const int clicked)
 
     case Clicked_Zero:
         equipmentManager->setZero();
-        if(setProductTare()) showTareToast();
+        if(setProductTare()) showTareToast(true);
         update();
         break;
 
     case Clicked_Tare:
         equipmentManager->setTare();
-        showTareToast();
+        showTareToast(true);
         update();
         break;
 
@@ -1586,14 +1607,22 @@ bool AppManager::onClicked(const int clicked)
         break;
 
     case Clicked_ProductDescription:
+    {
+#ifdef SELECT_RIGHT_NOW
+        DBRecord r = db->selectByCode(DBTABLENAME_MESSAGES, product[ProductDBTable::MessageCode].toString());
+        if (r.count() > ResourceDBTable::Value)
+            showMessage("Описание товара", r[ResourceDBTable::Value].toString());
+#else
         db->select(DBSelector_GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
+#endif
         break;
+    }
 
     case Clicked_ProductFavorite:
         if(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase))
         {
-            if(db->isProductInShowcase(product))
-                showConfirmation(ConfirmSelector_RemoveFromShowcase,  "Удалить товар из витрины?", "");
+            if(isProductInShowcase(product))
+                showConfirmation(ConfirmSelector_RemoveFromShowcase, "Удалить товар из витрины?", "");
             else
                 showConfirmation(ConfirmSelector_AddToShowcase, "Добавить товар в витрину?", "");
         }
@@ -1605,7 +1634,7 @@ bool AppManager::onClicked(const int clicked)
         break;
 
     case Clicked_ProductPanelPieces:
-        if(ProductDBTable::isPiece(product))
+        if(Calculator::isPiece(product))
         {
             debugLog(QString("@@@@@ AppManager::onProductPanelPiecesClicked %1 %2").arg(
                          Tools::toString(status.pieces),
@@ -1627,7 +1656,7 @@ bool AppManager::onClicked(const int clicked)
         break;
 
     case Clicked_WeightFlags:
-        showTareToast();
+        showTareToast(true);
         break;
 
     default:
@@ -1672,7 +1701,7 @@ bool AppManager::onClicked2(const int clicked, const int param)
         if (param >= 0 && param < searchPanelModel->productCount())
         {
             DBRecord& product = searchPanelModel->productByIndex(param);
-            if (!ProductDBTable::isGroup(product)) setProduct(product);
+            if (!Calculator::isGroup(product)) setProduct(product);
             else if(searchPanelModel->hierarchyDown(product))
             {
                 searchPanelModel->descriptor.reset("");
@@ -1707,13 +1736,61 @@ bool AppManager::onClicked2(const int clicked, const int param)
     return ok;
 }
 
+bool AppManager::onClicked3(const int clicked, const QString &param)
+{
+    debugLog(QString("@@@@@ AppManager::onClicked3 %1 %2").arg(Tools::toString(clicked), param));
+    bool ok = true;
+
+    switch (clicked)
+    {
+    case Clicked_None:
+        break;
+
+    case Clicked_DeleteUser:
+        users->onDeleteUser(param);
+        break;
+
+    case Clicked_NumberToSearch:
+        if(!isAuthorizationOpened() && !isSettingsOpened() && !isProduct())
+        {
+            QString title = status.lastProductSort == ShowcaseSort_Code2 ? "Поиск по номеру №" : "Поиск по коду #";
+            emit showProductCodeInputBox(title, param);
+        }
+        break;
+
+    case Clicked_SetProductByCode:
+    {
+        QString s = param;
+        if(status.lastProductSort == ShowcaseSort_Code2)
+            db->select(DBSelector_SetProductByCode2, s.remove("№"));
+        else
+        {
+#ifdef SELECT_RIGHT_NOW
+            DBRecord r = db->selectByCode(DBTABLENAME_PRODUCTS, s.remove("#"));
+            if(r.isEmpty()) showAttention("Товар не найден!");
+            else
+            {
+                emit closeInputProductPanel();
+                setProduct(r);
+            }
+#else
+            db->select(DBSelector_SetProductByCode, s.remove("#"));
+#endif
+        }
+        break;
+    }
+
+    default:
+        ok = false;
+        break;
+    }
+    return ok;
+}
+
 bool AppManager::setProductTare()
 {
-    if(isProduct() && ProductDBTable::hasTare(product))
-    {
-        equipmentManager->setTare(product[ProductDBTable::Tare].toDouble());
-        return true;
-    }
-    return false;
+    if(!isProduct() || !Calculator::hasTare(product)) return false;
+    equipmentManager->setTare(Calculator::tare(product));
+    return true;
 }
 

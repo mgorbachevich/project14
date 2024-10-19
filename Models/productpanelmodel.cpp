@@ -1,7 +1,7 @@
 #include "productpanelmodel.h"
 #include "productdbtable.h"
 #include "tools.h"
-#include "appmanager.h"
+#include "calculator.h"
 
 void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
 {
@@ -18,8 +18,6 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
         case ProductDBTable::Barcode:
         case ProductDBTable::Name2:
         case ProductDBTable::Certificate:
-        case ProductDBTable::ProduceDate:
-        case ProductDBTable::PackingDate:
             text = v.toString();
             break;
 
@@ -32,17 +30,15 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
             break;
 
         case ProductDBTable::UnitWeight:
-            if(v.toInt() > 0 && ProductDBTable::isPiece(product))
-                text = appManager->calculator->weightAsString(product, i) + " кг";
+            if(v.toInt() > 0 && Calculator::isPiece(product)) text = Calculator::unitWeight(product) + " кг";
             break;
 
         case ProductDBTable::Price2:
-            if(v.toInt() > 0) text = appManager->calculator->priceAsString(product, i) + " руб/кг";
+            if(v.toInt() > 0) text = Calculator::price2(product) + " руб/кг";
             break;
 
         case ProductDBTable::Tare:
-            if(v.toDouble() > 0)
-                text = Tools::toString(v.toDouble(), appManager->calculator->weightPointPosition()) + " кг";
+            if(v.toDouble() > 0) text = Tools::toString(v.toDouble(), 3) + " кг";
             break;
 
         case ProductDBTable::Name: // Рисуется отдельно
@@ -63,13 +59,15 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
         case ProductDBTable::BarcodeFormat: // todo
         case ProductDBTable::ShelfLife: // ниже
         case ProductDBTable::SellDate: // ниже
+        case ProductDBTable::ProduceDate: // ниже
+        case ProductDBTable::PackingDate: // ниже
             break;
 
         default: break;
         }
         if(!text.isEmpty()) ss << QString("%1: %2").arg(table->columnTitle(i), text);
     }
-    ss << appManager->calculator->validity(product);
+    ss << Calculator::validity(product);
     setStringList(ss);
 }
 

@@ -1,9 +1,11 @@
 #include <QDebug>
+#include <QJsonArray>
 #include "netserver.h"
 #include "tools.h"
 #include "appmanager.h"
 #include "externalmessager.h"
 #include "resourcedbtable.h"
+#include "netactionresult.h"
 
 NetServer::NetServer(AppManager* parent) : ExternalMessager(parent)
 {
@@ -407,7 +409,7 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
     result.description = QString("Загружено записей %1 из %2").arg(
                 QString::number(result.successCount),
                 QString::number(result.successCount + result.errorCount));
-    appManager->showToast(result.description);
+    showToast(result.description);
     appManager->status.downloadedRecords = result.successCount;
     appManager->status.isNet = false;
     return result.makeEmptyJson();

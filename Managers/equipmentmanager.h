@@ -10,6 +10,7 @@ class AppManager;
 class DataBase;
 class Slpa100u;
 class LabelCreator;
+class Status;
 
 class EquipmentManager : public ExternalMessager
 {
@@ -25,6 +26,7 @@ public:
     void pause(const bool v) { pauseWM(v); pausePM(v); }
     QString daemonVersion() const;
     QString MODVersion() const { return Wm100::getVersionString(); }
+    const Status& getStatus() const;
 
     // Weight Manager:
     QString WMVersion() const;
@@ -33,6 +35,7 @@ public:
     void setZero();
     double getWeight() const { return WMStatus.weight; }
     double getTare() const { return WMStatus.tare; }
+    QString getTareAsString() const;
     bool isWMError() const { return WMErrorCode != 0 || isWMStateError(WMStatus); }
     bool isWMOverloaded() const { return isWMFlag(WMStatus, 6); }
     bool isWeightFixed() const { return isWMFlag(WMStatus, 0); }

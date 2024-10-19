@@ -12,3 +12,8 @@ void ExternalMessager::showAttention(const QString& text)
 {
     appManager->showAttention(text);
 }
+
+void ExternalMessager::showToast(const QString& text, const int delaySec)
+{
+    appManager->showToast(text, delaySec);
+}

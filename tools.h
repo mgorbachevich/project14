@@ -17,7 +17,6 @@ public:
     static bool toBool(const QString& s) { return s == "1" || s.toUpper() == "TRUE"; }
     static QByteArray toBytes(const quint32);
     static double toDouble(const QString &s) { bool ok; double v = s.toDouble(&ok); return ok ? v : 0; }
-    static int toInt(const bool v) { return v ? 1 : 0; }
     static int toInt(const QString &s) { bool ok; int v = s.toInt(&ok); return ok ? v : 0; }
     static int toInt(const QVariant& v) { return toInt(v.toString()); }
     static QString toIntString(const bool v) { return v ? "1" : "0"; }
@@ -25,7 +24,6 @@ public:
     static QString roundToString(const double, const int);
     static QString toString(const double, const int);
     static QString toString(const int v) { return QString::number(v); }
-    static QString toString(const quint64 v) { return QString::number(v); }
     static QString toString(const QJsonObject&);
     static QString toString(const QStringList& sl) { return sl.join(','); }
     static QStringList toStringList(const QString& s) { return s.split(','); }
@@ -43,7 +41,7 @@ public:
     static bool isFileExists(const QString &path) { return QFile::exists(path); }
     static bool isFileExistsInDownloadPath(const QString&);
     static qint64 getFileSize(const QString&);
-    static QByteArray readBinaryFile(const QString&);
+    //static QByteArray readBinaryFile(const QString&);
     static QString readTextFile(const QString&);
     static bool writeBinaryFile(const QString&, const QByteArray&);
     static bool writeTextFile(const QString&, const QString&);
@@ -55,7 +53,6 @@ public:
     static QDateTime now() { return QDateTime::currentDateTime(); }
     static QDateTime addDateTime(const QDateTime&, const int, const qint64);
     static QDateTime dateTimeFromString(const QString&);
-    static QDateTime dateTimeFromString(const QVariant& v) { return dateTimeFromString(v.toString()); }
     static QString dateFromUInt(quint64, const QString&);
     static QString dateTimeFromUInt(quint64, const QString&, const QString&, const QString&);
     static QString timeFromUInt(quint64, const QString&);

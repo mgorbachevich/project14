@@ -43,50 +43,21 @@ ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBas
     //indexDescriptors.append(DBIndexDescriptor(Code, columnName(Code) + "_index_9", QString(" WHERE %1 LIKE '%2'").arg(columnName(Code), "9%")));
 }
 
-const DBRecord ProductDBTable::checkRecord(const DBRecord& record)
+const DBRecord ProductDBTable::checkRecord(const DBRecord& product)
 {
     Tools::debugLog("@@@@@ ProductDBTable::checkRecord " + name);
     DBRecord result;
-    if (record.count() < columnCount())
+    if (product.count() < columnCount())
     {
         Tools::debugLog("@@@@@ ProductDBTable::checkRecord ERROR");
         return result;
     }
-    int code = Tools::toInt(record.at(Columns::Code));
-    int groupCode = Tools::toInt(record.at(Columns::GroupCode));
-    result.append(record);
+    int code = Tools::toInt(product.at(Columns::Code));
+    int groupCode = Tools::toInt(product.at(Columns::GroupCode));
+    result.append(product);
     result.replace(Columns::Code, QString("%1").arg(code));
     result.replace(Columns::GroupCode, QString("%1").arg(groupCode));
-    result.replace(Columns::UpperName, record.at(Columns::Name).toString().toUpper());
+    result.replace(Columns::UpperName, product.at(Columns::Name).toString().toUpper());
     return result;
-}
-
-bool ProductDBTable::isForShowcase(const DBRecord& record)
-{
-    return (record.count() >= ProductDBTable::COLUMN_COUNT) && !isGroup(record);
-}
-
-bool ProductDBTable::isGroup(const DBRecord& record)
-{
-    return (record.count() >= ProductDBTable::Type) &&
-            record[ProductDBTable::Type].toInt() == ProductType_Group;
-}
-
-bool ProductDBTable::hasTare(const DBRecord& record)
-{
-    return (record.count() >= ProductDBTable::Tare) &&
-            record[ProductDBTable::Tare].toDouble() > 0;
-}
-
-bool ProductDBTable::isPiece(const DBRecord& record)
-{
-    return (record.count() >= ProductDBTable::Type) &&
-            record[ProductDBTable::Type].toInt() == ProductType_Piece;
-}
-
-bool ProductDBTable::is100gBase(const DBRecord& record)
-{
-    return (record.count() >= ProductDBTable::PriceBase) &&
-            record[ProductDBTable::PriceBase].toInt() == ProductPriceBase_100g;
 }
 
