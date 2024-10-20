@@ -162,6 +162,30 @@ bool LabelObjectPicture::draw(QImage &dest)
     return true;
 }
 
+// ----------------LabelObjectShape----------------
+
+bool LabelObjectShape::draw(QImage &dest)
+{
+    if (!isVisible) return true;
+    QPainter painter;
+    painter.begin(&dest);
+    QRect r(left*8, top*8, width*8-1, height*8-1);
+    switch (frameForm)
+    {
+    case 0: painter.drawLine(r.topLeft(), r.topRight()); break;
+    case 1: painter.drawLine(r.bottomLeft(), r.bottomRight()); break;
+    case 2: painter.drawLine(r.topLeft(), r.bottomLeft()); break;
+    case 3: painter.drawLine(r.topRight(), r.bottomRight()); break;
+    case 4: painter.drawLine(r.topLeft(), r.bottomRight()); break;
+    case 5: painter.drawLine(r.bottomLeft(), r.topRight()); break;
+    case 6: painter.drawLine(r.topLeft(), r.bottomRight());
+            painter.drawLine(r.bottomLeft(), r.topRight()); break;
+    case 7: painter.drawRect(r); break;
+    }
+    painter.end();
+    return true;
+}
+
 // ----------------LabelObjectBarcode----------------
 
 bool LabelObjectBarcode::load(const QByteArray &ba, const QFileInfo &fileInfo, const QList<QString> &stringList)

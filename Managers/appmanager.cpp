@@ -291,12 +291,8 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         inputProductCodePanelModel->update(records);
 
         // Enable/disable button "Continue":
-#ifdef SELECT_RIGHT_NOW
         DBRecord r = db->selectByCode(DBTABLENAME_PRODUCTS, inputProductCodePanelModel->descriptor.param);
         emit enableSetProductByInputCode(!r.isEmpty());
-#else
-        db->select(DBSelector_GetProductByCode, inputProductCodePanelModel->descriptor.param);
-#endif
         break;
     }
 
@@ -363,44 +359,6 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         if(n < 0 || n >= names.count()) r[SettingField_Value] = "0";
         break;
     }
-
-#ifndef SELECT_RIGHT_NOW
-    case DBSelector_GetMessageByResourceCode: // Отображение сообщения (описания) выбранного товара:
-        if (!records.isEmpty() && records[0].count() > ResourceDBTable::Value)
-            showMessage("Описание товара", records[0][ResourceDBTable::Value].toString());
-        break;
-
-    case DBSelector_GetImageByResourceCode: // Отображение картинки выбранного товара:
-    {
-        QString imagePath = records.count() > 0 ? getImageFileWithQmlPath(records[0]) : DUMMY_IMAGE_FILE;
-        emit showControlParam(ControlParam_ProductImage, imagePath);
-        debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
-        break;
-    }
-
-    case DBSelector_GetProductByCode: // Отображение товара с кодом:
-        emit enableSetProductByInputCode(records.count() == 1 && !records.at(0).isEmpty());
-        break;
-
-    case DBSelector_SetProductByCode: // Отображение товара с кодом:
-        if(records.isEmpty())
-        {
-            showAttention("Товар не найден!");
-            break;
-        }
-        emit closeInputProductPanel();
-        setProduct(records.at(0));
-        break;
-
-    case DBSelector_RefreshCurrentProduct: // Сброс выбранного товара после изменений в БД:
-         resetProduct();
-         if (!records.isEmpty() && !records.at(0).isEmpty())
-         {
-             //showToast("ВНИМАНИЕ! Выбранный товар изменен");
-             setProduct(records.at(0));
-         }
-         break;
-#endif
 
     default: break;
     }
@@ -841,26 +799,21 @@ void AppManager::setProduct(const DBRecord& newProduct)
     product = newProduct;
     if(!product.isEmpty())
     {
-        QString productCode = product[ProductDBTable::Code].toString();
-        debugLog("@@@@@ AppManager::setProduct " + productCode);
-        productPanelModel->update(product, (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
+        QString code = product[ProductDBTable::Code].toString();
+        debugLog("@@@@@ AppManager::setProduct " + code);
         emit showProductPanel(product[ProductDBTable::Name].toString(), Calculator::isPiece(product));
+        productPanelModel->update(product, (ProductDBTable*)db->getTable(DBTABLENAME_PRODUCTS));
         showTareToast(setProductTare() || equipmentManager->isTareFlag());
-        db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(productCode));
+        db->saveLog(LogType_Info, LogSource_User, QString("Просмотр товара. Код: %1").arg(code));
         QString pictureCode = product[ProductDBTable::PictureCode].toString();
-#ifdef SELECT_RIGHT_NOW
         DBRecord r = db->selectByCode(DBTABLENAME_PICTURES, pictureCode);
         QString imagePath = r.count() > 0 ? getImageFileWithQmlPath(r) : DUMMY_IMAGE_FILE;
         emit showControlParam(ControlParam_ProductImage, imagePath);
         debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
-#else
-        db->select(DBSelector_GetImageByResourceCode, pictureCode);
-#endif
         emit setCurrentProductFavorite(isProductInShowcase(product));
         update();
     }
 }
-
 void AppManager::showFoundProductsToast(const int v)
 {
     // if(v > 1) showToast(QString("Найдено товаров: %1").arg(Tools::toString(v)));
@@ -1608,13 +1561,8 @@ bool AppManager::onClicked(const int clicked)
 
     case Clicked_ProductDescription:
     {
-#ifdef SELECT_RIGHT_NOW
-        DBRecord r = db->selectByCode(DBTABLENAME_MESSAGES, product[ProductDBTable::MessageCode].toString());
-        if (r.count() > ResourceDBTable::Value)
-            showMessage("Описание товара", r[ResourceDBTable::Value].toString());
-#else
-        db->select(DBSelector_GetMessageByResourceCode, product[ProductDBTable::MessageCode].toString());
-#endif
+        QString s = db->getProductMessage(product);
+        if (!s.isEmpty()) showMessage("Описание товара", s);
         break;
     }
 
@@ -1765,7 +1713,6 @@ bool AppManager::onClicked3(const int clicked, const QString &param)
             db->select(DBSelector_SetProductByCode2, s.remove("№"));
         else
         {
-#ifdef SELECT_RIGHT_NOW
             DBRecord r = db->selectByCode(DBTABLENAME_PRODUCTS, s.remove("#"));
             if(r.isEmpty()) showAttention("Товар не найден!");
             else
@@ -1773,9 +1720,6 @@ bool AppManager::onClicked3(const int clicked, const QString &param)
                 emit closeInputProductPanel();
                 setProduct(r);
             }
-#else
-            db->select(DBSelector_SetProductByCode, s.remove("#"));
-#endif
         }
         break;
     }

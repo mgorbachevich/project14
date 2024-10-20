@@ -83,6 +83,8 @@ int Wm100::connectDevice(const QString &uri)
     else if (Wm100ProtocolDemo::checkUri(uri)) protocol = new Wm100ProtocolDemo(this);
     else return -11;
 
+    connect(protocol, SIGNAL(selfKeyPressed(int)), SLOT(onSelfKeyPressed(int)));
+
     int res = protocol->open(uri);
     if (!res) res = protocol->cGetDeviceMetrics();
     if (!res) res = protocol->cGetChannelParam();
@@ -202,9 +204,15 @@ int Wm100::killDaemon()
 
 int Wm100::setDisplayData(const Wm100Protocol::display_data &dd)
 {
-    Wm100ProtocolHttp2* pr = new Wm100ProtocolHttp2(this);
-    int res = pr->cDisplayData(dd, "http://127.0.0.1:51233");
-    delete pr;
+    static int errorCount = 0;
+    int res = 0;
+    if (errorCount >= 5)
+    {
+        Wm100ProtocolHttp2* pr = new Wm100ProtocolHttp2(this);
+        res = pr->cDisplayData(dd, "http://127.0.0.1:51233");
+        delete pr;
+        if (res < 0) errorCount++;
+    }
     return res;
 }
 
@@ -261,6 +269,11 @@ void Wm100::onTimer()
     }
     emit pollingStatus(res);
     if (timerInterval) QTimer::singleShot(timerInterval, this, [this]() { this->onTimer(); } );
+}
+
+void Wm100::onSelfKeyPressed(int key)
+{
+    emit selfKeyPressed(key);
 }
 
 bool Wm100::isConnected()

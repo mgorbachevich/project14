@@ -6,7 +6,7 @@
 #include "Wm100Protocol.h"
 
 
-#define MOD_VERSION "1.17"
+#define MOD_VERSION "1.19"
 
 
 class Wm100 : public QObject
@@ -71,9 +71,11 @@ signals:
     void weightStatusChanged(Wm100Protocol::channel_status&);
     void errorStatusChanged(int);
     void pollingStatus(int);
+    void selfKeyPressed(int);
 
 private slots:
     void onTimer();
+    void onSelfKeyPressed(int);
 };
 
 #endif // WM100_H

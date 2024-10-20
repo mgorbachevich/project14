@@ -11,6 +11,7 @@ INCLUDEPATH += \
 
 HEADERS += \
     Managers/calculator.h \
+    Managers/validity.h \
     constants.h \
     tools.h \
     DB/dbindexdescriptor.h \
@@ -119,6 +120,7 @@ HEADERS += \
 
 SOURCES += \
     Managers/calculator.cpp \
+    Managers/validity.cpp \
     main.cpp \
     tools.cpp \
     DB/showcase.cpp \
@@ -318,6 +320,12 @@ RESOURCES += \
     Labels/60x60.dat/print.dat \
     Labels/60x60.dat/strings \
     Labels/60x60.lpr \
+    Labels/60x60_2.dat/0.bmp \
+    Labels/60x60_2.dat/60x60_2.par \
+    Labels/60x60_2.dat/description \
+    Labels/60x60_2.dat/print.dat \
+    Labels/60x60_2.dat/strings \
+    Labels/60x60_2.lpr \
     Panels/authorizationPanel.qml \
     Panels/calendarPanel.qml \
     Panels/CardText.qml \

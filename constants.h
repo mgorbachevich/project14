@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.87"
+#define APP_VERSION "2.88"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -49,7 +49,6 @@
 #define USERS_FILE Tools::sharedPath("users.txt")
 #define SHOWCASE_FILE Tools::sharedPath("showcase.txt")
 #define SCALE_CONFIG_FILE Tools::sharedPath("scale_config.txt")
-//#define CHECK_SELL_DATE
 
 // Icons:
 #define ICON_TARE_ON  "../Icons/tare_white"
@@ -113,7 +112,6 @@
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS
-#define SELECT_RIGHT_NOW
 
 enum MainPageIndex
 {

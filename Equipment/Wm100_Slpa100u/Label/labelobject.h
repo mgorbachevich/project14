@@ -32,12 +32,17 @@ public:
         t_time,
         t_label,
         t_scales,
-        t_price2,
+        t_currequiv,
         t_certification,
         t_message,
         t_shop,
         t_operator,
+        t_manufactured,
+        t_name2,
+        t_price2,
+        t_cost2,
         t_graphic = 100,
+        t_shape,
         t_string = 200
     };
     enum objalignment {
@@ -105,6 +110,13 @@ public:
 private:
     QImage image;
     bool   stretch;
+};
+
+class LabelObjectShape : public LabelObject
+{
+public:
+    explicit LabelObjectShape(QObject *parent = nullptr) : LabelObject(parent) {};
+    virtual bool draw(QImage &dest);
 };
 
 class LabelObjectBarcode : public LabelObject

@@ -99,7 +99,7 @@ int Wm100ProtocolHttp2::cDisplayData(const display_data &dd, const QString &uri)
         if (dd.flCalm) flags += "calm+";
         if (dd.flAuto) flags += "auto+";
         if (dd.flMemory) flags += "memory+";
-        if (dd.flUprow) flags += "uprow+";
+        if (dd.flUpArrow) flags += "uparrow+";
         if (dd.flPieces) flags += "pieces+";
         if (dd.flTools) flags += "tools+";
         if (dd.flDataExchange) flags += "dataexchange+";
@@ -152,6 +152,8 @@ int Wm100ProtocolHttp2::cGetStatusEx(channel_status_ex *status)
         status->flags  = 0;
         status->levelx = 0;
         status->levely = 0;
+        int key = jsonObject["selfkeycode"].toInt(0);
+        if (key) emit selfKeyPressed(key);
     }
     return res;
 }

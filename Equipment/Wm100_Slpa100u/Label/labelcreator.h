@@ -17,7 +17,7 @@ struct PrintData
     QString name;
     QString shelflife;
     QString validity;
-    QString price2;
+    QString currequiv;
     QString certificate;
     QString message;
     QString shop;
@@ -29,6 +29,10 @@ struct PrintData
     QString scalesnumber;
     QString picturefile;
     QString textfile;
+    QString manufactured;
+    QString name2;
+    QString price2;
+    QString cost2;
 };
 
 class LabelCreator : public QObject
@@ -42,7 +46,8 @@ public:
         uint16_t width;
         uint16_t height;
      };
-    const uint8_t VERSION = 2;
+    const uint8_t VERSION_OLD = 2;
+    const uint8_t VERSION = 3;
 public:
     bool getLoaded() { return loaded; }
     int loadLabel(const QString &fileName);

@@ -22,6 +22,11 @@
                 "code":"999999994",
                 "name":"60x60*",
                 "value":":/Labels/60x60.lpr"
+            },
+            {
+                "code":"999999995",
+                "name":"60x60_2*",
+                "value":":/Labels/60x60_2.lpr"
             }
         ]
     }

@@ -76,7 +76,7 @@ public:
         bool flCalm;
         bool flAuto;
         bool flMemory;
-        bool flUprow;
+        bool flUpArrow;
         bool flPieces;
         bool flTools;
         bool flDataExchange;
@@ -170,7 +170,7 @@ private:
     virtual int executeCommand(wmcommand cmd, const QByteArray &out, QByteArray &in) = 0;
 
 signals:
-
+    void selfKeyPressed(int);
 };
 
 #endif // WM100PROTOCOL_H

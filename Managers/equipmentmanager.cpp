@@ -12,6 +12,7 @@
 #include "appmanager.h"
 #include "calculator.h"
 #include "settings.h"
+#include "validity.h"
 
 EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent)
 {
@@ -630,22 +631,28 @@ int EquipmentManager::print(DataBase* db,
 
             pd.itemcode = product[ProductDBTable::Code].toString();
             pd.name = product[ProductDBTable::Name].toString();
-            pd.shelflife = product[ProductDBTable::ShelfLife].toString();
-            pd.price2 = Calculator::price2(product);
+            pd.name2 = product[ProductDBTable::Name2].toString();
             pd.certificate = product[ProductDBTable::Certificate].toString();
-            pd.message = db->getProductMessageById(product[ProductDBTable::MessageCode].toString());
-            pd.validity = ""; // todo
+            pd.price2 = Calculator::price2(product);
+            pd.message = db->getProductMessage(product);
+
+            Validity v(product);
+            pd.manufactured = v.getText(ValidityIndex_Produce);
+            pd.validity = v.getText(ValidityIndex_Valid);
+            pd.shelflife = v.getText(ValidityIndex_Life);
         }
         else
         {
             pd.barcode = "";
             pd.itemcode = "";
             pd.name = "";
-            pd.shelflife = "";
-            pd.price2 = "";
+            pd.name2 = "";
             pd.certificate = "";
+            pd.price2 = "";
             pd.message = "";
+            pd.manufactured = "";
             pd.validity = "";
+            pd.shelflife = "";
         }
         pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
         pd.operatorcode =  Tools::toString(Users::getCode(user));
@@ -656,6 +663,8 @@ int EquipmentManager::print(DataBase* db,
         pd.scalesnumber = appManager->settings->getStringValue(SettingCode_ScalesNumber),
         pd.picturefile = ""; // todo
         pd.textfile = ""; // todo
+        pd.currequiv = ""; // todo
+        pd.cost2 = ""; // todo
     }
     if(e == 0)
     {

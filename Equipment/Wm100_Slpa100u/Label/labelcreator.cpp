@@ -31,21 +31,25 @@ QImage LabelCreator::createImage(const PrintData &data)
     {
         switch (obj->getType())
         {
-        case LabelObject::t_weight:    obj->setData(data.weight); break;
-        case LabelObject::t_price:     obj->setData(data.price); break;
-        case LabelObject::t_cost:      obj->setData(data.cost); break;
-        case LabelObject::t_barcode:   obj->setData(data.barcode); break;
-        case LabelObject::t_itemcode:  obj->setData(data.itemcode); break;
-        case LabelObject::t_name:      obj->setData(data.name); break;
-        case LabelObject::t_shelflife: obj->setData(data.shelflife); break;
-        case LabelObject::t_validity:  obj->setData(data.validity); break;
-        case LabelObject::t_tare:      obj->setData(data.tare); break;
-        case LabelObject::t_date:      obj->setData(data.date); break;
-        case LabelObject::t_time:      obj->setData(data.time); break;
-        case LabelObject::t_label:     obj->setData(data.labelnumber); break;
-        case LabelObject::t_scales:    obj->setData(data.scalesnumber); break;
-        case LabelObject::t_price2:    obj->setData(data.price2); break;
-        case LabelObject::t_shop:      obj->setData(data.shop); break;
+        case LabelObject::t_weight:      obj->setData(data.weight); break;
+        case LabelObject::t_price:       obj->setData(data.price); break;
+        case LabelObject::t_cost:        obj->setData(data.cost); break;
+        case LabelObject::t_barcode:     obj->setData(data.barcode); break;
+        case LabelObject::t_itemcode:    obj->setData(data.itemcode); break;
+        case LabelObject::t_name:        obj->setData(data.name); break;
+        case LabelObject::t_shelflife:   obj->setData(data.shelflife); break;
+        case LabelObject::t_validity:    obj->setData(data.validity); break;
+        case LabelObject::t_tare:        obj->setData(data.tare); break;
+        case LabelObject::t_date:        obj->setData(data.date); break;
+        case LabelObject::t_time:        obj->setData(data.time); break;
+        case LabelObject::t_label:       obj->setData(data.labelnumber); break;
+        case LabelObject::t_scales:      obj->setData(data.scalesnumber); break;
+        case LabelObject::t_currequiv:   obj->setData(data.currequiv); break;
+        case LabelObject::t_shop:        obj->setData(data.shop); break;
+        case LabelObject::t_manufactured:obj->setData(data.manufactured); break;
+        case LabelObject::t_name2:       obj->setData(data.name2); break;
+        case LabelObject::t_price2:      obj->setData(data.price2); break;
+        case LabelObject::t_cost2:       obj->setData(data.cost2); break;
         case LabelObject::t_message:
             if (obj->getDataSourceIndex() == 0) obj->setData(data.textfile);
             if (obj->getDataSourceIndex() == 1) obj->setData(data.message);
@@ -85,7 +89,7 @@ int LabelCreator::openProject(const QString &fileName)
         data = file.readAll();
         file.close();
         if (data.size() != 16) return 101;
-        if (data.at(0) != VERSION) return 103;
+        if (data.at(0) != VERSION_OLD && data.at(0) != VERSION) return 103;
         prj.isLabel54 = (data.at(11) & 0x04) == 0;
 
     }
@@ -141,7 +145,7 @@ int LabelCreator::decodeParams(const QByteArray &data, const QFileInfo fileInfo,
 {
     if (data.size() == 0) return 106;
     if (data.size() < 9)  return 107;
-    if (data.at(0) != VERSION) return 104;
+    if (data.at(0) != VERSION_OLD && data.at(0) != VERSION) return 104;
 
     QDataStream ds(data);
     ds.setByteOrder(QDataStream::LittleEndian);
@@ -160,7 +164,8 @@ int LabelCreator::decodeParams(const QByteArray &data, const QFileInfo fileInfo,
         ds >> b8_1 >> b8_2;
         LabelObject::objgroup gr = static_cast<LabelObject::objgroup>(b8_1);
         LabelObject::objtype  tp = static_cast<LabelObject::objtype>(b8_2);
-        if (gr == LabelObject::g_graphic) p = new LabelObjectPicture();
+        if (tp == LabelObject::t_graphic) p = new LabelObjectPicture();
+        else if (tp == LabelObject::t_shape) p = new LabelObjectShape();
         else if (gr == LabelObject::g_string) p = new LabelObjectString();
         else if (tp == LabelObject::t_barcode) p = new LabelObjectBarcode();
         else p = new LabelObject();

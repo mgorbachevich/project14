@@ -17,6 +17,7 @@ class DBTable : public QObject
 
 public:
     DBTable(const QString &name, QSqlDatabase& sqlDB, DataBase *parent);
+    static QVariant normalize(const DBRecord&, const int);
     static QString toJsonString(DBTable*, const DBRecord&);
     static QString toJsonString(DBTable*, const DBRecordList&);
     static QJsonObject toJsonObject(DBTable*, const DBRecord&);

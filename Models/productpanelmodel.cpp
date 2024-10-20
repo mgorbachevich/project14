@@ -2,6 +2,7 @@
 #include "productdbtable.h"
 #include "tools.h"
 #include "calculator.h"
+#include "validity.h"
 
 void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
 {
@@ -40,7 +41,7 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
         case ProductDBTable::Tare:
             if(v.toDouble() > 0) text = Tools::toString(v.toDouble(), 3) + " кг";
             break;
-
+        /*
         case ProductDBTable::Name: // Рисуется отдельно
         case ProductDBTable::Price: // Рисуется отдельно
         case ProductDBTable::DiscountCode:
@@ -61,13 +62,14 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
         case ProductDBTable::SellDate: // ниже
         case ProductDBTable::ProduceDate: // ниже
         case ProductDBTable::PackingDate: // ниже
-            break;
-
+        */
         default: break;
         }
         if(!text.isEmpty()) ss << QString("%1: %2").arg(table->columnTitle(i), text);
     }
-    ss << Calculator::validity(product);
+    Validity v(product);
+    ss << v.makeInfo();
+
     setStringList(ss);
 }
 

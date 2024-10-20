@@ -202,3 +202,8 @@ void DBTable::createIndexes()
     }
 }
 
+QVariant DBTable::normalize(const DBRecord& record, const int field)
+{
+    return record.count() <= field ? QVariant("") : record[field];
+}
+

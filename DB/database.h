@@ -26,13 +26,6 @@ enum DBSelector
     DBSelector_SetProductByCode2,
     DBSelector_GetAllLabels,
     //DBSelector_GetAuthorizationUsers,
-#ifndef SELECT_RIGHT_NOW
-    DBSelector_RefreshCurrentProduct,
-    DBSelector_SetProductByCode,
-    DBSelector_GetMessageByResourceCode,
-    DBSelector_GetImageByResourceCode,
-    DBSelector_GetProductByCode,
-#endif
 };
 
 class DataBase : public ExternalMessager
@@ -46,7 +39,7 @@ public:
     void clearLog();
     QString getLabelPathByName(const QString&);
     QString getLabelPathById(const QString&);
-    QString getProductMessageById(const QString&);
+    QString getProductMessage(const DBRecord&);
     DBTable* getTable(const QString&) const;
     QList<DBTable*> getTables() { return tables; };
     bool isStarted() { return started; }

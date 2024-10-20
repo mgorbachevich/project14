@@ -125,11 +125,15 @@ DBTable* DataBase::getTable(const QString &tableName) const
     return nullptr;
 }
 
-QString DataBase::getProductMessageById(const QString& id)
+QString DataBase::getProductMessage(const DBRecord& product)
 {
-    DBRecord r;
-    if(selectById(DBTABLENAME_MESSAGES, id, r) && r.count() > ResourceDBTable::Value)
-        return r[ResourceDBTable::Value].toString();
+    if(product.count() >= ProductDBTable::MessageCode)
+    {
+        DBRecord r;
+        if(selectById(DBTABLENAME_MESSAGES, product[ProductDBTable::MessageCode].toString(), r) &&
+                r.count() > ResourceDBTable::Value)
+            return r[ResourceDBTable::Value].toString();
+    }
     return "";
 }
 
@@ -656,26 +660,6 @@ void DataBase::select(const DBSelector selector,
         case DBSelector_GetAllLabels: // Запрос этикеток:
             selectAll(getTable(DBTABLENAME_LABELS), resultRecords);
             break;
-
-#ifndef SELECT_RIGHT_NOW
-        case DBSelector_RefreshCurrentProduct: // Запрос товара по коду
-        case DBSelector_GetMessageByResourceCode: // Запрос сообщения (или файла сообщения?) из ресурсов по коду ресурса:
-        case DBSelector_GetImageByResourceCode: // Запрос картинки из ресурсов по коду ресурса:
-        case DBSelector_GetProductByCode:
-        case DBSelector_SetProductByCode:
-         {
-            QString table = DBTABLENAME_PRODUCTS;
-            switch (selector)
-            {
-            case DBSelector_GetImageByResourceCode:   table = DBTABLENAME_PICTURES; break;
-            case DBSelector_GetMessageByResourceCode: table = DBTABLENAME_MESSAGES; break;
-            default: break;
-            }
-            DBRecord r;
-            if(selectById(table, param1, r)) resultRecords.append(r);
-            break;
-        }
-#endif
 
         case DBSelector_SetProductByCode2: // Запрос товара по коду 2
         {
