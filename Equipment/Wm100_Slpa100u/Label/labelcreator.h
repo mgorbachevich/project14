@@ -16,7 +16,7 @@ struct PrintData
     QString itemcode;
     QString name;
     QString shelflife;
-    QString validity;
+    QString selldate;
     QString currequiv;
     QString certificate;
     QString message;
@@ -33,6 +33,9 @@ struct PrintData
     QString name2;
     QString price2;
     QString cost2;
+    QString code2;
+    QString producedate;
+    QString validitydate;
 };
 
 class LabelCreator : public QObject

@@ -1256,13 +1256,11 @@ void AppManager::showSettingComboBox2(const DBRecord& r)
 
 void AppManager::showTareToast(const bool showZero)
 {
-    if (showZero || equipmentManager->isTareFlag())
+    QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this, showZero]()
     {
-        QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
-        {
+        if (showZero || equipmentManager->isTareFlag())
             showToast(QString("Тара %1 кг").arg(equipmentManager->getTareAsString()));
-        });
-    }
+    });
 }
 
 void AppManager::updateSettings() // При старте и после загрузки
@@ -1299,7 +1297,7 @@ void AppManager::update()
     const bool isWM = equipmentManager->isWM() && equipmentManager->getWMMode() != EquipmentMode_None;
     const bool isPM = equipmentManager->isPM();
     const bool isZero = equipmentManager->isZeroFlag();
-    const bool isTare = equipmentManager->isTareFlag();
+    //const bool isTare = equipmentManager->isTareFlag();
     const bool isFixed = equipmentManager->isWeightFixed();
     const bool isWMError = equipmentManager->isWMError() || !isWM;
     const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
@@ -1308,7 +1306,7 @@ void AppManager::update()
     status.quantity = NO_DATA;
     status.price = NO_DATA;
     status.amount = NO_DATA;
-    status.tare = isTare ? equipmentManager->getTareAsString() : NO_DATA;
+    //status.tare = isTare ? equipmentManager->getTareAsString() : NO_DATA;
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
     if (isZero) status.isPrintCalculateMode = true;
@@ -1499,13 +1497,13 @@ bool AppManager::onClicked(const int clicked)
 
     case Clicked_Zero:
         equipmentManager->setZero();
-        if(setProductTare()) showTareToast(true);
+        showTareToast(setProductTare());
         update();
         break;
 
     case Clicked_Tare:
         equipmentManager->setTare();
-        showTareToast(true);
+        showTareToast();
         update();
         break;
 
@@ -1604,7 +1602,7 @@ bool AppManager::onClicked(const int clicked)
         break;
 
     case Clicked_WeightFlags:
-        showTareToast(true);
+        showTareToast();
         break;
 
     default:

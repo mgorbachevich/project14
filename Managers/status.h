@@ -32,7 +32,7 @@ public:
     QString quantity = NO_DATA;
     QString price = NO_DATA;
     QString amount = NO_DATA;
-    QString tare = NO_DATA;
+    //QString tare = NO_DATA;
 };
 
 #endif // STATUS_H

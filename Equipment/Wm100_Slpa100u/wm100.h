@@ -6,7 +6,7 @@
 #include "Wm100Protocol.h"
 
 
-#define MOD_VERSION "1.19"
+#define MOD_VERSION "1.20"
 
 
 class Wm100 : public QObject

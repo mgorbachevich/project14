@@ -100,7 +100,7 @@ private:
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
     void showSettingComboBox2(const DBRecord&);
-    void showTareToast(const bool);
+    void showTareToast(const bool showZero = true);
     void showWeightFlags();
     void startAuthorization();
     void startAll();

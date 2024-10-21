@@ -38,7 +38,7 @@ QImage LabelCreator::createImage(const PrintData &data)
         case LabelObject::t_itemcode:    obj->setData(data.itemcode); break;
         case LabelObject::t_name:        obj->setData(data.name); break;
         case LabelObject::t_shelflife:   obj->setData(data.shelflife); break;
-        case LabelObject::t_validity:    obj->setData(data.validity); break;
+        case LabelObject::t_selldate:    obj->setData(data.selldate); break;
         case LabelObject::t_tare:        obj->setData(data.tare); break;
         case LabelObject::t_date:        obj->setData(data.date); break;
         case LabelObject::t_time:        obj->setData(data.time); break;
@@ -50,6 +50,9 @@ QImage LabelCreator::createImage(const PrintData &data)
         case LabelObject::t_name2:       obj->setData(data.name2); break;
         case LabelObject::t_price2:      obj->setData(data.price2); break;
         case LabelObject::t_cost2:       obj->setData(data.cost2); break;
+        case LabelObject::t_code2:       obj->setData(data.code2); break;
+        case LabelObject::t_producedate: obj->setData(data.producedate); break;
+        case LabelObject::t_validitydate:obj->setData(data.validitydate); break;
         case LabelObject::t_message:
             if (obj->getDataSourceIndex() == 0) obj->setData(data.textfile);
             if (obj->getDataSourceIndex() == 1) obj->setData(data.message);

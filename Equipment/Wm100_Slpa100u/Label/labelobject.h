@@ -26,7 +26,7 @@ public:
         t_itemcode,
         t_name,
         t_shelflife,
-        t_validity,
+        t_selldate,
         t_tare,
         t_date,
         t_time,
@@ -41,6 +41,9 @@ public:
         t_name2,
         t_price2,
         t_cost2,
+        t_code2,
+        t_producedate,
+        t_validitydate,
         t_graphic = 100,
         t_shape,
         t_string = 200

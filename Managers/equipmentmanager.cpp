@@ -602,26 +602,25 @@ int EquipmentManager::print(DataBase* db,
 {
     Tools::debugLog("@@@@@ EquipmentManager::print " + labelLocalPath);
     if(!isPMStarted || slpa == nullptr) return Error_PM_Fail;
-
+    int e = 0;
     quint64 dateTime = Tools::nowMsec();
     int labelNumber = 0; // todo
-    int e = 0;
-
-    PrintData pd;
-    pd.weight = appManager->status.quantity;
-    pd.price = appManager->status.price;
-    pd.cost = appManager->status.amount;
-    pd.tare = appManager->status.tare;
 
     QString labelFullPath;
     if(Tools::isFileExistsInDownloadPath(labelLocalPath)) labelFullPath = Tools::downloadPath(labelLocalPath);
     else if(Tools::isFileExists(labelLocalPath)) labelFullPath = labelLocalPath;
     if(labelPath != labelFullPath)
     {
+        showToast("Загрузка этикетки");
         e = labelCreator->loadLabel(labelFullPath);
         if(e == 0) labelPath = labelFullPath;
     }
 
+    PrintData pd;
+    pd.weight = appManager->status.quantity;
+    pd.price = appManager->status.price;
+    pd.cost = appManager->status.amount;
+    pd.tare = isTareFlag() ? getTareAsString() : "";
     if (e == 0)
     {
         if(appManager->isProduct())
@@ -630,6 +629,7 @@ int EquipmentManager::print(DataBase* db,
             if (pd.barcode.isEmpty()) e = Error_PM_Barcode;
 
             pd.itemcode = product[ProductDBTable::Code].toString();
+            pd.code2 = product[ProductDBTable::Code2].toString();
             pd.name = product[ProductDBTable::Name].toString();
             pd.name2 = product[ProductDBTable::Name2].toString();
             pd.certificate = product[ProductDBTable::Certificate].toString();
@@ -637,21 +637,24 @@ int EquipmentManager::print(DataBase* db,
             pd.message = db->getProductMessage(product);
 
             Validity v(product);
-            pd.manufactured = v.getText(ValidityIndex_Produce);
-            pd.validity = v.getText(ValidityIndex_Valid);
+            pd.producedate = v.getText(ValidityIndex_Produce);
+            pd.validitydate = v.getText(ValidityIndex_Valid);
+            pd.selldate = v.getText(ValidityIndex_Sell);
             pd.shelflife = v.getText(ValidityIndex_Life);
         }
         else
         {
             pd.barcode = "";
             pd.itemcode = "";
+            pd.code2 = "";
             pd.name = "";
             pd.name2 = "";
             pd.certificate = "";
             pd.price2 = "";
             pd.message = "";
-            pd.manufactured = "";
-            pd.validity = "";
+            pd.producedate = "";
+            pd.validitydate = "";
+            pd.selldate = "";
             pd.shelflife = "";
         }
         pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
@@ -665,6 +668,7 @@ int EquipmentManager::print(DataBase* db,
         pd.textfile = ""; // todo
         pd.currequiv = ""; // todo
         pd.cost2 = ""; // todo
+        pd.manufactured = ""; // todo
     }
     if(e == 0)
     {
@@ -699,7 +703,7 @@ int EquipmentManager::setExternalDisplay(const DBRecord& product)
     dd.weight = appManager->status.quantity;
     dd.price = appManager->status.price;
     dd.cost = appManager->status.amount;
-    dd.tare = appManager->status.tare;
+    dd.tare = isTareFlag() ? getTareAsString() : NO_DATA;
     dd.flZero = isZeroFlag();
     dd.flTare = isTareFlag();
     dd.flCalm = isWeightFixed();
