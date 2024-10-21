@@ -29,12 +29,12 @@ struct PrintData
     QString scalesnumber;
     QString picturefile;
     QString textfile;
-    QString manufactured;
+    QString producedate;
     QString name2;
     QString price2;
     QString cost2;
     QString code2;
-    QString producedate;
+    QString packagedate;
     QString validitydate;
 };
 

@@ -1268,6 +1268,7 @@ void AppManager::updateSettings() // При старте и после загр�
     debugLog("@@@@@ AppManager::updateSettings ");
     db->select(DBSelector_GetAllLabels);
     Calculator::update(settings);
+    equipmentManager->onSettinsChanged();
     settings->write();
 }
 
@@ -1425,15 +1426,7 @@ void AppManager::update()
 void AppManager::print() // Печатаем этикетку
 {
     debugLog("@@@@@ AppManager::print ");
-    QString labelPath;
-
-    // Товар с заданной этикеткой:
-    if(isProduct() && Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
-        labelPath = db->getLabelPathById(product[ProductDBTable::Code].toString());
-
-    if(labelPath.isEmpty())
-        labelPath = db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
-    equipmentManager->print(db, getCurrentUser(), product, labelPath);
+    equipmentManager->print(db, getCurrentUser(), product);
 }
 
 void AppManager::setExternalDisplay()

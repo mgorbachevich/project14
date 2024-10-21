@@ -650,6 +650,7 @@ void DataBase::select(const DBSelector selector,
     {
         Tools::debugLog(QString("@@@@@ DataBase::select %1 ").arg(selector) + param1);
         DBRecordList resultRecords;
+        Settings* settings = appManager->settings;
 
         switch(selector)
         {
@@ -744,8 +745,8 @@ void DataBase::select(const DBSelector selector,
             case DBSelector_GetProductsByFilteredName:    symbolsCode = SettingCode_SearchNameSymbols; break;
             default: break;
             }
-            if (!appManager->settings->getBoolValue(SettingCode_SearchType) &&
-                    p.size() < appManager->settings->getIntValue(symbolsCode)) break;
+            if (!settings->getBoolValue(SettingCode_SearchType) &&
+                    p.size() < settings->getIntValue(symbolsCode)) break;
             int field = ProductDBTable::Code;
             switch(selector)
             {

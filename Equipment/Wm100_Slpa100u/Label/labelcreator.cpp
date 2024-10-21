@@ -46,12 +46,12 @@ QImage LabelCreator::createImage(const PrintData &data)
         case LabelObject::t_scales:      obj->setData(data.scalesnumber); break;
         case LabelObject::t_currequiv:   obj->setData(data.currequiv); break;
         case LabelObject::t_shop:        obj->setData(data.shop); break;
-        case LabelObject::t_manufactured:obj->setData(data.manufactured); break;
+        case LabelObject::t_producedate:obj->setData(data.producedate); break;
         case LabelObject::t_name2:       obj->setData(data.name2); break;
         case LabelObject::t_price2:      obj->setData(data.price2); break;
         case LabelObject::t_cost2:       obj->setData(data.cost2); break;
         case LabelObject::t_code2:       obj->setData(data.code2); break;
-        case LabelObject::t_producedate: obj->setData(data.producedate); break;
+        case LabelObject::t_packagedate: obj->setData(data.packagedate); break;
         case LabelObject::t_validitydate:obj->setData(data.validitydate); break;
         case LabelObject::t_message:
             if (obj->getDataSourceIndex() == 0) obj->setData(data.textfile);

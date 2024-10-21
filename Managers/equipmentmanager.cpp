@@ -206,7 +206,6 @@ void EquipmentManager::createPM()
         Tools::debugLog("@@@@@ EquipmentManager::createPM ");
         slpa = new Slpa100u(this);
         labelCreator = new LabelCreator(this);
-        labelPath = "";
         connect(slpa, &Slpa100u::printerErrorChanged, this, &EquipmentManager::onPMErrorStatusChanged);
         connect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
     }
@@ -224,13 +223,14 @@ int EquipmentManager::startPM()
         //slpa->blockSignals(!isPMStarted);
         if(isPMStarted)
         {
+            Settings* settings = appManager->settings;
             //slpa->startPolling(200);
-            e = slpa->setBrightness(appManager->settings->getIntValue(SettingCode_PrinterBrightness) + 8);
-            if(e >= 0) e = slpa->setOffset(appManager->settings->getIntValue(SettingCode_PrintOffset) + 8);
-            if(e >= 0) e = slpa->setPaper(appManager->settings->getIntValue(SettingCode_PrintPaper, true) == 0 ?
+            e = slpa->setBrightness(settings->getIntValue(SettingCode_PrinterBrightness) + 8);
+            if(e >= 0) e = slpa->setOffset(settings->getIntValue(SettingCode_PrintOffset) + 8);
+            if(e >= 0) e = slpa->setPaper(settings->getIntValue(SettingCode_PrintPaper, true) == 0 ?
                                           Slpa100uProtocol::papertype::ptSticker :
                                           Slpa100uProtocol::papertype::ptRibbon);
-            if(e >= 0) e = slpa->setSensor(appManager->settings->getBoolValue(SettingCode_PrintLabelSensor));
+            if(e >= 0) e = slpa->setSensor(settings->getBoolValue(SettingCode_PrintLabelSensor));
         }
     }
     if(e) showAttention(QString("\nОшибка принтера %1: %2").arg(
@@ -309,6 +309,12 @@ QString EquipmentManager::daemonVersion() const
 const Status &EquipmentManager::getStatus() const
 {
     return appManager->status;
+}
+
+void EquipmentManager::onSettinsChanged()
+{
+    Tools::debugLog("@@@@@ EquipmentManager::onSettinsChanged");
+    labelPath = "";
 }
 
 QString EquipmentManager::WMVersion() const
@@ -535,15 +541,16 @@ QString EquipmentManager::parseBarcode(const QString& barcodeTemplate, const QCh
 
 QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& quantity, const QString& amount)
 {
+    Settings* settings = appManager->settings;
     QString result;
     QString barcodeTemplate = Calculator::isPiece(product) ?
-                appManager->settings->getStringValue(SettingCode_PrintLabelBarcodePiece) :
-                appManager->settings->getStringValue(SettingCode_PrintLabelBarcodeWeight);
+                settings->getStringValue(SettingCode_PrintLabelBarcodePiece) :
+                settings->getStringValue(SettingCode_PrintLabelBarcodeWeight);
     if(barcodeTemplate.contains("P"))
     {
         result = Calculator::isPiece(product) ?
-                 appManager->settings->getStringValue(SettingCode_PrintLabelPrefixPiece) :
-                 appManager->settings->getStringValue(SettingCode_PrintLabelPrefixWeight);
+                 settings->getStringValue(SettingCode_PrintLabelPrefixPiece) :
+                 settings->getStringValue(SettingCode_PrintLabelPrefixWeight);
     }
     result += parseBarcode(barcodeTemplate, 'C', product[ProductDBTable::Code].toString()) +
               parseBarcode(barcodeTemplate, 'T', amount) +
@@ -595,39 +602,52 @@ QString EquipmentManager::getWMDescriptionNow()
     return res;
 }
 
-int EquipmentManager::print(DataBase* db,
-                            const DBRecord& user,
-                            const DBRecord& product,
-                            const QString& labelLocalPath)
+int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product)
 {
-    Tools::debugLog("@@@@@ EquipmentManager::print " + labelLocalPath);
+    Tools::debugLog("@@@@@ EquipmentManager::print ");
     if(!isPMStarted || slpa == nullptr) return Error_PM_Fail;
     int e = 0;
+    Settings* settings = appManager->settings;
     quint64 dateTime = Tools::nowMsec();
     int labelNumber = 0; // todo
 
-    QString labelFullPath;
-    if(Tools::isFileExistsInDownloadPath(labelLocalPath)) labelFullPath = Tools::downloadPath(labelLocalPath);
-    else if(Tools::isFileExists(labelLocalPath)) labelFullPath = labelLocalPath;
-    if(labelPath != labelFullPath)
+    // Label Path:
+    QString localPath;
+    if(appManager->isProduct() && Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
+        localPath = db->getLabelPathById(product[ProductDBTable::Code].toString()); // Товар с заданной этикеткой
+    if(localPath.isEmpty())
+        localPath = db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
+    QString fullPath;
+    if(Tools::isFileExistsInDownloadPath(localPath)) fullPath = Tools::downloadPath(localPath);
+    else if(Tools::isFileExists(localPath)) fullPath = localPath;
+    if(labelPath != fullPath || fullPath.isEmpty())
     {
         showToast("Загрузка этикетки");
-        e = labelCreator->loadLabel(labelFullPath);
-        if(e == 0) labelPath = labelFullPath;
+        e = labelCreator->loadLabel(fullPath);
+        if(e == 0) labelPath = fullPath;
     }
 
     PrintData pd;
-    pd.weight = appManager->status.quantity;
-    pd.price = appManager->status.price;
-    pd.cost = appManager->status.amount;
-    pd.tare = isTareFlag() ? getTareAsString() : "";
     if (e == 0)
     {
+        pd.weight = appManager->status.quantity;
+        pd.price = appManager->status.price;
+        pd.cost = appManager->status.amount;
+        pd.tare = isTareFlag() ? getTareAsString() : "";
+        pd.shop = settings->getStringValue(SettingCode_ShopName);
+        pd.operatorcode =  Tools::toString(Users::getCode(user));
+        pd.operatorname = Users::getName(user);
+        pd.date = Tools::dateFromUInt(dateTime, DATE_FORMAT);
+        pd.time = Tools::timeFromUInt(dateTime, TIME_FORMAT);
+        pd.labelnumber = QString::number(labelNumber);
+        pd.scalesnumber = settings->getStringValue(SettingCode_SerialNumber),
+        pd.picturefile = ""; // todo
+        pd.textfile = ""; // todo
+        pd.currequiv = ""; // todo
+        pd.cost2 = ""; // todo
+
         if(appManager->isProduct())
         {
-            pd.barcode = makeBarcode(product, pd.weight, pd.cost);
-            if (pd.barcode.isEmpty()) e = Error_PM_Barcode;
-
             pd.itemcode = product[ProductDBTable::Code].toString();
             pd.code2 = product[ProductDBTable::Code2].toString();
             pd.name = product[ProductDBTable::Name].toString();
@@ -638,13 +658,16 @@ int EquipmentManager::print(DataBase* db,
 
             Validity v(product);
             pd.producedate = v.getText(ValidityIndex_Produce);
+            pd.packagedate = v.getText(ValidityIndex_Packing);
             pd.validitydate = v.getText(ValidityIndex_Valid);
             pd.selldate = v.getText(ValidityIndex_Sell);
             pd.shelflife = v.getText(ValidityIndex_Life);
+
+            pd.barcode = makeBarcode(product, pd.weight, pd.cost);
+            if (pd.barcode.isEmpty()) e = Error_PM_Barcode;
         }
         else
         {
-            pd.barcode = "";
             pd.itemcode = "";
             pd.code2 = "";
             pd.name = "";
@@ -653,22 +676,12 @@ int EquipmentManager::print(DataBase* db,
             pd.price2 = "";
             pd.message = "";
             pd.producedate = "";
+            pd.packagedate = "";
             pd.validitydate = "";
             pd.selldate = "";
             pd.shelflife = "";
+            pd.barcode = "";
         }
-        pd.shop = appManager->settings->getStringValue(SettingCode_ShopName);
-        pd.operatorcode =  Tools::toString(Users::getCode(user));
-        pd.operatorname = Users::getName(user);
-        pd.date = Tools::dateFromUInt(dateTime, DATE_FORMAT);
-        pd.time = Tools::timeFromUInt(dateTime, TIME_FORMAT);
-        pd.labelnumber = QString::number(labelNumber);
-        pd.scalesnumber = appManager->settings->getStringValue(SettingCode_ScalesNumber),
-        pd.picturefile = ""; // todo
-        pd.textfile = ""; // todo
-        pd.currequiv = ""; // todo
-        pd.cost2 = ""; // todo
-        pd.manufactured = ""; // todo
     }
     if(e == 0)
     {

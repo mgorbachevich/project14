@@ -65,7 +65,7 @@ Rectangle
                 app.onClicked(7)
                 break;
             case Qt.Key_T: // >T<
-                app.app.onClicked(10)
+                app.onClicked(10)
                 break
             case Qt.Key_Z: // >0<
                 app.onClicked(9)

@@ -27,6 +27,7 @@ public:
     QString daemonVersion() const;
     QString MODVersion() const { return Wm100::getVersionString(); }
     const Status& getStatus() const;
+    void onSettinsChanged();
 
     // Weight Manager:
     QString WMVersion() const;
@@ -48,7 +49,7 @@ public:
 
     // Print Manager:
     QString PMVersion() const;
-    int print(DataBase*, const DBRecord&, const DBRecord&, const QString&);
+    int print(DataBase*, const DBRecord&, const DBRecord&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
     EquipmentMode getPMMode() const { return PMMode; }
     bool isPM();
