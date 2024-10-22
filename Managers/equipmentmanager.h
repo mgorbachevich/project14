@@ -101,12 +101,14 @@ private:
 signals:
     void printed(const DBRecord&);
     void paramChanged(const EquipmentParam, const int, const QString&);
+    void selfKeyPressed(const int);
 
 public slots:
     void onWMStatusChanged(Wm100Protocol::channel_status&);
     void onWMErrorStatusChanged(int);
     void onPMStatusChanged(uint16_t);
     void onPMErrorStatusChanged(int);
+    void onSelfKeyPressed(int);
 };
 
 #endif // EQUIPMENTMANAGER_H

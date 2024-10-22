@@ -7,7 +7,7 @@ import RegisteredTypes
 
 Rectangle
 {
-    id:  showcasePanel
+    id: showcasePanel
     Material.background: Material.color(Material.Grey, Material.Shade100)
     color: Material.background
     property int buttonPanelWidth: screenManager.buttonSize() + screenManager.spacer() * 2
@@ -43,10 +43,16 @@ Rectangle
         target: app
         function onShowControlParam(param, value)
         {
-            if(param === 16)
+            switch (param)
             {
+            case 16: // TareValue
                 showcasePanelAutoButton.visible = value !== '0'
                 showcasePanelAutoButton.marked = value === '1'
+                break
+            case 32: // SelfService
+                showcasePanelSelfService.visible = value !== '0'
+                showcasePanelLayout.visible = value === '0'
+                break
             }
         }
     }
@@ -90,8 +96,21 @@ Rectangle
         }
     }
 
+    Label
+    {
+        id: showcasePanelSelfService
+        width: parent.width
+        height: parent.height
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        font { pointSize: screenManager.extraLargeFontSize() }
+        wrapMode: Text.WordWrap
+        text: "Выберите товар.\n\nПоложите товар на весы."
+    }
+
     Row
     {
+        id: showcasePanelLayout
         width: parent.width
         height: parent.height
 

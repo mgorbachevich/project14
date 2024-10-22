@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.91"
+#define APP_VERSION "2.94"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -112,6 +112,7 @@
 #define EQUIPMENT_POLLING_INTERVAL 200
 #define BACKGROUND_DOWNLOADING false
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS
+#define SELF_SERVICE_MODEL_INDEX 5
 
 enum MainPageIndex
 {
@@ -164,6 +165,7 @@ enum Error
     Error_WM_Mesure = 5005, // ошибка при получении измерения (нет градуировки весов или она не правильная)
     Error_WM_Underload = 5006, // весы недогружены
     Error_WM_NoReply = 5007, // ошибка: нет ответа от АЦП
+    Error_WM_Off = 5008,
     Error_PM_NoPaper = 1003, // "Нет бумаги! Установите новый рулон!";
     Error_PM_Opened = 1004, // "Закройте головку принтера!";
     Error_PM_GetLabel = 1005, // "Снимите этикетку!";
@@ -256,6 +258,7 @@ enum ControlParam
     ControlParam_WeightErrorOrAutoPrintIcon = 29,
     ControlParam_TareFlag = 30,
     ControlParam_ZeroFlag = 31,
+    ControlParam_SelfService = 32,
     /*
     ControlParam_Tare = 1,
     ControlParam_Zero = 2,

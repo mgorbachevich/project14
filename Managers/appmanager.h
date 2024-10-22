@@ -114,6 +114,7 @@ private:
     void update();
     void setExternalDisplay();
     bool isProductInShowcase(const DBRecord&);
+    bool isSelfService();
 
     EquipmentManager* equipmentManager = nullptr;
     DataBase* db = nullptr;
@@ -190,6 +191,7 @@ public slots:
     void onPrinted(const DBRecord&);
     void onTimer();
     void onNetCommand(const int, const QString&);
+    void onSelfKeyPressed(const int);
 };
 
 #endif // APPMANAGER_H

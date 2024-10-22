@@ -54,13 +54,14 @@ AppManager::AppManager(QQmlContext* qmlContext, const QSize& screenSize, QApplic
     calculator = new Calculator(this);
     timer = new QTimer(this);
 
+    connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
     connect(this, &AppManager::start, db, &DataBase::onAppStart);
     connect(netServer, &NetServer::netCommand, this, &AppManager::onNetCommand);
     connect(db, &DataBase::dbStarted, this, &AppManager::onDBStarted);
     connect(db, &DataBase::selectResult, this, &AppManager::onSelectResult);
     connect(equipmentManager, &EquipmentManager::printed, this, &AppManager::onPrinted);
     connect(equipmentManager, &EquipmentManager::paramChanged, this, &AppManager::onEquipmentParamChanged);
-    connect(timer, &QTimer::timeout, this, &AppManager::onTimer);
+    connect(equipmentManager, &EquipmentManager::selfKeyPressed, this, &AppManager::onSelfKeyPressed);
 
     productPanelModel = new ProductPanelModel(this);
     showcasePanelModel = new ShowcasePanelModel3(this);
@@ -270,7 +271,8 @@ void AppManager::onSelectResult(const DBSelector selector, const DBRecordList& r
         searchPanelModel->update(records, -1);
         break;
 
-    case DBSelector_SetProductByCode2: // Отображение товара с кодом:
+    case DBSelector_SetProductByNumber:
+    case DBSelector_SetProductByCode2: // Отображение товара по номеру
         if(records.isEmpty())
         {
             showAttention("Товар не найден!");
@@ -472,6 +474,11 @@ bool AppManager::isProductInShowcase(const DBRecord& product)
     return showcase->getByCode(product[0].toInt()) != nullptr;
 }
 
+bool AppManager::isSelfService()
+{
+    return settings->getIntValue(SettingCode_Model, true) == SELF_SERVICE_MODEL_INDEX;
+}
+
 void AppManager::onSettingsItemClicked(const int index)
 {
     onUserAction();
@@ -644,6 +651,7 @@ void AppManager::stopSettings()
     {
         startAll();
         refreshAll();
+        updateSettings();
         status.isSettings = false;
         if(users->getByName(users->getName(getCurrentUser())).isEmpty()) // Пользователь сменился
             startAuthorization();
@@ -958,7 +966,7 @@ void AppManager::startAll()
     debugLog("@@@@@ AppManager::startAll serverPort = " + QString::number(serverPort));
     netServer->start(serverPort);
     equipmentManager->start();
-    status.autoPrintMode = settings->getBoolValue(SettingCode_PrintAuto) ? AutoPrintMode_Disabled : AutoPrintMode_Off;
+    //status.autoPrintMode = settings->getBoolValue(SettingCode_PrintAuto) ? AutoPrintMode_Disabled : AutoPrintMode_Off;
 
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]()
     {
@@ -1121,6 +1129,11 @@ void AppManager::onNetCommand(const int command, const QString& param)
     }
 }
 
+void AppManager::onSelfKeyPressed(const int keyCode)
+{
+    db->select(DBSelector_SetProductByNumber, Tools::toString(keyCode));
+}
+
 void AppManager::onNetResult(NetActionResult& result)
 {
     debugLog("@@@@@ AppManager::onNetResult");
@@ -1263,12 +1276,22 @@ void AppManager::showTareToast(const bool showZero)
     });
 }
 
-void AppManager::updateSettings() // При старте и после загрузки
+void AppManager::updateSettings() // При старте, при изменениях и после загрузки
 {
     debugLog("@@@@@ AppManager::updateSettings ");
     db->select(DBSelector_GetAllLabels);
     Calculator::update(settings);
     equipmentManager->onSettinsChanged();
+    if(isSelfService())
+    {
+        emit showControlParam(ControlParam_SelfService, Tools::toIntString(true));
+        status.autoPrintMode = AutoPrintMode_On;
+    }
+    else
+    {
+        emit showControlParam(ControlParam_SelfService, Tools::toIntString(false));
+        status.autoPrintMode = settings->getBoolValue(SettingCode_PrintAuto) ? AutoPrintMode_Disabled : AutoPrintMode_Off;
+    }
     settings->write();
 }
 
@@ -1298,7 +1321,7 @@ void AppManager::update()
     const bool isWM = equipmentManager->isWM() && equipmentManager->getWMMode() != EquipmentMode_None;
     const bool isPM = equipmentManager->isPM();
     const bool isZero = equipmentManager->isZeroFlag();
-    //const bool isTare = equipmentManager->isTareFlag();
+    const bool isTare = equipmentManager->isTareFlag();
     const bool isFixed = equipmentManager->isWeightFixed();
     const bool isWMError = equipmentManager->isWMError() || !isWM;
     const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
@@ -1307,7 +1330,7 @@ void AppManager::update()
     status.quantity = NO_DATA;
     status.price = NO_DATA;
     status.amount = NO_DATA;
-    //status.tare = isTare ? equipmentManager->getTareAsString() : NO_DATA;
+    status.tare = isTare ? equipmentManager->getTareAsString() : NO_DATA;
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
     if (isZero) status.isPrintCalculateMode = true;

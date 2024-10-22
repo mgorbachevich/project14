@@ -12,6 +12,7 @@
 #define DEFAULT_WEIGHT_TITLE_FONT_SIZE 10
 #define DEFAULT_NORMAL_FONT_SIZE 13
 #define DEFAULT_LARGE_FONT_SIZE 18
+#define DEFAULT_EXTRA_LARGE_FONT_SIZE 27
 #define DEFAULT_BUTTON_SIZE 40
 #define DEFAULT_FLAG_SIZE 20
 #define DEFAULT_EDIT_WIDTH 200
@@ -32,6 +33,7 @@ public:
     Q_INVOKABLE int weightTitleFontSize() const { return (int)(DEFAULT_WEIGHT_TITLE_FONT_SIZE * screenScale); }
     Q_INVOKABLE int weightValueFontSize() const { return (int)(DEFAULT_WEIGHT_VALUE_FONT_SIZE * screenScale); }
     Q_INVOKABLE int largeFontSize() const { return (int)(DEFAULT_LARGE_FONT_SIZE * screenScale); }
+    Q_INVOKABLE int extraLargeFontSize() const { return (int)(DEFAULT_EXTRA_LARGE_FONT_SIZE * screenScale); }
     Q_INVOKABLE int normalFontSize() const { return (int)(DEFAULT_NORMAL_FONT_SIZE * screenScale); }
     Q_INVOKABLE int buttonSize() const { return (int)(DEFAULT_BUTTON_SIZE * screenScale); }
     Q_INVOKABLE int editWidth() const { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }

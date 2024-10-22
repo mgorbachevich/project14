@@ -24,6 +24,7 @@ enum DBSelector
     DBSelector_GetLog,
     DBSelector_GetProductsByInputCode,
     DBSelector_SetProductByCode2,
+    DBSelector_SetProductByNumber,
     DBSelector_GetAllLabels,
     //DBSelector_GetAuthorizationUsers,
 };

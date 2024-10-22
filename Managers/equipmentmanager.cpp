@@ -142,6 +142,7 @@ void EquipmentManager::createWM()
         wm = new Wm100(this);
         connect(wm, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
         connect(wm, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
+        connect(wm, &Wm100::selfKeyPressed, this, &EquipmentManager::onSelfKeyPressed);
     }
  }
 
@@ -182,6 +183,7 @@ void EquipmentManager::removeWM()
     {
         disconnect(wm, &Wm100::weightStatusChanged, this, &EquipmentManager::onWMStatusChanged);
         disconnect(wm, &Wm100::errorStatusChanged, this, &EquipmentManager::onWMErrorStatusChanged);
+        disconnect(wm, &Wm100::selfKeyPressed, this, &EquipmentManager::onSelfKeyPressed);
         delete wm;
         wm = nullptr;
     }
@@ -374,13 +376,14 @@ QString EquipmentManager::getWMErrorDescription(const int e) const
 {
     switch(e)
     {
-    case 0:    return "Ошибок нет";
-    case 5003: return "Ошибка автонуля при включении";
-    case 5004: return "Перегрузка по весу";
-    case 5005: return "Ошибка при получении измерения";
-    case 5006: return "Весы недогружены";
-    case 5007: return "Ошибка: нет ответа от АЦП";
-    //default: return "Неизвестная ошибка";
+    case 0: return "Ошибок нет";
+    case Error_WM_AutoZero:  return "Ошибка автонуля при включении";
+    case Error_WM_Overload:  return "Перегрузка по весу";
+    case Error_WM_Mesure:    return "Ошибка при получении измерения";
+    case Error_WM_Underload: return "Весы недогружены";
+    case Error_WM_NoReply:   return "Ошибка: нет ответа от АЦП";
+    case Error_WM_Off:       return "Весовой модуль не подключен";
+    default: break;
     }
     return wm == nullptr ? "Весовой модуль не подключен" : wm->errorDescription(e);
 }
@@ -466,13 +469,13 @@ QString EquipmentManager::getPMErrorDescription(const int e) const
     switch(e)
     {
     case 0: return "Ошибок нет";
-    case Error_PM_NoPaper: return "Нет бумаги! Установите новый рулон!";
-    case Error_PM_Opened: return "Закройте головку принтера!";
-    case Error_PM_GetLabel: return "Снимите этикетку!";
+    case Error_PM_NoPaper:     return "Нет бумаги! Установите новый рулон!";
+    case Error_PM_Opened:      return "Закройте головку принтера!";
+    case Error_PM_GetLabel:    return "Снимите этикетку!";
     case Error_PM_BadPosition: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
-    case Error_PM_Fail: return "Ошибка принтера!";
-    case Error_PM_Memory: return "Ошибка памяти принтера!";
-    case Error_PM_Barcode: return "Неверный штрихкод";
+    case Error_PM_Fail:        return "Ошибка принтера!";
+    case Error_PM_Memory:      return "Ошибка памяти принтера!";
+    case Error_PM_Barcode:     return "Неверный штрихкод";
     }
     return slpa == nullptr ? "" : slpa->errorDescription(e);
 }
@@ -518,6 +521,12 @@ void EquipmentManager::onPMErrorStatusChanged(int e)
         PMErrorCode = e;
         emit paramChanged(EquipmentParam_PrintError, e, getPMErrorDescription(e));
     }
+}
+
+void EquipmentManager::onSelfKeyPressed(int keyCode)
+{
+    Tools::debugLog("@@@@@ EquipmentManager::onSelfKeyPressed ");
+    emit selfKeyPressed(keyCode);
 }
 
 QString EquipmentManager::parseBarcode(const QString& barcodeTemplate, const QChar c, const QString& value)
@@ -633,7 +642,7 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
         pd.weight = appManager->status.quantity;
         pd.price = appManager->status.price;
         pd.cost = appManager->status.amount;
-        pd.tare = isTareFlag() ? getTareAsString() : "";
+        pd.tare = appManager->status.tare;
         pd.shop = settings->getStringValue(SettingCode_ShopName);
         pd.operatorcode =  Tools::toString(Users::getCode(user));
         pd.operatorname = Users::getName(user);
@@ -713,17 +722,18 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
 int EquipmentManager::setExternalDisplay(const DBRecord& product)
 {
     Wm100Protocol::display_data dd;
-    dd.weight = appManager->status.quantity;
-    dd.price = appManager->status.price;
-    dd.cost = appManager->status.amount;
-    dd.tare = isTareFlag() ? getTareAsString() : NO_DATA;
+    Status& status = appManager->status;
+    dd.weight = status.quantity;
+    dd.price = status.price;
+    dd.cost = status.amount;
+    dd.tare =  status.tare;
+    dd.flAuto = status.autoPrintMode == AutoPrintMode_On;
+    dd.flDataExchange = status.isNet;
     dd.flZero = isZeroFlag();
     dd.flTare = isTareFlag();
     dd.flCalm = isWeightFixed();
-    dd.flAuto = appManager->status.autoPrintMode == AutoPrintMode_On;
     dd.flLock = appManager->isAuthorizationOpened();
     dd.flTools = appManager->isSettingsOpened();
-    dd.flDataExchange = appManager->status.isNet;
     if(appManager->isProduct())
     {
         dd.text = product[ProductDBTable::Name].toString();
@@ -738,6 +748,7 @@ int EquipmentManager::setExternalDisplay(const DBRecord& product)
     }
     Tools::debugLog(QString("@@@@@ EquipmentManager::setExternalDisplay %1 %2 %3 %4").arg(
                         dd.weight, dd.price, dd.cost, dd.tare));
-    return wm->setDisplayData(dd);
+    //showToast(QString("%1 %2 %3 %4").arg(dd.weight, dd.price, dd.cost, dd.tare));
+    return isWM()? wm->setDisplayData(dd) : Error_WM_Off;
 }
 

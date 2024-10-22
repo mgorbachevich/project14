@@ -360,7 +360,6 @@ ApplicationWindow
                         Loader
                         {
                             focus: true
-                            //source: "Panels/showcasePanel.qml"
                             source: "Panels/showcasePanel3.qml"
                         }
 

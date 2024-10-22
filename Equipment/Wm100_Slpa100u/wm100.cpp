@@ -204,6 +204,12 @@ int Wm100::killDaemon()
 
 int Wm100::setDisplayData(const Wm100Protocol::display_data &dd)
 {
+
+    Wm100ProtocolHttp2* pr = new Wm100ProtocolHttp2(this);
+    int res = pr->cDisplayData(dd, "http://127.0.0.1:51233");
+    delete pr;
+    return res;
+    /*
     static int errorCount = 0;
     int res = 0;
     if (errorCount >= 5)
@@ -214,6 +220,7 @@ int Wm100::setDisplayData(const Wm100Protocol::display_data &dd)
         if (res < 0) errorCount++;
     }
     return res;
+    */
 }
 
 int Wm100::getDaemonVersion(QString &version, QString &build)

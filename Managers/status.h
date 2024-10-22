@@ -10,7 +10,7 @@ public:
     Status() {}
     void onResetProduct() { pieces = 1; }
     void onUserAction() { userActionTime = Tools::nowMsec(); secret = 0; }
-    void onStopAll() { isAlarm = false; quantity = price = amount = NO_DATA; }
+    void onStopAll() { isAlarm = false; quantity = price = amount = tare = NO_DATA; }
 
     bool isNet = false;
     bool isSettings = false;
@@ -32,7 +32,7 @@ public:
     QString quantity = NO_DATA;
     QString price = NO_DATA;
     QString amount = NO_DATA;
-    //QString tare = NO_DATA;
+    QString tare = NO_DATA;
 };
 
 #endif // STATUS_H

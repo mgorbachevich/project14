@@ -662,7 +662,8 @@ void DataBase::select(const DBSelector selector,
             selectAll(getTable(DBTABLENAME_LABELS), resultRecords);
             break;
 
-        case DBSelector_SetProductByCode2: // Запрос товара по коду 2
+        case DBSelector_SetProductByNumber:
+        case DBSelector_SetProductByCode2: // Запрос товара по номеру
         {
             DBTable* t = getTable(DBTABLENAME_PRODUCTS);
             QString sql = QString("SELECT * FROM %1").arg(t->name);
