@@ -20,13 +20,13 @@ class AppInfo;
 class EquipmentManager;
 class InputProductCodePanelModel3;
 class EditUsersPanelModel3;
-class Calculator;
 class ScreenManager;
 class QNetworkSettingsManager;
 class Users;
 class Showcase;
 class NetServer;
 class NetActionResult;
+class CalendarModel;
 
 class AppManager : public QObject
 {
@@ -38,7 +38,7 @@ public:
 
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
-    void showWait(const bool);
+    void showWait(const bool, const bool modal = false);
     void netDownload(QHash<DBTable*, DBRecordList>, int&, int&);
     QString netDelete(const QString&, const QString&);
     QString netUpload(const QString&, const QString&, const bool);
@@ -49,13 +49,14 @@ public:
     bool isProduct();
     int showcaseCount();
     DBRecord getShowcaseProductByIndex(const int);
+    bool isProductInShowcase(const DBRecord&);
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
     Q_INVOKABLE void debugLog(const QString&);
     Q_INVOKABLE bool isAdmin();
     Q_INVOKABLE bool isAuthorizationOpened();
-    Q_INVOKABLE bool isSettingsOpened() { return status.isSettings; }
+    Q_INVOKABLE bool isSettingsOpened();
     Q_INVOKABLE void onPopupOpened(const bool);
     Q_INVOKABLE void onCalendarClosed(const int, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&);
     Q_INVOKABLE void onEditUsersPanelClose();
@@ -63,7 +64,7 @@ public:
     Q_INVOKABLE void onPiecesInputClosed(const QString&);
     Q_INVOKABLE void onPasswordInputClosed(const int, const QString&);
     Q_INVOKABLE void onSettingInputClosed(const int, const QString&);
-    Q_INVOKABLE void onMainPageSwiped(const int i) { setMainPage(i); }
+    Q_INVOKABLE void onMainPageSwiped(const int);
     Q_INVOKABLE void onInputProductCodeEdited(const QString&);
     Q_INVOKABLE void onSearchFilterEdited(const QString&);
     Q_INVOKABLE void onUserAction();
@@ -85,35 +86,30 @@ public:
 private:
     void alarm();
     void clickSound();
-    DBRecord& getCurrentUser();
-    QString getImageFileWithQmlPath(const DBRecord&);
     void print();
-    void refreshAll();
-    void resetProduct(const bool show = true);
+    void refreshPanels();
+    void resetProduct();
     void setMainPage(const int);
     void setProduct(const DBRecord&);
+    void setProductByNumber(const QString&);
     bool setProductTare();
     void setSettingsInfo();
     void setSettingsNetInfo();
-    void updateSettings();
-    void showFoundProductsToast(const int);
+    void onSettingsChanged();
     void showAuthorizationUsers();
     void showDateInputPanel(const int);
     void showSettingComboBox2(const DBRecord&);
     void showTareToast(const bool showZero = true);
     void showWeightFlags();
     void startAuthorization();
-    void startAll();
+    void startEquipment();
     void startSettings();
     void stopAuthorization(const QString&, const QString&);
-    void stopAll(const bool show = true);
+    void stopEquipment();
     void stopSettings();
     void updateShowcase();
-    void updateSystemStatus();
-    void updateSettings(const int);
-    void update();
-    void setExternalDisplay();
-    bool isProductInShowcase(const DBRecord&);
+    void updateSettingsModel(const int);
+    void update(const bool printIsPossible = true);
     bool isSelfService();
 
     EquipmentManager* equipmentManager = nullptr;
@@ -125,7 +121,6 @@ private:
     QQmlContext* context = nullptr;
     ScreenManager* screenManager = nullptr;
     QNetworkSettingsManager* networkSettingsManager = nullptr;
-    Calculator* calculator = nullptr;
     Users* users = nullptr;
     Showcase* showcase = nullptr;
 
@@ -140,12 +135,7 @@ private:
     InputProductCodePanelModel3* inputProductCodePanelModel = nullptr;
     EditUsersPanelModel3* editUsersPanelModel = nullptr;
     BaseListModel* settingItemModel = nullptr;
-    BaseListModel* calendarDayModel = nullptr;
-    BaseListModel* calendarMonthModel = nullptr;
-    BaseListModel* calendarYearModel = nullptr;
-    BaseListModel* calendarHourModel = nullptr;
-    BaseListModel* calendarMinuteModel = nullptr;
-    BaseListModel* calendarSecondModel = nullptr;
+    CalendarModel* calendarModel = nullptr;
 
 signals:
     void closeLogView();
@@ -181,11 +171,10 @@ signals:
     void showToastBox(const QString&);
     void showViewLogPanel();
     void showVirtualKeyboard(const int);
-    void showWaitBox(const bool);
+    void showWaitBox(const bool, const bool);
     void start();
 
 public slots:
-    void onSelectResult(const DBSelector, const DBRecordList&, const bool);
     void onDBStarted();
     void onEquipmentParamChanged(const EquipmentParam, const int, const QString&);
     void onPrinted(const DBRecord&);

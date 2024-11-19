@@ -11,10 +11,11 @@ Label
     leftPadding: screenManager.spacer()
     rightPadding: screenManager.spacer()
     wrapMode: Text.Wrap
+    maximumLineCount: 1
     text: ""
     background: Rectangle
     {
         color: "#B0FFFFFF"
-        radius: screenManager.normalFontSize()
+        radius: screenManager.normalFontSize() / 2
     }
 }

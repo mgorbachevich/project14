@@ -35,7 +35,7 @@ ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBas
     addColumn("Код файла сообщения",    "message_file_code", "INT");
     addColumn("Код файла ролика",       "movie_code",        "INT");
     addColumn("Код звукового файла",    "sound_code",        "INT");
-    addColumn("В избранном",            "favorite",          "INT"); // Да/нет
+    addColumn("В избранном",            "favorite",          "INT"); // Не используется
 
     indexDescriptors.append(DBIndexDescriptor(Code2, columnName(Code2) + "_index"));
     indexDescriptors.append(DBIndexDescriptor(Barcode, columnName(Barcode) + "_index"));
@@ -60,4 +60,16 @@ const DBRecord ProductDBTable::checkRecord(const DBRecord& product)
     result.replace(Columns::UpperName, product.at(Columns::Name).toString().toUpper());
     return result;
 }
+
+QVariantList ProductDBTable::makeRootGroup()
+{
+    DBRecord r = createRecord();
+    r[ProductDBTable::Code] = "0";
+    r[ProductDBTable::Type] = ProductType_Group;
+    r[ProductDBTable::GroupCode] = ROOT_PARENT_CODE;
+    r[ProductDBTable::Name] = ALL_GOODS;
+    //r[ProductDBTable::PictureCode] = 0;
+    return r;
+}
+
 

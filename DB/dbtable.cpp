@@ -8,7 +8,7 @@
 DBTable::DBTable(const QString &name, QSqlDatabase &sqlDB, DataBase *parent) :
     QObject((QObject*)parent), name(name), sqlDB(sqlDB), db(parent) {}
 
-QVariantList DBTable::createRecord(const QString code)
+DBRecord DBTable::createRecord(const QString code)
 {
     DBRecord r;
     for (int i = 0; i < columnCount(); i++) r << QVariant("");
@@ -100,10 +100,7 @@ QJsonObject DBTable::toJsonObject(DBTable *table, const DBRecordList &records)
     QJsonObject jo;
     if (table != nullptr)
     {
-        for (int i = 0; i < records.count(); i++)
-        {
-            ja.append(toJsonObject(table, records.at(i)));
-        }
+        for (int i = 0; i < records.count(); i++) ja.append(toJsonObject(table, records.at(i)));
         jo.insert(table->name, ja);
     }
     return jo;
@@ -179,11 +176,6 @@ QString DBTable::toString(DBRecord& r)
         else s += r[i].toString();
     }
     return s;
-}
-
-void DBTable::fill(DBRecord& r)
-{
-    for(int i = r.count(); i < columns.count(); i++) r.append("");
 }
 
 void DBTable::createIndexes()

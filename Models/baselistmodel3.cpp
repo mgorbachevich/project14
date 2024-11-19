@@ -1,4 +1,5 @@
 #include "baselistmodel3.h"
+#include "tools.h"
 
 QVariant BaseListModel3::data(const QModelIndex &index, int role) const
 {
@@ -24,4 +25,12 @@ QHash<int, QByteArray> BaseListModel3::roleNames() const
     roles[FourthRole] = "third";
     roles[FifthRole] = "third";
     return roles;
+}
+
+void BaseListModel3::clearData()
+{
+    Tools::debugLog("@@@@@ BaseListModel3::clearData");
+    beginResetModel();
+    items.clear();
+    endResetModel();
 }

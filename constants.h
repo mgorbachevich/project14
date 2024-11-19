@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.94"
+#define APP_VERSION "2.95"
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -15,10 +15,10 @@
 //#define DEBUG_MEMORY_MESSAGE
 //#define DEBUG_ONTIMER_EQUIPMENT_MESSAGE
 //#define DEBUG_WEIGHT_STATUS
-//#define DB_PATH_MESSAGE
 //#define LOG_LOAD_RECORDS
 //#define DEBUG_INSERT_DB_DELAY_MSEC 100
 //#define DEBUG_NET_ENTRIES
+//#define DEBUG_LONG_DB_OPERATIONS
 
 // On Start:
 #define CHECK_AUTHORIZATION
@@ -65,10 +65,10 @@
 #define ICON_WM_NONE  "../Icons/error_yellow"
 
 // DateTime
-#define DATE_FORMAT "dd.MM.yyyy"
-#define TIME_FORMAT "HH:mm:ss"
-#define TIME_MSEC_FORMAT "hh:mm:ss.zzz"
-#define DATE_TIME_LONG_FORMAT "dd.MM.yyyy HH:mm:ss"
+#define DATE_FORMAT            "dd.MM.yyyy"
+#define TIME_FORMAT            "HH:mm:ss"
+#define TIME_MSEC_FORMAT       "hh:mm:ss.zzz"
+#define DATE_TIME_LONG_FORMAT  "dd.MM.yyyy HH:mm:ss"
 #define DATE_TIME_SHORT_FORMAT "dd.MM.yy HH:mm"
 
 // UI
@@ -80,19 +80,19 @@
 #define COLOR_AMOUNT "#ffe0b2"
 
 // DB Tables:
-#define DBTABLENAME_SHOWCASE "showcase"
-#define DBTABLENAME_PRODUCTS "products"
-#define DBTABLENAME_LABELS "labels"
-#define DBTABLENAME_MESSAGES "messages"
+#define DBTABLENAME_SHOWCASE     "showcase"
+#define DBTABLENAME_PRODUCTS     "products"
+#define DBTABLENAME_LABELS       "labels"
+#define DBTABLENAME_MESSAGES     "messages"
 #define DBTABLENAME_MESSAGEFILES "messagefiles"
-#define DBTABLENAME_PICTURES "pictures"
-#define DBTABLENAME_MOVIES "movies"
-#define DBTABLENAME_SOUNDS "sounds"
-#define DBTABLENAME_LOG "log"
+#define DBTABLENAME_PICTURES     "pictures"
+#define DBTABLENAME_MOVIES       "movies"
+#define DBTABLENAME_SOUNDS       "sounds"
+#define DBTABLENAME_LOG          "log"
 #define DBTABLENAME_TRANSACTIONS "transactions"
-#define DBTABLENAME_SETTINGS "settings"
-#define DBTABLENAME_USERS "users"
-#define DBTABLENAME_CONFIG "config"
+#define DBTABLENAME_SETTINGS     "settings"
+#define DBTABLENAME_USERS        "users"
+#define DBTABLENAME_CONFIG       "config"
 
 // Other:
 #define APP_TIMER_MSEC 10000
@@ -113,6 +113,8 @@
 #define BACKGROUND_DOWNLOADING false
 #define DEFAULT_FACTORY_SETTINGS_PASSWORDS
 #define SELF_SERVICE_MODEL_INDEX 5
+#define ROOT_PARENT_CODE "-1"
+#define ALL_GOODS "ВСЕ ТОВАРЫ"
 
 enum MainPageIndex
 {
@@ -129,9 +131,10 @@ enum ConfirmSelector
     ConfirmSelector_ReplaceUser,
     ConfirmSelector_DeleteUser,
     ConfirmSelector_AddToShowcase,
-    ConfirmSelector_RemoveFromShowcase,
+    ConfirmSelector_RemoveShowcaseProduct,
     ConfirmSelector_SetDateTime,
-    ConfirmSelector_SetVerificationDate
+    ConfirmSelector_SetVerificationDate,
+    ConfirmSelector_RemoveShowcaseLevel,
 };
 
 enum LogType
@@ -172,7 +175,8 @@ enum Error
     Error_PM_BadPosition = 1006, // "Этикетка не спозиционирована! Нажмите клавишу промотки!";
     Error_PM_Fail = 1007, // "Ошибка принтера!";
     Error_PM_Memory = 1008, // "Ошибка памяти принтера!";
-    Error_PM_Barcode = 1009 // "Неверный штрихкод";
+    Error_PM_Barcode = 1009, // "Неверный штрихкод";
+    Error_PM_NoLabel = 1010,
 };
 
 enum ProductType
@@ -220,7 +224,7 @@ enum Clicked
     Clicked_ProductPanelPieces = 19,
     Clicked_WeightPanel = 20,
     Clicked_ShowcaseSort = 21,
-    Clicked_Showcase = 22,
+    Clicked_ShowcaseProduct = 22,
     Clicked_SearchResult = 23,
     Clicked_EditUsersPanel = 24,
     Clicked_EditUsers = 25,
@@ -228,7 +232,8 @@ enum Clicked
     Clicked_WeightFlags = 27,
     Clicked_DeleteUser = 28,
     Clicked_NumberToSearch = 29,
-    Clicked_SetProductByCode = 30
+    Clicked_SetProductByCode = 30,
+    Clicked_DeleteShowcaseProducts = 31
 };
 
 enum ControlParam
@@ -259,6 +264,8 @@ enum ControlParam
     ControlParam_TareFlag = 30,
     ControlParam_ZeroFlag = 31,
     ControlParam_SelfService = 32,
+    ControlParam_ShowcaseTitle = 33,
+    ControlParam_DeleteShowcaseLevel = 34,
     /*
     ControlParam_Tare = 1,
     ControlParam_Zero = 2,

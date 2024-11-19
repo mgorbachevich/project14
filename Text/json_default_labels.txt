@@ -4,27 +4,27 @@
         "labels":
         [
             {
-                "code":"999999991",
+                "code":"1",
                 "name":"60x30*",
                 "value":":/Labels/60x30.lpr"
             },
             {
-                "code":"999999992",
+                "code":"2",
                 "name":"60x40*",
                 "value":":/Labels/60x40.lpr"
             },
             {
-                "code":"999999993",
+                "code":"3",
                 "name":"60x50*",
                 "value":":/Labels/60x50.lpr"
             },
             {
-                "code":"999999994",
+                "code":"4",
                 "name":"60x60*",
                 "value":":/Labels/60x60.lpr"
             },
             {
-                "code":"999999995",
+                "code":"5",
                 "name":"60x60_2*",
                 "value":":/Labels/60x60_2.lpr"
             }

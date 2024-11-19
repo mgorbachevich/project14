@@ -35,7 +35,7 @@ public:
     virtual DBRecordList getAll();
     int count() { return items.count(); }
     virtual DBRecord getByIndex(const int i) { return i >= 0 && i < count() ? items[i] : DBRecord(); }
-    virtual DBRecord* getByCode(const int);
+    virtual DBRecord* getByCode(const quint64);
     QString getTableName() { return itemArrayName; }
     virtual QJsonObject toJsonObject();
 

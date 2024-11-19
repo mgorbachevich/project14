@@ -11,7 +11,6 @@ Popup
     //closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     closePolicy: Popup.CloseOnEscape
     focus: true
-    modal: true
     dim: false
     Material.background: "transparent"
 
@@ -21,7 +20,7 @@ Popup
     Connections // Slot for signal AppManager::showWaitBox
     {
         target: app
-        function onShowWaitBox(value) { if(!value) waitPanel.close() }
+        function onShowWaitBox(show, modalPopup) { if(!show) waitPanel.close() }
     }
 
     Rectangle

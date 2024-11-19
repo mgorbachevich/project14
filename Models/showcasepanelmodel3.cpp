@@ -3,6 +3,7 @@
 #include "tools.h"
 #include "appmanager.h"
 #include "settings.h"
+#include "calculator.h"
 
 QHash<int, QByteArray> ShowcasePanelModel3::roleNames() const
 {
@@ -10,24 +11,15 @@ QHash<int, QByteArray> ShowcasePanelModel3::roleNames() const
     roles[FirstRole] = "top";
     roles[SecondRole] = "bottom";
     roles[ThirdRole] = "image";
+    roles[FourthRole] = "center";
     return roles;
 }
 
-DBRecord& ShowcasePanelModel3::productByIndex(const int index)
+void ShowcasePanelModel3::update(const DBRecordList& newProducts, const QStringList& images)
 {
-    return index < products.count() ? products[index] : emptyRecord;
-}
-
-void ShowcasePanelModel3::updateProducts(const DBRecordList& newProducts)
-{
-    Tools::debugLog("@@@@@ ShowcasePanelModel3::updateProducts " + QString::number(newProducts.count()));
+    Tools::debugLog("@@@@@ ShowcasePanelModel3::update " + QString::number(newProducts.count()));
     products.clear();
     products.append(newProducts);
-}
-
-void ShowcasePanelModel3::updateImages(const QStringList& images)
-{
-    Tools::debugLog("@@@@@ ShowcasePanelModel3::updateImages");
     beginResetModel();
     items.clear();
     for (int i = 0; i < products.count() && i < images.count(); i++)
@@ -35,50 +27,55 @@ void ShowcasePanelModel3::updateImages(const QStringList& images)
         DBRecord& pi = products[i];
         QString topText;
         QString bottomText;
-        QString image = images[i];
+        QString centerText;
         QString code = "#" + pi[ProductDBTable::Code].toString();
         QString code2 = "№" + pi[ProductDBTable::Code2].toString();
-        //QString barcode = pi[ProductDBTable::Barcode].toString();
         QString name = pi[ProductDBTable::Name].toString();
+        //QString barcode = pi[ProductDBTable::Barcode].toString();
 
-        switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductTopText, true))
+        if(Calculator::isGroup(pi)) centerText = "<b>" + name.toUpper() + "</b>";
+        else
         {
-        case ShowcaseProductText_Code:
-            topText = code;
-            break;
-        case ShowcaseProductText_Code2:
-            topText = code2;
-            break;
-        case ShowcaseProductText_Sort:
-            topText = (appManager->status.lastProductSort == ShowcaseSort_Code2) ? code2 : code;
-            break;
-        case ShowcaseProductText_Name:
-            topText = name.left(name.indexOf(" "));
-            break;
-        }
-
-        switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductBottomText, true))
-        {
-        case ShowcaseProductText_Code:
-            bottomText = code;
-            break;
-        case ShowcaseProductText_Code2:
-            bottomText = code2;
-            break;
-        case ShowcaseProductText_Sort:
-            bottomText = (appManager->status.lastProductSort == ShowcaseSort_Code2) ? code2 : code;
-            break;
-        case ShowcaseProductText_Name:
-            bottomText = name.left(name.indexOf(" "));
-            break;
+            switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductTopText, true))
+            {
+            case ShowcaseProductText_Code:
+                topText = code;
+                break;
+            case ShowcaseProductText_Code2:
+                topText = code2;
+                break;
+            case ShowcaseProductText_Sort:
+                topText = (appManager->status.showcaseLastSort == ShowcaseSort_Code2) ? code2 : code;
+                break;
+            case ShowcaseProductText_Name:
+                topText = name.left(name.indexOf(" "));
+                break;
+            }
+            switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductBottomText, true))
+            {
+            case ShowcaseProductText_Code:
+                bottomText = code;
+                break;
+            case ShowcaseProductText_Code2:
+                bottomText = code2;
+                break;
+            case ShowcaseProductText_Sort:
+                bottomText = (appManager->status.showcaseLastSort == ShowcaseSort_Code2) ? code2 : code;
+                break;
+            case ShowcaseProductText_Name:
+                bottomText = name.left(name.indexOf(" "));
+                break;
+            }
         }
         //if(image == DUMMY_IMAGE_FILE && bottomText.isEmpty()) bottomText = name.left(name.indexOf(" "));
 
-        Tools::debugLog(QString("@@@@@ ShowcasePanelModel3::updateImages %1 %2 %3").arg(topText, bottomText, image));
+        //Tools::debugLog(QString("@@@@@ ShowcasePanelModel3::update %1 %2 %3").arg(topText, bottomText, image));
         QStringList data;
-        data << topText << bottomText << image;
+        data << topText << bottomText << images[i] << centerText;
         addItem(data);
     }
     endResetModel();
 }
+
+
 

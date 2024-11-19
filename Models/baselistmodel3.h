@@ -23,6 +23,7 @@ public:
     int rowCount(const QModelIndex &) const override { return items.count(); }
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+    void clearData();
 
 protected:
     void addItem(const QStringList& v) { items << v; }

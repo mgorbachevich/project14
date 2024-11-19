@@ -3,6 +3,7 @@
 #include "settings.h"
 #include "tools.h"
 #include "appmanager.h"
+#include "resourcedbtable.h"
 
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
@@ -356,5 +357,21 @@ QString Settings::aboutInfo()
     return s;
 }
 
+void Settings::fillLabelList(const DBRecordList& labels)
+{
+    Tools::debugLog("@@@@@ Settings::fillLabelList");
+    DBRecord& currentLabel = *getByCode(SettingCode_PrintLabelFormat);
+    QStringList values;
+    for (int i = 0; i < labels.count(); i++)
+    {
+        const QString value = QString("#%1  %2").arg(
+                labels[i][ResourceDBTable::Code].toString(),
+                labels[i][ResourceDBTable::Name].toString());
+        if(!values.contains(value)) values.append(value);
+    }
+    currentLabel[SettingField_ValueList] = Tools::toString(values);
+    int n = getIntValue(SettingCode_PrintLabelFormat, true);
+    if(n < 0 || n >= values.count()) currentLabel[SettingField_Value] = "0";
+}
 
 

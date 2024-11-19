@@ -8,13 +8,18 @@
 #include <QAudioOutput>
 #include <QApplication>
 #include "tools.h"
+#include "resourcedbtable.h"
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
 #endif
 
+QString debugText;
+QString applicationPath; // The directory that contains the application executable.
 quint64 soundTime = 0;
 QMediaPlayer mediaPlayer;
 QAudioOutput audioOutput;
+
+void Tools::initApplicationPath(const QString& path) { applicationPath = path; }
 
 void Tools::sound(const QString& fileName, const int volume)
 {
@@ -36,6 +41,11 @@ QString Tools::toString(const QJsonObject &jo)
 QJsonObject Tools::toJsonObject(const QString &s)
 {
     return QJsonDocument::fromJson(s.toUtf8()).object();
+}
+
+QString Tools::currentThreadId()
+{
+    return QString("%1").arg(QString::number((qint64)(QThread::currentThreadId())));
 }
 
 QString Tools::toString(const double value, const int pointPosition)
@@ -64,19 +74,12 @@ void Tools::memoryCheck()
 }
 */
 
-QString Tools::makeDirs(const bool internalStorage, const QString& localPath)
+QString Tools::makeDirs(const QString& localPath, const bool internalStorage)
 {
     if(localPath.isEmpty()) return "";
     const QStringList dirs = QString("/" + localPath).split("/");
     QDir dir;
-    QString path;
-
-    // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
-#ifdef Q_OS_ANDROID
-    if(internalStorage) path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#else
-    if(internalStorage) path = app->applicationDirPath();
-#endif
+    QString path = internalStorage ? applicationPath : "";
 
     for(int i = 0; i < dirs.size() - 1; i++)
     {
@@ -159,13 +162,7 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
     if(localPath.isEmpty()) return "";
     const QStringList dirs = QString(subDir + "/" + localPath).split("/");
     QDir dir;
-
-    // https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
-#ifdef Q_OS_ANDROID
-    QString path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#else
-    QString path = app->applicationDirPath(); // Returns the directory that contains the application executable.
-#endif
+    QString path = applicationPath;
 
     for(int i = 0; i < dirs.size() - 1; i++)
     {
@@ -310,8 +307,10 @@ void Tools::sortByString(DBRecordList& records, const int field, const bool incr
 
 void Tools::debugLog(const QString &text)
 {
-    QString s = text;
-    qDebug() << s.replace("\n", " ").replace("\r", " ");
+    QString s = QString("%1::%2").arg(Tools::currentThreadId(), text).replace("\n", " ").replace("\r", " ");
+    if(debugText == s) return; // Без повторений
+    debugText = s;
+    qDebug() << debugText;
 #ifdef DEBUG_LOG_FILE
     QFile f(dbPath(DEBUG_LOG_NAME));
     if (f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
@@ -555,6 +554,18 @@ QString Tools::getSSID()
             "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
 #endif
     return "?";
+}
+
+QString Tools::getImageFileWithQmlPath(const DBRecord& r)
+{
+    QString path = DUMMY_IMAGE_FILE;
+    const int i = ResourceDBTable::Value;
+    if (r.count() > i)
+    {
+        QString localFilePath = r[i].toString();
+        if(isFileExistsInDownloadPath(localFilePath)) path = qmlFilePath(localFilePath);
+    }
+    return path;
 }
 
 

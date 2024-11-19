@@ -27,7 +27,6 @@ public:
     QString daemonVersion() const;
     QString MODVersion() const { return Wm100::getVersionString(); }
     const Status& getStatus() const;
-    void onSettinsChanged();
 
     // Weight Manager:
     QString WMVersion() const;
@@ -45,7 +44,7 @@ public:
     EquipmentMode getWMMode() const { return WMMode; }
     bool isWM();
     QString getWMDescription();
-    int setExternalDisplay(const DBRecord&);
+    int updateExternalDisplay(const DBRecord* product = nullptr);
 
     // Print Manager:
     QString PMVersion() const;
@@ -54,10 +53,9 @@ public:
     EquipmentMode getPMMode() const { return PMMode; }
     bool isPM();
     void feed();
+    int setLabel(DataBase*, const DBRecord&);
 
 private:
-    QString makeBarcode(const DBRecord&, const QString&, const QString&);
-    QString parseBarcode(const QString&, const QChar, const QString&);
     QString getWMDescriptionNow();
 
     // Weight Manager:
@@ -96,7 +94,6 @@ private:
     uint16_t PMStatus = 0;
     QString PMUri;
     EquipmentMode PMMode = EquipmentMode_None;
-    QString labelPath;
 
 signals:
     void printed(const DBRecord&);

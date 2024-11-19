@@ -1,7 +1,6 @@
 #include "validity.h"
 #include "tools.h"
 #include "productdbtable.h"
-#include "calculator.h"
 
 Validity::Validity(const DBRecord& product)
 {

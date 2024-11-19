@@ -5,8 +5,6 @@
 #include "tools.h"
 #include "calculator.h"
 
-DBRecord emptyRecord;
-
 QHash<int, QByteArray> SearchPanelModel3::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractListModel::roleNames();
@@ -24,51 +22,6 @@ bool SearchPanelModel3::onFlickTo(const int row)
     return true;
 }
 
-DBRecord& SearchPanelModel3::productByIndex(const int index)
-{
-    return index >= 0 && index < products.count() ? products[index] : emptyRecord;
-}
-
-bool SearchPanelModel3::isHierarchyRoot()
-{
-    return Tools::toInt(hierarchyLastCode()) == 0;
-}
-
-bool SearchPanelModel3::hierarchyUp()
-{
-    if (groupHierarchy.count() < 1) return false;
-    groupHierarchy.removeLast();
-    return true;
-}
-
-bool SearchPanelModel3::hierarchyDown(DBRecord& group)
-{
-    if (group.empty()) return false;
-    for (int i = 0; i < groupHierarchy.count(); i++)
-    {
-        if (groupHierarchy[i][0] == group[0]) return false;
-    }
-    groupHierarchy.append(group);
-    return true;
-}
-
-QString SearchPanelModel3::hierarchyLastCode()
-{
-    return groupHierarchy.empty() ? "0" : groupHierarchy.last()[ProductDBTable::Code].toString();
-}
-
-QString SearchPanelModel3::hierarchyTitle()
-{
-    if(groupHierarchy.count() < 1) return "Все товары";
-    QString s;
-    for (int i = 0; i < groupHierarchy.count(); i++)
-    {
-        if (i > 0) s += " / ";
-        s += groupHierarchy[i][ProductDBTable::Name].toString();
-    }
-    return s;
-}
-
 void SearchPanelModel3::update(const DBRecordList &newProducts, const int filterIndex)
 {
     Tools::debugLog(log("@@@@@ SearchPanelModel3::update(1)"));
@@ -84,7 +37,7 @@ void SearchPanelModel3::update(const DBRecordList &newProducts, const int filter
         QString code;
         QString price;
         QString name = ri[ProductDBTable::Name].toString();
-       if(Calculator::isGroup(ri)) name = "<b>" + name + "</b>";
+       if(Calculator::isGroup(ri)) name = "<b>" + name.toUpper() + "</b>";
 
         switch(filterIndex)
         {

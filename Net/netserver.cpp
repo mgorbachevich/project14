@@ -473,8 +473,11 @@ QString NetServer::parseGetRequest(const RouterRule rule, const QByteArray &requ
             }
         }
     }
-    if(rule == RouterRule_Get) return appManager->netUpload(tableName, codes, codesOnly);
-    if(!codesOnly) return appManager->netDelete(tableName, codes);
+    if(rule == RouterRule_Get)
+        return appManager->netUpload(tableName, codes, codesOnly);
+    if(!codesOnly)
+        return appManager->netDelete(tableName, codes);
+
     NetActionResult result(appManager, RouterRule_Get);
     result.errorCode = Error_Log_WrongRequest;
     result.description = "Некорректный сетевой запрос";

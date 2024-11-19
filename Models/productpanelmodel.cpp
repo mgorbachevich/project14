@@ -50,14 +50,14 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
         case ProductDBTable::MessageFileCode:
         case ProductDBTable::MovieCode:
         case ProductDBTable::SoundCode:
-        case ProductDBTable::Favorite:
+        case ProductDBTable::Favorite: // Не используется
         case ProductDBTable::PriceBase:
         case ProductDBTable::UpperName:
         case ProductDBTable::GroupCode:
         case ProductDBTable::LabelFormat:
         case ProductDBTable::LabelFormat2:
         case ProductDBTable::LabelFormat3:
-        case ProductDBTable::BarcodeFormat: // todo
+        case ProductDBTable::BarcodeFormat:
         case ProductDBTable::ShelfLife: // ниже
         case ProductDBTable::SellDate: // ниже
         case ProductDBTable::ProduceDate: // ниже

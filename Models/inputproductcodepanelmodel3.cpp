@@ -32,7 +32,7 @@ void InputProductCodePanelModel3::update(const DBRecordList &products)
     {
         DBRecord ri = products[i];
         QStringList data;
-        if(appManager->status.lastProductSort == ShowcaseSort_Code2)
+        if(appManager->status.showcaseLastSort == ShowcaseSort_Code2)
             data << "№" + ri[ProductDBTable::Code2].toString() << ri[ProductDBTable::Name].toString();
         else
             data << "#" + ri[ProductDBTable::Code].toString() << ri[ProductDBTable::Name].toString();

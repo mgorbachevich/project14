@@ -119,6 +119,7 @@ enum SettingCode // Должны совпадать со значениями в
     SettingCode_ShowcaseProductTopText = 1055,
     SettingCode_ShowcaseProductBottomText = 1056,
     SettingCode_ChangeShowcase = 1057,
+    SettingCode_ShowcaseLevels = 1058,
     //Группы:
     SettingCode_Group_System = 8100,
     SettingCode_Group_WorkingMode = 8200,
@@ -169,7 +170,7 @@ public:
     static bool isGroup(const DBRecord& r);
     void nativeSettings(const int);
     bool setValue(const int, const QString&);
-    void update(const int groupCode) { currentGroupCode = groupCode; }
+    void setGroup(const int groupCode) { currentGroupCode = groupCode; }
     void clear() {}
     bool read();
     bool write();
@@ -178,6 +179,7 @@ public:
     QString aboutInfo();
     QString modelInfo();
     QJsonObject getScaleConfig();
+    void fillLabelList(const DBRecordList& records);
 
 protected:
     void sort() {}

@@ -120,11 +120,11 @@ DBRecordList JsonArrayFile::getAll()
     return items;
 }
 
-DBRecord *JsonArrayFile::getByCode(const int code)
+DBRecord *JsonArrayFile::getByCode(const quint64 code)
 {
     getAll();
     bool ok = false;
-    for (DBRecord& r : items) if (r[0].toInt(&ok) == code && ok) return &r;
+    for (DBRecord& r : items) if (! r.isEmpty() && r[0].toULongLong(&ok) == code && ok) return &r;
     return nullptr;
 }
 

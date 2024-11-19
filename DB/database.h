@@ -10,25 +10,6 @@
 class Users;
 class Settings;
 
-enum DBSelector
-{
-    DBSelector_None = 0,
-    DBSelector_GetShowcaseProducts,
-    DBSelector_GetShowcaseResources,
-    DBSelector_GetProductsByGroupCodeIncludeGroups,
-    DBSelector_GetProductsByFilteredCode,
-    DBSelector_GetProductsByFilteredCode2,
-    DBSelector_GetProductsByFilteredBarcode,
-    DBSelector_GetProductsByFilteredName,
-    DBSelector_GetItemsByCodes,
-    DBSelector_GetLog,
-    DBSelector_GetProductsByInputCode,
-    DBSelector_SetProductByCode2,
-    DBSelector_SetProductByNumber,
-    DBSelector_GetAllLabels,
-    //DBSelector_GetAuthorizationUsers,
-};
-
 class DataBase : public ExternalMessager
 {
     Q_OBJECT
@@ -38,7 +19,8 @@ public:
     ~DataBase();
 
     void clearLog();
-    QString getLabelPathByName(const QString&);
+    DBRecordList getAllLabels();
+    //QString getLabelPathByName(const QString&);
     QString getLabelPathById(const QString&);
     QString getProductMessage(const DBRecord&);
     DBTable* getTable(const QString&) const;
@@ -49,8 +31,6 @@ public:
     QString netUpload(Settings*, Users*, const QString&, const QString&, const bool codesOnly = false);
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
-    void select(const DBSelector, const DBRecordList&);
-    void select(const DBSelector, const QString& param1 = "", const QString& param2 = "", const int offset = -1, const int limit = -1);
     QString version() { return DB_VERSION; }
     static bool copyDBFile(const QString&, const QString&);
     static bool renameDBFile(const QString&, const QString&);
@@ -58,6 +38,13 @@ public:
     static bool isDBFileExists(const QString&);
     bool executeSQL(const QSqlDatabase&, const QString&);
     DBRecord selectByCode(const QString&, const QString&);
+    DBRecordList selectShowcaseProducts(const DBRecord&, const bool);
+    DBRecordList selectShowcaseResources(const DBRecordList&);
+    DBRecordList selectLog();
+    DBRecordList selectProductByNumber(const QString&);
+    DBRecordList selectProductsByInputCode(const QString&, const QString&, const int, const int);
+    DBRecordList selectProductsByGroup(const QString&, const bool includeGroups = true);
+    DBRecordList selectProductsByFilter(const int, const QString&, const int, const int);
 
 private:
     bool addAndOpen(QSqlDatabase&, const QString&, const bool open = true);
@@ -73,6 +60,7 @@ private:
     void selectAll(DBTable*, DBRecordList&);
     QStringList selectAllCodes(DBTable*);
     bool selectById(const QString&, const QString&, DBRecord&);
+    DBRecordList selectSubgroups(const QString&);
 
     bool started = false;
     int removeOldLogRecordsCounter = 0;
@@ -81,7 +69,6 @@ private:
     QSqlDatabase logDB;
 
 signals:
-    void selectResult(const DBSelector, const DBRecordList&, const bool);
     void dbStarted();
 
 public slots:

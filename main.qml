@@ -216,9 +216,12 @@ ApplicationWindow
     Connections // Slot for signal AppManager::showWaitBox:
     {
         target: app
-        function onShowWaitBox(value)
+        function onShowWaitBox(show, modalPopup)
         {
-            if(value) Qt.createComponent("Panels/waitPanel.qml").createObject(mainWindow).open()
+            if(show) Qt.createComponent("Panels/waitPanel.qml").createObject(mainWindow,
+            {
+                modal: modalPopup
+            }).open()
         }
     }
 

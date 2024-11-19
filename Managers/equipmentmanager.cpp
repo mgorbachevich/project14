@@ -13,6 +13,7 @@
 #include "calculator.h"
 #include "settings.h"
 #include "validity.h"
+#include "resourcedbtable.h"
 
 EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent)
 {
@@ -197,7 +198,6 @@ void EquipmentManager::pauseWM(const bool v)
         if(v) wm->stopPolling();
         else wm->startPolling(EQUIPMENT_POLLING_INTERVAL);
         wm->blockSignals(v);
-
     }
 }
 
@@ -264,7 +264,7 @@ void EquipmentManager::removePM()
         disconnect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
         delete labelCreator;
         labelCreator = nullptr;
-        labelPath = "";
+        appManager->status.labelPath = "";
         delete slpa;
         slpa = nullptr;
     }
@@ -311,12 +311,6 @@ QString EquipmentManager::daemonVersion() const
 const Status &EquipmentManager::getStatus() const
 {
     return appManager->status;
-}
-
-void EquipmentManager::onSettinsChanged()
-{
-    Tools::debugLog("@@@@@ EquipmentManager::onSettinsChanged");
-    labelPath = "";
 }
 
 QString EquipmentManager::WMVersion() const
@@ -475,7 +469,8 @@ QString EquipmentManager::getPMErrorDescription(const int e) const
     case Error_PM_BadPosition: return "Этикетка не спозиционирована! Нажмите клавишу промотки!";
     case Error_PM_Fail:        return "Ошибка принтера!";
     case Error_PM_Memory:      return "Ошибка памяти принтера!";
-    case Error_PM_Barcode:     return "Неверный штрихкод";
+    case Error_PM_Barcode:     return "Неверный штрихкод!";
+    case Error_PM_NoLabel:     return "Этикетка не загружена!";
     }
     return slpa == nullptr ? "" : slpa->errorDescription(e);
 }
@@ -529,46 +524,6 @@ void EquipmentManager::onSelfKeyPressed(int keyCode)
     emit selfKeyPressed(keyCode);
 }
 
-QString EquipmentManager::parseBarcode(const QString& barcodeTemplate, const QChar c, const QString& value)
-{
-    QString result;
-    int n = 0;
-    for(int i = 0; i < barcodeTemplate.length(); i++) if(barcodeTemplate.at(i) == c) n++;
-    if(n > 0)
-    {
-        QString v = value;
-        v = v.replace(QString("."), QString("")).replace(QString(","), QString(""));
-        if(n >= v.length())
-        {
-            for(int i = 0; i < n - v.length(); i++) result += "0";
-            result += v;
-        }
-    }
-    Tools::debugLog(QString("@@@@@ EquipmentManager::parseBarcode %1 %2 %3 %4").arg(barcodeTemplate, value, result, Tools::toString(n)));
-    return result;
-}
-
-QString EquipmentManager::makeBarcode(const DBRecord& product, const QString& quantity, const QString& amount)
-{
-    Settings* settings = appManager->settings;
-    QString result;
-    QString barcodeTemplate = Calculator::isPiece(product) ?
-                settings->getStringValue(SettingCode_PrintLabelBarcodePiece) :
-                settings->getStringValue(SettingCode_PrintLabelBarcodeWeight);
-    if(barcodeTemplate.contains("P"))
-    {
-        result = Calculator::isPiece(product) ?
-                 settings->getStringValue(SettingCode_PrintLabelPrefixPiece) :
-                 settings->getStringValue(SettingCode_PrintLabelPrefixWeight);
-    }
-    result += parseBarcode(barcodeTemplate, 'C', product[ProductDBTable::Code].toString()) +
-              parseBarcode(barcodeTemplate, 'T', amount) +
-              parseBarcode(barcodeTemplate, 'B', product[ProductDBTable::Barcode].toString()) +
-              parseBarcode(barcodeTemplate, 'W', quantity);
-    Tools::debugLog(QString("@@@@@ EquipmentManager::makeBarcode %1 %2").arg(barcodeTemplate, result));
-    return result.length() != barcodeTemplate.length() ? "" : result;
-}
-
 QString EquipmentManager::getWMDescription()
 {
     QString result;
@@ -615,34 +570,20 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
 {
     Tools::debugLog("@@@@@ EquipmentManager::print ");
     if(!isPMStarted || slpa == nullptr) return Error_PM_Fail;
-    int e = 0;
     Settings* settings = appManager->settings;
     quint64 dateTime = Tools::nowMsec();
-    int labelNumber = 0; // todo
-
-    // Label Path:
-    QString localPath;
-    if(appManager->isProduct() && Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
-        localPath = db->getLabelPathById(product[ProductDBTable::Code].toString()); // Товар с заданной этикеткой
-    if(localPath.isEmpty())
-        localPath = db->getLabelPathByName(settings->getStringValue(SettingCode_PrintLabelFormat));
-    QString fullPath;
-    if(Tools::isFileExistsInDownloadPath(localPath)) fullPath = Tools::downloadPath(localPath);
-    else if(Tools::isFileExists(localPath)) fullPath = localPath;
-    if(labelPath != fullPath || fullPath.isEmpty())
-    {
-        showToast("Загрузка этикетки");
-        e = labelCreator->loadLabel(fullPath);
-        if(e == 0) labelPath = fullPath;
-    }
-
+    const Status& status = getStatus();
     PrintData pd;
+    int labelNumber = 0; // todo
+    int e = setLabel(db, product);
     if (e == 0)
     {
-        pd.weight = appManager->status.quantity;
-        pd.price = appManager->status.price;
-        pd.cost = appManager->status.amount;
-        pd.tare = appManager->status.tare;
+        pd.weight = status.quantity;
+        pd.price = status.price;
+        pd.price2 = status.price2;
+        pd.cost = status.amount;
+        pd.cost2 = status.amount2;
+        pd.tare = status.tare;
         pd.shop = settings->getStringValue(SettingCode_ShopName);
         pd.operatorcode =  Tools::toString(Users::getCode(user));
         pd.operatorname = Users::getName(user);
@@ -653,7 +594,6 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
         pd.picturefile = ""; // todo
         pd.textfile = ""; // todo
         pd.currequiv = ""; // todo
-        pd.cost2 = ""; // todo
 
         if(appManager->isProduct())
         {
@@ -662,7 +602,6 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
             pd.name = product[ProductDBTable::Name].toString();
             pd.name2 = product[ProductDBTable::Name2].toString();
             pd.certificate = product[ProductDBTable::Certificate].toString();
-            pd.price2 = Calculator::price2(product);
             pd.message = db->getProductMessage(product);
 
             Validity v(product);
@@ -672,7 +611,7 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
             pd.selldate = v.getText(ValidityIndex_Sell);
             pd.shelflife = v.getText(ValidityIndex_Life);
 
-            pd.barcode = makeBarcode(product, pd.weight, pd.cost);
+            pd.barcode = Calculator::makeBarcode(settings, product, pd.weight, pd.cost);
             if (pd.barcode.isEmpty()) e = Error_PM_Barcode;
         }
         else
@@ -682,7 +621,6 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
             pd.name = "";
             pd.name2 = "";
             pd.certificate = "";
-            pd.price2 = "";
             pd.message = "";
             pd.producedate = "";
             pd.packagedate = "";
@@ -719,14 +657,14 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
     return e;
 }
 
-int EquipmentManager::setExternalDisplay(const DBRecord& product)
+int EquipmentManager::updateExternalDisplay(const DBRecord* product)
 {
     Wm100Protocol::display_data dd;
-    Status& status = appManager->status;
+    const Status& status = getStatus();
     dd.weight = status.quantity;
     dd.price = status.price;
     dd.cost = status.amount;
-    dd.tare =  status.tare;
+    dd.tare = status.tare;
     dd.flAuto = status.autoPrintMode == AutoPrintMode_On;
     dd.flDataExchange = status.isNet;
     dd.flZero = isZeroFlag();
@@ -734,11 +672,11 @@ int EquipmentManager::setExternalDisplay(const DBRecord& product)
     dd.flCalm = isWeightFixed();
     dd.flLock = appManager->isAuthorizationOpened();
     dd.flTools = appManager->isSettingsOpened();
-    if(appManager->isProduct())
+    if(product != nullptr && !product->isEmpty())
     {
-        dd.text = product[ProductDBTable::Name].toString();
-        dd.flPieces = Calculator::isPiece(product);
-        dd.flPer100g = !dd.flPieces && Calculator::is100gBase(product);
+        dd.text = product->at(ProductDBTable::Name).toString();
+        dd.flPieces = Calculator::isPiece(*product);
+        dd.flPer100g = !dd.flPieces && Calculator::is100gBase(*product);
         dd.flPerKg = !dd.flPieces && !dd.flPer100g;
     }
     else
@@ -746,9 +684,38 @@ int EquipmentManager::setExternalDisplay(const DBRecord& product)
         dd.text = "";
         dd.flPieces = dd.flPer100g = dd.flPerKg = false;
     }
-    Tools::debugLog(QString("@@@@@ EquipmentManager::setExternalDisplay %1 %2 %3 %4").arg(
+    Tools::debugLog(QString("@@@@@ EquipmentManager::updateExternalDisplay %1 %2 %3 %4").arg(
                         dd.weight, dd.price, dd.cost, dd.tare));
-    //showToast(QString("%1 %2 %3 %4").arg(dd.weight, dd.price, dd.cost, dd.tare));
     return isWM()? wm->setDisplayData(dd) : Error_WM_Off;
+}
+
+int EquipmentManager::setLabel(DataBase* db, const DBRecord& product)
+{
+    if (labelCreator == nullptr || !isPMStarted) return Error_PM_NoLabel;
+    QString localPath;
+    if(appManager->isProduct() && Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
+        localPath = db->getLabelPathById(product[ProductDBTable::LabelFormat].toString()); // Товар с заданной этикеткой
+    if(localPath.isEmpty())
+    {
+        DBRecordList labels = db->getAllLabels();
+        const int i = appManager->settings->getIntValue(SettingCode_PrintLabelFormat, true);
+        if(i < labels.count())
+            localPath = labels[i][ResourceDBTable::Value].toString();
+    }
+    QString fullPath;
+    if(Tools::isFileExistsInDownloadPath(localPath))
+        fullPath = Tools::downloadPath(localPath);
+    else if(Tools::isFileExists(localPath))
+        fullPath = localPath;
+    Tools::debugLog(QString("@@@@@ EquipmentManager::setLabel %1").arg(fullPath));
+    //showAttention(QString("Этикетка %1").arg(fullPath));
+    int e = 0;
+    if(appManager->status.labelPath != fullPath || fullPath.isEmpty())
+    {
+        showToast("Загрузка этикетки");
+        e = labelCreator->loadLabel(fullPath);
+        if(e == 0) appManager->status.labelPath = fullPath;
+    }
+    return e;
 }
 

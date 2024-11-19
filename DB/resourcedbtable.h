@@ -2,7 +2,6 @@
 #define RESOURCEDBTABLE_H
 
 #include "dbtable.h"
-#include "tools.h"
 
 class ResourceDBTable: public DBTable
 {
@@ -17,16 +16,7 @@ public:
         COLUMN_COUNT
     };
 
-    ResourceDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent): DBTable(name, sqlDB, parent)
-    {
-        Tools::debugLog("@@@@@ ResourceDBTable::ResourceDBTable");
-
-        addColumn("Код",          "code",   "UNSIGNED BIG INT PRIMARY KEY");
-        addColumn("Наименование", "name",   "TEXT");
-        addColumn("Значение",     "value",  "TEXT");
-        addColumn("Хэш",          "hash",   "TEXT");
-        addColumn("Источник",     "source", "TEXT");
-    }
+    ResourceDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent);
     int columnCount() { return COLUMN_COUNT; }
 };
 

@@ -42,7 +42,7 @@ Rectangle
         target: app
         function onShowHierarchyRoot(value)
         {
-            searchPanelUpButton.icon.source = value ? "../Icons/empty" : "../Icons/arrow_up"
+            searchPanelLevelUpButton.icon.source = value ? "../Icons/empty" : "../Icons/arrow_left"
         }
     }
 
@@ -66,7 +66,7 @@ Rectangle
             {
                 searchPanelHomeButton.marked = true;
                 searchPanelKeyboardButton.visible = false
-                searchPanelUpButton.visible = true
+                searchPanelLevelUpButton.visible = true
                 searchPanelKeyboard.visible = false
                 searchPanelTextField.text = ""
             }
@@ -74,7 +74,7 @@ Rectangle
             {
                 searchPanelHomeButton.marked = false;
                 searchPanelKeyboardButton.visible = true
-                searchPanelUpButton.visible = false
+                searchPanelLevelUpButton.visible = false
             }
         }
     }
@@ -140,11 +140,10 @@ Rectangle
 
         RoundIconButton
         {
-            id: searchPanelUpButton
+            id: searchPanelLevelUpButton
             Layout.column: 3
             Layout.row: 0
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-            icon.source: "../Icons/arrow_up"
             onClicked:
             {
                 app.onClicked(5)

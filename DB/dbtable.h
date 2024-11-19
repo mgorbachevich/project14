@@ -36,7 +36,6 @@ public:
     virtual void removeIndexes();
     virtual void setColumnNotUploadable(const int c) { notUploadColumns.append(c); }
     QString toString(DBRecord&);
-    void fill(DBRecord&);
 
     QString name;
     QSqlDatabase& sqlDB;

@@ -12,7 +12,7 @@ Rectangle
     color: Material.background
     property int buttonPanelWidth: screenManager.buttonSize() + screenManager.spacer() * 2
     property int imageSize: (width - buttonPanelWidth) / screenManager.showcaseRowImages()
-    property int imageBorderWidth: 4
+    property int imageBorderWidth: 1
     focus: true
 
     Connections // Slot for signal AppManager::showMainPage:
@@ -52,6 +52,12 @@ Rectangle
             case 32: // SelfService
                 showcasePanelSelfService.visible = value !== '0'
                 showcasePanelLayout.visible = value === '0'
+                break
+            case 33:
+                showcasePanelTitle.text = value
+                break
+            case 34:
+                showcasePanelDeleteButton.visible = value !== '0'
                 break
             }
         }
@@ -171,94 +177,148 @@ Rectangle
             }
         }
 
-        GridView
+        Column
         {
-            id: showcasePanelGrid
             width: parent.width - buttonPanelWidth
             height: parent.height
-            leftMargin: 0
-            topMargin: 0
-            rightMargin: 0
-            bottomMargin: 0
-            clip: true
-            cellWidth: imageSize
-            cellHeight: imageSize
-            /*
-            ScrollBar.vertical: ScrollBar
-            {
-                width: screenManager.scrollBarWidth()
-                background: Rectangle { color: "transparent" }
-                policy: ScrollBar.AlwaysOn
-            }
-            */
-            model: showcasePanelModel
-            delegate: GridLayout
-            {
-                width: imageSize
-                height: imageSize
-                columnSpacing: 0
-                rowSpacing: 0
+            spacing: 0
 
-                Image
+            Rectangle
+            {
+                id: showcasePanelTitleRectangle
+                width: parent.width
+                height: screenManager.buttonSize() + screenManager.spacer() * 2
+                color: Material.color(Material.Grey, Material.Shade100)
+
+                Row
                 {
-                    Layout.column: 0
-                    Layout.row: 0
-                    Layout.rowSpan: 5
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Layout.preferredWidth: imageSize - imageBorderWidth * 2
-                    Layout.preferredHeight: imageSize - imageBorderWidth * 2
-                    fillMode: Image.PreserveAspectFit
-                    source: model.image
 
-                    MouseArea
+                    width: parent.width
+                    height: parent.height
+
+                    CardTitleText
                     {
-                        anchors.fill: parent
-                        onClicked: app.onClicked2(22, index)
+                        id: showcasePanelTitle
+                        text: qsTr("")
+                    }
+
+                    RoundIconButton
+                    {
+                        id: showcasePanelDeleteButton
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        icon.source: "../Icons/delete"
+                        onClicked: app.onClicked(31)
                     }
                 }
+            }
 
-                Rectangle
+            GridView
+            {
+                id: showcasePanelGrid
+                width: parent.width
+                height: parent.height - showcasePanelTitleRectangle.height
+                leftMargin: 0
+                topMargin: 0
+                rightMargin: 0
+                bottomMargin: 0
+                clip: true
+                cellWidth: imageSize
+                cellHeight: imageSize
+                /*
+                ScrollBar.vertical: ScrollBar
                 {
-                    Layout.column: 0
-                    Layout.row: 0
-                    Layout.rowSpan: 5
-                    Layout.fillWidth: parent
-                    Layout.fillHeight: parent
-                    color: "transparent"
-                    border.width: imageBorderWidth
-                    border.color: Material.color(Material.Grey, Material.Shade100)
+                    width: screenManager.scrollBarWidth()
+                    background: Rectangle { color: "transparent" }
+                    policy: ScrollBar.AlwaysOn
                 }
-
-                Spacer
+                */
+                model: showcasePanelModel
+                delegate: GridLayout
                 {
-                    Layout.column: 0
-                    Layout.row: 0
-                    height: imageBorderWidth + 1
-                }
+                    width: imageSize
+                    height: imageSize
+                    columnSpacing: 0
+                    rowSpacing: 0
 
-                Sticker
-                {
-                    Layout.column: 0
-                    Layout.row: 1
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    text: model.top
-                    visible: model.top !== ""
-                }
+                    Image
+                    {
+                        Layout.column: 0
+                        Layout.row: 0
+                        Layout.rowSpan: 5
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.preferredWidth: imageSize - imageBorderWidth * 2
+                        Layout.preferredHeight: imageSize - imageBorderWidth * 2
+                        fillMode: Image.PreserveAspectFit
+                        source: model.image
 
-                Sticker
-                {
-                    Layout.column: 0
-                    Layout.row: 3
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    text: model.bottom
-                    visible: model.bottom !== ""
-                }
+                        MouseArea
+                        {
+                            anchors.fill: parent
+                            onClicked: app.onClicked2(22, index)
+                        }
+                    }
 
-                Spacer
-                {
-                    Layout.column: 0
-                    Layout.row: 4
-                    height: imageBorderWidth + 1
+                    Rectangle
+                    {
+                        Layout.column: 0
+                        Layout.row: 0
+                        Layout.rowSpan: 5
+                        Layout.fillWidth: parent
+                        Layout.fillHeight: parent
+                        color: "transparent"
+                        border.width: imageBorderWidth
+                        border.color: Material.color(Material.Grey, Material.Shade100)
+                    }
+
+                    Spacer
+                    {
+                        Layout.column: 0
+                        Layout.row: 0
+                        height: imageBorderWidth + 1
+                    }
+
+                    Sticker
+                    {
+                        Layout.column: 0
+                        Layout.row: 1
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.preferredWidth: imageSize - imageBorderWidth * 2 - 2
+                        text: model.top
+                        visible: model.top !== ""
+                    }
+
+                    Sticker
+                    {
+                        Layout.column: 0
+                        Layout.row: 2
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.preferredWidth: imageSize - imageBorderWidth * 2 - 2
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 3
+                        width: imageSize
+                        height: imageSize
+                        text: model.center
+                        visible: model.center !== ""
+                    }
+
+                    Sticker
+                    {
+                        Layout.column: 0
+                        Layout.row: 3
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.preferredWidth: imageSize - imageBorderWidth * 2 - 2
+                        width: imageSize
+                        text: model.bottom
+                        visible: model.bottom !== ""
+                    }
+
+                    Spacer
+                    {
+                        Layout.column: 0
+                        Layout.row: 4
+                        height: imageBorderWidth + 1
+                    }
                 }
             }
         }

@@ -157,6 +157,12 @@
                 "type":"4"
             },
             {
+                "code":"8201",
+                "name":"Витрина",
+                "group_code": "8200",
+                "type":"0"
+            },
+            {
                 "code":"1002",
                 "name":"Валюта",
                 "value":"",
@@ -184,13 +190,6 @@
                 "group_code":"8200",
                 "type":"7"
             },
-            {
-                "code":"8201",
-                "name":"Витрина",
-                "group_code": "8200",
-                "type":"0"
-            },
-
 
             {
                 "code":"1055",
@@ -215,6 +214,13 @@
                 "value_list":"Нет,Да",
                 "group_code":"8201",
                 "type":"6"
+            },
+            {
+                "code":"1058",
+                "name":"Число уровней",
+                "value":"0",
+                "group_code":"8201",
+                "type":"3"
             },
 
 
@@ -367,7 +373,7 @@
                 "code":"1028",
                 "name":"Формат ШК весового товара по умолчанию",
                 "value":"1",
-                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
+                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB,BBCCCCCCWWWW,BBCCCCCWWWWW",
                 "comment":"P – префикс весовой или штучный, W – вес товара в граммах или количество штучного товара, С – код, T – стоимость в МДЕ, B – ШК из карточки товара",
                 "group_code":"8602",
                 "type":"6"
@@ -376,7 +382,7 @@
                 "code":"1029",
                 "name":"Формат ШК штучного товара по умолчанию",
                 "value":"1",
-                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB",
+                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,BBBBBBBWWWWW,PPBBBBBWWWWW,BBBBBBBBBBBB,BBCCCCCCWWWW,BBCCCCCWWWWW",
                 "comment":"P – префикс весовой или штучный, W – вес товара в граммах или количество штучного товара, С – код, T – стоимость в МДЕ, B – ШК из карточки товара",
                 "group_code":"8602",
                 "type":"6"

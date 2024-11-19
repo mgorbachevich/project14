@@ -36,13 +36,14 @@ public:
         MessageFileCode,
         MovieCode,
         SoundCode,
-        Favorite,
+        Favorite, // Не используется
         COLUMN_COUNT
     };
 
     ProductDBTable(const QString&, QSqlDatabase&, DataBase*);
     const DBRecord checkRecord(const DBRecord&);
     int columnCount() { return Columns::COLUMN_COUNT; }
+    DBRecord makeRootGroup();
 };
 
 #endif // PRODUCTDBTABLE_H

@@ -12,6 +12,8 @@ INCLUDEPATH += \
 HEADERS += \
     Managers/calculator.h \
     Managers/validity.h \
+    Models/calendarmodel.h \
+    Models/hierarchymodel.h \
     constants.h \
     tools.h \
     DB/dbindexdescriptor.h \
@@ -119,8 +121,8 @@ HEADERS += \
     Net/netserver.h
 
 SOURCES += \
-    Managers/calculator.cpp \
-    Managers/validity.cpp \
+    DB/resourcedbtable.cpp \
+    Models/hierarchymodel.cpp \
     main.cpp \
     tools.cpp \
     DB/showcase.cpp \
@@ -205,6 +207,9 @@ SOURCES += \
     Managers/externalmessager.cpp \
     Managers/keyemitter.cpp \
     Managers/screenmanager.cpp \
+    Managers/calculator.cpp \
+    Managers/validity.cpp \
+    Models/calendarmodel.cpp \
     Models/baselistmodel3.cpp \
     Models/usernamemodel.cpp \
     Models/viewlogpanelmodel.cpp \
