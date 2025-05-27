@@ -1,8 +1,8 @@
 #include "calculator.h"
-#include "productdbtable.h"
 #include "settings.h"
 #include "equipmentmanager.h"
 #include "status.h"
+#include "productdbtable.h"
 
 int moneyPointPosition = 2;
 int moneyMultiplier = 100;
@@ -18,12 +18,11 @@ double Calculator::quantityAsDouble(const DBRecord& product, EquipmentManager* c
 {
     if(isPiece(product)) return (double)(em->getStatus().pieces);
     if(em->isWMError()) return 0;
+#ifdef FIX_20250115_1
+    return em->getWeight();
+#else
     return em->getWeight() * (is100gBase(product) ? 10 : 1);
-}
-
-double Calculator::priceAsDouble(const DBRecord& product, const int field)
-{
-    return DBTable::normalize(product, field).toDouble() / moneyMultiplier;
+#endif
 }
 
 QString Calculator::quantity(const DBRecord& product, EquipmentManager* const em)
@@ -34,31 +33,43 @@ QString Calculator::quantity(const DBRecord& product, EquipmentManager* const em
     return Tools::roundToString(v, 3); // г
 }
 
-QString Calculator::price(const DBRecord& product)
+double Calculator::priceAsDouble(const DBRecord& product, const int priceField, const bool base)
 {
-    return Tools::roundToString(priceAsDouble(product, ProductDBTable::Price), moneyPointPosition);
+    return ((base && is100gBase(product)) ? 10.0 : 1.0) *
+            DBTable::normalize(product, priceField).toDouble() / moneyMultiplier;
 }
 
-QString Calculator::price2(const DBRecord& product)
+QString Calculator::price(const DBRecord& product, const bool base)
 {
-    return Tools::roundToString(priceAsDouble(product, ProductDBTable::Price2), moneyPointPosition);
+    return Tools::roundToString(priceAsDouble(product, ProductDBTable::Price, base), moneyPointPosition);
 }
 
-QString Calculator::amount(const DBRecord& product, EquipmentManager* const em, const int field)
+QString Calculator::price2(const DBRecord& product, const bool base)
 {
+    return Tools::roundToString(priceAsDouble(product, ProductDBTable::Price2, base), moneyPointPosition);
+}
+
+QString Calculator::amountAsString(const DBRecord& product, EquipmentManager* const em, const int field)
+{
+#ifdef FIX_20250115_1
+    double v = quantityAsDouble(product, em) *
+            (is100gBase(product) ? 10.0 : 1.0) *
+            (double)(DBTable::normalize(product, field).toLongLong()) / moneyMultiplier;
+#else
     double v = quantityAsDouble(product, em) *
             (double)(DBTable::normalize(product, field).toLongLong()) / moneyMultiplier;
+#endif
     return Tools::roundToString(v, moneyPointPosition);
 }
 
 QString Calculator::amount(const DBRecord& product, EquipmentManager* const em)
 {
-    return amount(product, em, ProductDBTable::Price);
+    return amountAsString(product, em, ProductDBTable::Price);
 }
 
 QString Calculator::amount2(const DBRecord& product, EquipmentManager* const em)
 {
-    return amount(product, em, ProductDBTable::Price2);
+    return amountAsString(product, em, ProductDBTable::Price2);
 }
 
 QString Calculator::unitWeight(const DBRecord& product)
@@ -112,7 +123,11 @@ QString Calculator::parseBarcode(const QString& barcodeTemplate, const QChar c, 
         if (n > 12) n = 12; // Длина ШК = 12. Контрольный 13-й символ добавляется позже
         QString v = value;
         v = v.replace(QString("."), QString("")).replace(QString(","), QString(""));
+#ifdef FIX_20250526_2
+        if (n >= v.length())  result = v.rightJustified(n, '0', true);
+#else
         result = v.rightJustified(n, '0', true);
+#endif
     }
     Tools::debugLog(QString("@@@@@ Calculator::parseBarcode template=%1 char=%2 value=%3 length=%4 result=%5").arg(
                         barcodeTemplate, c, value, Tools::toString(n), result));
@@ -122,39 +137,46 @@ QString Calculator::parseBarcode(const QString& barcodeTemplate, const QChar c, 
 QString Calculator::makeBarcode(Settings* settings, const DBRecord& product, const QString& quantity, const QString& amount)
 {
     if (settings == nullptr) return "";
-    QString barcodeTemplate = product[ProductDBTable::BarcodeFormat].toString().toUpper();
-    if (barcodeTemplate.size() < 2)
-        barcodeTemplate = Calculator::isPiece(product) ?
+    QString bt = product[ProductDBTable::BarcodeFormat].toString().toUpper(); // Barcode template
+    if (bt.size() < 2)
+        bt = Calculator::isPiece(product) ?
                 settings->getStringValue(SettingCode_PrintLabelBarcodePiece).toUpper() :
                 settings->getStringValue(SettingCode_PrintLabelBarcodeWeight).toUpper();
-    if (barcodeTemplate.size() < 2) barcodeTemplate = "BBBBBBBBBBBB";
+    if (bt.size() < 2) bt = "BBBBBBBBBBBB";
     QStringList order;
-    for (int i = 0; i < barcodeTemplate.length(); i++)
+    for (int i = 0; i < bt.length(); i++)
     {
-        QString c = barcodeTemplate[i];
+        QString c = bt[i];
         if (!order.contains(c)) order << c;
     }
     QString result;
     for (int i = 0; i < order.length(); i++)
     {
-        if(order[i] == "P")
+        if(order[i] == BARCODE_CHAR_PREFIX)
         {
             QString s = Calculator::isPiece(product) ?
                     settings->getStringValue(SettingCode_PrintLabelPrefixPiece).toUpper() :
                     settings->getStringValue(SettingCode_PrintLabelPrefixWeight).toUpper();
             result += s.rightJustified(2, '0', true);
         }
-        else if(order[i] == "C")
-            result += parseBarcode(barcodeTemplate, 'C', product[ProductDBTable::Code].toString());
-        else if(order[i] == "B")
-            result += parseBarcode(barcodeTemplate, 'B', product[ProductDBTable::Barcode].toString());
-        else if(order[i] == "T")
-            result += parseBarcode(barcodeTemplate, 'T', amount);
-        else if(order[i] == "W")
-            result += parseBarcode(barcodeTemplate, 'W', quantity);
-
+        else if(order[i] == BARCODE_CHAR_BARCODE)
+#ifdef FIX_20250115_2
+        {
+            QString s = product[ProductDBTable::Barcode].toString();
+            for(int i = 0; i < bt.length(); i++)
+                if(bt.at(i) == BARCODE_CHAR_BARCODE) result.append(i < s.length() ? s.at(i) : '0');
+        }
+#else
+            result += parseBarcodeValue(bt, BARCODE_CHAR_BARCODE, product[ProductDBTable::Barcode].toString());
+#endif
+        else if(order[i] == BARCODE_CHAR_CODE)
+            result += parseBarcode(bt, BARCODE_CHAR_CODE, product[ProductDBTable::Code].toString());
+        else if(order[i] == BARCODE_CHAR_AMOUNT)
+            result += parseBarcode(bt, BARCODE_CHAR_AMOUNT, amount);
+        else if(order[i] == BARCODE_CHAR_QUANTITY)
+            result += parseBarcode(bt, BARCODE_CHAR_QUANTITY, quantity);
     }
-    Tools::debugLog(QString("@@@@@ Calculator::makeBarcode template=%1 result=%2").arg(barcodeTemplate, result));
-    return result.length() != barcodeTemplate.length() ? "" : result;
+    Tools::debugLog(QString("@@@@@ Calculator::makeBarcode template=%1 result=%2").arg(bt, result));
+    return result.length() != bt.length() ? "" : result;
 }
 

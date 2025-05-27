@@ -35,7 +35,7 @@ void ProductPanelModel::update(const DBRecord& product, ProductDBTable* table)
             break;
 
         case ProductDBTable::Price2:
-            if(v.toInt() > 0) text = Calculator::price2(product) + " руб/кг";
+            if(v.toInt() > 0) text = Calculator::price2(product, true) + " руб/кг";
             break;
 
         case ProductDBTable::Tare:

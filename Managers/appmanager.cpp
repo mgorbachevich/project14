@@ -555,7 +555,9 @@ void AppManager::setProduct(const DBRecord& newProduct)
     debugLog("@@@@@ AppManager::onSelectResult showProductImage " + imagePath);
     emit setCurrentProductFavorite(isProductInShowcase(product));
 
-    // Calculator::makeBarcode(settings, product, "1.11", "2.22"); // test
+#ifdef DEBUG_BARCODE
+    Calculator::makeBarcode(settings, product, "12.345", "2.22"); // test
+#endif
     // equipmentManager->setLabel(db, product); // test
 }
 
@@ -1038,9 +1040,7 @@ void AppManager::update(const bool printIsPossible)
     const bool isAutoPrint = status.autoPrintMode == AutoPrintMode_On &&
             (!isPieceProduct || settings->getBoolValue(SettingCode_PrintAutoPcs));
 
-    status.quantity = NO_DATA;
-    status.price = NO_DATA;
-    status.amount = NO_DATA;
+    status.clearValues();
     status.tare = isTare ? equipmentManager->getTareAsString() : NO_DATA;
 
     // Проверка флага 0 - новый товар на весах (начинать обязательно с этого!):
@@ -1082,8 +1082,13 @@ void AppManager::update(const bool printIsPossible)
     // Рисуем цену:
     QString price = Calculator::price(product);
     bool isPrice = isProduct() && PRICE_MAX_CHARS >= price.replace(QString("."), QString("")).replace(QString(","), QString("")).length();
-    status.price = isPrice ? Calculator::price(product) : NO_DATA;
-    status.price2 = isPrice ? Calculator::price2(product) : NO_DATA;
+    if(isPrice)
+    {
+        status.price = Calculator::price(product);
+        status.price2 = Calculator::price2(product);
+        status.basePrice = Calculator::price(product, true);
+        status.basePrice2 = Calculator::price2(product, true);
+    }
     emit showControlParam(ControlParam_PriceValue, status.price);
     emit showControlParam(ControlParam_PriceColor, isPrice ? COLOR_ACTIVE : COLOR_PASSIVE);
 

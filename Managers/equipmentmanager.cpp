@@ -578,9 +578,14 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
     int e = setLabel(db, product);
     if (e == 0)
     {
-        pd.weight = status.quantity;
+#ifdef FIX_20250526_1
+        pd.price = status.basePrice;
+        pd.price2 = status.basePrice2;
+#else
         pd.price = status.price;
         pd.price2 = status.price2;
+#endif
+        pd.weight = status.quantity;
         pd.cost = status.amount;
         pd.cost2 = status.amount2;
         pd.tare = status.tare;
@@ -661,8 +666,12 @@ int EquipmentManager::updateExternalDisplay(const DBRecord* product)
 {
     Wm100Protocol::display_data dd;
     const Status& status = getStatus();
-    dd.weight = status.quantity;
+#ifdef FIX_20250526_1
+    dd.price = status.basePrice;
+#else
     dd.price = status.price;
+#endif
+    dd.weight = status.quantity;
     dd.cost = status.amount;
     dd.tare = status.tare;
     dd.flAuto = status.autoPrintMode == AutoPrintMode_On;

@@ -4,7 +4,13 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.95"
+#define APP_VERSION "2.97"
+
+// Fix errors:
+#define FIX_20250115_1
+#define FIX_20250115_2
+#define FIX_20250526_1
+#define FIX_20250526_2
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -19,6 +25,7 @@
 //#define DEBUG_INSERT_DB_DELAY_MSEC 100
 //#define DEBUG_NET_ENTRIES
 //#define DEBUG_LONG_DB_OPERATIONS
+//#define DEBUG_BARCODE
 
 // On Start:
 #define CHECK_AUTHORIZATION
@@ -94,7 +101,14 @@
 #define DBTABLENAME_USERS        "users"
 #define DBTABLENAME_CONFIG       "config"
 
-// Other:
+// Barcode template chars:
+#define BARCODE_CHAR_PREFIX     'P'
+#define BARCODE_CHAR_CODE       'C'
+#define BARCODE_CHAR_BARCODE    'B'
+#define BARCODE_CHAR_AMOUNT     'T'
+#define BARCODE_CHAR_QUANTITY   'W'
+
+/// Other:
 #define APP_TIMER_MSEC 10000
 #define WAIT_SECRET_MSEC 5000
 #define WAIT_SOUND_MSEC 500

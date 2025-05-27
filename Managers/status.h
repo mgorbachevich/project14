@@ -10,7 +10,8 @@ public:
     Status() {}
     void onResetProduct() { pieces = 1; }
     void onUserAction() { userActionTime = Tools::nowMsec(); secret = 0; }
-    void onStopEquipment() { isAlarm = false; labelPath = ""; quantity = price = price2 = amount = amount2 = tare = NO_DATA; }
+    void onStopEquipment() { isAlarm = false; labelPath = "";  clearValues(); }
+    void clearValues() { quantity = price = price2 = basePrice = basePrice2 = amount = amount2 = tare = NO_DATA; }
 
     bool isSettingsOpened = false;
     bool isRefreshNeeded = false;
@@ -18,6 +19,8 @@ public:
     QString quantity = NO_DATA;
     QString price = NO_DATA;
     QString price2 = NO_DATA;
+    QString basePrice = NO_DATA; // всегда за кг
+    QString basePrice2 = NO_DATA; // всегда за кг
     QString amount = NO_DATA;
     QString amount2 = NO_DATA;
     QString tare = NO_DATA;
