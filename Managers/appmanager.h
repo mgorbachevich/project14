@@ -50,6 +50,8 @@ public:
     int showcaseCount();
     DBRecord getShowcaseProductByIndex(const int);
     bool isProductInShowcase(const DBRecord&);
+    void setSettingsNetInfo(const NetEntry&);
+    void setSettingsNetInfo() { setSettingsNetInfo(Tools::getNetEntry()); }
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();
@@ -94,7 +96,6 @@ private:
     void setProductByNumber(const QString&);
     bool setProductTare();
     void setSettingsInfo();
-    void setSettingsNetInfo();
     void onSettingsChanged();
     void showAuthorizationUsers();
     void showDateInputPanel(const int);

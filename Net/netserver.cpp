@@ -410,7 +410,11 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                 QString::number(result.successCount),
                 QString::number(result.successCount + result.errorCount));
     showToast(result.description);
-    appManager->status.downloadedRecords = result.successCount;
+#ifdef FIX_20250614_1
+    appManager->status.downloadedRecordCount += result.successCount;
+#else
+    appManager->status.downloadedRecordCount = result.successCount;
+#endif
     appManager->status.isNet = false;
     return result.makeEmptyJson();
 }

@@ -372,8 +372,8 @@
             {
                 "code":"1028",
                 "name":"Формат ШК весового товара по умолчанию",
-                "value":"1",
-                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,PPTTTTTWWWWW,PPTTTTTTWWWW,BBBBBBBBWWWW,BBBBBBBWWWWW,PPBBBBBWWWWW,PPBBBBBBWWWW,BBBBBBBBBBBB,PPBBBBBBCCCC,PPBBBBBCCCCC,PPTTTTTTBBBB,PPTTTTTBBBBB,BBCCCCCCWWWW,BBCCCCCWWWWW,BBTTTTTTWWWW,BBTTTTTWWWWW",
+                "value":"0",
+                "value_list":"PPCCCCCWWWWW,PPCCCCCCWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,PPCCCCCCBBBB,PPCCCCCBBBBB,PPTTTTTWWWWW,PPTTTTTTWWWW,BBBBBBBBWWWW,BBBBBBBWWWWW,PPBBBBBWWWWW,PPBBBBBBWWWW,BBBBBBBBBBBB,PPBBBBBBCCCC,PPBBBBBCCCCC,PPTTTTTTBBBB,PPTTTTTBBBBB,BBCCCCCCWWWW,BBCCCCCWWWWW,BBTTTTTTWWWW,BBTTTTTWWWWW",
                 "comment":"P – префикс весовой или штучный, W – вес товара в граммах или количество штучного товара, С – код, T – стоимость в МДЕ, B – ШК из карточки товара",
                 "group_code":"8602",
                 "type":"6"
@@ -381,8 +381,8 @@
             {
                 "code":"1029",
                 "name":"Формат ШК штучного товара по умолчанию",
-                "value":"1",
-                "value_list":"PPCCCCCCWWWW,PPCCCCCWWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,PPTTTTTWWWWW,PPTTTTTTWWWW,BBBBBBBBWWWW,BBBBBBBWWWWW,PPBBBBBWWWWW,PPBBBBBBWWWW,BBBBBBBBBBBB,PPBBBBBBCCCC,PPBBBBBCCCCC,PPTTTTTTBBBB,PPTTTTTBBBBB,BBCCCCCCWWWW,BBCCCCCWWWWW,BBTTTTTTWWWW,BBTTTTTWWWWW",
+                "value":"0",
+                "value_list":"PPCCCCCWWWWW,PPCCCCCCWWWW,PPCCCCTTTTTT,PPCCCCCTTTTT,PPCCCCCCBBBB,PPCCCCCBBBBB,PPTTTTTWWWWW,PPTTTTTTWWWW,BBBBBBBBWWWW,BBBBBBBWWWWW,PPBBBBBWWWWW,PPBBBBBBWWWW,BBBBBBBBBBBB,PPBBBBBBCCCC,PPBBBBBCCCCC,PPTTTTTTBBBB,PPTTTTTBBBBB,BBCCCCCCWWWW,BBCCCCCWWWWW,BBTTTTTTWWWW,BBTTTTTWWWWW",
                 "comment":"P – префикс весовой или штучный, W – вес товара в граммах или количество штучного товара, С – код, T – стоимость в МДЕ, B – ШК из карточки товара",
                 "group_code":"8602",
                 "type":"6"

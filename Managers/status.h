@@ -33,7 +33,7 @@ public:
 
     // Net:
     bool isNet = false;
-    int downloadedRecords = 0;
+    int downloadedRecordCount = 0;
     QString downloadDateTime;
     quint64 netActionTime = 0;
 

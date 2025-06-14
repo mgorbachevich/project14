@@ -65,7 +65,6 @@ public:
     static void debugMemory();
     static bool isEnvironment(const EnvironmentType);
     static int getMemory(const MemoryType);
-    static QString getIP();
     static void pause(const int, const QString& comment = "");
     static double round(const double, const int);
     static void sound(const QString&, const int);
@@ -73,11 +72,12 @@ public:
     static void sortByString(DBRecordList&, const int, const bool increase = true);
     //static void memoryCheck();
     static QString getAndroidBuild();
-    static QString getSSID();
     static NetEntry getNetEntry();
 
 private:
     static QString makeFullPath(const QString&, const QString&);
+    //static QString getIP();
+    static QString getSSID();
 };
 
 #endif // TOOLS_H

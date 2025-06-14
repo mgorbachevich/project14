@@ -456,11 +456,60 @@ QString Tools::getAndroidBuild()
     return "?";
 }
 
+QString Tools::getImageFileWithQmlPath(const DBRecord& r)
+{
+    QString path = DUMMY_IMAGE_FILE;
+    const int i = ResourceDBTable::Value;
+    if (r.count() > i)
+    {
+        QString localFilePath = r[i].toString();
+        if(isFileExistsInDownloadPath(localFilePath)) path = qmlFilePath(localFilePath);
+    }
+    return path;
+}
+
+/*
+QString Tools::getIP()
+{
+    debugLog("@@@@@ Tools::getIP");
+    NetEntry ne = getNetEntry();
+    return ne.ip.isEmpty() ? "?" : QString("%1 (%2)").arg(ne.ip, ne.type);
+#ifdef Q_OS_ANDROID
+    auto context = QNativeInterface::QAndroidApplication::context();
+    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getIP1",
+            "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
+#else
+    // https://stackoverflow.com/questions/13835989/get-local-ip-address-in-qt
+    QString localHostIP;
+    QString localHostName = QHostInfo::localHostName();
+    QList<QHostAddress> hosts = QHostInfo::fromName(localHostName).addresses();
+    foreach (const QHostAddress& address, hosts)
+    {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol && address.isLoopback() == false)
+            localHostIP = address.toString();
+    }
+    return localHostIP;
+#endif
+}
+*/
+
+QString Tools::getSSID()
+{
+#ifdef Q_OS_ANDROID
+    debugLog("@@@@@ Tools::getSSID");
+    auto context = QNativeInterface::QAndroidApplication::context();
+    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID1",
+            "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
+#endif
+    return "?";
+}
+
 NetEntry Tools::getNetEntry()
 {
     // https://amin-ahmadi.com/2016/03/22/how-to-find-local-ip-addresses-in-qt/
     debugLog("@@@@@ Tools::getNetEntry");
     NetEntry result;
+    result.ip = "0.0.0.0";
     QList<QNetworkInterface> nis = QNetworkInterface::allInterfaces();
     foreach(const QNetworkInterface& ni, nis)
     {
@@ -507,65 +556,19 @@ NetEntry Tools::getNetEntry()
                              QVariant::fromValue(nae.ip().isMulticast()).toString(),
                              QVariant::fromValue(nae.ip().isNull()).toString()));
 #endif
-                if(result.ip.isEmpty() && nae.ip().isGlobal() &&
+                if(result.type.isEmpty() && nae.ip().isGlobal() &&
                         QVariant::fromValue(nae.ip().protocol()).toString() == "IPv4Protocol")
                 {
                     result.ip = nae.ip().toString();
                     result.type = QVariant::fromValue(ni.type()).toString();
+                    if (result.isWiFi()) result.ssid = getSSID();
                 }
             }
         }
     }
-    debugLog(QString("@@@@@ Tools::getNetEntry ip=%1 type=%2").arg(result.ip, result.type));
+    debugLog(QString("@@@@@ Tools::getNetEntry ip=%1 type=%2 ssid=%3").arg(result.ip, result.type, result.ssid));
     return result;
 }
 
-QString Tools::getIP()
-{
-    debugLog("@@@@@ Tools::getIP");
-    NetEntry ne = getNetEntry();
-    return ne.ip.isEmpty() ? "?" : QString("%1 (%2)").arg(ne.ip, ne.type);
-    /*
-#ifdef Q_OS_ANDROID
-    auto context = QNativeInterface::QAndroidApplication::context();
-    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getIP1",
-            "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
-#else
-    // https://stackoverflow.com/questions/13835989/get-local-ip-address-in-qt
-    QString localHostIP;
-    QString localHostName = QHostInfo::localHostName();
-    QList<QHostAddress> hosts = QHostInfo::fromName(localHostName).addresses();
-    foreach (const QHostAddress& address, hosts)
-    {
-        if (address.protocol() == QAbstractSocket::IPv4Protocol && address.isLoopback() == false)
-            localHostIP = address.toString();
-    }
-    return localHostIP;
-#endif
-    */
-}
-
-QString Tools::getSSID()
-{
-#ifdef Q_OS_ANDROID
-    debugLog("@@@@@ Tools::getSSID");
-    auto context = QNativeInterface::QAndroidApplication::context();
-    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID1",
-            "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
-#endif
-    return "?";
-}
-
-QString Tools::getImageFileWithQmlPath(const DBRecord& r)
-{
-    QString path = DUMMY_IMAGE_FILE;
-    const int i = ResourceDBTable::Value;
-    if (r.count() > i)
-    {
-        QString localFilePath = r[i].toString();
-        if(isFileExistsInDownloadPath(localFilePath)) path = qmlFilePath(localFilePath);
-    }
-    return path;
-}
 
 

@@ -352,7 +352,11 @@ QString Settings::aboutInfo()
     s += QString("Версия весового модуля: %1\n"). arg(getStringValue(SettingCode_InfoWMVersion));
     s += QString("Версия принтера: %1\n").        arg(getStringValue(SettingCode_InfoPMVersion));
     s += QString("Версия сервера: %1\n").         arg(getStringValue(SettingCode_InfoServerVersion));
-    s += QString("IP: %1\n").                     arg(getStringValue(SettingCode_InfoIP));
+    NetEntry ne = Tools::getNetEntry();
+    appManager->setSettingsNetInfo(ne);
+    if(ne.isEthernet())  s += QString("IP: %1 (%2)\n").     arg(ne.ip, ne.type);
+    else if(ne.isWiFi()) s += QString("IP: %1 (SSID %2)\n").arg(ne.ip, ne.ssid);
+    else                 s += QString("IP: %1\n").          arg(ne.ip);
     s += QString("Последняя загрузка: %1").       arg(getStringValue(SettingCode_InfoLastDownload));
     return s;
 }

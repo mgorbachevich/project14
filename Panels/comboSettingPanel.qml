@@ -116,7 +116,11 @@ Popup
                     delegate: Text
                     {
                         padding: screenManager.spacer()
-                        font { pointSize: screenManager.normalFontSize() }
+                        font
+                        {
+                            pointSize: screenManager.normalFontSize()
+                            bold: index === settingItemComboBox.currentIndex
+                        }
                         color: Material.color(Material.BlueGrey, Material.Shade900)
                         text: model.value // Roles::ValueRole
 

@@ -788,6 +788,9 @@ void AppManager::onNetCommand(const int command, const QString& param)
 
     case NetCommand_StartLoad:
         emit showDownloadProgress(-1);
+#ifdef FIX_20250614_1
+        status.downloadedRecordCount = 0;
+#endif
         equipmentManager->pause(true);
         DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
         DataBase::copyDBFile(DB_PRODUCT_NAME, DB_PRODUCT_COPY_NAME);
@@ -805,8 +808,8 @@ void AppManager::onNetCommand(const int command, const QString& param)
             {
                 status.downloadDateTime = Tools::now().toString(DATE_TIME_LONG_FORMAT);
                 QString s = status.downloadDateTime;
-                if(status.downloadedRecords > 0)
-                    s += QString(" (Записи %1)").arg(Tools::toString(status.downloadedRecords));
+                if(status.downloadedRecordCount > 0)
+                    s += QString(" (Записи %1)").arg(Tools::toString(status.downloadedRecordCount));
                 settings->setValue(SettingCode_InfoLastDownload, s);
                 //s = "Загрузка успешно завершена. Данные обновлены!";
             }
@@ -836,6 +839,7 @@ void AppManager::onNetCommand(const int command, const QString& param)
     default: break;
     }
 }
+
 void AppManager::setProductByNumber(const QString& number)
 {
     auto future = QtConcurrent::run([this, number]
@@ -983,15 +987,19 @@ void AppManager::setSettingsInfo()
     equipmentManager->stop();
 }
 
-void AppManager::setSettingsNetInfo()
+void AppManager::setSettingsNetInfo(const NetEntry& entry)
 {
-    debugLog("@@@@@ AppManager::setSettingsNetInfo ");
-    settings->setValue(SettingCode_InfoIP,       Tools::getIP());
-    settings->setValue(SettingCode_InfoWiFiSSID, Tools::getSSID());
+    debugLog("@@@@@ AppManager::setSettingsNetInfo");
+    NetEntry ne = entry;
+    if(ne.isEthernet())  settings->setValue(SettingCode_InfoWiFiSSID, ne.type);
+    else if(ne.isWiFi()) settings->setValue(SettingCode_InfoWiFiSSID, ne.ssid);
+    else                 settings->setValue(SettingCode_InfoWiFiSSID, "");
+    settings->setValue(SettingCode_InfoIP, ne.ip);
 }
 
 void AppManager::showSettingComboBox2(const DBRecord& r)
 {
+    debugLog("@@@@@ AppManager::showSettingComboBox2");
     emit showSettingComboBox(Settings::getCode(r),
                              Settings::getName(r),
                              settings->getIntValue(r, true),
