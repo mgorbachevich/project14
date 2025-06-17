@@ -251,7 +251,6 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
     Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
     appManager->status.isNet = true;
     NetActionResult result(appManager, rule);
-
     // Singlepart:
     if(request.indexOf("{") == 0)
     {
@@ -366,7 +365,11 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                         {
                             if(Tools::writeBinaryFile(fullPath, fileData))
                             {
+#ifdef FIX_20250616_1
+                                //result.successCount++;
+#else
                                 result.successCount++;
+#endif
                                 if(record[ResourceDBTable::Value].toString().isEmpty())
                                 {
                                     record[ResourceDBTable::Source] = source;
@@ -400,21 +403,27 @@ QString NetServer::parseSetRequest(const RouterRule rule, const QByteArray &requ
                     {
                         downloadedRecords.remove(table);
                         downloadedRecords.insert(table, tableRecords);
+#ifdef FIX_20250616_1
+                        result.recordCount += tableRecords.count();
+#endif
                     }
                 }
             }
         }
     }
     appManager->netDownload(downloadedRecords, result.successCount, result.errorCount);
+#ifdef FIX_20250616_1
+    appManager->status.downloadedRecordCount += result.successCount;
+    result.description = QString("Загружено записей %1 из %2").arg(
+                QString::number(result.successCount),
+                QString::number(result.recordCount));
+#else
+    appManager->status.downloadedRecordCount = result.successCount;
     result.description = QString("Загружено записей %1 из %2").arg(
                 QString::number(result.successCount),
                 QString::number(result.successCount + result.errorCount));
-    showToast(result.description);
-#ifdef FIX_20250614_1
-    appManager->status.downloadedRecordCount += result.successCount;
-#else
-    appManager->status.downloadedRecordCount = result.successCount;
 #endif
+    showToast(result.description);
     appManager->status.isNet = false;
     return result.makeEmptyJson();
 }

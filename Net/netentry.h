@@ -2,17 +2,20 @@
 #define NETENTRY_H
 
 #include <QString>
+#include <QNetworkInterface>
+#include "constants.h"
 
 class NetEntry
 {
 public:
     NetEntry() {}
 
-    bool isWiFi()     { return 0 == type.compare("WiFi", Qt::CaseInsensitive); }
-    bool isEthernet() { return 0 == type.compare("Ethernet", Qt::CaseInsensitive); }
+    bool isWiFi()      { return type == QNetworkInterface::Wifi; }
+    bool isEthernet()  { return type == QNetworkInterface::Ethernet; }
+    QString typeName() { if(isWiFi()) return "Wifi"; if(isEthernet()) return "Ethernet"; return ""; }
 
     QString ip;
-    QString type;
+    int type = UNKNOWN;
     QString ssid;
 };
 

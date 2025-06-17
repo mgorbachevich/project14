@@ -4,14 +4,14 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.99"
+#define APP_VERSION "2.100"
 
 // Fix errors:
 #define FIX_20250115_1
 #define FIX_20250115_2
 #define FIX_20250526_1
 #define FIX_20250526_2
-#define FIX_20250614_1
+#define FIX_20250616_1
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -24,7 +24,7 @@
 //#define DEBUG_WEIGHT_STATUS
 //#define LOG_LOAD_RECORDS
 //#define DEBUG_INSERT_DB_DELAY_MSEC 100
-//#define DEBUG_NET_ENTRIES
+#define DEBUG_NET_ENTRIES
 //#define DEBUG_LONG_DB_OPERATIONS
 //#define DEBUG_BARCODE
 
@@ -130,6 +130,7 @@
 #define SELF_SERVICE_MODEL_INDEX 5
 #define ROOT_PARENT_CODE "-1"
 #define ALL_GOODS "ВСЕ ТОВАРЫ"
+#define UNKNOWN -1
 
 enum MainPageIndex
 {

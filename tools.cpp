@@ -513,6 +513,8 @@ NetEntry Tools::getNetEntry()
     QList<QNetworkInterface> nis = QNetworkInterface::allInterfaces();
     foreach(const QNetworkInterface& ni, nis)
     {
+        if(!ni.isValid()) continue;
+
 #ifdef DEBUG_NET_ENTRIES
         debugLog(QString("@@@@@ Tools::getNetEntry QNetworkInterface:"
                          "  name=%1"
@@ -528,45 +530,57 @@ NetEntry Tools::getNetEntry()
                      QVariant::fromValue(ni.flags().toInt()).toString(),
                      QVariant::fromValue(ni.isValid()).toString()));
 #endif
-        if(ni.isValid())
+
+        QList<QNetworkAddressEntry> naes = ni.addressEntries();
+        foreach (const QNetworkAddressEntry& nae, naes)
         {
-            QList<QNetworkAddressEntry> naes = ni.addressEntries();
-            foreach (const QNetworkAddressEntry& nae, naes)
-            {
+            if(!nae.ip().isGlobal()) continue;
+
 #ifdef DEBUG_NET_ENTRIES
-                debugLog(QString("@@@@@ Tools::getNetEntry QNetworkAddressEntry:"
-                                 "  netmask=%1"
-                                 "  ip=%2"
-                                 "  protocol=%3"
-                                 "  isGlobal=%4"
-                                 "  isBroadcast=%5"
-                                 "  isLinkLocal=%6"
-                                 "  isUniqueLocalUnicast=%7"
-                                 "  isLoopback=%8"
-                                 "  isMulticast=%9"
-                                 "  isNull=%10").arg(
-                             nae.netmask().toString(),
-                             nae.ip().toString(),
-                             QVariant::fromValue(nae.ip().protocol()).toString(),
-                             QVariant::fromValue(nae.ip().isGlobal()).toString(),
-                             QVariant::fromValue(nae.ip().isBroadcast()).toString(),
-                             QVariant::fromValue(nae.ip().isLinkLocal()).toString(),
-                             QVariant::fromValue(nae.ip().isUniqueLocalUnicast()).toString(),
-                             QVariant::fromValue(nae.ip().isLoopback()).toString(),
-                             QVariant::fromValue(nae.ip().isMulticast()).toString(),
-                             QVariant::fromValue(nae.ip().isNull()).toString()));
+            /*
+            QVariant v10 = nae.ip().toString();
+            QVariant v20 = nae.ip().protocol();
+            QString  v21 = QVariant::fromValue(nae.ip().protocol()).toString();
+            int      v22 = QVariant::fromValue(nae.ip().protocol()).toInt();
+            QVariant v30 = ni.type();
+            QString  v31 = QVariant::fromValue(ni.type()).toString();
+            int      v32 = QVariant::fromValue(ni.type()).toInt();
+            QString  v40 = getSSID();
+            */
+
+            debugLog(QString("@@@@@ Tools::getNetEntry QNetworkAddressEntry:"
+                     "  netmask=%1"
+                     "  ip=%2"
+                     "  protocol=%3"
+                     "  isGlobal=%4"
+                     "  isBroadcast=%5"
+                     "  isLinkLocal=%6"
+                     "  isUniqueLocalUnicast=%7"
+                     "  isLoopback=%8"
+                     "  isMulticast=%9"
+                     "  isNull=%10").arg(
+                 nae.netmask().toString(),
+                 nae.ip().toString(),
+                 QVariant::fromValue(nae.ip().protocol()).toString(),
+                 QVariant::fromValue(nae.ip().isGlobal()).toString(),
+                 QVariant::fromValue(nae.ip().isBroadcast()).toString(),
+                 QVariant::fromValue(nae.ip().isLinkLocal()).toString(),
+                 QVariant::fromValue(nae.ip().isUniqueLocalUnicast()).toString(),
+                 QVariant::fromValue(nae.ip().isLoopback()).toString(),
+                 QVariant::fromValue(nae.ip().isMulticast()).toString(),
+                 QVariant::fromValue(nae.ip().isNull()).toString()));
 #endif
-                if(result.type.isEmpty() && nae.ip().isGlobal() &&
-                        QVariant::fromValue(nae.ip().protocol()).toString() == "IPv4Protocol")
-                {
-                    result.ip = nae.ip().toString();
-                    result.type = QVariant::fromValue(ni.type()).toString();
-                    if (result.isWiFi()) result.ssid = getSSID();
-                }
+            QString protocol = QVariant::fromValue(nae.ip().protocol()).toString();
+            if((result.type == UNKNOWN) &&
+                    (0 == protocol.compare("IPv4Protocol", Qt::CaseInsensitive)))
+            {
+                result.ip = nae.ip().toString();
+                result.type = QVariant::fromValue(ni.type()).toInt();
+                if (result.isWiFi()) result.ssid = getSSID();
             }
         }
     }
-    debugLog(QString("@@@@@ Tools::getNetEntry ip=%1 type=%2 ssid=%3").arg(result.ip, result.type, result.ssid));
+    debugLog(QString("@@@@@ Tools::getNetEntry ip=%1 type=%2 ssid=%3").arg(result.ip, result.typeName(), result.ssid));
     return result;
 }
 

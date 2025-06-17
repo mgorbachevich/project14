@@ -991,7 +991,7 @@ void AppManager::setSettingsNetInfo(const NetEntry& entry)
 {
     debugLog("@@@@@ AppManager::setSettingsNetInfo");
     NetEntry ne = entry;
-    if(ne.isEthernet())  settings->setValue(SettingCode_InfoWiFiSSID, ne.type);
+    if(ne.isEthernet())  settings->setValue(SettingCode_InfoWiFiSSID, ne.typeName());
     else if(ne.isWiFi()) settings->setValue(SettingCode_InfoWiFiSSID, ne.ssid);
     else                 settings->setValue(SettingCode_InfoWiFiSSID, "");
     settings->setValue(SettingCode_InfoIP, ne.ip);
