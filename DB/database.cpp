@@ -397,13 +397,13 @@ void DataBase::saveTransaction(const DBRecord& r)
     insertRecord(getTable(DBTABLENAME_TRANSACTIONS), r);
 }
 
-QString DataBase::netDelete(const QString& tableName, const QString& codeList)
+NetActionResult DataBase::netDelete(const QString& tableName, const QString& codeList)
 {
     // Удаление из таблицы по списку кодов
 
     Tools::debugLog(QString("@@@@@ DataBase::netDelete %1").arg(tableName));
     saveLog(LogType_Error, LogSource_DB, QString(" Удаление. Таблица: %1").arg(tableName));
-    NetActionResult result(appManager, RouterRule_Delete);
+    NetActionResult result(RouterRule_Delete);
     bool detailedLog = isLogging(LogType_Info);
     DBTable* t = getTable(tableName);
     QStringList codes = Tools::toStringList(codeList); // Коды товаров через запятую
@@ -459,12 +459,12 @@ QString DataBase::netDelete(const QString& tableName, const QString& codeList)
             arg(tableName, QString::number(result.errorCount), result.description);
     saveLog(LogType_Error, LogSource_DB, s);
     DBRecordList records;
-    QString resultJson = result.makeJson(DBTable::toJsonObject(t, records));
-    Tools::debugLog(QString("@@@@@ DataBase::netDelete result = %1").arg(resultJson));
-    return resultJson;
+    result.requestReply = result.makeJson(DBTable::toJsonObject(t, records));
+    Tools::debugLog(QString("@@@@@ DataBase::netDelete result = %1").arg(result.requestReply));
+    return result;
 }
 
-QString DataBase::netUpload(Settings* settings,
+NetActionResult DataBase::netUpload(Settings* settings,
                             Users* users,
                             const QString& tableName,
                             const QString& codesToUpload,
@@ -477,7 +477,7 @@ QString DataBase::netUpload(Settings* settings,
     if(codesOnly) saveLog(LogType_Error, LogSource_DB, QString("Выгрузка. Таблица: %1 %2").arg(
                 tableName, Tools::toString((int)(Tools::toStringList(codesToUpload).count()))));
     else saveLog(LogType_Error, LogSource_DB, QString("Выгрузка кодов. Таблица: %1").arg(tableName));
-    NetActionResult result(appManager, RouterRule_Get);
+    NetActionResult result(RouterRule_Get);
 
     QJsonObject jo;
     if(tableName == DBTABLENAME_USERS)         jo = users->toJsonObject();
@@ -485,13 +485,13 @@ QString DataBase::netUpload(Settings* settings,
     else if(tableName == DBTABLENAME_CONFIG)   jo = settings->getScaleConfig();
     if(!jo.isEmpty())
     {
-        QString resultJson = result.makeJson(jo);
-        Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
+        result.requestReply = result.makeJson(jo);
+        Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(result.requestReply));
         QString s = QString("Выгрузка завершена. Таблица: %1. Записи: %2. Ошибки: %3. Описание: %4").arg(
                     tableName, QString::number(result.recordCount),
                     QString::number(result.errorCount), result.description);
         saveLog(LogType_Error, LogSource_DB, s);
-        return resultJson;
+        return result;
     }
 
     bool detailedLog = isLogging(LogType_Info);
@@ -510,9 +510,9 @@ QString DataBase::netUpload(Settings* settings,
         QString s =  QString("Выгрузка кодов завершена. Таблица: %1. Записи: %2").
                 arg(tableName, QString::number(allCodes.count()));
         saveLog(LogType_Error, LogSource_DB, s);
-        const QString resultJson = result.makeCodeListJson(tableName, allCodes);
-        Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
-        return resultJson;
+        result.requestReply = result.makeCodeListJson(tableName, allCodes);
+        Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(result.requestReply));
+        return result;
     }
     else if (codes.isEmpty() || codes[0].isEmpty()) // Upload all fields
     {
@@ -557,9 +557,9 @@ QString DataBase::netUpload(Settings* settings,
                 tableName, QString::number(result.recordCount),
                 QString::number(result.errorCount), result.description);
     saveLog(LogType_Error, LogSource_DB, s);
-    const QString resultJson = result.makeJson(DBTable::toJsonObject(t, records));
-    Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(resultJson));
-    return resultJson;
+    result.requestReply = result.makeJson(DBTable::toJsonObject(t, records));
+    Tools::debugLog(QString("@@@@@ DataBase::netUpload result = %1").arg(result.requestReply));
+    return result;
 }
 
 void DataBase::netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount)

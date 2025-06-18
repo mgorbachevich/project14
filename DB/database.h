@@ -4,6 +4,7 @@
 #include <QSqlDatabase>
 #include "dbtable.h"
 #include "externalmessager.h"
+#include "netactionresult.h"
 
 #define DB_VERSION "1.10"
 
@@ -26,9 +27,9 @@ public:
     DBTable* getTable(const QString&) const;
     QList<DBTable*> getTables() { return tables; };
     bool isStarted() { return started; }
-    QString netDelete(const QString&, const QString&);
+    NetActionResult netDelete(const QString&, const QString&);
     void netDownload(QHash<DBTable*, DBRecordList> records, int& successCount, int& errorCount);
-    QString netUpload(Settings*, Users*, const QString&, const QString&, const bool codesOnly = false);
+    NetActionResult netUpload(Settings*, Users*, const QString&, const QString&, const bool codesOnly = false);
     void saveLog(const int, const int, const QString&);
     void saveTransaction(const DBRecord&);
     QString version() { return DB_VERSION; }

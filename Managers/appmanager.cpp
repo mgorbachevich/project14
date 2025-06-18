@@ -525,13 +525,13 @@ void AppManager::netDownload(QHash<DBTable*, DBRecordList> rs, int &successCount
     db->netDownload(rs, successCount, errorCount);
 }
 
-QString AppManager::netDelete(const QString &tableName, const QString &codes)
+NetActionResult AppManager::netDelete(const QString &tableName, const QString &codes)
 {
     status.netActionTime = Tools::nowMsec();
     return db->netDelete(tableName, codes);
 }
 
-QString AppManager::netUpload(const QString &t, const QString &s, const bool b)
+NetActionResult AppManager::netUpload(const QString &t, const QString &s, const bool b)
 {
     status.netActionTime = Tools::nowMsec();
     return db->netUpload(settings, users, t, s, b);
@@ -712,21 +712,29 @@ void AppManager::showAuthorizationUsers()
     }
 }
 
-void AppManager::onParseSetRequest(const QString& json, QHash<DBTable*, DBRecordList>& downloadedRecords)
+int AppManager::onParseSetRequest(const QString& json, QHash<DBTable*, DBRecordList>& downloadedRecords)
 {
+    if(json.isEmpty()) return 0;
+
     if(settings->insertOrReplace(json)) settings->write();
     if(users->insertOrReplace(json)) users->write();
     if(showcase->insertOrReplace(json)) showcase->write();
 
+    int recordCount = 0;
     for (DBTable* t : db->getTables())
     {
         if(t == nullptr) continue;
         DBRecordList tableRecords = t->parse(json);
-        if(tableRecords.count() == 0) continue;
-        Tools::debugLog(QString("@@@@@ NetServer::parseSetRequest. Table %1, records %2").
-                arg(t->name, QString::number(tableRecords.count())));
-        downloadedRecords.insert(t, tableRecords);
+        if(tableRecords.count() > 0)
+        {
+            int n = tableRecords.count();
+            recordCount += n;
+            Tools::debugLog(QString("@@@@@ AppManager::onParseSetRequest. Table %1, records %2").
+                    arg(t->name, QString::number(n)));
+            downloadedRecords.insert(t, tableRecords);
+        }
     }
+    return recordCount;
 }
 
 void AppManager::onPasswordInputClosed(const int code, const QString& inputPassword)
@@ -991,9 +999,9 @@ void AppManager::setSettingsNetInfo(const NetEntry& entry)
 {
     debugLog("@@@@@ AppManager::setSettingsNetInfo");
     NetEntry ne = entry;
-    if(ne.isEthernet())  settings->setValue(SettingCode_InfoWiFiSSID, ne.typeName());
+    if(ne.isEthernet())  settings->setValue(SettingCode_InfoWiFiSSID, ne.type);
     else if(ne.isWiFi()) settings->setValue(SettingCode_InfoWiFiSSID, ne.ssid);
-    else                 settings->setValue(SettingCode_InfoWiFiSSID, "");
+    else                 settings->setValue(SettingCode_InfoWiFiSSID, "Неизвестно");
     settings->setValue(SettingCode_InfoIP, ne.ip);
 }
 

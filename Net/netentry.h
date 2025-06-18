@@ -3,19 +3,17 @@
 
 #include <QString>
 #include <QNetworkInterface>
-#include "constants.h"
 
 class NetEntry
 {
 public:
     NetEntry() {}
 
-    bool isWiFi()      { return type == QNetworkInterface::Wifi; }
-    bool isEthernet()  { return type == QNetworkInterface::Ethernet; }
-    QString typeName() { if(isWiFi()) return "Wifi"; if(isEthernet()) return "Ethernet"; return ""; }
+    bool isWiFi()      { return 0 == type.compare("WIFI", Qt::CaseInsensitive); }
+    bool isEthernet()  { return 0 == type.compare("ETHERNET", Qt::CaseInsensitive); }
 
     QString ip;
-    int type = UNKNOWN;
+    QString type;
     QString ssid;
 };
 

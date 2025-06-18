@@ -10,24 +10,22 @@ class AppManager;
 class NetActionResult
 {
 public:
-    NetActionResult(AppManager* am, const RouterRule r) { appManager = am; rule = r; }
-    ~NetActionResult();
+    NetActionResult(const RouterRule);
 
     QString makeEmptyJson();
     QString makeJson(const QJsonObject&);
     QString makeCodeListJson(const QString&, const QStringList&);
 
-    int successCount = 0;
-    int recordCount = 0;
-    int errorCount = 0;
-    int errorCode = 0;
-    QString description = "Ошибок нет";
+    int successCount;
+    int recordCount;
+    int errorCount;
+    int errorCode;
+    QString description ;
+    QString requestReply;
     RouterRule rule;
 
 protected:
     void onMakeJson();
-
-    AppManager* appManager;
 };
 
 #endif // NETACTIONRESULT_H

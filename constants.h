@@ -4,14 +4,13 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.100"
+#define APP_VERSION "2.101"
 
 // Fix errors:
 #define FIX_20250115_1
 #define FIX_20250115_2
 #define FIX_20250526_1
 #define FIX_20250526_2
-#define FIX_20250616_1
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>

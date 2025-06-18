@@ -40,9 +40,9 @@ public:
     void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
     void showWait(const bool, const bool modal = false);
     void netDownload(QHash<DBTable*, DBRecordList>, int&, int&);
-    QString netDelete(const QString&, const QString&);
-    QString netUpload(const QString&, const QString&, const bool);
-    void onParseSetRequest(const QString&, QHash<DBTable*, DBRecordList>&);
+    NetActionResult netDelete(const QString&, const QString&);
+    NetActionResult netUpload(const QString&, const QString&, const bool);
+    int onParseSetRequest(const QString&, QHash<DBTable*, DBRecordList>&);
     void onNetResult(NetActionResult&);
     void updateInputCodeList();
     void updateSearch();

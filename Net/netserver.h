@@ -8,6 +8,7 @@
 #include <QHttpServerResponse>
 #include "externalmessager.h"
 #include "constants.h"
+#include "netactionresult.h"
 
 #ifdef SSL
 #include <QSslCertificate>
@@ -31,11 +32,12 @@ public:
     bool isStarted() { return server != nullptr; }
 
 protected:
-    QString parseGetRequest(const RouterRule, const QByteArray&);
-    QString parseSetRequest(const RouterRule, const QByteArray&);
+    NetActionResult parseGetRequest(const RouterRule, const QByteArray&);
+    NetActionResult parseSetRequest(const RouterRule, const QByteArray&);
     QString toJsonString(const QByteArray&);
     QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
     bool parseCommand(const QByteArray&);
+    QString onRoute(const RouterRule, const QHttpServerRequest&);
 
     QHttpServer* server = nullptr;
 

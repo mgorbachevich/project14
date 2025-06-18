@@ -4,17 +4,19 @@
 #include "tools.h"
 #include "appmanager.h"
 
-NetActionResult::~NetActionResult()
+NetActionResult::NetActionResult(const RouterRule r)
 {
-    appManager->onNetResult(*this);
+    rule = r;
+    successCount = 0;
+    recordCount = 0;
+    errorCount = 0;
+    errorCode = 0;
+    description = "Ошибок нет";
+    requestReply = "";
 }
 
 QString NetActionResult::makeEmptyJson()
 {
-    /*
-    QString s = QString("{\"result\":\"%1\",\"description\":\"%2\"}").
-                arg(QString::number(errorCode), description);
-    */
     QJsonObject jo;
     jo.insert("result",      QJsonValue(QString::number(errorCode)));
     jo.insert("description", QJsonValue(description));
