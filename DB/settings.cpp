@@ -353,10 +353,11 @@ QString Settings::aboutInfo()
     s += QString("Версия принтера: %1\n").        arg(getStringValue(SettingCode_InfoPMVersion));
     s += QString("Версия сервера: %1\n").         arg(getStringValue(SettingCode_InfoServerVersion));
     NetEntry ne = Tools::getNetEntry();
-    appManager->setSettingsNetInfo(ne);
-    if(ne.isEthernet())  s += QString("IP: %1 (%2)\n").     arg(ne.ip, ne.type);
-    else if(ne.isWiFi()) s += QString("IP: %1 (SSID %2)\n").arg(ne.ip, ne.ssid);
-    else                 s += QString("IP: %1\n").          arg(ne.ip);
+    setNetInfo(ne);
+    s += QString("IP: %1").arg(getStringValue(SettingCode_InfoIP));
+    if(ne.isEthernet())  s += QString(" (Ethernet)");
+    else if(ne.isWiFi()) s += QString(" (SSID %1)").arg(getStringValue(SettingCode_InfoWiFiSSID));
+    s += QString("\n");
     s += QString("Последняя загрузка: %1").       arg(getStringValue(SettingCode_InfoLastDownload));
     return s;
 }
@@ -376,6 +377,21 @@ void Settings::fillLabelList(const DBRecordList& labels)
     currentLabel[SettingField_ValueList] = Tools::toString(values);
     int n = getIntValue(SettingCode_PrintLabelFormat, true);
     if(n < 0 || n >= values.count()) currentLabel[SettingField_Value] = "0";
+}
+
+void Settings::setNetInfo(const NetEntry& ne)
+{
+    Tools::debugLog("@@@@@ Settings::setNetInfo");
+    QString ip = "0.0.0.0";
+    QString ssid = "?";
+    if(ne.isIP())
+    {
+        ip = ne.ip;
+        if(ne.isEthernet()) ssid = "Ethernet";
+        else if(ne.isWiFi() && !ne.ssid.isEmpty()) ssid = ne.ssid;
+    }
+    setValue(SettingCode_InfoIP, ip);
+    setValue(SettingCode_InfoWiFiSSID, ssid);
 }
 
 

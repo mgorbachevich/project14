@@ -9,8 +9,9 @@ class NetEntry
 public:
     NetEntry() {}
 
-    bool isWiFi()      { return 0 == type.compare("WIFI", Qt::CaseInsensitive); }
-    bool isEthernet()  { return 0 == type.compare("ETHERNET", Qt::CaseInsensitive); }
+    bool isIP() const { return !ip.isEmpty(); }
+    bool isWiFi() const;
+    bool isEthernet() const;
 
     QString ip;
     QString type;

@@ -76,7 +76,6 @@ QString NetServer::onRoute(const RouterRule rule, const QHttpServerRequest &requ
         result = parseGetRequest(rule, request.query().toString().toUtf8());
         break;
     case RouterRule_Set:
-        appManager->status.downloadedRecordCount = 0;
     case RouterRule_Command:
         appManager->status.isRefreshNeeded = true;
         result = parseSetRequest(rule, request.body());
@@ -277,6 +276,7 @@ NetActionResult NetServer::parseSetRequest(const RouterRule rule, const QByteArr
                 QString text = toJsonString(request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll));
                 Tools::debugLog("@@@@@ NetServer::parseSetRequest. Text " + text);
                 result.recordCount += appManager->onParseSetRequest(text, downloadedRecords);
+                Tools::debugLog("@@@@@ NetServer::parseSetRequest recordCount=" + QString::number(result.recordCount));
             }
         }
         else // Resources
@@ -376,9 +376,10 @@ NetActionResult NetServer::parseSetRequest(const RouterRule rule, const QByteArr
     }
     appManager->netDownload(downloadedRecords, result.successCount, result.errorCount);
     appManager->status.downloadedRecordCount += result.successCount;
+    appManager->status.totalRecordCount += result.recordCount;
     result.description = QString("Загружено записей %1 из %2").arg(
-                QString::number(result.successCount),
-                QString::number(result.recordCount));
+                QString::number(appManager->status.downloadedRecordCount),
+                QString::number(appManager->status.totalRecordCount));
     showToast(result.description);
     result.requestReply = result.makeEmptyJson();
     return result;

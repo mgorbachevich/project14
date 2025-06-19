@@ -4,6 +4,7 @@
 #include "jsonarrayfile.h"
 #include "constants.h"
 #include "scaleconfig.h"
+#include "netentry.h"
 
 enum SettingField
 {
@@ -180,6 +181,7 @@ public:
     QString modelInfo();
     QJsonObject getScaleConfig();
     void fillLabelList(const DBRecordList& records);
+    void setNetInfo(const NetEntry&);
 
 protected:
     void sort() {}

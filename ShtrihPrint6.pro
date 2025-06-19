@@ -123,6 +123,7 @@ HEADERS += \
 SOURCES += \
     DB/resourcedbtable.cpp \
     Models/hierarchymodel.cpp \
+    Net/netentry.cpp \
     main.cpp \
     tools.cpp \
     DB/showcase.cpp \

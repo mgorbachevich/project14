@@ -22,6 +22,7 @@ public:
     static QString roundToString(const double, const int);
     static QString toString(const double, const int);
     static QString toString(const int v) { return QString::number(v); }
+    static QString toString(const bool v) { return QVariant(v).toString(); }
     static QString toString(const quint64 v) { return QString::number(v); }
     static QString toString(const QJsonObject&);
     static QString toString(const QStringList& sl) { return sl.join(','); }
@@ -76,8 +77,6 @@ public:
 
 private:
     static QString makeFullPath(const QString&, const QString&);
-    //static QString getIP();
-    static QString getSSID();
 };
 
 #endif // TOOLS_H

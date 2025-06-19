@@ -4,7 +4,7 @@
 #include <qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.101"
+#define APP_VERSION "2.103"
 
 // Fix errors:
 #define FIX_20250115_1

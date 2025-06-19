@@ -363,7 +363,7 @@ void AppManager::onSettingsItemClicked(const int index)
         return;
 
     case SettingCode_Group_Info:
-        setSettingsNetInfo();
+        settings->setNetInfo(Tools::getNetEntry());
         settings->write();
         break;
 
@@ -796,9 +796,8 @@ void AppManager::onNetCommand(const int command, const QString& param)
 
     case NetCommand_StartLoad:
         emit showDownloadProgress(-1);
-#ifdef FIX_20250614_1
         status.downloadedRecordCount = 0;
-#endif
+        status.totalRecordCount = 0;
         equipmentManager->pause(true);
         DataBase::removeDBFile(DB_PRODUCT_COPY_NAME);
         DataBase::copyDBFile(DB_PRODUCT_NAME, DB_PRODUCT_COPY_NAME);
@@ -819,6 +818,7 @@ void AppManager::onNetCommand(const int command, const QString& param)
                 if(status.downloadedRecordCount > 0)
                     s += QString(" (Записи %1)").arg(Tools::toString(status.downloadedRecordCount));
                 settings->setValue(SettingCode_InfoLastDownload, s);
+                debugLog(QString("@@@@@ AppManager::onNetCommand %1").arg(s));
                 //s = "Загрузка успешно завершена. Данные обновлены!";
             }
             else // Timeout
@@ -992,17 +992,8 @@ void AppManager::setSettingsInfo()
     settings->setValue(SettingCode_InfoPMVersion,     equipmentManager->PMVersion());
     settings->setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
     settings->setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
+    settings->setNetInfo(Tools::getNetEntry());
     equipmentManager->stop();
-}
-
-void AppManager::setSettingsNetInfo(const NetEntry& entry)
-{
-    debugLog("@@@@@ AppManager::setSettingsNetInfo");
-    NetEntry ne = entry;
-    if(ne.isEthernet())  settings->setValue(SettingCode_InfoWiFiSSID, ne.type);
-    else if(ne.isWiFi()) settings->setValue(SettingCode_InfoWiFiSSID, ne.ssid);
-    else                 settings->setValue(SettingCode_InfoWiFiSSID, "Неизвестно");
-    settings->setValue(SettingCode_InfoIP, ne.ip);
 }
 
 void AppManager::showSettingComboBox2(const DBRecord& r)
@@ -1218,7 +1209,7 @@ bool AppManager::onClicked(const int clicked)
         break;
 
     case Clicked_Info:
-        setSettingsNetInfo();
+        settings->setNetInfo(Tools::getNetEntry());
         settings->write();
         showMessage(settings->modelInfo(), settings->aboutInfo());
         break;
@@ -1593,7 +1584,6 @@ void AppManager::onDBStarted()
     debugLog("@@@@@ AppManager::onDBStarted");
     onUserAction();
     setSettingsInfo();
-    setSettingsNetInfo();
     onSettingsChanged();
 
     if(db->isStarted())

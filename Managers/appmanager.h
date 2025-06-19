@@ -50,8 +50,6 @@ public:
     int showcaseCount();
     DBRecord getShowcaseProductByIndex(const int);
     bool isProductInShowcase(const DBRecord&);
-    void setSettingsNetInfo(const NetEntry&);
-    void setSettingsNetInfo() { setSettingsNetInfo(Tools::getNetEntry()); }
 
     Q_INVOKABLE void beepSound();
     Q_INVOKABLE void clearLog();

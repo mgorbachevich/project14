@@ -2,7 +2,6 @@
 #include <QJsonArray>
 #include "netactionresult.h"
 #include "tools.h"
-#include "appmanager.h"
 
 NetActionResult::NetActionResult(const RouterRule r)
 {

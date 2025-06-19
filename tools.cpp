@@ -316,7 +316,7 @@ void Tools::debugLog(const QString &text)
     if (f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
     {
          QTextStream out(&f);
-         out << dateTimeFromUInt(currentDateTimeToUInt(), "%1 %2", DATE_FORMAT, TIME_MSEC_FORMAT) << " " << s.replace("\n", " ").replace("\r", " ") << EOL;
+         out << dateTimeFromUInt(nowMsec(), "%1 %2", DATE_FORMAT, TIME_MSEC_FORMAT) << " " << s.replace("\n", " ").replace("\r", " ") << EOL;
          f.close();
     }
 #endif
@@ -491,20 +491,19 @@ QString Tools::getIP()
     return localHostIP;
 #endif
 }
-*/
 
 QString Tools::getSSID()
 {
+    QString ssid = "";
 #ifdef Q_OS_ANDROID
-    debugLog("@@@@@ Tools::getSSID");
     auto context = QNativeInterface::QAndroidApplication::context();
-    return (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID1",
+    ssid = (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID1",
             "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
 #endif
-    return "?";
+    debugLog(QString("@@@@@ Tools::getSSID %1").arg(ssid));
+    return ssid;
 }
 
-/*
 NetEntry Tools::getNetEntry()
 {
     // https://amin-ahmadi.com/2016/03/22/how-to-find-local-ip-addresses-in-qt/
@@ -578,35 +577,53 @@ NetEntry Tools::getNetEntry()
     QList<QNetworkInterface> nis = QNetworkInterface::allInterfaces();
     foreach(const QNetworkInterface& ni, nis)
     {
-        if(!ni.isValid()) continue;
-        if(0 == (ni.flags().toInt() & QNetworkInterface::IsRunning)) continue;
         const QString type = QVariant::fromValue(ni.type()).toString();
-
+        const bool isValid = ni.isValid();
+        const bool isRunning = ni.flags().toInt() & QNetworkInterface::IsRunning;
 #ifdef DEBUG_NET_ENTRIES
-        debugLog(QString("@@@@@ Tools::getNetEntry QNetworkInterface: type=%1").arg(type));
+        debugLog(QString("@@@@@ Tools::getNetEntry QNetworkInterface:"
+                         " type=%1"
+                         " flags=%2"
+                         " isRunning=%3"
+                         " isValid=%4").arg(
+                     type,
+                     QVariant::fromValue(ni.flags().toInt()).toString(),
+                     toString(isRunning),
+                     toString(isValid)));
 #endif
+        if(!isValid || !isRunning) continue;
 
         QList<QNetworkAddressEntry> naes = ni.addressEntries();
         foreach (const QNetworkAddressEntry& nae, naes)
         {
-            if(!nae.ip().isGlobal()) continue;
-            if(QVariant::fromValue(nae.ip().protocol()).toString() != "IPv4Protocol") continue;
             const QString ip = nae.ip().toString();
+            const QString protocol = QVariant::fromValue(nae.ip().protocol()).toString();
+            const bool isGlobal = nae.ip().isGlobal();
+            const bool isNull = nae.ip().isNull();
 #ifdef DEBUG_NET_ENTRIES
-            debugLog(QString("@@@@@ Tools::getNetEntry QNetworkAddressEntry: ip=%1").arg(ip));
+            debugLog(QString("@@@@@ Tools::getNetEntry QNetworkAddressEntry:"
+                             " ip=%1"
+                             " protocol=%2"
+                             " isGlobal=%3"
+                             " isNull=%4").arg(
+                         ip,
+                         protocol,
+                         toString(isGlobal),
+                         toString(isNull)));
 #endif
-            if(result.ip.isEmpty())
-            {
-                result.ip = ip;
-                result.type = type;
-                if (result.isWiFi()) result.ssid = getSSID();
-#ifdef DEBUG_NET_ENTRIES
-                debugLog(QString("@@@@@ Tools::getNetEntry QNetworkAddressEntry: type=%1 ssid=%2").arg(result.type, result.ssid));
+            if(isNull || !isGlobal || protocol != "IPv4Protocol" || result.isIP()) continue;
+
+            result.ip = ip;
+            result.type = type;
+#ifdef Q_OS_ANDROID
+            auto context = QNativeInterface::QAndroidApplication::context();
+            result.ssid = (QJniObject::callStaticMethod<jstring>(ANDROID_NATIVE_CLASS_NAME, "getSSID1",
+                "(Landroid/content/Context;)Ljava/lang/String;", context)).toString();
 #endif
-            }
         }
     }
     debugLog(QString("@@@@@ Tools::getNetEntry ip=%1 type=%2 ssid=%3").arg(result.ip, result.type, result.ssid));
     return result;
 }
+
 
