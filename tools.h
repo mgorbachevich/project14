@@ -25,8 +25,8 @@ public:
     static QString toString(const bool v) { return QVariant(v).toString(); }
     static QString toString(const quint64 v) { return QString::number(v); }
     static QString toString(const QJsonObject&);
-    static QString toString(const QStringList& sl) { return sl.join(','); }
-    static QStringList toStringList(const QString& s) { return s.split(','); }
+    static QString toString(const QStringList& sl);
+    static QStringList toStringList(const QString& s);
     static QJsonObject toJsonObject(const QString&);
     static QString currentThreadId();
 
@@ -37,7 +37,7 @@ public:
     static QString sharedPath(const QString&);
     static QString dbPath(const QString& localPath) { return makeDirs(localPath, true); }
     static QString downloadPath(const QString& localPath) { return makeFullPath(DOWNLOAD_SUBDIR, localPath); }
-    static QString fileNameFromPath(const QString& path) { return path.mid(path.lastIndexOf("/") + 1); }
+    static QString fileNameFromPath(const QString& path);
     static QString qmlFilePath(const QString&); // Read only
     static bool isFileExists(const QString &path) { return QFile::exists(path); }
     static bool isFileExistsInDownloadPath(const QString&);

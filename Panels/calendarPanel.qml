@@ -16,6 +16,7 @@ Popup
 
     property string titleText: ""
     property int comboWidth: screenManager.normalFontSize() * 6
+    property int comboHeight: screenManager.editHeight()
     property int code: 0
     property int startCalendarYear: 2024
     property int calendarDay: 1
@@ -138,6 +139,7 @@ Popup
                 Layout.column: 1
                 Layout.row: 3
                 Layout.preferredWidth: comboWidth
+                Layout.preferredHeight: comboHeight
                 editable: false
                 popup.modal: true
                 currentIndex: calendarDay - 1
@@ -171,6 +173,7 @@ Popup
                 Layout.column: 2
                 Layout.row: 3
                 Layout.preferredWidth: comboWidth
+                Layout.preferredHeight: comboHeight
                 editable: false
                 popup.modal: true
                 currentIndex: calendarMonth - 1
@@ -204,6 +207,7 @@ Popup
                 Layout.column: 3
                 Layout.row: 3
                 Layout.preferredWidth: comboWidth * 3 / 2
+                Layout.preferredHeight: comboHeight
                 editable: false
                 popup.modal: true
                 currentIndex: calendarYear - startCalendarYear
@@ -261,6 +265,7 @@ Popup
                 Layout.column: 1
                 Layout.row: 5
                 Layout.preferredWidth: comboWidth
+                Layout.preferredHeight: comboHeight
                 editable: false
                 popup.modal: true
                 currentIndex: calendarHour
@@ -295,6 +300,7 @@ Popup
                 Layout.column: 2
                 Layout.row: 5
                 Layout.preferredWidth: comboWidth
+                Layout.preferredHeight: comboHeight
                 editable: false
                 popup.modal: true
                 currentIndex: calendarMinute
@@ -329,6 +335,7 @@ Popup
                 Layout.column: 3
                 Layout.row: 5
                 Layout.preferredWidth: comboWidth * 3 / 2
+                Layout.preferredHeight: comboHeight
                 editable: false
                 popup.modal: true
                 currentIndex: calendarSecond

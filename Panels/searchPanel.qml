@@ -178,13 +178,15 @@ Rectangle
             Layout.column: 6
             Layout.row: 0
             Layout.preferredWidth: filterWidth
+            Layout.preferredHeight: screenManager.editHeight()
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Material.accent: Material.Orange
             color: Material.color(Material.Grey, Material.Shade900)
             font { pointSize: screenManager.largeFontSize() }
-            placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
             focus: true
+            placeholderText: ""
+
             onTextEdited: app.onUserAction();
             Keys.onPressed: (event) =>
             {

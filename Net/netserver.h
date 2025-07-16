@@ -29,17 +29,20 @@ public:
     void start(const int);
     void stop();
     QString version() { return SERVER_VERSION; }
-    bool isStarted() { return server != nullptr; }
+    bool isStarted() { return httpServer != nullptr; }
 
 protected:
     NetActionResult parseGetRequest(const RouterRule, const QByteArray&);
     NetActionResult parseSetRequest(const RouterRule, const QByteArray&);
     QString toJsonString(const QByteArray&);
-    QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
     bool parseCommand(const QByteArray&);
     QString onRoute(const RouterRule, const QHttpServerRequest&);
-
-    QHttpServer* server = nullptr;
+#ifdef FIX_20250704_1
+    QByteArray parseHeaderItem(const QByteArray&, const QByteArray&);
+#else
+    QByteArray parseHeaderItem(const QByteArray&, const QByteArray&, const QByteArray& title = "Content-Disposition");
+#endif
+    QHttpServer* httpServer = nullptr;
 
 signals:
     void netCommand(const int, const QString&);

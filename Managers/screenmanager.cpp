@@ -1,4 +1,3 @@
-#include <QDebug>
 #include "screenmanager.h"
 #include "tools.h"
 

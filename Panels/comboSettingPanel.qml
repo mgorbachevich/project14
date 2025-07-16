@@ -105,6 +105,7 @@ Popup
                 {
                     id: settingItemComboBox
                     width: screenManager.editWidth()
+                    height: screenManager.editHeight()
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
                     editable: false

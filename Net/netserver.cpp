@@ -1,5 +1,5 @@
-#include <QDebug>
 #include <QJsonArray>
+#include <QTcpServer>
 #include "netserver.h"
 #include "tools.h"
 #include "appmanager.h"
@@ -20,11 +20,11 @@ NetServer::~NetServer()
 
 void NetServer::stop()
 {
-    if (server != nullptr)
+    if (httpServer != nullptr)
     {
         Tools::debugLog("@@@@@ NetServer::stop");
-        delete server;
-        server = nullptr;
+        delete httpServer;
+        httpServer = nullptr;
     }
 }
 
@@ -32,35 +32,67 @@ void NetServer::start(const int port)
 {
     Tools::debugLog("@@@@@ NetServer::start " + QString::number(port));
     stop();
-    server = new QHttpServer();
-    if(server->listen(QHostAddress::Any, port) == 0)
+#ifdef FIX_20250704_1
+    httpServer = new QHttpServer();
+    auto tcpServer = std::make_unique<QTcpServer>();
+    if (!tcpServer->listen(QHostAddress::Any, port) || !httpServer->bind(tcpServer.get()))
+        Tools::debugLog("@@@@@ NetServer::start ERROR");
+    tcpServer.release();
+
+    httpServer->route("/deleteData", [this] (const QHttpServerRequest &request)
+    {
+        return onRoute(RouterRule_Delete, request);
+    });
+    httpServer->route("/getData", [this] (const QHttpServerRequest &request)
+    {
+        return onRoute(RouterRule_Get, request);
+    });
+    httpServer->route("/setData", [this] (const QHttpServerRequest &request)
+    {
+        return onRoute(RouterRule_Set, request);
+    });
+    httpServer->route("/command", [this] (const QHttpServerRequest &request)
+    {
+        return onRoute(RouterRule_Command, request);
+    });
+    httpServer->addAfterRequestHandler(httpServer, [](const QHttpServerRequest &, QHttpServerResponse &response)
+    {
+        Tools::debugLog("@@@@@ NetServer::start addAfterRequestHandler");
+        auto h = response.headers();
+        //h.append(QHttpHeaders::WellKnownHeader::Server, "Qt HTTP Server"); // ?
+        h.append(QHttpHeaders::WellKnownHeader::ContentType, "application/json"); // ?
+        response.setHeaders(std::move(h));
+    });
+#else
+    httpServer = new QHttpServer();
+    if(httpServer->listen(QHostAddress::Any, port) == 0)
         Tools::debugLog("@@@@@ NetServer::start ERROR");
     else
     {
-        server->route("/deleteData", [this] (const QHttpServerRequest &request)
+        httpServer->route("/deleteData", [this] (const QHttpServerRequest &request)
         {
             return onRoute(RouterRule_Delete, request);
         });
-        server->route("/getData", [this] (const QHttpServerRequest &request)
+        httpServer->route("/getData", [this] (const QHttpServerRequest &request)
         {
             return onRoute(RouterRule_Get, request);
         });
-        server->route("/setData", [this] (const QHttpServerRequest &request)
+        httpServer->route("/setData", [this] (const QHttpServerRequest &request)
         {
             return onRoute(RouterRule_Set, request);
         });
-        server->route("/command", [this] (const QHttpServerRequest &request)
+        httpServer->route("/command", [this] (const QHttpServerRequest &request)
         {
             return onRoute(RouterRule_Command, request);
         });
-
-        server->afterRequest([](QHttpServerResponse &&response)
+        httpServer->afterRequest([](QHttpServerResponse &&response)
         {
             Tools::debugLog("@@@@@ NetServer::start afterRequest");
             response.setHeader("Content-Type", "application/json");
             return std::move(response);
         });
     }
+#endif
 }
 
 QString NetServer::onRoute(const RouterRule rule, const QHttpServerRequest &request)
@@ -96,6 +128,19 @@ QString NetServer::toJsonString(const QByteArray& request)
     return QString(text);
 }
 
+#ifdef FIX_20250704_1
+QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray& item)
+{
+    if(!header.contains(item)) return "";
+    const int i1 = header.indexOf(item);
+    if(i1 < 0) return "";
+    const int i2 = header.indexOf('\"', i1);
+    if(i2 < 0) return "";
+    const int i3 = header.indexOf('\"', i2 + 1);
+    if(i3 <= i2) return "";
+    return header.mid(i2 + 1, i3 - i2 - 1);
+}
+#else
 QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray& item, const QByteArray& title)
 {
     if(!header.contains(title) || !header.contains(item)) return "";
@@ -107,6 +152,7 @@ QByteArray NetServer::parseHeaderItem(const QByteArray& header, const QByteArray
     if(i3 <= i2) return "";
     return header.mid(i2 + 1, i3 - i2 - 1);
 }
+#endif
 
 bool NetServer::parseCommand(const QByteArray& request)
 {
@@ -154,8 +200,7 @@ bool NetServer::parseCommand(const QByteArray& request)
 NetActionResult NetServer::parseGetRequest(const RouterRule rule, const QByteArray &request)
 {
     // Parse list of codes to upload:
-    Tools::debugLog(QString("@@@@@ NetServer::parseGetRequest %1").arg(QString(request)));
-
+    Tools::debugLog("@@@@@ NetServer::parseGetRequest " + QString::number(request.length()));
     QByteArray tableName;
     QByteArray codes;
     const QByteArray s1 = "source=";
@@ -220,8 +265,9 @@ NetActionResult NetServer::parseGetRequest(const RouterRule rule, const QByteArr
 
 NetActionResult NetServer::parseSetRequest(const RouterRule rule, const QByteArray &request)
 {
-    Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
-    NetActionResult result(rule);
+    Tools::debugLog("@@@@@ NetServer::parseSetRequest " + request);
+    //Tools::debugLog("@@@@@ NetServer::parseSetRequest " + QString::number(request.length()));
+     NetActionResult result(rule);
     // Singlepart:
     if(request.indexOf("{") == 0)
     {

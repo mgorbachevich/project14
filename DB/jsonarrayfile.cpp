@@ -1,3 +1,4 @@
+#include <QJsonArray>
 #include <QJsonDocument>
 #include "jsonarrayfile.h"
 #include "tools.h"

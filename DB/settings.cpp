@@ -1,4 +1,4 @@
-#include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include "settings.h"
 #include "tools.h"
@@ -177,12 +177,12 @@ void Settings::nativeSettings(const int code)
         break;
     }
     default:
-        qDebug("@@@@@ Settings::nativeSettings: Unknown code");
+        Tools::debugLog("@@@@@ Settings::nativeSettings: Unknown code");
         showAttention("ОШИБКА! Неизвестный параметр");
         break;
     }
 #else
-    qDebug("@@@@@ Settings::nativeSettings: Unknown param");
+    Tools::debugLog("@@@@@ Settings::nativeSettings: Unknown param");
     showAttention("Не поддерживается");
 #endif
 }
@@ -352,8 +352,7 @@ QString Settings::aboutInfo()
     s += QString("Версия весового модуля: %1\n"). arg(getStringValue(SettingCode_InfoWMVersion));
     s += QString("Версия принтера: %1\n").        arg(getStringValue(SettingCode_InfoPMVersion));
     s += QString("Версия сервера: %1\n").         arg(getStringValue(SettingCode_InfoServerVersion));
-    NetEntry ne = Tools::getNetEntry();
-    setNetInfo(ne);
+    NetEntry ne = updateNetInfo();
     s += QString("IP: %1").arg(getStringValue(SettingCode_InfoIP));
     if(ne.isEthernet())  s += QString(" (Ethernet)");
     else if(ne.isWiFi()) s += QString(" (SSID %1)").arg(getStringValue(SettingCode_InfoWiFiSSID));
@@ -379,11 +378,12 @@ void Settings::fillLabelList(const DBRecordList& labels)
     if(n < 0 || n >= values.count()) currentLabel[SettingField_Value] = "0";
 }
 
-void Settings::setNetInfo(const NetEntry& ne)
+NetEntry Settings::updateNetInfo()
 {
-    Tools::debugLog("@@@@@ Settings::setNetInfo");
+    Tools::debugLog("@@@@@ Settings::updateNetInfo");
     QString ip = "0.0.0.0";
     QString ssid = "?";
+    NetEntry ne = Tools::getNetEntry();
     if(ne.isIP())
     {
         ip = ne.ip;
@@ -392,6 +392,7 @@ void Settings::setNetInfo(const NetEntry& ne)
     }
     setValue(SettingCode_InfoIP, ip);
     setValue(SettingCode_InfoWiFiSSID, ssid);
+    return ne;
 }
 
 

@@ -1,4 +1,4 @@
-QT += quick sql widgets core gui httpserver serialport core5compat network multimedia
+QT += core gui quick sql widgets httpserver serialport core5compat network multimedia
 
 DEFINES += ZINT_NO_PNG
 
@@ -254,8 +254,6 @@ RESOURCES += \
     Icons/auto.png \
     Icons/backspace.png \
     Icons/bluetooth.png \
-    Icons/bluetooth_orange.png \
-    Icons/bluetooth_light.png \
     Icons/close.png \
     Icons/code.png \
     Icons/delete.png \
@@ -264,6 +262,7 @@ RESOURCES += \
     Icons/error_orange.png \
     Icons/error_red.png \
     Icons/error_yellow.png \
+    Icons/ethernet.png \
     Icons/fix_gray.png \
     Icons/fix_white.png \
     Icons/folder.png \
@@ -283,19 +282,13 @@ RESOURCES += \
     Icons/plus.png \
     Icons/print.png \
     Icons/sdcard.png \
-    Icons/sdcard_orange.png \
-    Icons/sdcard_light.png \
     Icons/settings.png \
     Icons/star.png \
     Icons/tare_gray.png \
     Icons/tare_white.png \
     Icons/usb.png \
-    Icons/usb_orange.png \
-    Icons/usb_light.png \
     Icons/user.png \
     Icons/wifi.png \
-    Icons/wifi_orange.png \
-    Icons/wifi_light.png \
     Icons/zero_gray.png \
     Icons/zero_white.png \
     Images/dummy.png \
@@ -384,6 +377,10 @@ android {
         Android/src/ru/shtrih_m/shtrihprint6/AndroidNative.java
 
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
+
+    # ANDROID_ABI = armeabi-v7a // ?
+    # ANDROID_ABIS = armeabi-v7a // ?
+
 }
 
 # Default rules for deployment.
@@ -391,7 +388,6 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-DISTFILES +=
 
 
 

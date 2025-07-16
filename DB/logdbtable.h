@@ -1,7 +1,6 @@
 #ifndef LOGDBTABLE_H
 #define LOGDBTABLE_H
 
-#include <QDebug>
 #include "dbtable.h"
 
 class LogDBTable: public DBTable

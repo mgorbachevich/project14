@@ -1,7 +1,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QTimer>
 #include <QtConcurrent/QtConcurrent>
+#include <QTimer>
 #include "database.h"
 #include "productdbtable.h"
 #include "transactiondbtable.h"

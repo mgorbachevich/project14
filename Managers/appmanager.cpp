@@ -1,4 +1,3 @@
-#include <QDebug>
 #include <QImage>
 #include <QTimer>
 #include <QQmlContext>
@@ -139,11 +138,13 @@ void AppManager::onTimer()
     {
         status.isAlarm = false;
         QString dateTime = Tools::dateTimeFromUInt(Tools::nowMsec(), "%1 %2", "dd.MM", "hh:mm");
-        emit showControlParam(ControlParam_DateTime, dateTime);
-        emit showEnvironmentStatus(Tools::isEnvironment(EnvironmentType_USB),
-                                   Tools::isEnvironment(EnvironmentType_Bluetooth),
-                                   Tools::isEnvironment(EnvironmentType_WiFi),
-                                   Tools::isEnvironment(EnvironmentType_SDCard));
+        emit showControlParam(ControlParam_DateTime,    dateTime);
+        NetEntry ne = Tools::getNetEntry();
+        emit showControlParam(ControlParam_IsWiFi,      Tools::toIntString(ne.isWiFi()));
+        emit showControlParam(ControlParam_IsEthernet,  Tools::toIntString(ne.isEthernet()));
+        emit showControlParam(ControlParam_IsUSB,       Tools::toIntString(Tools::isEnvironment(EnvironmentType_USB)));
+        emit showControlParam(ControlParam_IsBluetooth, Tools::toIntString(Tools::isEnvironment(EnvironmentType_Bluetooth)));
+        emit showControlParam(ControlParam_IsSDCard,    Tools::toIntString(Tools::isEnvironment(EnvironmentType_SDCard)));
         return;
     }
 
@@ -363,7 +364,7 @@ void AppManager::onSettingsItemClicked(const int index)
         return;
 
     case SettingCode_Group_Info:
-        settings->setNetInfo(Tools::getNetEntry());
+        settings->updateNetInfo();
         settings->write();
         break;
 
@@ -630,15 +631,21 @@ void AppManager::onEquipmentParamChanged(const EquipmentParam param,
 void AppManager::alarm()
 {
     if(status.isAlarm) return;
+#ifndef DEBUG_CONCURRENT_OFF
     auto future = QtConcurrent::run([this]
+#endif
     {
+
         status.isAlarm = true;
         while(status.isAlarm)
         {
             beepSound();
             Tools::pause(ALARM_PAUSE_MSEC);
         }
-    });
+    }
+#ifndef DEBUG_CONCURRENT_OFF
+);
+#endif
 }
 
 void AppManager::beepSound()
@@ -850,7 +857,9 @@ void AppManager::onNetCommand(const int command, const QString& param)
 
 void AppManager::setProductByNumber(const QString& number)
 {
+#ifndef DEBUG_CONCURRENT_OFF
     auto future = QtConcurrent::run([this, number]
+#endif
     {
         DBRecordList records = db->selectProductByNumber(number);
         if(records.isEmpty()) showAttention("Товар не найден!");
@@ -861,8 +870,10 @@ void AppManager::setProductByNumber(const QString& number)
             setProduct(records.at(0));
             update();
         }
-    });
-
+    }
+#ifndef DEBUG_CONCURRENT_OFF
+    );
+#endif
 }
 
 void AppManager::onSelfKeyPressed(const int keyCode)
@@ -899,7 +910,9 @@ void AppManager::onInputProductCodeEdited(const QString &value)
 
 void AppManager::updateInputCodeList()
 {
+#ifndef DEBUG_CONCURRENT_OFF
     auto future = QtConcurrent::run([this]
+#endif
     {
         debugLog(inputProductCodePanelModel->log("AppManager::updateInputCodeList"));
         //showWait(true);
@@ -912,12 +925,17 @@ void AppManager::updateInputCodeList()
         // Enable/disable button "Continue":
         DBRecord r = db->selectByCode(DBTABLENAME_PRODUCTS, inputProductCodePanelModel->descriptor.param);
         emit enableSetProductByInputCode(!r.isEmpty());
-    });
+    }
+#ifndef DEBUG_CONCURRENT_OFF
+    );
+#endif
 }
 
 void AppManager::updateSearch()
 {
+#ifndef DEBUG_CONCURRENT_OFF
     auto future = QtConcurrent::run([this]
+#endif
     {
         debugLog(searchPanelModel->log("AppManager::updateSearch"));
         //showWait(true);
@@ -950,7 +968,10 @@ void AppManager::updateSearch()
                                                               searchPanelModel->loadLimit());
             searchPanelModel->update(records, searchPanelModel->filterIndex);
         }
-    });
+    }
+#ifndef DEBUG_CONCURRENT_OFF
+    );
+#endif
 }
 
 bool AppManager::isProduct()
@@ -992,7 +1013,7 @@ void AppManager::setSettingsInfo()
     settings->setValue(SettingCode_InfoPMVersion,     equipmentManager->PMVersion());
     settings->setValue(SettingCode_InfoAndroidBuild,  Tools::getAndroidBuild());
     settings->setValue(SettingCode_InfoBluetooth,     "Не поддерживается");
-    settings->setNetInfo(Tools::getNetEntry());
+    settings->updateNetInfo();
     equipmentManager->stop();
 }
 
@@ -1209,7 +1230,7 @@ bool AppManager::onClicked(const int clicked)
         break;
 
     case Clicked_Info:
-        settings->setNetInfo(Tools::getNetEntry());
+        settings->updateNetInfo();
         settings->write();
         showMessage(settings->modelInfo(), settings->aboutInfo());
         break;
@@ -1239,13 +1260,18 @@ bool AppManager::onClicked(const int clicked)
 
     case Clicked_ViewLog:
     {
+#ifndef DEBUG_CONCURRENT_OFF
         auto future = QtConcurrent::run([this]
+#endif
         {
             db->saveLog(LogType_Info, LogSource_Admin, "Просмотр лога");
             DBRecordList records = db->selectLog();
             if(!records.isEmpty()) viewLogPanelModel->update(records);
             emit showViewLogPanel();
-        });
+        }
+#ifndef DEBUG_CONCURRENT_OFF
+        );
+#endif
         break;
     }
 
@@ -1508,7 +1534,7 @@ void AppManager::onSettingsChanged()
     bool selfService = isSelfService();
     status.autoPrintMode = selfService ? AutoPrintMode_On :
         settings->getBoolValue(SettingCode_PrintAuto) ? AutoPrintMode_Disabled : AutoPrintMode_Off;
-    emit showControlParam(ControlParam_SelfService, Tools::toIntString(selfService));
+    emit showControlParam(ControlParam_IsSelfService, Tools::toIntString(selfService));
     settings->write();
 }
 
@@ -1537,14 +1563,16 @@ void AppManager::updateShowcase()
     showWeightFlags();
     emit showShowcaseSort(status.showcaseSort, status.isShowcaseSortIncrement);
     showcasePanelModel->clearData();
+#ifndef DEBUG_CONCURRENT_OFF
     auto future = QtConcurrent::run([this]
+#endif
     {
 #ifdef DEBUG_LONG_DB_OPERATIONS
         Tools::pause(5000, "updateShowcase");
 #endif
         //showWait(true);
         emit showControlParam(ControlParam_ShowcaseTitle, showcasePanelModel->hierarchyTitle().toUpper());
-        emit showControlParam(ControlParam_DeleteShowcaseLevel,
+        emit showControlParam(ControlParam_IsDeleteShowcaseLevel,
             Tools::toIntString(isAdmin() || settings->getBoolValue(SettingCode_ChangeShowcase)));
         showcase->getAll();
         DBRecordList records = db->selectShowcaseProducts(
@@ -1552,7 +1580,7 @@ void AppManager::updateShowcase()
                     showcasePanelModel->hierarchyCount() < settings->getIntValue(SettingCode_ShowcaseLevels));
         bool isProducts = false;
         foreach (DBRecord ri, records)  if(!Calculator::isGroup(ri)) { isProducts = true; break; }
-        if(!isProducts) showAttention("Товары не найдены");
+        if(!isProducts) showAttention("Товары на витрине не найдены");
         else
         {
             DBRecordList images = db->selectShowcaseResources(records);
@@ -1560,7 +1588,10 @@ void AppManager::updateShowcase()
             foreach (auto r, images) fileNames.append(Tools::getImageFileWithQmlPath(r));
             showcasePanelModel->update(records, fileNames);
         }
-    });
+    }
+#ifndef DEBUG_CONCURRENT_OFF
+    );
+#endif
 }
 
 void AppManager::refreshPanels()

@@ -1,3 +1,4 @@
+#include <QDebug>
 #include <QStandardPaths>
 #include <QFile>
 #include <QJsonDocument>
@@ -38,6 +39,10 @@ QString Tools::toString(const QJsonObject &jo)
     return QJsonDocument(jo).toJson(QJsonDocument::Indented);
 }
 
+QString Tools::toString(const QStringList &sl) { return sl.join(','); }
+
+QStringList Tools::toStringList(const QString &s) { return s.split(QChar(',')); }
+
 QJsonObject Tools::toJsonObject(const QString &s)
 {
     return QJsonDocument::fromJson(s.toUtf8()).object();
@@ -68,7 +73,7 @@ void Tools::memoryCheck()
     p.start("sysctl", QStringList() << "kern.version" << "hw.physmem");
     p.waitForFinished();
     QString system_info = p.readAllStandardOutput();
-    qDebug() << "@@@@@ Tools::memoryCheck " << system_info;
+    debugLog() << "@@@@@ Tools::memoryCheck " << system_info;
     p.close();
 #endif
 }
@@ -92,8 +97,8 @@ QString Tools::makeDirs(const QString& localPath, const bool internalStorage)
         }
     }
     path += "/" + dirs.last(); // file name
-    //qDebug() << "@@@@@ Tools::makeFullPath local path " << localPath;
-    //qDebug() << "@@@@@ Tools::makeFullPath full path " << path;
+    //debugLog() << "@@@@@ Tools::makeFullPath local path " << localPath;
+    //debugLog() << "@@@@@ Tools::makeFullPath full path " << path;
     return path;
 }
 
@@ -158,7 +163,7 @@ QByteArray Tools::readBinaryFile(const QString& path)
 */
 QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
 {
-    //qDebug() << "@@@@@ Tools::makeFullPath";
+    //debugLog() << "@@@@@ Tools::makeFullPath";
     if(localPath.isEmpty()) return "";
     const QStringList dirs = QString(subDir + "/" + localPath).split("/");
     QDir dir;
@@ -175,8 +180,8 @@ QString Tools::makeFullPath(const QString& subDir, const QString& localPath)
         }
     }
     path += "/" + dirs.last(); // file name
-    //qDebug() << "@@@@@ Tools::makeFullPath local path " << localPath;
-    //qDebug() << "@@@@@ Tools::makeFullPath full path " << path;
+    //debugLog() << "@@@@@ Tools::makeFullPath local path " << localPath;
+    //debugLog() << "@@@@@ Tools::makeFullPath full path " << path;
     return path;
 }
 
@@ -205,7 +210,7 @@ QString Tools::qmlFilePath(const QString& localPath)
     QString path = QString("file:///%1").arg(downloadPath(localPath));
 #endif
 
-    //qDebug() << "@@@@@ Tools::qmlFilePath " << path;
+    //debugLog() << "@@@@@ Tools::qmlFilePath " << path;
     return localPath.isEmpty() ? "" : path;
 }
 
@@ -239,6 +244,8 @@ QString Tools::sharedPath(const QString& localPath)
     return Tools::dbPath(localPath);
 #endif
 }
+
+QString Tools::fileNameFromPath(const QString &path) { return path.mid(path.lastIndexOf("/") + 1); }
 
 qint64 Tools::getFileSize(const QString &path)
 {
@@ -357,7 +364,7 @@ bool Tools::isEnvironment(const EnvironmentType type)
             {
                 result = ni.flags().testFlag(QNetworkInterface::IsRunning);
                 /*
-                qDebug() << iface.humanReadableName() << "(" << iface.name() << ")"
+                debugLog() << iface.humanReadableName() << "(" << iface.name() << ")"
                          << "is up:" << iface.flags().testFlag(QNetworkInterface::IsUp)
                          << "is running:" << iface.flags().testFlag(QNetworkInterface::IsRunning);
                 */
@@ -577,6 +584,9 @@ NetEntry Tools::getNetEntry()
     QList<QNetworkInterface> nis = QNetworkInterface::allInterfaces();
     foreach(const QNetworkInterface& ni, nis)
     {
+#ifndef DEBUG_NET_ENTRIES
+        if(result.isIP()) break; // IP уже найден - продолжать не нужно
+#endif
         const QString type = QVariant::fromValue(ni.type()).toString();
         const bool isValid = ni.isValid();
         const bool isRunning = ni.flags().toInt() & QNetworkInterface::IsRunning;
@@ -596,6 +606,9 @@ NetEntry Tools::getNetEntry()
         QList<QNetworkAddressEntry> naes = ni.addressEntries();
         foreach (const QNetworkAddressEntry& nae, naes)
         {
+#ifndef DEBUG_NET_ENTRIES
+            if(result.isIP()) break; // IP уже найден - продолжать не нужно
+#endif
             const QString ip = nae.ip().toString();
             const QString protocol = QVariant::fromValue(nae.ip().protocol()).toString();
             const bool isGlobal = nae.ip().isGlobal();
@@ -611,8 +624,7 @@ NetEntry Tools::getNetEntry()
                          toString(isGlobal),
                          toString(isNull)));
 #endif
-            if(isNull || !isGlobal || protocol != "IPv4Protocol" || result.isIP()) continue;
-
+            if(result.isIP() || isNull || !isGlobal || protocol != "IPv4Protocol") continue;
             result.ip = ip;
             result.type = type;
 #ifdef Q_OS_ANDROID

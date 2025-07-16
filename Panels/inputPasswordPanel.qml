@@ -100,10 +100,12 @@ Popup
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: screenManager.editWidth()
+                height: screenManager.editHeight()
                 font { pointSize: screenManager.normalFontSize() }
                 Material.accent: Material.Orange
                 color: Material.color(Material.BlueGrey, Material.Shade900)
                 focus: true
+                placeholderText: ""
                 text: ""
 
                 Keys.onPressed: (event) =>

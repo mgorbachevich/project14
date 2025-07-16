@@ -70,3 +70,9 @@ void SearchPanelModel3::update(const DBRecordList &newProducts, const int filter
     QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this]() { isWaiting = false; });
 }
 
+void SearchPanelModel3::refresh()
+{
+    descriptor.reset("");
+    isRoot = true;
+}
+

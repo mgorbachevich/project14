@@ -152,7 +152,6 @@ signals:
     void showDownloadPanel();
     void showDownloadProgress(const int);
     void showEditUsersPanel();
-    void showEnvironmentStatus(const bool, const bool, const bool, const bool);
     void showHierarchyRoot(const bool);
     void showInputUserPanel(const QString&, const QString&, const QString&, const bool);
     void showMainPage(const int);

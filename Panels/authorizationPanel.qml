@@ -19,36 +19,16 @@ Rectangle
         {
             switch(param)
             {
-            case 18:
-                dateTimeText.text = value
-                break
-            case 21:
-                authorizationPanelTitle1.text = value
-                break
-            case 22:
-                authorizationPanelTitle2.text = value
-                break
-            case 23:
-                authorizationPanelTitle3.text = value
-                break
+            case 18: dateTimeText.text = value; break;
+            case 21: authorizationPanelTitle1.text = value; break;
+            case 22: authorizationPanelTitle2.text = value; break;
+            case 23: authorizationPanelTitle3.text = value; break;
+            case 35: usbIcon.visible       = value !== '0'; break;
+            case 36: wifiIcon.visible      = value !== '0'; break;
+            case 37: ethernetIcon.visible  = value !== '0'; break;
+            case 38: bluetoothIcon.visible = value !== '0'; break;
+            case 39: sdcardIcon.visible    = value !== '0'; break;
             }
-        }
-    }
-
-    Connections // Slot for signal AppManager::showEnvironmentStatus
-    {
-        target: app
-        function onShowEnvironmentStatus(value1, value2, value3, value4)
-        {
-            //app.debugLog("@@@@@ authorizationPanel.onShowEnvironmentStatus");
-            if(value1) usbIcon.source = "../Icons/usb";
-            else       usbIcon.source = "../Icons/usb_light"
-            if(value2) bluetoothIcon.source = "../Icons/bluetooth";
-            else       bluetoothIcon.source = "../Icons/bluetooth_light";
-            if(value3) wifiIcon.source = "../Icons/wifi";
-            else       wifiIcon.source = "../Icons/wifi_light";
-            if(value4) sdcardIcon.source = "../Icons/sdcard";
-            else       sdcardIcon.source = "../Icons/sdcard_light";
         }
     }
 
@@ -141,10 +121,11 @@ Rectangle
 
                 Image
                 {
-                    id: usbIcon
+                    id: wifiIcon
                     width: screenManager.flagSize()
                     height: screenManager.flagSize()
-                    source: "../Icons/usb"
+                    visible: false
+                    source: "../Icons/wifi"
                 }
 
                 Image
@@ -152,15 +133,17 @@ Rectangle
                     id: bluetoothIcon
                     width: screenManager.flagSize()
                     height: screenManager.flagSize()
+                    visible: false
                     source: "../Icons/bluetooth"
                 }
 
                 Image
                 {
-                    id: wifiIcon
+                    id: ethernetIcon
                     width: screenManager.flagSize()
                     height: screenManager.flagSize()
-                    source: "../Icons/wifi"
+                    visible: false
+                    source: "../Icons/ethernet"
                 }
 
                 Image
@@ -168,7 +151,17 @@ Rectangle
                     id: sdcardIcon
                     width: screenManager.flagSize()
                     height: screenManager.flagSize()
+                    visible: false
                     source: "../Icons/sdcard"
+                }
+
+                Image
+                {
+                    id: usbIcon
+                    width: screenManager.flagSize()
+                    height: screenManager.flagSize()
+                    visible: false
+                    source: "../Icons/usb"
                 }
             }
         }
@@ -216,6 +209,7 @@ Rectangle
                 {
                     id: loginComboBox
                     width: screenManager.editWidth()
+                    height: screenManager.editHeight()
                     editable: false
                     popup.modal: true
 
@@ -229,17 +223,17 @@ Rectangle
 
                         MouseArea
                         {
-                        anchors.fill: parent
-                        onClicked:
-                        {
-                            //app.debugLog("@@@@@ authorizationPanel.loginComboBox.onClicked %1".arg(index))
-                            app.onUserAction();
-                            loginComboBox.currentIndex = index
-                            loginComboBox.displayText = text
-                            loginComboBox.popup.close()
-                            passwordTextField.forceActiveFocus()
+                            anchors.fill: parent
+                            onClicked:
+                            {
+                                //app.debugLog("@@@@@ authorizationPanel.loginComboBox.onClicked %1".arg(index))
+                                app.onUserAction();
+                                loginComboBox.currentIndex = index
+                                loginComboBox.displayText = text
+                                loginComboBox.popup.close()
+                                passwordTextField.forceActiveFocus()
+                            }
                         }
-                    }
                     }
                 }
 
@@ -251,12 +245,13 @@ Rectangle
                 {
                     id: passwordTextField
                     width: screenManager.editWidth()
+                    height: screenManager.editHeight()
                     font { pointSize: screenManager.normalFontSize() }
                     Material.accent: Material.Orange
                     color: Material.color(Material.BlueGrey, Material.Shade900)
-                    placeholderText: "?????"
                     //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
                     focus: true
+                    placeholderText: ""
 
                     Keys.onPressed: (event) =>
                     {

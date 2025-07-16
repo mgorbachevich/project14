@@ -1,7 +1,6 @@
 #ifndef TRANSACTIONDBTABLE_H
 #define TRANSACTIONDBTABLE_H
 
-#include <QDebug>
 #include "dbtable.h"
 
 class TransactionDBTable: public DBTable

@@ -1,4 +1,3 @@
-#include <QDebug>
 #include <QTimer>
 #include <QDateTime>
 #include "tools.h"

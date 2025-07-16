@@ -110,11 +110,12 @@ Popup
             Layout.row: 2
             Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
             Layout.fillWidth: parent
+            Layout.preferredHeight: screenManager.editHeight()
             font { pointSize: screenManager.normalFontSize() }
             Material.accent: Material.Orange
             color: Material.color(Material.BlueGrey, Material.Shade900)
-            placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
+            placeholderText: ""
             text: userCode
         }
 
@@ -132,11 +133,12 @@ Popup
             Layout.row: 2
             Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
             Layout.fillWidth: parent
+            Layout.preferredHeight: screenManager.editHeight()
             font { pointSize: screenManager.normalFontSize() }
             Material.accent: Material.Orange
             color: Material.color(Material.BlueGrey, Material.Shade900)
-            placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
+            placeholderText: ""
             text: userName
         }
 
@@ -154,11 +156,12 @@ Popup
             Layout.row: 2
             Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
             Layout.fillWidth: parent
+            Layout.preferredHeight: screenManager.editHeight()
             font { pointSize: screenManager.normalFontSize() }
             Material.accent: Material.Orange
             color: Material.color(Material.BlueGrey, Material.Shade900)
-            placeholderText: "?????"
             //inputMethodHints: Qt.ImhDigitsOnly // Keyboard
+            placeholderText: ""
             text: userPassword
         }
 

@@ -2,7 +2,7 @@
 #define NETACTIONRESULT_H
 
 #include <QString>
-#include <QDateTime>
+#include <QtCore/qjsonobject.h>
 #include "constants.h"
 
 class AppManager;
@@ -16,11 +16,11 @@ public:
     QString makeJson(const QJsonObject&);
     QString makeCodeListJson(const QString&, const QStringList&);
 
-    int successCount;
-    int recordCount;
-    int errorCount;
-    int errorCode;
-    QString description ;
+    int successCount = 0;
+    int recordCount = 0;
+    int errorCount = 0;
+    int errorCode = 0;
+    QString description;
     QString requestReply;
     RouterRule rule;
 

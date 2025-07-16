@@ -1,16 +1,17 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 #include <QString>
 
-#define APP_VERSION "2.103"
+#define APP_VERSION "3.03"
 
 // Fix errors:
 #define FIX_20250115_1
 #define FIX_20250115_2
 #define FIX_20250526_1
 #define FIX_20250526_2
+#define FIX_20250704_1
 
 #define DBRecord QVariantList
 #define DBRecordList QList<QVariantList>
@@ -23,9 +24,10 @@
 //#define DEBUG_WEIGHT_STATUS
 //#define LOG_LOAD_RECORDS
 //#define DEBUG_INSERT_DB_DELAY_MSEC 100
-#define DEBUG_NET_ENTRIES
 //#define DEBUG_LONG_DB_OPERATIONS
 //#define DEBUG_BARCODE
+//#define DEBUG_NET_ENTRIES
+#define DEBUG_CONCURRENT_OFF
 
 // On Start:
 #define CHECK_AUTHORIZATION
@@ -267,7 +269,7 @@ enum ControlParam
     ControlParam_WeightError = 13,
     ControlParam_FixedFlag = 14,
     ControlParam_PrintError = 15,
-    ControlParam_AutoPrint = 16,
+    ControlParam_IsAutoPrint = 16,
     ControlParam_PrinterStatus = 17,
     ControlParam_DateTime = 18,
     ControlParam_ProductImage = 19,
@@ -278,9 +280,14 @@ enum ControlParam
     ControlParam_WeightErrorOrAutoPrintIcon = 29,
     ControlParam_TareFlag = 30,
     ControlParam_ZeroFlag = 31,
-    ControlParam_SelfService = 32,
+    ControlParam_IsSelfService = 32,
     ControlParam_ShowcaseTitle = 33,
-    ControlParam_DeleteShowcaseLevel = 34,
+    ControlParam_IsDeleteShowcaseLevel = 34,
+    ControlParam_IsUSB = 35,
+    ControlParam_IsWiFi = 36,
+    ControlParam_IsEthernet = 37,
+    ControlParam_IsBluetooth = 38,
+    ControlParam_IsSDCard = 39,
     /*
     ControlParam_Tare = 1,
     ControlParam_Zero = 2,
@@ -345,6 +352,7 @@ enum EnvironmentType
     EnvironmentType_Bluetooth = 1,
     EnvironmentType_WiFi = 2,
     EnvironmentType_SDCard = 3,
+    EnvironmentType_Ethernet = 4,
 };
 
 enum MemoryType

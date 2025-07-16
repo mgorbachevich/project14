@@ -37,6 +37,7 @@ public:
     Q_INVOKABLE int normalFontSize() const { return (int)(DEFAULT_NORMAL_FONT_SIZE * screenScale); }
     Q_INVOKABLE int buttonSize() const { return (int)(DEFAULT_BUTTON_SIZE * screenScale); }
     Q_INVOKABLE int editWidth() const { return (int)(DEFAULT_EDIT_WIDTH * screenScale); }
+    Q_INVOKABLE int editHeight() const { return buttonSize(); }
     Q_INVOKABLE int scrollBarWidth() const { return 0; /* (int)(DEFAULT_SPACER * screenScale) / 2; */ }
     Q_INVOKABLE int spacer() const { return (int)(DEFAULT_SPACER * screenScale); }
     Q_INVOKABLE int flagSize() const { return (int)(DEFAULT_FLAG_SIZE * screenScale); }

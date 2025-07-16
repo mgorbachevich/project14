@@ -16,7 +16,7 @@ public:
     Q_INVOKABLE bool onFlickTo(const int) override;
     QHash<int, QByteArray> roleNames() const override;
     void update(const DBRecordList&, const int);
-    void refresh() override { descriptor.reset(""); isRoot = true; }
+    void refresh() override;
 
     int filterIndex = SearchFilterIndex_Code;
     bool isHierarchy = true;

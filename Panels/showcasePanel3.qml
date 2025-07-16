@@ -45,20 +45,16 @@ Rectangle
         {
             switch (param)
             {
-            case 16: // TareValue
+            case 16: // IsTareValue
                 showcasePanelAutoButton.visible = value !== '0'
                 showcasePanelAutoButton.marked = value === '1'
                 break
-            case 32: // SelfService
+            case 32: // IsSelfService
                 showcasePanelSelfService.visible = value !== '0'
                 showcasePanelLayout.visible = value === '0'
                 break
-            case 33:
-                showcasePanelTitle.text = value
-                break
-            case 34:
-                showcasePanelDeleteButton.visible = value !== '0'
-                break
+            case 33: showcasePanelTitle.text = value; break;
+            case 34: showcasePanelDeleteButton.visible = value !== '0'; break;
             }
         }
     }

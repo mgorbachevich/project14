@@ -181,7 +181,7 @@ public:
     QString modelInfo();
     QJsonObject getScaleConfig();
     void fillLabelList(const DBRecordList& records);
-    void setNetInfo(const NetEntry&);
+    NetEntry updateNetInfo();
 
 protected:
     void sort() {}
