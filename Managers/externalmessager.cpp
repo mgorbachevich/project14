@@ -1,19 +1,17 @@
 #include "externalmessager.h"
 #include "appmanager.h"
 
-ExternalMessager::ExternalMessager(AppManager* parent) : QObject{parent}, appManager(parent) {}
-
 void ExternalMessager::showMessage(const QString& title, const QString& text)
 {
-    appManager->showMessage(title, text);
+    AppManager::instance().showMessage(title, text);
 }
 
 void ExternalMessager::showAttention(const QString& text)
 {
-    appManager->showAttention(text);
+    AppManager::instance().showAttention(text);
 }
 
 void ExternalMessager::showToast(const QString& text, const int delaySec)
 {
-    appManager->showToast(text, delaySec);
+    AppManager::instance().showToast(text, delaySec);
 }

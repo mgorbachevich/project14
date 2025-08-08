@@ -6,7 +6,7 @@
 class DBIndexDescriptor
 {
 public:
-    DBIndexDescriptor(const int indexColumn, const QString& indexName,  const QString& param = "")
+    explicit DBIndexDescriptor(const int indexColumn, const QString& indexName,  const QString& param = "")
     {
         column = indexColumn;
         name = indexName;

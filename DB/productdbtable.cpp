@@ -2,7 +2,7 @@
 #include "tools.h"
 #include "database.h"
 
-ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent):
+ProductDBTable::ProductDBTable(const QString& name, QSqlDatabase& sqlDB, QObject *parent):
     DBTable(name, sqlDB, parent)
 {
     Tools::debugLog("@@@@@ ProductDBTable::ProductDBTable");

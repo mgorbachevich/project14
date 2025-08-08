@@ -10,7 +10,7 @@ class AppManager;
 class NetActionResult
 {
 public:
-    NetActionResult(const RouterRule);
+    explicit NetActionResult(const RouterRule);
 
     QString makeEmptyJson();
     QString makeJson(const QJsonObject&);

@@ -1,7 +1,7 @@
 #include "resourcedbtable.h"
 #include "tools.h"
 
-ResourceDBTable::ResourceDBTable(const QString &name, QSqlDatabase &sqlDB, DataBase *parent):
+ResourceDBTable::ResourceDBTable(const QString &name, QSqlDatabase &sqlDB, QObject *parent):
     DBTable(name, sqlDB, parent)
 {
     Tools::debugLog("@@@@@ ResourceDBTable::ResourceDBTable");

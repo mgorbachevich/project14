@@ -1,8 +1,9 @@
 #include "screenmanager.h"
 #include "tools.h"
 
-ScreenManager::ScreenManager(const QSize &size, QObject* parent): QObject(parent), screenSize(size)
+void ScreenManager::init(const QSize &size)
 {
+    screenSize = size;
     const double w = screenSize.width();
     const double h = screenSize.height();
     const double wk = ((double)w) / DEFAULT_SCREEN_WIDTH;

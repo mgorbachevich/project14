@@ -4,8 +4,10 @@
 #include <QApplication>
 #include <QObject>
 #include <QKeyEvent>
-#include "database.h"
 #include "status.h"
+#include "settings.h"
+#include "dbtable.h"
+#include "loner.h"
 
 class ProductPanelModel;
 class ViewLogPanelModel;
@@ -28,14 +30,17 @@ class NetServer;
 class NetActionResult;
 class CalendarModel;
 
-class AppManager : public QObject
+class AppManager  : public QObject, public Loner<AppManager>
 {
     Q_OBJECT
+    friend class Loner<AppManager>;
 
-public:
-    explicit AppManager(QQmlContext*, const QSize&, QApplication*);
+private:
+    explicit AppManager();
     ~AppManager();
 
+public:
+    void init(QQmlContext*, const QSize&);
     void showConfirmation(const ConfirmSelector, const QString&, const QString&);
     void showToast(const QString&, const int delaySec = SHOW_SHORT_TOAST_SEC);
     void showWait(const bool, const bool modal = false);
@@ -111,14 +116,10 @@ private:
     void update(const bool printIsPossible = true);
     bool isSelfService();
 
-    EquipmentManager* equipmentManager = nullptr;
-    DataBase* db = nullptr;
     DBRecord product;
     bool isResetProductNeeded = false;
     QTimer *timer = nullptr;
-    NetServer* netServer = nullptr;
     QQmlContext* context = nullptr;
-    ScreenManager* screenManager = nullptr;
     QNetworkSettingsManager* networkSettingsManager = nullptr;
     Users* users = nullptr;
     Showcase* showcase = nullptr;

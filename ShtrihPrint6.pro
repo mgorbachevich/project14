@@ -15,6 +15,7 @@ HEADERS += \
     Models/calendarmodel.h \
     Models/hierarchymodel.h \
     constants.h \
+    loner.h \
     tools.h \
     DB/dbindexdescriptor.h \
     DB/showcase.h \
@@ -98,7 +99,6 @@ HEADERS += \
     Equipment/Wm100_Slpa100u/Wm100ProtocolHttp2.h \
     Equipment/Wm100_Slpa100u/wm100.h \
     Managers/equipmentmanager.h \
-    Managers/externalmessager.h \
     Managers/keyemitter.h \
     Managers/appmanager.h \
     Managers/status.h \
@@ -205,7 +205,6 @@ SOURCES += \
     Equipment/Wm100_Slpa100u/wm100.cpp \
     Managers/appmanager.cpp \
     Managers/equipmentmanager.cpp \
-    Managers/externalmessager.cpp \
     Managers/keyemitter.cpp \
     Managers/screenmanager.cpp \
     Managers/calculator.cpp \

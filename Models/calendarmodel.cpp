@@ -3,7 +3,7 @@
 #include "appmanager.h"
 #include "baselistmodel.h"
 
-CalendarModel::CalendarModel(QQmlContext* context, AppManager* parent) : QObject{parent}
+CalendarModel::CalendarModel(QQmlContext* context, QObject* parent) : QObject{parent}
 {
     Tools::debugLog("@@@@@ CalendarModel::CalendarModel");
 

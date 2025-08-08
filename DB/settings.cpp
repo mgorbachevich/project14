@@ -9,7 +9,7 @@
 #include <QtCore/private/qandroidextras_p.h>
 #endif
 
-Settings::Settings(AppManager *parent): JsonArrayFile(SETTINGS_FILE, parent)
+Settings::Settings(QObject *parent): JsonArrayFile(SETTINGS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Settings::Settings");
     itemArrayName = DBTABLENAME_SETTINGS;
@@ -37,29 +37,29 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
     case SettingCode_ScalesNumber:
         if(Tools::toInt(value) == 0)
         {
-           showAttention(getName(record) + ". Неверное значение");
+            AppManager::instance().showAttention(getName(record) + ". Неверное значение");
             return false;
         }
         if(value.trimmed().length() > 6)
         {
-            showAttention(getName(record) + ". Длина должна быть не больше 6");
+            AppManager::instance().showAttention(getName(record) + ". Длина должна быть не больше 6");
             return false;
         }
         break;
     case SettingCode_SerialNumber:
         if(Tools::toInt(value) == 0)
         {
-            showAttention(getName(record) + ". Неверное значение");
+            AppManager::instance().showAttention(getName(record) + ". Неверное значение");
             return false;
         }
         if(value.trimmed().length() > 7)
         {
-            showAttention(getName(record) + ". Длина должна быть не больше 7");
+            AppManager::instance().showAttention(getName(record) + ". Длина должна быть не больше 7");
             return false;
         }
         if(getIntValue(SettingCode_Model, true) == 0)
         {
-            showAttention(getName(record) + ". Необходимо выбрать модель весов");
+            AppManager::instance().showAttention(getName(record) + ". Необходимо выбрать модель весов");
             return false;
         }
         break;
@@ -67,7 +67,7 @@ bool Settings::checkValue(const DBRecord& record, const QString& value)
     case SettingCode_PrintLabelPrefixPiece:
         if(value.trimmed().length() != 2)
         {
-            showAttention(getName(record) + ". Длина должна быть равна 2");
+            AppManager::instance().showAttention(getName(record) + ". Длина должна быть равна 2");
             return false;
         }
     default: break;
@@ -183,7 +183,7 @@ void Settings::nativeSettings(const int code)
     }
 #else
     Tools::debugLog("@@@@@ Settings::nativeSettings: Unknown param");
-    showAttention("Не поддерживается");
+    AppManager::instance().showAttention("Не поддерживается");
 #endif
 }
 
@@ -241,7 +241,7 @@ bool Settings::write()
     data.insert("data", toJsonObject());
     ok &= Tools::writeTextFile(fileName, Tools::toString(data));
     Tools::debugLog(QString("@@@@@ Settings::write %1 %2").arg(fileName, Tools::sortIncrement(ok)));
-    showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
+    AppManager::instance().showToast(ok ? "Настройки сохранены" : "ОШИБКА СОХРАНЕНИЯ НАСТРОЕК!");
     wasRead = false;
     return ok;
 }

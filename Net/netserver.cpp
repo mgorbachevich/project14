@@ -3,11 +3,10 @@
 #include "netserver.h"
 #include "tools.h"
 #include "appmanager.h"
-#include "externalmessager.h"
 #include "resourcedbtable.h"
 #include "netactionresult.h"
 
-NetServer::NetServer(AppManager* parent) : ExternalMessager(parent)
+NetServer::NetServer() : Loner()
 {
     Tools::debugLog("@@@@@ NetServer::NetServer");
 }
@@ -98,23 +97,23 @@ void NetServer::start(const int port)
 QString NetServer::onRoute(const RouterRule rule, const QHttpServerRequest &request)
 {
     Tools::debugLog("@@@@@ NetServer::onRoute");
-    appManager->status.isNet = true;
+    AppManager::instance().status.isNet = true;
     NetActionResult result(rule);
     switch(rule)
     {
     case RouterRule_Delete:
-        appManager->status.isRefreshNeeded = true;
+        AppManager::instance().status.isRefreshNeeded = true;
     case RouterRule_Get:
         result = parseGetRequest(rule, request.query().toString().toUtf8());
         break;
     case RouterRule_Set:
     case RouterRule_Command:
-        appManager->status.isRefreshNeeded = true;
+        AppManager::instance().status.isRefreshNeeded = true;
         result = parseSetRequest(rule, request.body());
         break;
     }
-    appManager->onNetResult(result);
-    appManager->status.isNet = false;
+    AppManager::instance().onNetResult(result);
+    AppManager::instance().status.isNet = false;
     return result.requestReply;
 }
 
@@ -253,8 +252,8 @@ NetActionResult NetServer::parseGetRequest(const RouterRule rule, const QByteArr
             }
         }
     }
-    if(rule == RouterRule_Get) return appManager->netUpload(tableName, codes, codesOnly);
-    if(!codesOnly)             return appManager->netDelete(tableName, codes);
+    if(rule == RouterRule_Get) return AppManager::instance().netUpload(tableName, codes, codesOnly);
+    if(!codesOnly)             return AppManager::instance().netDelete(tableName, codes);
 
     NetActionResult result(rule);
     result.errorCode = Error_Log_WrongRequest;
@@ -321,7 +320,7 @@ NetActionResult NetServer::parseSetRequest(const RouterRule rule, const QByteArr
                         arg(QString::number(partIndex), QString::number(hi), header));
                 QString text = toJsonString(request.mid(i3 + eoll, boundaryIndeces[partIndex + 1] - i3 - eoll));
                 Tools::debugLog("@@@@@ NetServer::parseSetRequest. Text " + text);
-                result.recordCount += appManager->onParseSetRequest(text, downloadedRecords);
+                result.recordCount += AppManager::instance().onParseSetRequest(text, downloadedRecords);
                 Tools::debugLog("@@@@@ NetServer::parseSetRequest recordCount=" + QString::number(result.recordCount));
             }
         }
@@ -420,13 +419,13 @@ NetActionResult NetServer::parseSetRequest(const RouterRule rule, const QByteArr
             }
         }
     }
-    appManager->netDownload(downloadedRecords, result.successCount, result.errorCount);
-    appManager->status.downloadedRecordCount += result.successCount;
-    appManager->status.totalRecordCount += result.recordCount;
+    AppManager::instance().netDownload(downloadedRecords, result.successCount, result.errorCount);
+    AppManager::instance().status.downloadedRecordCount += result.successCount;
+    AppManager::instance().status.totalRecordCount += result.recordCount;
     result.description = QString("Загружено записей %1 из %2").arg(
-                QString::number(appManager->status.downloadedRecordCount),
-                QString::number(appManager->status.totalRecordCount));
-    showToast(result.description);
+                QString::number(AppManager::instance().status.downloadedRecordCount),
+                QString::number(AppManager::instance().status.totalRecordCount));
+    AppManager::instance().showToast(result.description);
     result.requestReply = result.makeEmptyJson();
     return result;
 }

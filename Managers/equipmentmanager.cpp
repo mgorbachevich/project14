@@ -14,9 +14,9 @@
 #include "validity.h"
 #include "resourcedbtable.h"
 
-EquipmentManager::EquipmentManager(AppManager *parent) : ExternalMessager(parent)
+EquipmentManager::EquipmentManager() : Loner()
 {
-    Tools::debugLog("@@@@@ EquipmentManager::EquipmentManager ");
+    Tools::debugLog("@@@@@ EquipmentManager::EquipmentManager");
 }
 
 EquipmentManager::~EquipmentManager()
@@ -53,17 +53,17 @@ void EquipmentManager::create()
 
     if(!Tools::checkPermission("android.permission.READ_EXTERNAL_STORAGE"))
     {
-        showAttention(QString("Нет разрешения для чтения конфиг.файла. %1").arg(WMPM_MESSAGE_NONE));
+        AppManager::instance().showAttention(QString("Нет разрешения для чтения конфиг.файла. %1").arg(WMPM_MESSAGE_NONE));
         return;
     }
     if(!Tools::isFileExists(path))
     {
-        showAttention(QString("Конфиг.файл %1 не найден. %2").arg(path, WMPM_MESSAGE_NONE));
+        AppManager::instance().showAttention(QString("Конфиг.файл %1 не найден. %2").arg(path, WMPM_MESSAGE_NONE));
         return;
     }
     if(Tools::getFileSize(path) == 0)
     {
-        showAttention(QString("Конфиг.файл %1 имеет размер 0. %2").arg(path, WMPM_MESSAGE_NONE));
+        AppManager::instance().showAttention(QString("Конфиг.файл %1 имеет размер 0. %2").arg(path, WMPM_MESSAGE_NONE));
         return;
     }
 
@@ -71,22 +71,22 @@ void EquipmentManager::create()
     if(wm == nullptr)
     {
         removeWM();
-        showAttention(WMPM_MESSAGE_NONE);
+        AppManager::instance().showAttention(WMPM_MESSAGE_NONE);
     }
     else
     {
         int e1 = wm->readConnectParam(path, "WmUri", WMUri);
-        if(e1 != 0) showAttention(wm->errorDescription(e1));
+        if(e1 != 0) AppManager::instance().showAttention(wm->errorDescription(e1));
         else
         {
             switch (wm->checkUri(WMUri))
             {
             case Wm100Protocol::diDemo:
                 WMMode = EquipmentMode_Demo;
-                showAttention(WM_MESSAGE_DEMO);
+                AppManager::instance().showAttention(WM_MESSAGE_DEMO);
                 break;
             case Wm100Protocol::diNone:
-                showAttention(WMPM_MESSAGE_NONE);
+                AppManager::instance().showAttention(WMPM_MESSAGE_NONE);
                 break;
             default:
                 WMMode = EquipmentMode_Ok;
@@ -97,17 +97,17 @@ void EquipmentManager::create()
 
     createPM();
     int e2 = wm->readConnectParam(path, "PrinterUri", PMUri);
-    if(e2 != 0) showAttention(wm->errorDescription(e2));
+    if(e2 != 0) AppManager::instance().showAttention(wm->errorDescription(e2));
     else
     {
         switch (slpa->checkUri(PMUri))
         {
         case Slpa100uProtocol::diDemo:
             PMMode = EquipmentMode_Demo;
-            showAttention(PM_MESSAGE_DEMO);
+            AppManager::instance().showAttention(PM_MESSAGE_DEMO);
             break;
         case Slpa100uProtocol::diNone:
-            showAttention(PM_MESSAGE_NONE);
+            AppManager::instance().showAttention(PM_MESSAGE_NONE);
             break;
         default:
             PMMode = EquipmentMode_Ok;
@@ -156,7 +156,7 @@ int EquipmentManager::startWM() // return error
         e = wm->connectDevice(WMUri);
         isWMStarted = (e == 0);
     }
-    if(e) showAttention(QString("\nОшибка весового модуля %1: %2").arg(
+    if(e) AppManager::instance().showAttention(QString("\nОшибка весового модуля %1: %2").arg(
                 Tools::toString(e), getWMErrorDescription(e)));
     Tools::debugLog("@@@@@ EquipmentManager::startWM error " + Tools::toString(e));
     return e;
@@ -224,7 +224,7 @@ int EquipmentManager::startPM()
         //slpa->blockSignals(!isPMStarted);
         if(isPMStarted)
         {
-            Settings* settings = appManager->settings;
+            Settings* settings = AppManager::instance().settings;
             //slpa->startPolling(200);
             e = slpa->setBrightness(settings->getIntValue(SettingCode_PrinterBrightness) + 8);
             if(e >= 0) e = slpa->setOffset(settings->getIntValue(SettingCode_PrintOffset) + 8);
@@ -234,7 +234,7 @@ int EquipmentManager::startPM()
             if(e >= 0) e = slpa->setSensor(settings->getBoolValue(SettingCode_PrintLabelSensor));
         }
     }
-    if(e) showAttention(QString("\nОшибка принтера %1: %2").arg(
+    if(e) AppManager::instance().showAttention(QString("\nОшибка принтера %1: %2").arg(
                 Tools::toString(e), getPMErrorDescription(e)));
     Tools::debugLog("@@@@@ EquipmentManager::startPM error " + QString::number(e));
     return e;
@@ -263,7 +263,7 @@ void EquipmentManager::removePM()
         disconnect(slpa, &Slpa100u::printerStatusChanged, this, &EquipmentManager::onPMStatusChanged);
         delete labelCreator;
         labelCreator = nullptr;
-        appManager->status.labelPath = "";
+        AppManager::instance().status.labelPath = "";
         delete slpa;
         slpa = nullptr;
     }
@@ -309,7 +309,7 @@ QString EquipmentManager::daemonVersion() const
 
 const Status &EquipmentManager::getStatus() const
 {
-    return appManager->status;
+    return AppManager::instance().status;
 }
 
 QString EquipmentManager::WMVersion() const
@@ -565,16 +565,16 @@ QString EquipmentManager::getWMDescriptionNow()
     return res;
 }
 
-int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& product)
+int EquipmentManager::print(const DBRecord& user, const DBRecord& product)
 {
     Tools::debugLog("@@@@@ EquipmentManager::print ");
     if(!isPMStarted || slpa == nullptr) return Error_PM_Fail;
-    Settings* settings = appManager->settings;
+    Settings* settings = AppManager::instance().settings;
     quint64 dateTime = Tools::nowMsec();
     const Status& status = getStatus();
     PrintData pd;
     int labelNumber = 0; // todo
-    int e = setLabel(db, product);
+    int e = setLabel(product);
     if (e == 0)
     {
 #ifdef FIX_20250526_1
@@ -599,14 +599,14 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
         pd.textfile = ""; // todo
         pd.currequiv = ""; // todo
 
-        if(appManager->isProduct())
+        if(AppManager::instance().isProduct())
         {
             pd.itemcode = product[ProductDBTable::Code].toString();
             pd.code2 = product[ProductDBTable::Code2].toString();
             pd.name = product[ProductDBTable::Name].toString();
             pd.name2 = product[ProductDBTable::Name2].toString();
             pd.certificate = product[ProductDBTable::Certificate].toString();
-            pd.message = db->getProductMessage(product);
+            pd.message = DataBase::instance().getProductMessage(product);
 
             Validity v(product);
             pd.producedate = v.getText(ValidityIndex_Produce);
@@ -641,13 +641,13 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
     }
     if(e == 0)
     {
-        TransactionDBTable* t = (TransactionDBTable*)(db->getTable(DBTABLENAME_TRANSACTIONS));
+        TransactionDBTable* t = (TransactionDBTable*)(DataBase::instance().getTable(DBTABLENAME_TRANSACTIONS));
         if(t != nullptr)
         {
             DBRecord r = t->createRecord(
                         dateTime,
                         Users::getCode(user),
-                        appManager->isProduct() ? Tools::toInt(product[ProductDBTable::Code]) : 0,
+                        AppManager::instance().isProduct() ? Tools::toInt(product[ProductDBTable::Code]) : 0,
                         labelNumber,
                         Tools::toDouble(pd.weight),
                         Tools::toInt(pd.price),
@@ -656,8 +656,8 @@ int EquipmentManager::print(DataBase* db, const DBRecord& user, const DBRecord& 
         }
         else Tools::debugLog("@@@@@ EquipmentManager::print ERROR (get Transactions Table)");
     }
-    if(e != 0) showAttention("Ошибка печати " + getPMErrorDescription(e));
-    else if(getPMMode() == EquipmentMode_Demo) showAttention("Демо-печать");
+    if(e != 0) AppManager::instance().showAttention("Ошибка печати " + getPMErrorDescription(e));
+    else if(getPMMode() == EquipmentMode_Demo) AppManager::instance().showAttention("Демо-печать");
     return e;
 }
 
@@ -678,8 +678,8 @@ int EquipmentManager::updateExternalDisplay(const DBRecord* product)
     dd.flZero = isZeroFlag();
     dd.flTare = isTareFlag();
     dd.flCalm = isWeightFixed();
-    dd.flLock = appManager->isAuthorizationOpened();
-    dd.flTools = appManager->isSettingsOpened();
+    dd.flLock = AppManager::instance().isAuthorizationOpened();
+    dd.flTools = AppManager::instance().isSettingsOpened();
     if(product != nullptr && !product->isEmpty())
     {
         dd.text = product->at(ProductDBTable::Name).toString();
@@ -697,16 +697,16 @@ int EquipmentManager::updateExternalDisplay(const DBRecord* product)
     return isWM()? wm->setDisplayData(dd) : Error_WM_Off;
 }
 
-int EquipmentManager::setLabel(DataBase* db, const DBRecord& product)
+int EquipmentManager::setLabel(const DBRecord& product)
 {
     if (labelCreator == nullptr || !isPMStarted) return Error_PM_NoLabel;
     QString localPath;
-    if(appManager->isProduct() && Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
-        localPath = db->getLabelPathById(product[ProductDBTable::LabelFormat].toString()); // Товар с заданной этикеткой
+    if(AppManager::instance().isProduct() && Tools::toInt(product[ProductDBTable::LabelFormat].toString()) != 0)
+        localPath = DataBase::instance().getLabelPathById(product[ProductDBTable::LabelFormat].toString()); // Товар с заданной этикеткой
     if(localPath.isEmpty())
     {
-        DBRecordList labels = db->getAllLabels();
-        const int i = appManager->settings->getIntValue(SettingCode_PrintLabelFormat, true);
+        DBRecordList labels = DataBase::instance().getAllLabels();
+        const int i = AppManager::instance().settings->getIntValue(SettingCode_PrintLabelFormat, true);
         if(i < labels.count())
             localPath = labels[i][ResourceDBTable::Value].toString();
     }
@@ -718,11 +718,11 @@ int EquipmentManager::setLabel(DataBase* db, const DBRecord& product)
     Tools::debugLog(QString("@@@@@ EquipmentManager::setLabel %1").arg(fullPath));
     //showAttention(QString("Этикетка %1").arg(fullPath));
     int e = 0;
-    if(appManager->status.labelPath != fullPath || fullPath.isEmpty())
+    if(AppManager::instance().status.labelPath != fullPath || fullPath.isEmpty())
     {
-        showToast("Загрузка этикетки");
+        AppManager::instance().showToast("Загрузка этикетки");
         e = labelCreator->loadLabel(fullPath);
-        if(e == 0) appManager->status.labelPath = fullPath;
+        if(e == 0) AppManager::instance().status.labelPath = fullPath;
     }
     return e;
 }

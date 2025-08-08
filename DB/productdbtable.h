@@ -40,7 +40,7 @@ public:
         COLUMN_COUNT
     };
 
-    ProductDBTable(const QString&, QSqlDatabase&, DataBase*);
+    explicit ProductDBTable(const QString&, QSqlDatabase&, QObject*);
     const DBRecord checkRecord(const DBRecord&);
     int columnCount() { return Columns::COLUMN_COUNT; }
     DBRecord makeRootGroup();

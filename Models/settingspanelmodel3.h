@@ -10,7 +10,7 @@ class SettingsPanelModel3 : public BaseListModel3
     Q_OBJECT
 
 public:
-    SettingsPanelModel3(AppManager *parent): BaseListModel3(parent) {}
+    explicit SettingsPanelModel3(QObject *parent): BaseListModel3(parent) {}
     QHash<int, QByteArray> roleNames() const override;
     void update(Settings&);
 };

@@ -7,8 +7,6 @@
 #include "constants.h"
 #include "jsonfile.h"
 
-class AppManager;
-
 /*
 {
     mainObjectName:
@@ -24,8 +22,10 @@ class AppManager;
 */
 class JsonArrayFile : public JsonFile
 {
+    Q_OBJECT
+
 public:
-    JsonArrayFile(const QString&, AppManager*);
+    explicit JsonArrayFile(const QString&, QObject*);
     virtual bool read();
     virtual bool write();
     virtual bool insertOrReplace(const QString&);

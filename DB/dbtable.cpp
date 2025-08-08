@@ -5,8 +5,8 @@
 #include "tools.h"
 #include "database.h"
 
-DBTable::DBTable(const QString &name, QSqlDatabase &sqlDB, DataBase *parent) :
-    QObject((QObject*)parent), name(name), sqlDB(sqlDB), db(parent) {}
+DBTable::DBTable(const QString &name, QSqlDatabase &sqlDB, QObject *parent) :
+    QObject(parent), name(name), sqlDB(sqlDB) {}
 
 DBRecord DBTable::createRecord(const QString code)
 {
@@ -160,10 +160,10 @@ DBRecordList DBTable::parse(const QString &json)
 
 void DBTable::removeIndexes()
 {
-    if (!db->isStarted() || indexDescriptors.count() < 1) return;
+    if (!DataBase::instance().isStarted() || indexDescriptors.count() < 1) return;
     Tools::debugLog("DBTable::removeIndexes");
     for(int i = 0; i < indexDescriptors.count(); i++)
-        db->executeSQL(sqlDB, QString("DROP INDEX IF EXISTS %1").arg(indexDescriptors[i].name));
+        DataBase::instance().executeSQL(sqlDB, QString("DROP INDEX IF EXISTS %1").arg(indexDescriptors[i].name));
 }
 
 QString DBTable::toString(DBRecord& r)
@@ -180,7 +180,7 @@ QString DBTable::toString(DBRecord& r)
 
 void DBTable::createIndexes()
 {
-    if (!db->isStarted() || indexDescriptors.count() < 1) return;
+    if (!DataBase::instance().isStarted() || indexDescriptors.count() < 1) return;
     Tools::debugLog("DBTable::createIndexes");
     removeIndexes();
     for(int i = 0; i < indexDescriptors.count(); i++)
@@ -190,7 +190,7 @@ void DBTable::createIndexes()
                     name,
                     columnName(indexDescriptors[i].column),
                     indexDescriptors[i].condition);
-        db->executeSQL(sqlDB, sql);
+        DataBase::instance().executeSQL(sqlDB, sql);
     }
 }
 

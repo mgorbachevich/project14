@@ -4,21 +4,22 @@
 #include <QVariantList>
 #include "wm100.h"
 #include "constants.h"
-#include "externalmessager.h"
+#include "loner.h"
 
-class AppManager;
-class DataBase;
 class Slpa100u;
 class LabelCreator;
 class Status;
 
-class EquipmentManager : public ExternalMessager
+class EquipmentManager : public QObject, public Loner<EquipmentManager>
 {
     Q_OBJECT
+    friend class Loner<EquipmentManager>;
+
+private:
+    explicit EquipmentManager();
+    ~EquipmentManager();
 
 public:
-    EquipmentManager(AppManager*);
-    ~EquipmentManager();
     void create();
     void start();
     void stop();
@@ -48,12 +49,12 @@ public:
 
     // Print Manager:
     QString PMVersion() const;
-    int print(DataBase*, const DBRecord&, const DBRecord&);
+    int print(const DBRecord&, const DBRecord&);
     bool isPMError() const { return PMErrorCode != 0 || isPMStateError(PMStatus); }
     EquipmentMode getPMMode() const { return PMMode; }
     bool isPM();
     void feed();
-    int setLabel(DataBase*, const DBRecord&);
+    int setLabel(const DBRecord&);
 
 private:
     QString getWMDescriptionNow();

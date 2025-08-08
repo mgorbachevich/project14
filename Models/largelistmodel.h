@@ -9,7 +9,7 @@ class LargeListModel : public BaseListModel3
     Q_OBJECT
 
 public:
-    LargeListModel(const int maxRowCount, AppManager *parent): BaseListModel3(parent)
+    explicit LargeListModel(const int maxRowCount, QObject *parent): BaseListModel3(parent)
     {
         descriptor.visibleRowCount = maxRowCount;
     }

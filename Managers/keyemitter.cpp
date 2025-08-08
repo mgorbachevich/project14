@@ -3,7 +3,7 @@
 #include "tools.h"
 #include "appmanager.h"
 
-KeyEmitter::KeyEmitter(AppManager *parent) : QObject((QObject*)parent), appManager(parent)
+KeyEmitter::KeyEmitter(QObject *parent) : QObject(parent)
 {
    Tools::debugLog("@@@@@ KeyEmitter::KeyEmitter");
 }
@@ -13,7 +13,7 @@ void KeyEmitter::emitKey(Qt::Key k)
     QObject* receiver = QGuiApplication::focusObject();
     if(receiver != nullptr)
     {
-        appManager->onClick();
+        AppManager::instance().onClick();
         emit enterKey(k);
         QKeyEvent pressEvent = QKeyEvent(QEvent::KeyPress, k, Qt::NoModifier, QKeySequence(k).toString());
         QKeyEvent releaseEvent = QKeyEvent(QEvent::KeyRelease, k, Qt::NoModifier);
@@ -27,7 +27,7 @@ void KeyEmitter::emitChar(QChar v)
     QObject* receiver = QGuiApplication::focusObject();
     if(receiver != nullptr)
     {
-        appManager->onClick();
+        AppManager::instance().onClick();
         emit enterChar(v);
     }
 }

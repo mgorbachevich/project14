@@ -6,8 +6,6 @@
 #include "constants.h"
 #include "jsonfile.h"
 
-class AppManager;
-
 enum ScaleConfigField
 {
     ScaleConfigField_Model = 0,
@@ -23,7 +21,7 @@ enum ScaleConfigField
 class ScaleConfig : public JsonFile
 {
 public:
-    ScaleConfig(AppManager*);
+    explicit ScaleConfig(QObject*);
     bool read();
     void clear() { data.clear(); }
     QVariant get(ScaleConfigField field) { return data[field]; }

@@ -16,7 +16,7 @@ class DBTable : public QObject
     Q_OBJECT
 
 public:
-    DBTable(const QString &name, QSqlDatabase& sqlDB, DataBase *parent);
+    explicit DBTable(const QString &name, QSqlDatabase& sqlDB, QObject *parent);
     static QVariant normalize(const DBRecord&, const int);
     static QString toJsonString(DBTable*, const DBRecord&);
     static QString toJsonString(DBTable*, const DBRecordList&);
@@ -43,7 +43,6 @@ public:
 protected:
     void parseColumn(DBRecord&, const QJsonObject&, const int);
 
-    DataBase* db = nullptr;
     QList<DBTableColumn> columns;
     QList<DBIndexDescriptor> indexDescriptors;
     QList<int> notUploadColumns;

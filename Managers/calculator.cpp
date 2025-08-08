@@ -14,22 +14,22 @@ void Calculator::onSettingsChanged(Settings* const settings)
     for (int i = 0; i < moneyPointPosition; i++) moneyMultiplier *= 10;
 }
 
-double Calculator::quantityAsDouble(const DBRecord& product, EquipmentManager* const em)
+double Calculator::quantityAsDouble(const DBRecord& product)
 {
-    if(isPiece(product)) return (double)(em->getStatus().pieces);
-    if(em->isWMError()) return 0;
+    if(isPiece(product)) return (double)(EquipmentManager::instance().getStatus().pieces);
+    if(EquipmentManager::instance().isWMError()) return 0;
 #ifdef FIX_20250115_1
-    return em->getWeight();
+    return EquipmentManager::instance().getWeight();
 #else
-    return em->getWeight() * (is100gBase(product) ? 10 : 1);
+    return EquipmentManager::instance().getWeight() * (is100gBase(product) ? 10 : 1);
 #endif
 }
 
-QString Calculator::quantity(const DBRecord& product, EquipmentManager* const em)
+QString Calculator::quantity(const DBRecord& product)
 {
-    double v = quantityAsDouble(product, em);
+    double v = quantityAsDouble(product);
     if(isPiece(product)) return Tools::toString(Tools::round(v, 0), 0);
-    if(em->isWMError()) return "";
+    if(EquipmentManager::instance().isWMError()) return "";
     return Tools::roundToString(v, 3); // г
 }
 
@@ -49,10 +49,10 @@ QString Calculator::price2(const DBRecord& product, const bool base)
     return Tools::roundToString(priceAsDouble(product, ProductDBTable::Price2, base), moneyPointPosition);
 }
 
-QString Calculator::amountAsString(const DBRecord& product, EquipmentManager* const em, const int field)
+QString Calculator::amountAsString(const DBRecord& product, const int field)
 {
 #ifdef FIX_20250115_1
-    double v = quantityAsDouble(product, em) *
+    double v = quantityAsDouble(product) *
             (is100gBase(product) ? 10.0 : 1.0) *
             (double)(DBTable::normalize(product, field).toLongLong()) / moneyMultiplier;
 #else
@@ -62,14 +62,14 @@ QString Calculator::amountAsString(const DBRecord& product, EquipmentManager* co
     return Tools::roundToString(v, moneyPointPosition);
 }
 
-QString Calculator::amount(const DBRecord& product, EquipmentManager* const em)
+QString Calculator::amount(const DBRecord& product)
 {
-    return amountAsString(product, em, ProductDBTable::Price);
+    return amountAsString(product, ProductDBTable::Price);
 }
 
-QString Calculator::amount2(const DBRecord& product, EquipmentManager* const em)
+QString Calculator::amount2(const DBRecord& product)
 {
-    return amountAsString(product, em, ProductDBTable::Price2);
+    return amountAsString(product, ProductDBTable::Price2);
 }
 
 QString Calculator::unitWeight(const DBRecord& product)

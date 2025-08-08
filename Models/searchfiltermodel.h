@@ -9,7 +9,7 @@ class SearchFilterModel : public BaseListModel
     Q_OBJECT
 
 public:
-    explicit SearchFilterModel(AppManager *parent): BaseListModel(parent)
+    explicit SearchFilterModel(QObject *parent): BaseListModel(parent)
     {
         Tools::debugLog("@@@@@ SearchFilterModel::SearchFilterModel");
         QStringList ss;

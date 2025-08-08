@@ -152,7 +152,7 @@ enum SettingCode // Должны совпадать со значениями в
 class Settings : public JsonArrayFile
 {
 public:
-    Settings(AppManager*);
+    explicit Settings(QObject*);
     bool getBoolValue(const SettingCode code) { return getIntValue(code, true) != 0; }
     DBRecord* getByIndexInCurrentGroup(const int);
     static int getCode(const DBRecord& r) { return r[SettingField_Code].toInt(); }

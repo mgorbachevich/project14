@@ -20,7 +20,7 @@ public:
         COLUMN_COUNT
     };
 
-    TransactionDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent);
+    explicit TransactionDBTable(const QString& name, QSqlDatabase& sqlDB, QObject *parent);
     int columnCount() { return Columns::COLUMN_COUNT; }
     DBRecord createRecord(const qint64, const int, const int, const int, const double, const int, const int);
 };

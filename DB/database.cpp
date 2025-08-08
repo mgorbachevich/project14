@@ -17,7 +17,7 @@
 
 bool isExecuting = false;
 
-DataBase::DataBase(AppManager *parent) : ExternalMessager(parent)
+DataBase::DataBase() : Loner()
 {
     Tools::debugLog("@@@@@ DataBase::DataBase");
     tables.append(new ProductDBTable(DBTABLENAME_PRODUCTS, productDB, this));
@@ -100,7 +100,7 @@ void DataBase::onAppStart()
         message += "\nОШИБКА! Не открыта база данных";
 
     if(!message.isEmpty())
-        QTimer::singleShot(WAIT_DRAWING_MSEC, this, [this, message]() { showAttention(message); });
+        QTimer::singleShot(WAIT_DRAWING_MSEC, this, [message]() { AppManager::instance().showAttention(message); });
     emit dbStarted();
     Tools::debugLog(QString("@@@@@ DataBase::startDB %1").arg(Tools::sortIncrement(started)));
 }
@@ -316,7 +316,7 @@ bool DataBase::insertRecords(DBTable *table, const DBRecordList& records)
 
 bool DataBase::isLogging(const int type)
 {
-    int logging = appManager->settings->getIntValue(SettingCode_Logging);
+    int logging = AppManager::instance().settings->getIntValue(SettingCode_Logging);
     return logging > 0 && type > 0 && type <= logging;
 }
 
@@ -332,7 +332,7 @@ void DataBase::saveLog(const int type, const int source, const QString &comment)
         {
             // remove old records:
             DBTable* t = getTable(DBTABLENAME_LOG);
-            quint64 logDuration = appManager->settings->getIntValue(SettingCode_LogDuration);
+            quint64 logDuration = AppManager::instance().settings->getIntValue(SettingCode_LogDuration);
             if(t == nullptr || logDuration <= 0) return;
             if(removeOldLogRecordsCounter == 0)
             {
@@ -692,7 +692,7 @@ DBRecordList DataBase::selectProductsByGroup(const QString& groupCode, const boo
 DBRecordList DataBase::selectProductsByFilter(const int filter, const QString& param1, const int offset, const int limit)
 {
     DBRecordList resultRecords;
-    Settings* settings = appManager->settings;
+    Settings* settings = AppManager::instance().settings;
     switch(filter)
     {
     case SearchFilterIndex_Code:
@@ -821,7 +821,7 @@ DBRecordList DataBase::selectShowcaseProducts(const DBRecord& currentGroup, cons
                 if(!groups.contains(ri)) groups.append(ri);
                 continue;
             }
-            if(appManager->isProductInShowcase(ri) && !products.contains(ri))
+            if(AppManager::instance().isProductInShowcase(ri) && !products.contains(ri))
                 products.append(ri);
         }
         //Tools::sortByString(groups, ProductDBTable::UpperName);
@@ -836,13 +836,13 @@ DBRecordList DataBase::selectShowcaseProducts(const DBRecord& currentGroup, cons
             if(gi.isEmpty()) continue;
             DBRecordList groupProducts = selectProductsByGroup(gi[ProductDBTable::Code].toString(), false);
             foreach (DBRecord pi, groupProducts)
-                if(appManager->isProductInShowcase(pi) && !products.contains(pi)) products.append(pi);
+                if(AppManager::instance().isProductInShowcase(pi) && !products.contains(pi)) products.append(pi);
         }
     }
 
     // Сортировка товаров:
-    const bool increment = appManager->status.isShowcaseSortIncrement;
-    switch(appManager->status.showcaseSort)
+    const bool increment = AppManager::instance().status.isShowcaseSortIncrement;
+    switch(AppManager::instance().status.showcaseSort)
     {
     case ShowcaseSort_Code:  Tools::sortByInt(products, ProductDBTable::Code, increment); break;
     case ShowcaseSort_Code2: Tools::sortByInt(products, ProductDBTable::Code2, increment); break;

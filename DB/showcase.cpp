@@ -2,7 +2,7 @@
 #include "tools.h"
 #include "appmanager.h"
 
-Showcase::Showcase(AppManager *parent): JsonArrayFile(SHOWCASE_FILE, parent)
+Showcase::Showcase(QObject *parent): JsonArrayFile(SHOWCASE_FILE, parent)
 {
     Tools::debugLog("@@@@@ Showcase::Showcase");
     itemArrayName = DBTABLENAME_SHOWCASE;

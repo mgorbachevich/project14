@@ -7,7 +7,7 @@
 class NetEntry
 {
 public:
-    NetEntry() {}
+    explicit NetEntry() {}
 
     bool isIP() const { return !ip.isEmpty(); }
     bool isWiFi() const;

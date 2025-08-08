@@ -6,7 +6,7 @@
 class ListViewDescriptor
 {
 public:
-    ListViewDescriptor() {}
+    explicit ListViewDescriptor() {}
     void reset(const QString& v) { firstVisibleRow = firstLoadRow = loadRowCout = 0; param = v; }
 
     int firstVisibleRow = 0;

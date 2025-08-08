@@ -43,9 +43,16 @@ int main(int argc, char *argv[])
     QFontDatabase::addApplicationFont(":/Fonts/sserifer.fon");
     QFontDatabase::addApplicationFont(":/Fonts/times.ttf");
 
-    AppManager* appManager = new AppManager(engine.rootContext(), screenSize, &application);
+// https://doc.qt.io/qt-6/qstandardpaths.html#StandardLocation-enum
+#ifdef Q_OS_ANDROID
+    Tools::initApplicationPath(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
+#else
+    Tools::initApplicationPath(application.applicationDirPath()); // Returns the directory that contains the application executable.
+#endif
+
+    AppManager::instance().init(engine.rootContext(), screenSize);
     qmlRegisterUncreatableType<BaseListModel>("RegisteredTypes", 1, 0, "BaseListModel", "");
-    engine.rootContext()->setContextProperty("app", appManager);
+    engine.rootContext()->setContextProperty("app", &AppManager::instance());
     const QUrl url("qrc:/main.qml");
     engine.load(url);
 

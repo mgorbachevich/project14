@@ -3,7 +3,7 @@
 #include "jsonarrayfile.h"
 #include "tools.h"
 
-JsonArrayFile::JsonArrayFile(const QString &file, AppManager* parent) : JsonFile(file, parent)
+JsonArrayFile::JsonArrayFile(const QString &file, QObject* parent) : JsonFile(file, parent)
 {
     Tools::debugLog("@@@@@ JsonArrayFile::JsonArrayFile " + fileName);
 }

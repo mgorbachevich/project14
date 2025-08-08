@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSize>
 #include "constants.h"
+#include "loner.h"
 
 #define DEFAULT_SCREEN_WIDTH 568
 #define DEFAULT_SCREEN_HEIGHT 320
@@ -18,14 +19,15 @@
 #define DEFAULT_EDIT_WIDTH 200
 #define SHOWCASE_ROW_IMAGES 5
 
-class ScreenManager : public QObject
+class ScreenManager  :  public QObject, public Loner<ScreenManager>
 {
     Q_OBJECT
+    friend class Loner<ScreenManager>;
 
 public:
-    ScreenManager(const QSize&, QObject* parent = nullptr);
+    void init(const QSize&);
+    int visibleListRowCount() const { return screenHeight() / (spacer() + normalFontSize() + spacer()); }
 
-    // Экранные размеры:
     Q_INVOKABLE int screenWidth() const { return screenSize.width(); }
     Q_INVOKABLE int screenHeight() const { return screenSize.height(); }
     Q_INVOKABLE int popupWidth() const { return screenSize.width() * 3 / 4; }
@@ -44,7 +46,6 @@ public:
     Q_INVOKABLE int showcaseRowImages() const { return SHOWCASE_ROW_IMAGES; }
     Q_INVOKABLE int flickVelocity() const { return 300; }
     Q_INVOKABLE int keyboardHeight() const { return buttonSize() * 3; }
-    int visibleListRowCount() const { return screenHeight() / (spacer() + normalFontSize() + spacer()); }
 
 public:
     int mainPageIndex = MainPageIndex_Authorization;

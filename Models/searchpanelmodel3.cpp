@@ -18,7 +18,7 @@ bool SearchPanelModel3::onFlickTo(const int row)
 {
     if(!LargeListModel::onFlickTo(row)) return false;
     isWaiting = true;
-    appManager->updateSearch();
+    AppManager::instance().updateSearch();
     return true;
 }
 

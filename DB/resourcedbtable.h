@@ -16,7 +16,7 @@ public:
         COLUMN_COUNT
     };
 
-    ResourceDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent);
+    explicit ResourceDBTable(const QString& name, QSqlDatabase& sqlDB, QObject *parent);
     int columnCount() { return COLUMN_COUNT; }
 };
 

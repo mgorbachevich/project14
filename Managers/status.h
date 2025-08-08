@@ -7,7 +7,7 @@
 class Status
 {
 public:
-    Status() {}
+    explicit Status() {}
     void onResetProduct() { pieces = 1; }
     void onUserAction() { userActionTime = Tools::nowMsec(); secret = 0; }
     void onStopEquipment() { isAlarm = false; labelPath = "";  clearValues(); }

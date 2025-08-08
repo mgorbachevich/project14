@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QHttpServer>
 #include <QHttpServerResponse>
-#include "externalmessager.h"
+#include "loner.h"
 #include "constants.h"
 #include "netactionresult.h"
 
@@ -17,15 +17,16 @@
 
 #define SERVER_VERSION "1.5"
 
-class AppManager;
-
-class NetServer : public ExternalMessager
+class NetServer :  public QObject, public Loner<NetServer>
 {
     Q_OBJECT
+    friend class Loner<NetServer>;
+
+private:
+    explicit NetServer();
+    ~NetServer();
 
 public:
-    explicit NetServer(AppManager*);
-    ~NetServer();
     void start(const int);
     void stop();
     QString version() { return SERVER_VERSION; }

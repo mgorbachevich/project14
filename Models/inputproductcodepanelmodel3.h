@@ -9,7 +9,7 @@ class InputProductCodePanelModel3 : public LargeListModel
     Q_OBJECT
 
 public:
-    explicit InputProductCodePanelModel3(const int maxRowCount, AppManager *parent):
+    explicit InputProductCodePanelModel3(const int maxRowCount, QObject *parent):
         LargeListModel(maxRowCount, parent) {}
 
     Q_INVOKABLE bool onFlickTo(const int) override;

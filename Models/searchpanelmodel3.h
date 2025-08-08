@@ -10,7 +10,7 @@ class SearchPanelModel3 : public LargeListModel, public HierarchyModel
     Q_OBJECT
 
 public:
-    explicit SearchPanelModel3(const int maxRowCount, AppManager *parent):
+    explicit SearchPanelModel3(const int maxRowCount, QObject *parent):
         LargeListModel(maxRowCount, parent) {}
 
     Q_INVOKABLE bool onFlickTo(const int) override;

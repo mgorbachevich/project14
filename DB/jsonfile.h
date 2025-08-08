@@ -4,14 +4,13 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QVariantList>
-#include "externalmessager.h"
 
-class AppManager;
-
-class JsonFile : public ExternalMessager
+class JsonFile : public QObject
 {
+    Q_OBJECT
+
 public:
-    JsonFile(const QString&, AppManager*);
+    explicit JsonFile(const QString&, QObject*);
     virtual bool read() { wasRead = true; return false; }
     virtual bool write();
     virtual void clear() { wasRead = false; }

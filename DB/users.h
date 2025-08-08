@@ -24,7 +24,7 @@ enum UserField
 class Users : public JsonArrayFile
 {
 public:
-    Users(AppManager*);
+    explicit Users(QObject*);
     DBRecord& getCurrentUser();
     void setCurrentUser(const DBRecord& r) { user = r; }
     DBRecordList getAll();

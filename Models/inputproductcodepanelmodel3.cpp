@@ -16,7 +16,7 @@ bool InputProductCodePanelModel3::onFlickTo(const int row)
 {
     if(!LargeListModel::onFlickTo(row)) return false;
     isWaiting = true;
-    appManager->updateInputCodeList();
+    AppManager::instance().updateInputCodeList();
     return true;
 }
 
@@ -32,7 +32,7 @@ void InputProductCodePanelModel3::update(const DBRecordList &products)
     {
         DBRecord ri = products[i];
         QStringList data;
-        if(appManager->status.showcaseLastSort == ShowcaseSort_Code2)
+        if(AppManager::instance().status.showcaseLastSort == ShowcaseSort_Code2)
             data << "№" + ri[ProductDBTable::Code2].toString() << ri[ProductDBTable::Name].toString();
         else
             data << "#" + ri[ProductDBTable::Code].toString() << ri[ProductDBTable::Name].toString();

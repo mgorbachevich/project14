@@ -10,7 +10,7 @@ class EditUsersPanelModel3 : public BaseListModel3
     Q_OBJECT
 
 public:
-    explicit EditUsersPanelModel3(AppManager *parent): BaseListModel3(parent) {}
+    explicit EditUsersPanelModel3(QObject *parent): BaseListModel3(parent) {}
     QHash<int, QByteArray> roleNames() const override;
     void update(Users*);
 };

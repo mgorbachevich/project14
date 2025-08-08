@@ -3,7 +3,7 @@
 #include "users.h"
 #include "appmanager.h"
 
-Users::Users(AppManager *parent): JsonArrayFile(USERS_FILE, parent)
+Users::Users(QObject *parent): JsonArrayFile(USERS_FILE, parent)
 {
     Tools::debugLog("@@@@@ Users::Users");
     itemArrayName = DBTABLENAME_USERS;
@@ -47,11 +47,11 @@ void Users::onDeleteUser(const QString& code)
     DBRecord* p = getByCode(Tools::toInt(code));
     if(p == nullptr)
     {
-        showAttention(QString("Не найден пользователь с кодом %1?").arg(code));
+        AppManager::instance().showAttention(QString("Не найден пользователь с кодом %1?").arg(code));
         return;
     }
     inputUser = createUser(code, getName(*p), getPassword(*p), isAdmin(*p));
-    appManager->showConfirmation(ConfirmSelector_DeleteUser,
+    AppManager::instance().showConfirmation(ConfirmSelector_DeleteUser,
                 QString("Удалить пользователя %1 с кодом %2?").arg(getName(*p), code), "");
 }
 
@@ -63,12 +63,12 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
         return;
     if(Tools::toInt(code) <= 0)
     {
-        showAttention("Неверный код пользователя " + code);
+        AppManager::instance().showAttention("Неверный код пользователя " + code);
         return;
     }
     if(name.isEmpty())
     {
-        showAttention("Неверное имя пользователя");
+        AppManager::instance().showAttention("Неверное имя пользователя");
         return;
     }
     inputUser = createUser(code, name, password, admin);
@@ -77,7 +77,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     if(p != nullptr)
     {
         if(!isEqual(*p, inputUser))
-            appManager->showConfirmation(ConfirmSelector_ReplaceUser,
+            AppManager::instance().showConfirmation(ConfirmSelector_ReplaceUser,
                 QString("Уже есть пользователь с кодом %1, заменить?").arg(code), "");
         return;
     }
@@ -85,7 +85,7 @@ void Users::onInputUser(const QString& code, const QString& name, const QString&
     if(!u.isEmpty())
     {
         if(!isEqual(u, inputUser))
-            appManager->showConfirmation(ConfirmSelector_ReplaceUser,
+            AppManager::instance().showConfirmation(ConfirmSelector_ReplaceUser,
                 QString("Уже есть пользователь с именем %1, заменить?").arg(name), "");
         return;
     }

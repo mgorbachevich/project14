@@ -3,22 +3,25 @@
 
 #include <QSqlDatabase>
 #include "dbtable.h"
-#include "externalmessager.h"
-#include "netactionresult.h"
+#include "loner.h"
 
 #define DB_VERSION "1.10"
 
 class Users;
 class Settings;
+class NetActionResult;
 
-class DataBase : public ExternalMessager
+class DataBase : public QObject, public Loner<DataBase>
 {
     Q_OBJECT
+    friend class Loner<DataBase>;
 
-public:
-    explicit DataBase(AppManager*);
+private:
+    explicit DataBase();
     ~DataBase();
 
+public:
+    void onAppStart();
     void clearLog();
     DBRecordList getAllLabels();
     //QString getLabelPathByName(const QString&);
@@ -71,9 +74,6 @@ private:
 
 signals:
     void dbStarted();
-
-public slots:
-    void onAppStart();
 };
 
 #endif // DATABASE_H

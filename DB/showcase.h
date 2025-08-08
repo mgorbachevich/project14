@@ -13,7 +13,7 @@ public:
         COLUMN_COUNT
     };
 
-    Showcase(AppManager*);
+    explicit Showcase(QObject*);
     bool insertOrReplaceRecord(const DBRecord&);
     void removeByCode(const QString&);
     static QString getProductCode(const DBRecord& r) { return r.isEmpty() ? "" : r[0].toString(); }

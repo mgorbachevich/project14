@@ -4,7 +4,7 @@
 #include <QtCore/qglobal.h>
 #include <QString>
 
-#define APP_VERSION "3.03"
+#define APP_VERSION "3.04"
 
 // Fix errors:
 #define FIX_20250115_1

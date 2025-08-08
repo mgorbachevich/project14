@@ -2,7 +2,7 @@
 #include "jsonfile.h"
 #include "tools.h"
 
-JsonFile::JsonFile(const QString &file, AppManager* parent) : ExternalMessager(parent), fileName(file)
+JsonFile::JsonFile(const QString &file, QObject* parent) : QObject(parent), fileName(file)
 {
     Tools::debugLog("@@@@@ JsonFile::JsonFile " + fileName);
 }

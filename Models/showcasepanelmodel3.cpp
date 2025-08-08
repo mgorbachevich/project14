@@ -36,7 +36,7 @@ void ShowcasePanelModel3::update(const DBRecordList& newProducts, const QStringL
         if(Calculator::isGroup(pi)) centerText = "<b>" + name.toUpper() + "</b>";
         else
         {
-            switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductTopText, true))
+            switch(AppManager::instance().settings->getIntValue(SettingCode_ShowcaseProductTopText, true))
             {
             case ShowcaseProductText_Code:
                 topText = code;
@@ -45,13 +45,13 @@ void ShowcasePanelModel3::update(const DBRecordList& newProducts, const QStringL
                 topText = code2;
                 break;
             case ShowcaseProductText_Sort:
-                topText = (appManager->status.showcaseLastSort == ShowcaseSort_Code2) ? code2 : code;
+                topText = (AppManager::instance().status.showcaseLastSort == ShowcaseSort_Code2) ? code2 : code;
                 break;
             case ShowcaseProductText_Name:
                 topText = name.left(name.indexOf(" "));
                 break;
             }
-            switch(appManager->settings->getIntValue(SettingCode_ShowcaseProductBottomText, true))
+            switch(AppManager::instance().settings->getIntValue(SettingCode_ShowcaseProductBottomText, true))
             {
             case ShowcaseProductText_Code:
                 bottomText = code;
@@ -60,7 +60,7 @@ void ShowcasePanelModel3::update(const DBRecordList& newProducts, const QStringL
                 bottomText = code2;
                 break;
             case ShowcaseProductText_Sort:
-                bottomText = (appManager->status.showcaseLastSort == ShowcaseSort_Code2) ? code2 : code;
+                bottomText = (AppManager::instance().status.showcaseLastSort == ShowcaseSort_Code2) ? code2 : code;
                 break;
             case ShowcaseProductText_Name:
                 bottomText = name.left(name.indexOf(" "));

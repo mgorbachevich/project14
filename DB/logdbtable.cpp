@@ -1,7 +1,7 @@
 #include "logdbtable.h"
 #include "tools.h"
 
-LogDBTable::LogDBTable(const QString& name, QSqlDatabase& sqlDB, DataBase *parent): DBTable(name, sqlDB, parent)
+LogDBTable::LogDBTable(const QString& name, QSqlDatabase& sqlDB, QObject *parent): DBTable(name, sqlDB, parent)
 {
     Tools::debugLog("@@@@@ LogDBTable::LogDBTable");
 

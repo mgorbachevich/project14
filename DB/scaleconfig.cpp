@@ -2,7 +2,7 @@
 #include "tools.h"
 #include "scaleconfig.h"
 
-ScaleConfig::ScaleConfig(AppManager* parent) : JsonFile(SCALE_CONFIG_FILE, parent)
+ScaleConfig::ScaleConfig(QObject* parent) : JsonFile(SCALE_CONFIG_FILE, parent)
 {
     Tools::debugLog("@@@@@ ScaleConfig::ScaleConfig ");
     fields.insert(ScaleConfigField_Model,                   "model");

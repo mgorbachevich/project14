@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-class AppManager;
 class BaseListModel;
 class QQmlContext;
 
@@ -12,7 +11,7 @@ class CalendarModel : public QObject
     Q_OBJECT
 
 public:
-    CalendarModel(QQmlContext*, AppManager*);
+    explicit CalendarModel(QQmlContext*, QObject*);
 
 private:
     BaseListModel* calendarDayModel = nullptr;

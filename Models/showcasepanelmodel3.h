@@ -10,7 +10,7 @@ class ShowcasePanelModel3 : public BaseListModel3, public HierarchyModel
     Q_OBJECT
 
 public:
-    explicit ShowcasePanelModel3(AppManager *parent): BaseListModel3(parent) {}
+    explicit ShowcasePanelModel3(QObject *parent): BaseListModel3(parent) {}
     QHash<int, QByteArray> roleNames() const override;
     void update(const DBRecordList&, const QStringList&);
 };
